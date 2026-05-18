@@ -10,6 +10,10 @@ export type CroppedImage = {
 
 const PADDING_FRACTION = 0.04;
 const MIN_CROP_PX = 64;
+// Vision quality on small set symbols and card numbers drops off rapidly under
+// ~1024px on the long edge. Upscale anything below this floor; cap at 1600 to
+// keep per-crop bytes reasonable on the wire.
+const MIN_LONG_EDGE_PX = 1024;
 const MAX_LONG_EDGE_PX = 1600;
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -51,14 +55,22 @@ export async function cropFromBuffer(
   });
 
   const longest = Math.max(safeWidth, safeHeight);
-  const resized =
-    longest > MAX_LONG_EDGE_PX
-      ? cropped.resize({
-          width: safeWidth >= safeHeight ? MAX_LONG_EDGE_PX : undefined,
-          height: safeHeight > safeWidth ? MAX_LONG_EDGE_PX : undefined,
-          fit: "inside",
-        })
-      : cropped;
+  let resized = cropped;
+  if (longest > MAX_LONG_EDGE_PX) {
+    resized = cropped.resize({
+      width: safeWidth >= safeHeight ? MAX_LONG_EDGE_PX : undefined,
+      height: safeHeight > safeWidth ? MAX_LONG_EDGE_PX : undefined,
+      fit: "inside",
+    });
+  } else if (longest < MIN_LONG_EDGE_PX) {
+    resized = cropped.resize({
+      width: safeWidth >= safeHeight ? MIN_LONG_EDGE_PX : undefined,
+      height: safeHeight > safeWidth ? MIN_LONG_EDGE_PX : undefined,
+      fit: "inside",
+      kernel: "lanczos3",
+      withoutEnlargement: false,
+    });
+  }
 
   const out = await resized.jpeg({ quality: 88 }).toBuffer({ resolveWithObject: true });
 

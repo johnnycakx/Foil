@@ -28,7 +28,17 @@
       "Bash(node --experimental-strip-types --no-warnings scripts/setup-stripe.ts)",
       "Bash(curl -sS -o /dev/null -w \"GET /upload  -> %{http_code}\\\\n\" http://localhost:3000/upload)",
       "Bash(curl -sS -o /dev/null -w \"GET /account -> %{http_code}\\\\n\" http://localhost:3000/account)",
-      "Bash(curl -sS -o /dev/null -w \"POST /api/webhooks/stripe \\(unsigned\\) -> %{http_code}\\\\n\" -X POST http://localhost:3000/api/webhooks/stripe)"
+      "Bash(curl -sS -o /dev/null -w \"POST /api/webhooks/stripe \\(unsigned\\) -> %{http_code}\\\\n\" -X POST http://localhost:3000/api/webhooks/stripe)",
+      "Bash(curl -sS -o /dev/null -w \"GET / -> %{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -sS -o /tmp/og-headers -w \"GET /opengraph-image -> %{http_code} type=%{content_type}\\\\n\" -D - http://localhost:3000/opengraph-image)",
+      "Bash(curl -sS -o /tmp/og.png -w \"GET /opengraph-image -> %{http_code} type=%{content_type} bytes=%{size_download}\\\\n\" http://localhost:3000/opengraph-image)",
+      "Bash(curl -sS http://localhost:3000/)",
+      "Bash(grep -oE 'Know what any Pokémon[^<]+|\\\\$30,100|Get early access|How it works|Already have access')",
+      "Bash(grep -E '\\\\.\\(jpg|jpeg|png|heic|webp\\)$')",
+      "Bash(tasklist //FI \"IMAGENAME eq node.exe\")",
+      "Bash(curl -fsSL --max-time 15 -o \"C:/Users/John/dev/foil/tmp/pe_100.png\" \"https://images.pokemontcg.io/sv8pt5/100_hires.png\")",
+      "Bash(node --experimental-strip-types --no-warnings scripts/build-prismatic-fixture.ts)",
+      "Bash(node --experimental-strip-types --no-warnings scripts/verify-retry.ts tmp/prismatic-binder.jpg)"
     ]
   }
 }

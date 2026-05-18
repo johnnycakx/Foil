@@ -56,6 +56,19 @@ export type TopPrice = {
   sourceLabel: string;
 };
 
+export type FailureCode =
+  | "unreadable"
+  | "no_candidates"
+  | "low_score"
+  | "no_prices"
+  | "lookup_error";
+
+export type Failure = {
+  code: FailureCode;
+  message: string;
+  topCandidates?: { name: string; set: string; cardNumber: string; variant: string }[];
+};
+
 export type CardPricing =
   | {
       matched: true;
@@ -75,10 +88,11 @@ export type CardPricing =
       bestGraded: GradedPrice | null;
       topPrice: TopPrice | null;
     }
-  | { matched: false; reason: string };
+  | { matched: false; reason: string; failure: Failure };
 
 const PRICE_UNAVAILABLE = "Price unavailable — set may be misidentified.";
 const PRICE_UNREADABLE = "Price unavailable — card details too unclear to look up.";
+export const PRICE_NEEDS_REVIEW = "Needs manual review.";
 
 function safeStr(v: unknown): string | null {
   if (typeof v !== "string") return null;
@@ -186,8 +200,15 @@ function topRawPrice(card: PokeTraceCard): TopPrice | null {
   if (ebay !== null) return { amount: ebay, source: "ebay", sourceLabel: "eBay sold (NM)" };
   const tcg = snapAvg(card.prices?.tcgplayer?.NEAR_MINT);
   if (tcg !== null) return { amount: tcg, source: "tcgplayer", sourceLabel: "TCGplayer (NM)" };
-  const cm = snapAvg(card.prices?.cardmarket?.NEAR_MINT);
-  if (cm !== null) return { amount: cm, source: "cardmarket", sourceLabel: "Cardmarket (NM)" };
+  const cmNm = snapAvg(card.prices?.cardmarket?.NEAR_MINT);
+  if (cmNm !== null) return { amount: cmNm, source: "cardmarket", sourceLabel: "Cardmarket (NM)" };
+  // Newer sets (e.g. Prismatic Evolutions) often expose only an aggregated
+  // cardmarket tier rather than per-condition splits. Use it as the last
+  // raw-price fallback so we surface *something* instead of "no prices".
+  const cmAgg = snapAvg(card.prices?.cardmarket?.AGGREGATED);
+  if (cmAgg !== null) return { amount: cmAgg, source: "cardmarket", sourceLabel: "Cardmarket (avg)" };
+  const ebayAgg = snapAvg(card.prices?.ebay?.AGGREGATED);
+  if (ebayAgg !== null) return { amount: ebayAgg, source: "ebay", sourceLabel: "eBay (avg)" };
   return null;
 }
 
@@ -214,10 +235,27 @@ async function fetchCards(params: Record<string, string>): Promise<PokeTraceCard
   return json.data ?? [];
 }
 
+function topCandidatesFor(candidates: PokeTraceCard[], claude: ClaudeCardLite, limit = 5) {
+  return [...candidates]
+    .map((c) => ({ card: c, s: score(claude, c) }))
+    .sort((a, b) => b.s - a.s)
+    .slice(0, limit)
+    .map(({ card }) => ({
+      name: card.name,
+      set: card.set?.name ?? "(unknown set)",
+      cardNumber: card.cardNumber,
+      variant: card.variant,
+    }));
+}
+
 export async function priceCard(claude: ClaudeCardLite): Promise<CardPricing> {
   const claudeName = safeStr(claude.name);
   if (!claudeName) {
-    return { matched: false, reason: PRICE_UNREADABLE };
+    return {
+      matched: false,
+      reason: PRICE_UNREADABLE,
+      failure: { code: "unreadable", message: "Name field was empty or unreadable." },
+    };
   }
 
   const candidates: PokeTraceCard[] = [];
@@ -249,12 +287,23 @@ export async function priceCard(claude: ClaudeCardLite): Promise<CardPricing> {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      return { matched: false, reason: `Lookup failed: ${message}` };
+      return {
+        matched: false,
+        reason: PRICE_UNAVAILABLE,
+        failure: { code: "lookup_error", message: `PokeTrace lookup failed: ${message}` },
+      };
     }
   }
 
   if (candidates.length === 0) {
-    return { matched: false, reason: PRICE_UNAVAILABLE };
+    return {
+      matched: false,
+      reason: PRICE_UNAVAILABLE,
+      failure: {
+        code: "no_candidates",
+        message: `PokeTrace has no card named "${claudeName}". The Pokémon name is likely wrong, OR the printed name differs from the canonical English name.`,
+      },
+    };
   }
 
   let bestCard: PokeTraceCard | null = null;
@@ -268,14 +317,35 @@ export async function priceCard(claude: ClaudeCardLite): Promise<CardPricing> {
   }
 
   if (!bestCard || bestScore < 70) {
-    return { matched: false, reason: PRICE_UNAVAILABLE };
+    const top = topCandidatesFor(candidates, claude);
+    const claimedSet = safeStr(claude.set) ?? "(no set)";
+    const claimedNumber = safeStr(claude.cardNumber) ?? "(no number)";
+    const candidateLines = top
+      .map((c) => `  - "${c.name}" - ${c.set} #${c.cardNumber} (${c.variant})`)
+      .join("\n");
+    return {
+      matched: false,
+      reason: PRICE_UNAVAILABLE,
+      failure: {
+        code: "low_score",
+        message: `No "${claudeName}" card in "${claimedSet}" matches the printed number ${claimedNumber}. Closest PokeTrace candidates by name:\n${candidateLines}\nThe Pokémon name is likely correct, but the set or card number is wrong - look at the set symbol and the N/T denominator again.`,
+        topCandidates: top,
+      },
+    };
   }
 
   const top = topRawPrice(bestCard);
   const graded = bestGraded(bestCard);
 
   if (!top && !graded) {
-    return { matched: false, reason: PRICE_UNAVAILABLE };
+    return {
+      matched: false,
+      reason: PRICE_UNAVAILABLE,
+      failure: {
+        code: "no_prices",
+        message: `Matched "${bestCard.name}" in "${bestCard.set?.name}" but PokeTrace has no eBay/TCGplayer/Cardmarket prices on file for variant "${bestCard.variant}".`,
+      },
+    };
   }
 
   return {

@@ -59,6 +59,66 @@ export type Database = {
         }>;
         Relationships: [];
       };
+      corrections: {
+        Row: {
+          id: string;
+          user_id: string;
+          submitted_at: string;
+          original_name: string | null;
+          original_set: string | null;
+          original_card_number: string | null;
+          corrected_name: string | null;
+          corrected_set: string | null;
+          corrected_card_number: string | null;
+          notes: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          submitted_at?: string;
+          original_name?: string | null;
+          original_set?: string | null;
+          original_card_number?: string | null;
+          corrected_name?: string | null;
+          corrected_set?: string | null;
+          corrected_card_number?: string | null;
+          notes?: string | null;
+        };
+        Update: Partial<{
+          id: string;
+          user_id: string;
+          submitted_at: string;
+          original_name: string | null;
+          original_set: string | null;
+          original_card_number: string | null;
+          corrected_name: string | null;
+          corrected_set: string | null;
+          corrected_card_number: string | null;
+          notes: string | null;
+        }>;
+        Relationships: [];
+      };
+      waitlist: {
+        Row: {
+          id: string;
+          email: string;
+          signed_up_at: string;
+          source: string | null;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          signed_up_at?: string;
+          source?: string | null;
+        };
+        Update: Partial<{
+          id: string;
+          email: string;
+          signed_up_at: string;
+          source: string | null;
+        }>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

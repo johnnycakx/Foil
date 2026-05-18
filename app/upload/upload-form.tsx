@@ -2,6 +2,7 @@
 
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { detectScan, identifyScan, type PricedCard, type ScanResult } from "./actions";
+import { CorrectionLink } from "./correction-form";
 
 const ACCEPT = "image/jpeg,image/png,image/heic,image/heif";
 
@@ -212,8 +213,20 @@ function CardRow({ card }: { card: PricedCard }) {
         <p className="truncate text-sm text-zinc-500">
           {card.set} · #{card.cardNumber} · {card.rarity}
         </p>
-        <p className="text-xs text-zinc-400">{card.conditionEstimate}</p>
+        <p className="text-xs text-zinc-400">
+          {card.conditionEstimate}
+          {card.retried && (
+            <span className="ml-2 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+              re-checked
+            </span>
+          )}
+        </p>
         <PricingLine card={card} />
+        <CorrectionLink
+          originalName={card.name}
+          originalSet={card.set}
+          originalCardNumber={card.cardNumber}
+        />
       </div>
       <ConfidenceBadge value={card.confidence} />
     </li>

@@ -18,13 +18,20 @@ import {
 } from "@/lib/vision";
 import {
   collectionTotalRawNm,
+  priceCard,
   priceCards,
+  PRICE_NEEDS_REVIEW,
   type CardPricing,
 } from "@/lib/poketrace";
+import { retryIdentify } from "@/lib/vision-retry";
 import { getEntitlements, recordScan } from "@/lib/entitlements";
 import { FREE_DAILY_SCAN_LIMIT } from "@/lib/stripe";
 
-export type PricedCard = IdentifiedCard & { pricing: CardPricing };
+export type PricedCard = IdentifiedCard & {
+  pricing: CardPricing;
+  retried?: boolean;
+  previousAttempt?: Pick<IdentifiedCard, "name" | "set" | "cardNumber" | "rarity" | "confidence">;
+};
 
 export type PricedScanPayload = {
   cards: PricedCard[];
@@ -298,6 +305,9 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
 
   const visionStart = Date.now();
   let payload: ScanPayload;
+  // Per-card crop source so we can re-feed the exact same image to the retry pass.
+  // For single-pass mode there's one crop = the whole image.
+  let cardSources: Source[] = [];
   let cacheRead = 0;
   let cacheWrite = 0;
   let inputTokens = 0;
@@ -307,27 +317,28 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
       const crops = await Promise.all(
         boxes.map((box) => cropFromBuffer(r.buffer, box)),
       );
-      const outcomes = await Promise.all(
-        crops.map((crop) =>
-          runIdentify({
-            type: "base64",
-            media_type: crop.mediaType,
-            data: crop.base64,
-          }),
-        ),
-      );
+      const cropSources: Source[] = crops.map((crop) => ({
+        type: "base64",
+        media_type: crop.mediaType,
+        data: crop.base64,
+      }));
+      const outcomes = await Promise.all(cropSources.map((s) => runIdentify(s)));
       payload = aggregatePayloads(outcomes.map((o) => o.payload));
       for (const o of outcomes) {
         cacheRead += o.cacheRead;
         cacheWrite += o.cacheWrite;
         inputTokens += o.inputTokens;
       }
+      // Map every identified card back to the crop it came from.
+      // Each crop's payload typically has 0 or 1 cards; we splay sources to match.
+      cardSources = outcomes.flatMap((o, i) => o.payload.cards.map(() => cropSources[i]));
     } else {
       const outcome = await runIdentify(r.source);
       payload = outcome.payload;
       cacheRead = outcome.cacheRead;
       cacheWrite = outcome.cacheWrite;
       inputTokens = outcome.inputTokens;
+      cardSources = payload.cards.map(() => r.source);
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
@@ -337,7 +348,7 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
   const visionMs = Date.now() - visionStart;
 
   const pricingStart = Date.now();
-  const pricings = await priceCards(
+  let pricings = await priceCards(
     payload.cards.map((c) => ({
       name: c.name,
       set: c.set,
@@ -345,11 +356,72 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
       rarity: c.rarity,
     })),
   );
+
+  // -------- Retry pass: re-identify failed cards with Opus 4.5 + failure context --------
+  const failedIndices = pricings
+    .map((p, i) => (p.matched ? -1 : i))
+    .filter((i) => i >= 0)
+    .filter((i) => {
+      const f = (pricings[i] as { failure?: { code: string } }).failure;
+      // Skip "unreadable" — no name to retry, nothing for the model to anchor on.
+      return f && f.code !== "unreadable";
+    });
+
+  const retried = new Array<boolean>(payload.cards.length).fill(false);
+  const previousAttempts: Array<PricedCard["previousAttempt"] | undefined> = new Array(payload.cards.length).fill(undefined);
+  let retryMs = 0;
+
+  if (failedIndices.length > 0) {
+    const retryStart = Date.now();
+    await Promise.all(
+      failedIndices.map(async (i) => {
+        const failed = pricings[i];
+        if (failed.matched) return;
+        const source = cardSources[i];
+        if (!source) return;
+        try {
+          const outcome = await retryIdentify(source, payload.cards[i], failed.failure);
+          cacheRead += outcome.cacheRead;
+          cacheWrite += outcome.cacheWrite;
+          inputTokens += outcome.inputTokens;
+          if (!outcome.card) return;
+          const repriced = await priceCard({
+            name: outcome.card.name,
+            set: outcome.card.set,
+            cardNumber: outcome.card.cardNumber,
+            rarity: outcome.card.rarity,
+          });
+          previousAttempts[i] = {
+            name: payload.cards[i].name,
+            set: payload.cards[i].set,
+            cardNumber: payload.cards[i].cardNumber,
+            rarity: payload.cards[i].rarity,
+            confidence: payload.cards[i].confidence,
+          };
+          payload.cards[i] = outcome.card;
+          pricings[i] = repriced;
+          retried[i] = true;
+        } catch (err) {
+          console.error(`[identifyScan] retry failed for card ${i}: ${err instanceof Error ? err.message : err}`);
+        }
+      }),
+    );
+    retryMs = Date.now() - retryStart;
+  }
+
+  // For any card still unmatched after retry, surface the "Needs manual review" copy.
+  pricings = pricings.map((p) => {
+    if (p.matched) return p;
+    return { ...p, reason: PRICE_NEEDS_REVIEW };
+  });
+
   const pricingMs = Date.now() - pricingStart;
 
   const pricedCards: PricedCard[] = payload.cards.map((card, i) => ({
     ...card,
     pricing: pricings[i],
+    retried: retried[i] || undefined,
+    previousAttempt: previousAttempts[i],
   }));
   const totalValue = collectionTotalRawNm(pricings);
   const pricedCount = pricings.filter((p) => p.matched).length;
@@ -365,8 +437,9 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
     totalValue,
   });
 
+  const retryCount = retried.filter(Boolean).length;
   console.log(
-    `[identifyScan] user=${r.userId} tier=${ent.tier} mode=${useMulti ? "multi" : "single"} crops=${useMulti ? boxes.length : 1} identified=${payload.cards.length} priced=${pricedCount} total=$${totalValue} unidentified=${payload.unidentifiedCount} overallConfidence=${payload.overallConfidence} visionMs=${visionMs} pricingMs=${pricingMs} cache_read=${cacheRead} cache_write=${cacheWrite}`,
+    `[identifyScan] user=${r.userId} tier=${ent.tier} mode=${useMulti ? "multi" : "single"} crops=${useMulti ? boxes.length : 1} identified=${payload.cards.length} priced=${pricedCount} retried=${retryCount} total=$${totalValue} unidentified=${payload.unidentifiedCount} overallConfidence=${payload.overallConfidence} visionMs=${visionMs} retryMs=${retryMs} pricingMs=${pricingMs} cache_read=${cacheRead} cache_write=${cacheWrite}`,
   );
 
   return {
