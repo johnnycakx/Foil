@@ -206,15 +206,45 @@ function ScanResultView({ result }: { result: Extract<ScanResult, { ok: true }> 
 }
 
 function CardRow({ card }: { card: PricedCard }) {
+  const insufficient = card.status === "insufficient_information";
+  const lowConfidence = card.pricing.matched && card.pricing.lowConfidence;
+
+  const displayName = card.name ?? (insufficient ? "Unreadable card" : "(no name)");
+  const setLabel = card.setCode ?? card.setCodeRaw ?? card.setSymbolDescription ?? "?";
+  const numberLabel = card.collectorNumber ?? "?";
+  const rarityLabel = card.rarity ?? "?";
+
   return (
     <li className="flex items-start justify-between gap-4 py-3">
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium">{card.name}</p>
+        <p className="truncate font-medium">
+          {displayName}
+          {insufficient && (
+            <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+              Couldn&apos;t read — needs review
+            </span>
+          )}
+          {!insufficient && lowConfidence && (
+            <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+              low confidence
+            </span>
+          )}
+          {card.language && card.language !== "EN" && card.language !== "unknown" && (
+            <span className="ml-2 rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+              {card.language}
+            </span>
+          )}
+        </p>
         <p className="truncate text-sm text-zinc-500">
-          {card.set} · #{card.cardNumber} · {card.rarity}
+          {setLabel} · #{numberLabel} · {rarityLabel}
         </p>
         <p className="text-xs text-zinc-400">
-          {card.conditionEstimate}
+          {card.conditionEstimate ?? "—"}
+          {card.regulationMark && (
+            <span className="ml-2 inline-block rounded border border-zinc-300 px-1 text-[10px] font-medium text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
+              {card.regulationMark}
+            </span>
+          )}
           {card.retried && (
             <span className="ml-2 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-950 dark:text-amber-300">
               re-checked
@@ -223,12 +253,13 @@ function CardRow({ card }: { card: PricedCard }) {
         </p>
         <PricingLine card={card} />
         <CorrectionLink
-          originalName={card.name}
-          originalSet={card.set}
-          originalCardNumber={card.cardNumber}
+          originalName={card.name ?? ""}
+          originalSet={card.setCode ?? card.setCodeRaw ?? ""}
+          originalCardNumber={card.collectorNumber ?? ""}
+          startOpen={insufficient || lowConfidence}
         />
       </div>
-      <ConfidenceBadge value={card.confidence} />
+      <ConfidenceBadge value={card.confidence} status={card.status} />
     </li>
   );
 }
@@ -236,19 +267,27 @@ function CardRow({ card }: { card: PricedCard }) {
 function PricingLine({ card }: { card: PricedCard }) {
   const p = card.pricing;
   if (!p.matched) {
+    if (p.failure.code === "insufficient_information") {
+      return null;
+    }
     return (
       <p className="mt-1.5 text-xs italic text-zinc-400">{p.reason}</p>
     );
   }
   const top = p.topPrice;
+  const lc = p.lowConfidence;
   return (
     <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
       {top ? (
         <>
           <span className="text-sm font-semibold tabular-nums">
+            {lc && "~"}
             {USD.format(top.amount)}
           </span>
-          <span className="text-xs text-zinc-500">{top.sourceLabel}</span>
+          <span className="text-xs text-zinc-500">
+            {top.sourceLabel}
+            {lc && " (low confidence)"}
+          </span>
         </>
       ) : (
         <span className="text-xs italic text-zinc-400">No raw NM price available</span>
@@ -262,7 +301,20 @@ function PricingLine({ card }: { card: PricedCard }) {
   );
 }
 
-function ConfidenceBadge({ value }: { value: number }) {
+function ConfidenceBadge({
+  value,
+  status,
+}: {
+  value: number | null;
+  status?: "identified" | "insufficient_information";
+}) {
+  if (status === "insufficient_information" || value == null) {
+    return (
+      <span className="inline-flex shrink-0 items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+        review
+      </span>
+    );
+  }
   const tone =
     value >= 80
       ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"

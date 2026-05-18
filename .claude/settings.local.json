@@ -38,7 +38,10 @@
       "Bash(tasklist //FI \"IMAGENAME eq node.exe\")",
       "Bash(curl -fsSL --max-time 15 -o \"C:/Users/John/dev/foil/tmp/pe_100.png\" \"https://images.pokemontcg.io/sv8pt5/100_hires.png\")",
       "Bash(node --experimental-strip-types --no-warnings scripts/build-prismatic-fixture.ts)",
-      "Bash(node --experimental-strip-types --no-warnings scripts/verify-retry.ts tmp/prismatic-binder.jpg)"
+      "Bash(node --experimental-strip-types --no-warnings scripts/verify-retry.ts tmp/prismatic-binder.jpg)",
+      "Bash(mkdir -p lib/__fixtures__/cards)",
+      "Bash(cp tmp/prismatic-binder.jpg lib/__fixtures__/cards/prismatic-binder.jpg)",
+      "Bash(curl -sS -o /dev/null -w \"GET /opengraph-image -> %{http_code}\\\\n\" http://localhost:3000/opengraph-image)"
     ]
   }
 }

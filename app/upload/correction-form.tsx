@@ -9,12 +9,14 @@ export function CorrectionLink({
   originalName,
   originalSet,
   originalCardNumber,
+  startOpen = false,
 }: {
   originalName: string;
   originalSet: string;
   originalCardNumber: string;
+  startOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(startOpen);
   const [state, action, pending] = useActionState(submitCorrection, INITIAL);
 
   if (state.status === "ok") {

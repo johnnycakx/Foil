@@ -30,7 +30,10 @@ import { FREE_DAILY_SCAN_LIMIT } from "@/lib/stripe";
 export type PricedCard = IdentifiedCard & {
   pricing: CardPricing;
   retried?: boolean;
-  previousAttempt?: Pick<IdentifiedCard, "name" | "set" | "cardNumber" | "rarity" | "confidence">;
+  previousAttempt?: Pick<
+    IdentifiedCard,
+    "name" | "setCode" | "collectorNumber" | "rarity" | "confidence"
+  >;
 };
 
 export type PricedScanPayload = {
@@ -350,21 +353,28 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
   const pricingStart = Date.now();
   let pricings = await priceCards(
     payload.cards.map((c) => ({
+      status: c.status,
       name: c.name,
-      set: c.set,
-      cardNumber: c.cardNumber,
+      setCode: c.setCode,
+      collectorNumber: c.collectorNumber,
       rarity: c.rarity,
+      regulationMark: c.regulationMark,
     })),
   );
 
   // -------- Retry pass: re-identify failed cards with Opus 4.5 + failure context --------
+  // Framework rule: only retry status === "identified" with codes that imply
+  // Vision could be improved (no_candidates, low_score). Skip
+  // "insufficient_information" (route to correction form) and "unreadable"
+  // (no anchor for the retry).
+  const RETRYABLE: ReadonlySet<string> = new Set(["no_candidates", "low_score", "regulation_mismatch"]);
   const failedIndices = pricings
     .map((p, i) => (p.matched ? -1 : i))
     .filter((i) => i >= 0)
     .filter((i) => {
+      if (payload.cards[i].status !== "identified") return false;
       const f = (pricings[i] as { failure?: { code: string } }).failure;
-      // Skip "unreadable" — no name to retry, nothing for the model to anchor on.
-      return f && f.code !== "unreadable";
+      return !!f && RETRYABLE.has(f.code);
     });
 
   const retried = new Array<boolean>(payload.cards.length).fill(false);
@@ -386,15 +396,17 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
           inputTokens += outcome.inputTokens;
           if (!outcome.card) return;
           const repriced = await priceCard({
+            status: outcome.card.status,
             name: outcome.card.name,
-            set: outcome.card.set,
-            cardNumber: outcome.card.cardNumber,
+            setCode: outcome.card.setCode,
+            collectorNumber: outcome.card.collectorNumber,
             rarity: outcome.card.rarity,
+            regulationMark: outcome.card.regulationMark,
           });
           previousAttempts[i] = {
             name: payload.cards[i].name,
-            set: payload.cards[i].set,
-            cardNumber: payload.cards[i].cardNumber,
+            setCode: payload.cards[i].setCode,
+            collectorNumber: payload.cards[i].collectorNumber,
             rarity: payload.cards[i].rarity,
             confidence: payload.cards[i].confidence,
           };
@@ -410,8 +422,12 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
   }
 
   // For any card still unmatched after retry, surface the "Needs manual review" copy.
+  // After-retry copy: cards that Vision identified but PokeTrace still couldn't
+  // match get "Needs manual review". Cards Vision itself flagged as
+  // insufficient_information keep their friendlier copy untouched.
   pricings = pricings.map((p) => {
     if (p.matched) return p;
+    if (p.failure.code === "insufficient_information") return p;
     return { ...p, reason: PRICE_NEEDS_REVIEW };
   });
 

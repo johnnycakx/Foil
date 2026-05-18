@@ -27,35 +27,42 @@ export type RetryOutcome = {
 };
 
 function buildRetryPrompt(prev: IdentifiedCard, failure: Failure): string {
-  const candidates = failure.topCandidates?.length
+  const candidates = failure.topCandidates.length
     ? failure.topCandidates
-        .map((c) => `  - "${c.name}" — ${c.set} #${c.cardNumber} (${c.variant})`)
+        .map((c) => `  - "${c.name}" — ${c.set} (slug: ${c.setSlug}) #${c.cardNumber} (${c.variant})`)
         .join("\n")
     : "";
 
+  const legible: string[] = [];
+  if (prev.name) legible.push(`name: ${prev.name}`);
+  if (prev.hp) legible.push(`hp: ${prev.hp}`);
+  if (prev.collectorNumber) legible.push(`collectorNumber: ${prev.collectorNumber}`);
+  if (prev.setCode) legible.push(`setCode: ${prev.setCode}`);
+  if (prev.setCodeRaw) legible.push(`setCodeRaw: ${prev.setCodeRaw}`);
+  if (prev.regulationMark) legible.push(`regulationMark: ${prev.regulationMark}`);
+  if (prev.rarity) legible.push(`rarity: ${prev.rarity}`);
+  if (prev.illustrator) legible.push(`illustrator: ${prev.illustrator}`);
+  if (prev.variant) legible.push(`variant: ${prev.variant}`);
+  if (prev.language) legible.push(`language: ${prev.language}`);
+
   return [
     "You are reviewing a previous failed identification of a single Pokémon TCG card.",
-    "Below is the same crop again, the previous attempt's output, and the concrete reason the database lookup failed.",
-    "Reconsider carefully — focus on the set symbol icon and the printed card number.",
+    "The previous attempt was structurally complete but the PokeTrace database couldn't find a price match.",
+    "Look at the crop again and reconsider — focus on what is PRINTED on the card, not the artwork.",
     "",
-    "PREVIOUS ATTEMPT:",
-    `  name: ${prev.name}`,
-    `  set: ${prev.set}`,
-    `  cardNumber: ${prev.cardNumber}`,
-    `  rarity: ${prev.rarity}`,
-    `  conditionEstimate: ${prev.conditionEstimate}`,
-    `  confidence: ${prev.confidence}`,
+    "PREVIOUS ATTEMPT (only legible fields shown):",
+    legible.length > 0 ? legible.map((l) => `  ${l}`).join("\n") : "  (no fields read)",
     "",
     "WHY THE LOOKUP FAILED:",
     failure.message,
     "",
-    candidates ? `Nearest valid PokeTrace candidates by name:\n${candidates}\n` : "",
-    "INSTRUCTIONS:",
-    "- If you are confident about the Pokémon name, preserve it. Otherwise correct it.",
-    "- Focus on the SET. Look at the set symbol icon at the bottom of the artwork window — refer to 'Modern set symbols' in your system prompt.",
-    "- The card number's T (denominator) must equal the set's known size. Cross-reference 'Recent set sizes'. If they disagree, you have the wrong set.",
-    "- If multiple sets remain plausible after this second look, return your best calibrated guess with confidence between 50 and 75 — never 90+ on a guess.",
-    "- If the printed number you originally read is impossible for any candidate set, you misread a digit; squint at the card.",
+    candidates ? `Nearest PokeTrace candidates by name (one of these may be correct — verify against the card):\n${candidates}\n` : "",
+    "INSTRUCTIONS — choose one of:",
+    "  (a) The same card with a corrected setCode, collectorNumber, or both — if you can now read the previously-missed field on the crop.",
+    "  (b) One of the PokeTrace candidates above, IF its name, set, and number visually match the crop. Verify the set symbol and number.",
+    "  (c) Decline. Return status: \"insufficient_information\" with an insufficientReason. Do NOT invent fields.",
+    "",
+    "Hard rules carry over from the system prompt: null means unreadable. Never fabricate a number or set code. The crop's collector number is the source of truth — if it conflicts with every candidate, mark insufficient_information.",
     "",
     "Return JSON conforming to the same schema as the original — a single card in the cards array.",
   ]

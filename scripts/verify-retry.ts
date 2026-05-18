@@ -90,21 +90,35 @@ const payloads = await Promise.all(cropSources.map(identify));
 const cards: IdentifiedCard[] = payloads.map((p) => p.cards[0]).filter((c): c is IdentifiedCard => !!c);
 console.log(`[identify] ${cards.length} cards in ${Date.now() - idStart}ms (Sonnet)`);
 
+function lite(c: IdentifiedCard) {
+  return {
+    status: c.status,
+    name: c.name,
+    setCode: c.setCode,
+    collectorNumber: c.collectorNumber,
+    rarity: c.rarity,
+    regulationMark: c.regulationMark,
+  };
+}
+
 // ---- First-pass pricing ----
-const firstPricings = await Promise.all(
-  cards.map((c) => priceCard({ name: c.name, set: c.set, cardNumber: c.cardNumber, rarity: c.rarity })),
-);
+const firstPricings = await Promise.all(cards.map((c) => priceCard(lite(c))));
 const beforeMatched = firstPricings.filter((p) => p.matched).length;
-console.log(`\n[BEFORE retry] priced=${beforeMatched}/${cards.length}`);
+const beforeInsufficient = cards.filter((c) => c.status === "insufficient_information").length;
+console.log(
+  `\n[BEFORE retry] priced=${beforeMatched}/${cards.length} insufficient=${beforeInsufficient}`,
+);
 cards.forEach((c, i) => {
   const p = firstPricings[i];
   const status = p.matched
-    ? `✓ $${p.topPrice?.amount ?? "—"} (${p.candidate.set} #${p.candidate.cardNumber})`
+    ? `✓ $${p.topPrice?.amount ?? "—"} (${p.candidate.set} #${p.candidate.cardNumber})${p.lowConfidence ? " [low_confidence]" : ""}`
     : `✗ ${(p as { failure: { code: string } }).failure.code}`;
-  console.log(`  [${i + 1}] ${c.name} (${c.set} #${c.cardNumber}) → ${status}`);
+  const langTag = c.language && c.language !== "EN" && c.language !== "unknown" ? ` [${c.language}]` : "";
+  console.log(`  [${i + 1}] ${c.name ?? "(unreadable)"} (${c.setCode ?? "?"} #${c.collectorNumber ?? "?"})${langTag} → ${status}`);
 });
 
 // ---- Retry pass (Opus 4.5) ----
+const RETRYABLE = new Set(["no_candidates", "low_score", "regulation_mismatch"]);
 const finalPricings: CardPricing[] = [...firstPricings];
 const finalCards: IdentifiedCard[] = [...cards];
 const retryStart = Date.now();
@@ -112,21 +126,17 @@ const retryTasks: Promise<void>[] = [];
 for (let i = 0; i < cards.length; i++) {
   const p = firstPricings[i];
   if (p.matched) continue;
+  if (cards[i].status !== "identified") continue;
   const f = (p as { failure: { code: string } }).failure;
-  if (f.code === "unreadable") continue;
+  if (!RETRYABLE.has(f.code)) continue;
   const source = cropSources[i];
   if (!source) continue;
   retryTasks.push(
     (async () => {
       try {
-        const out = await retryIdentify(source, cards[i], (p as { failure: { code: "unreadable"|"no_candidates"|"low_score"|"no_prices"|"lookup_error"; message: string } }).failure);
+        const out = await retryIdentify(source, cards[i], (p as { failure: typeof p extends { failure: infer F } ? F : never }).failure);
         if (!out.card) return;
-        const repriced = await priceCard({
-          name: out.card.name,
-          set: out.card.set,
-          cardNumber: out.card.cardNumber,
-          rarity: out.card.rarity,
-        });
+        const repriced = await priceCard(lite(out.card));
         finalCards[i] = out.card;
         finalPricings[i] = repriced;
       } catch (err) {
@@ -138,16 +148,34 @@ for (let i = 0; i < cards.length; i++) {
 await Promise.all(retryTasks);
 const retryMs = Date.now() - retryStart;
 const afterMatched = finalPricings.filter((p) => p.matched).length;
-console.log(`\n[AFTER retry] priced=${afterMatched}/${cards.length} (retry wall=${retryMs}ms, ${retryTasks.length} retries)`);
+const afterInsufficient = finalCards.filter((c) => c.status === "insufficient_information").length;
+console.log(
+  `\n[AFTER retry] priced=${afterMatched}/${cards.length} insufficient=${afterInsufficient} (retry wall=${retryMs}ms, ${retryTasks.length} retries)`,
+);
 finalCards.forEach((c, i) => {
   const before = cards[i];
   const p = finalPricings[i];
-  const changed = c.name !== before.name || c.set !== before.set || c.cardNumber !== before.cardNumber;
+  const changed =
+    c.name !== before.name ||
+    c.setCode !== before.setCode ||
+    c.collectorNumber !== before.collectorNumber;
   const status = p.matched
-    ? `✓ $${p.topPrice?.amount ?? "—"} (${p.candidate.set} #${p.candidate.cardNumber})`
-    : `✗ needs manual review`;
+    ? `✓ $${p.topPrice?.amount ?? "—"} (${p.candidate.set} #${p.candidate.cardNumber})${p.lowConfidence ? " [low_confidence]" : ""}`
+    : c.status === "insufficient_information"
+      ? `⚠ ${c.insufficientReason ?? "needs review"}`
+      : `✗ needs manual review`;
   const tag = changed ? " [retry-corrected]" : "";
-  console.log(`  [${i + 1}] ${c.name} (${c.set} #${c.cardNumber})${tag} → ${status}`);
+  console.log(`  [${i + 1}] ${c.name ?? "(unreadable)"} (${c.setCode ?? "?"} #${c.collectorNumber ?? "?"})${tag} → ${status}`);
 });
 
-console.log(`\nSUMMARY: ${beforeMatched}/${cards.length} → ${afterMatched}/${cards.length} after retry`);
+// Framework assertion: no card should be in a confident match yet missing the collector number.
+const violations = finalPricings.filter((p, i) => {
+  return p.matched && !p.lowConfidence && !finalCards[i].collectorNumber;
+});
+if (violations.length > 0) {
+  console.error(`\n[ASSERT FAIL] ${violations.length} confidently-matched cards missing collectorNumber`);
+} else {
+  console.log(`\n[ASSERT OK] no confident match with null collectorNumber`);
+}
+
+console.log(`\nSUMMARY: ${beforeMatched}/${cards.length} → ${afterMatched}/${cards.length} priced; ${afterInsufficient} flagged insufficient_information`);
