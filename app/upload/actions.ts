@@ -7,8 +7,24 @@ import {
   CARD_SCAN_SCHEMA,
   VISION_MODEL,
   VISION_SYSTEM_PROMPT,
+  type IdentifiedCard,
   type ScanPayload,
 } from "@/lib/vision";
+import {
+  collectionTotalRawNm,
+  priceCards,
+  type CardPricing,
+} from "@/lib/poketrace";
+
+export type PricedCard = IdentifiedCard & { pricing: CardPricing };
+
+export type PricedScanPayload = {
+  cards: PricedCard[];
+  overallConfidence: number;
+  unidentifiedCount: number;
+  totalValue: number;
+  pricedCount: number;
+};
 
 export type ScanResult =
   | {
@@ -17,8 +33,9 @@ export type ScanResult =
       sizeBytes: number;
       mimeType: string;
       latencyMs: number;
+      pricingMs: number;
       cache: { read: number; written: number; input: number };
-      data: ScanPayload;
+      data: PricedScanPayload;
     }
   | { ok: false; error: string };
 
@@ -113,8 +130,26 @@ export async function scanPhoto(formData: FormData): Promise<ScanResult> {
     return { ok: false, error: "Model returned non-JSON output." };
   }
 
+  const pricingStart = Date.now();
+  const pricings = await priceCards(
+    payload.cards.map((c) => ({
+      name: c.name,
+      set: c.set,
+      cardNumber: c.cardNumber,
+      rarity: c.rarity,
+    })),
+  );
+  const pricingMs = Date.now() - pricingStart;
+
+  const pricedCards: PricedCard[] = payload.cards.map((card, i) => ({
+    ...card,
+    pricing: pricings[i],
+  }));
+  const totalValue = collectionTotalRawNm(pricings);
+  const pricedCount = pricings.filter((p) => p.matched).length;
+
   console.log(
-    `[scanPhoto] user=${user.id} cards=${payload.cards.length} unidentified=${payload.unidentifiedCount} overallConfidence=${payload.overallConfidence} latencyMs=${latencyMs} cache_read=${response.usage.cache_read_input_tokens ?? 0} cache_write=${response.usage.cache_creation_input_tokens ?? 0}`,
+    `[scanPhoto] user=${user.id} cards=${payload.cards.length} priced=${pricedCount} total=$${totalValue} unidentified=${payload.unidentifiedCount} overallConfidence=${payload.overallConfidence} visionMs=${latencyMs} pricingMs=${pricingMs} cache_read=${response.usage.cache_read_input_tokens ?? 0} cache_write=${response.usage.cache_creation_input_tokens ?? 0}`,
   );
 
   return {
@@ -123,11 +158,18 @@ export async function scanPhoto(formData: FormData): Promise<ScanResult> {
     sizeBytes: file.size,
     mimeType: file.type,
     latencyMs,
+    pricingMs,
     cache: {
       read: response.usage.cache_read_input_tokens ?? 0,
       written: response.usage.cache_creation_input_tokens ?? 0,
       input: response.usage.input_tokens,
     },
-    data: payload,
+    data: {
+      cards: pricedCards,
+      overallConfidence: payload.overallConfidence,
+      unidentifiedCount: payload.unidentifiedCount,
+      totalValue,
+      pricedCount,
+    },
   };
 }

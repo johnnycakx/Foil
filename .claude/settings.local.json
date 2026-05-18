@@ -14,7 +14,10 @@
       "Bash(node --experimental-strip-types --no-warnings scripts/verify-vision.ts tmp/pikachu.png)",
       "Bash(curl -fsSL -o \"C:/Users/John/dev/foil/tmp/pikachu.png\" \"https://images.pokemontcg.io/base1/58_hires.png\")",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(node -e ' *)",
+      "Bash(node --experimental-strip-types --no-warnings scripts/verify-pricing.ts)"
     ]
   }
 }
