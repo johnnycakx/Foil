@@ -31,8 +31,9 @@ export async function updateSession(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const isAuthRoute = path.startsWith("/login") || path.startsWith("/auth");
+  const isPublicApi = path.startsWith("/api/webhooks/"); // Stripe and other third-party hooks
 
-  if (!user && !isAuthRoute && path !== "/") {
+  if (!user && !isAuthRoute && !isPublicApi && path !== "/") {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

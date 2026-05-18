@@ -23,7 +23,12 @@
       "Bash(curl -fsSL -o tmp/blastoise.png \"https://images.pokemontcg.io/base1/2_hires.png\")",
       "Bash(node --experimental-strip-types --no-warnings scripts/build-binder-fixture.ts)",
       "Bash(node --experimental-strip-types --no-warnings scripts/verify-vision.ts tmp/binder.jpg)",
-      "Bash(curl -sS -o /dev/null -w \"GET /upload -> %{http_code}\\\\n\" http://localhost:3000/upload)"
+      "Bash(curl -sS -o /dev/null -w \"GET /upload -> %{http_code}\\\\n\" http://localhost:3000/upload)",
+      "Bash(node -e \"const s = require\\('stripe'\\); console.log\\('version:', s.PACKAGE_VERSION || require\\('./node_modules/stripe/package.json'\\).version\\);\")",
+      "Bash(node --experimental-strip-types --no-warnings scripts/setup-stripe.ts)",
+      "Bash(curl -sS -o /dev/null -w \"GET /upload  -> %{http_code}\\\\n\" http://localhost:3000/upload)",
+      "Bash(curl -sS -o /dev/null -w \"GET /account -> %{http_code}\\\\n\" http://localhost:3000/account)",
+      "Bash(curl -sS -o /dev/null -w \"POST /api/webhooks/stripe \\(unsigned\\) -> %{http_code}\\\\n\" -X POST http://localhost:3000/api/webhooks/stripe)"
     ]
   }
 }

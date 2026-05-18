@@ -11,10 +11,10 @@ type Phase =
   | { kind: "idle" }
   | { kind: "detecting" }
   | { kind: "identifying"; count: number }
-  | { kind: "error"; message: string }
+  | { kind: "error"; message: string; rateLimited?: boolean }
   | { kind: "done"; result: Extract<ScanResult, { ok: true }> };
 
-export function UploadForm() {
+export function UploadForm({ tier }: { tier?: "free" | "pro" }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
@@ -32,7 +32,7 @@ export function UploadForm() {
     fdDetect.append("photo", file);
     const detection = await detectScan(fdDetect);
     if (!detection.ok) {
-      setPhase({ kind: "error", message: detection.error });
+      setPhase({ kind: "error", message: detection.error, rateLimited: detection.rateLimited });
       return;
     }
 
@@ -44,7 +44,7 @@ export function UploadForm() {
     fdIdentify.append("boxes", JSON.stringify(detection.cards));
     const result = await identifyScan(fdIdentify);
     if (!result.ok) {
-      setPhase({ kind: "error", message: result.error });
+      setPhase({ kind: "error", message: result.error, rateLimited: result.rateLimited });
       return;
     }
     setPhase({ kind: "done", result });
@@ -88,7 +88,10 @@ export function UploadForm() {
         <p className="text-base font-medium">
           {pending ? "Scanning..." : "Tap or drop a card photo"}
         </p>
-        <p className="text-sm text-zinc-500">JPG or PNG — one image, up to 50 cards</p>
+        <p className="text-sm text-zinc-500">
+          JPG or PNG — one image, up to 50 cards
+          {tier === "pro" && " · Pro: unlimited"}
+        </p>
         {fileName && !pending && (
           <p className="mt-2 truncate text-xs text-zinc-500">{fileName}</p>
         )}
@@ -132,6 +135,19 @@ function PhaseBanner({ phase }: { phase: Phase }) {
     );
   }
   if (phase.kind === "error") {
+    if (phase.rateLimited) {
+      return (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+          <p className="font-medium">{phase.message}</p>
+          <a
+            href="/upload"
+            className="mt-3 inline-block rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+          >
+            View upgrade options
+          </a>
+        </div>
+      );
+    }
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
         {phase.message}

@@ -1,6 +1,7 @@
 "use server";
 
 import type Anthropic from "@anthropic-ai/sdk";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { anthropic } from "@/lib/anthropic";
 import { createClient } from "@/lib/supabase/server";
 import { cropFromBuffer } from "@/lib/crop";
@@ -20,6 +21,8 @@ import {
   priceCards,
   type CardPricing,
 } from "@/lib/poketrace";
+import { getEntitlements, recordScan } from "@/lib/entitlements";
+import { FREE_DAILY_SCAN_LIMIT } from "@/lib/stripe";
 
 export type PricedCard = IdentifiedCard & { pricing: CardPricing };
 
@@ -44,11 +47,11 @@ export type ScanResult =
       cache: { read: number; written: number; input: number };
       data: PricedScanPayload;
     }
-  | { ok: false; error: string };
+  | { ok: false; error: string; rateLimited?: boolean; remainingFreeScans?: number };
 
 export type DetectResult =
   | { ok: true; count: number; cards: BoundingBox[]; detectMs: number }
-  | { ok: false; error: string };
+  | { ok: false; error: string; rateLimited?: boolean; remainingFreeScans?: number };
 
 const SUPPORTED_MEDIA: Record<string, "image/jpeg" | "image/png" | "image/gif" | "image/webp"> = {
   "image/jpeg": "image/jpeg",
@@ -60,10 +63,21 @@ const SUPPORTED_MEDIA: Record<string, "image/jpeg" | "image/png" | "image/gif" |
 
 type Source = { type: "base64"; media_type: "image/jpeg" | "image/png" | "image/gif" | "image/webp"; data: string };
 
+const RATE_LIMIT_MESSAGE = `${FREE_DAILY_SCAN_LIMIT}/${FREE_DAILY_SCAN_LIMIT} free scans used today — upgrade to Pro for unlimited.`;
+
 async function readUploadedImage(
   formData: FormData,
 ): Promise<
-  | { ok: true; userId: string; buffer: Buffer; source: Source; fileName: string; sizeBytes: number; rawMime: string }
+  | {
+      ok: true;
+      supabase: SupabaseClient;
+      userId: string;
+      buffer: Buffer;
+      source: Source;
+      fileName: string;
+      sizeBytes: number;
+      rawMime: string;
+    }
   | { ok: false; error: string }
 > {
   const supabase = await createClient();
@@ -92,6 +106,7 @@ async function readUploadedImage(
   const buffer = Buffer.from(await file.arrayBuffer());
   return {
     ok: true,
+    supabase,
     userId: user.id,
     buffer,
     source: { type: "base64", media_type: mediaType, data: buffer.toString("base64") },
@@ -184,12 +199,23 @@ export async function detectScan(formData: FormData): Promise<DetectResult> {
   const r = await readUploadedImage(formData);
   if (!r.ok) return { ok: false, error: r.error };
 
+  const ent = await getEntitlements(r.supabase, r.userId);
+  if (ent.rateLimited) {
+    console.log(`[detectScan] user=${r.userId} blocked by rate limit (tier=free, scansToday=${ent.scansToday})`);
+    return {
+      ok: false,
+      error: RATE_LIMIT_MESSAGE,
+      rateLimited: true,
+      remainingFreeScans: 0,
+    };
+  }
+
   const start = Date.now();
   try {
     const detected = await runDetect(r.source);
     const detectMs = Date.now() - start;
     console.log(
-      `[detectScan] user=${r.userId} count=${detected.count} detectMs=${detectMs}`,
+      `[detectScan] user=${r.userId} tier=${ent.tier} count=${detected.count} detectMs=${detectMs}`,
     );
     return { ok: true, count: detected.count, cards: detected.cards, detectMs };
   } catch (err) {
@@ -249,6 +275,17 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
   const r = await readUploadedImage(formData);
   if (!r.ok) return { ok: false, error: r.error };
 
+  const ent = await getEntitlements(r.supabase, r.userId);
+  if (ent.rateLimited) {
+    console.log(`[identifyScan] user=${r.userId} blocked by rate limit (tier=free, scansToday=${ent.scansToday})`);
+    return {
+      ok: false,
+      error: RATE_LIMIT_MESSAGE,
+      rateLimited: true,
+      remainingFreeScans: 0,
+    };
+  }
+
   const boxes = safeParseBoxes(formData.get("boxes"));
   const rawDetected = formData.get("detectedCount");
   const detectedCount =
@@ -256,7 +293,7 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
   const useMulti = !!boxes && boxes.length > 1;
 
   console.log(
-    `[identifyScan] user=${r.userId} name=${r.fileName} size=${r.sizeBytes}B type=${r.rawMime} mode=${useMulti ? "multi" : "single"} detectedCount=${detectedCount}`,
+    `[identifyScan] user=${r.userId} tier=${ent.tier} name=${r.fileName} size=${r.sizeBytes}B type=${r.rawMime} mode=${useMulti ? "multi" : "single"} detectedCount=${detectedCount}`,
   );
 
   const visionStart = Date.now();
@@ -317,8 +354,19 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
   const totalValue = collectionTotalRawNm(pricings);
   const pricedCount = pricings.filter((p) => p.matched).length;
 
+  // Record the scan AFTER it succeeds. Free users now have 0 remaining today.
+  await recordScan(r.supabase, r.userId, {
+    fileName: r.fileName,
+    sizeBytes: r.sizeBytes,
+    mimeType: r.rawMime,
+    passes: useMulti ? "multi" : "single",
+    detectedCount: detectedCount || payload.cards.length,
+    identifiedCount: payload.cards.length,
+    totalValue,
+  });
+
   console.log(
-    `[identifyScan] user=${r.userId} mode=${useMulti ? "multi" : "single"} crops=${useMulti ? boxes.length : 1} identified=${payload.cards.length} priced=${pricedCount} total=$${totalValue} unidentified=${payload.unidentifiedCount} overallConfidence=${payload.overallConfidence} visionMs=${visionMs} pricingMs=${pricingMs} cache_read=${cacheRead} cache_write=${cacheWrite}`,
+    `[identifyScan] user=${r.userId} tier=${ent.tier} mode=${useMulti ? "multi" : "single"} crops=${useMulti ? boxes.length : 1} identified=${payload.cards.length} priced=${pricedCount} total=$${totalValue} unidentified=${payload.unidentifiedCount} overallConfidence=${payload.overallConfidence} visionMs=${visionMs} pricingMs=${pricingMs} cache_read=${cacheRead} cache_write=${cacheWrite}`,
   );
 
   return {
