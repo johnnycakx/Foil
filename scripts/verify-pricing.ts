@@ -15,6 +15,11 @@ const fixtures = [
   { name: "Mewtwo", set: "Base Set", cardNumber: "10/102", rarity: "Holo Rare" },
   // Misidentified — wrong set
   { name: "Charizard", set: "Made-Up Set Name", cardNumber: "999/999", rarity: "Holo Rare" },
+  // Null-field regressions (the bug from the field)
+  { name: "Charizard", set: "Base Set", cardNumber: null, rarity: "Holo Rare" },
+  { name: "Pikachu", set: null, cardNumber: "58/102", rarity: "Common" },
+  { name: null, set: "Base Set", cardNumber: "4/102", rarity: "Holo Rare" },
+  { name: "Mewtwo", set: "Base Set", cardNumber: null, rarity: null },
 ];
 
 const results: CardPricing[] = [];
@@ -22,7 +27,7 @@ for (const f of fixtures) {
   const start = Date.now();
   const p = await priceCard(f);
   const ms = Date.now() - start;
-  console.log(`\n[${f.name} | ${f.set} #${f.cardNumber}] (${ms}ms)`);
+  console.log(`\n[${f.name ?? "(no name)"} | ${f.set ?? "(no set)"} #${f.cardNumber ?? "(no number)"}] (${ms}ms)`);
   if (!p.matched) {
     console.log(`  ✗ ${p.reason}`);
   } else {

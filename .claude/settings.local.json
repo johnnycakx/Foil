@@ -17,7 +17,13 @@
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
       "Bash(node -e ' *)",
-      "Bash(node --experimental-strip-types --no-warnings scripts/verify-pricing.ts)"
+      "Bash(node --experimental-strip-types --no-warnings scripts/verify-pricing.ts)",
+      "Bash(node --experimental-strip-types --no-warnings scripts/verify-vision.ts tmp/charizard.png)",
+      "Bash(curl -fsSL -o tmp/mewtwo.png \"https://images.pokemontcg.io/base1/10_hires.png\")",
+      "Bash(curl -fsSL -o tmp/blastoise.png \"https://images.pokemontcg.io/base1/2_hires.png\")",
+      "Bash(node --experimental-strip-types --no-warnings scripts/build-binder-fixture.ts)",
+      "Bash(node --experimental-strip-types --no-warnings scripts/verify-vision.ts tmp/binder.jpg)",
+      "Bash(curl -sS -o /dev/null -w \"GET /upload -> %{http_code}\\\\n\" http://localhost:3000/upload)"
     ]
   }
 }

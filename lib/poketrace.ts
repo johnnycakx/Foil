@@ -78,17 +78,27 @@ export type CardPricing =
   | { matched: false; reason: string };
 
 const PRICE_UNAVAILABLE = "Price unavailable — set may be misidentified.";
+const PRICE_UNREADABLE = "Price unavailable — card details too unclear to look up.";
 
-function slugifySet(name: string): string {
-  return name
+function safeStr(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const trimmed = v.trim();
+  return trimmed.length === 0 ? null : trimmed;
+}
+
+function slugifySet(name: string | null | undefined): string {
+  const s = safeStr(name);
+  if (!s) return "";
+  return s
     .toLowerCase()
     .replace(/&/g, "and")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
 
-function cardNumberForms(raw: string): string[] {
-  const cleaned = raw.trim();
+function cardNumberForms(raw: string | null | undefined): string[] {
+  const cleaned = safeStr(raw);
+  if (!cleaned) return [];
   const m = cleaned.match(/^(\d+)\s*\/\s*(\d+)$/);
   if (!m) return [cleaned];
   const [, n, t] = m;
@@ -101,13 +111,17 @@ function cardNumberForms(raw: string): string[] {
   );
 }
 
-function bareNumber(raw: string): string | null {
-  const m = raw.match(/^(\d+)/);
+function bareNumber(raw: string | null | undefined): string | null {
+  const s = safeStr(raw);
+  if (!s) return null;
+  const m = s.match(/^(\d+)/);
   return m ? String(parseInt(m[1], 10)) : null;
 }
 
-function expectedVariants(rarity: string): string[] {
-  const r = rarity.toLowerCase();
+function expectedVariants(rarity: string | null | undefined): string[] {
+  const s = safeStr(rarity);
+  if (!s) return ["Normal", "Holofoil"];
+  const r = s.toLowerCase();
   if (r.includes("reverse")) return ["Reverse Holofoil", "Holofoil"];
   if (r.includes("holo") || r.includes("ultra") || r.includes("secret") || r.includes("rainbow") || r.includes("gold") || r.includes("full art") || r.includes("alt art") || r.includes("vmax") || r.includes("vstar") || r === "v" || r.includes("gx") || r.includes("ex")) {
     return ["Holofoil"];
@@ -122,19 +136,25 @@ function hasUsablePrices(card: PokeTraceCard): boolean {
 function score(claude: ClaudeCardLite, card: PokeTraceCard): number {
   let s = 0;
   const claudeNums = cardNumberForms(claude.cardNumber);
-  if (claudeNums.includes(card.cardNumber)) s += 100;
-  else {
+  if (claudeNums.length > 0 && claudeNums.includes(card.cardNumber)) {
+    s += 100;
+  } else {
     const cb = bareNumber(claude.cardNumber);
     const cardBare = bareNumber(card.cardNumber);
     if (cb && cardBare && cb === cardBare) s += 60;
   }
-  const claudeSetLower = claude.set.toLowerCase();
-  const cardSetLower = card.set.name.toLowerCase();
-  if (cardSetLower === claudeSetLower) s += 40;
-  else if (cardSetLower.includes(claudeSetLower) || claudeSetLower.includes(cardSetLower)) s += 25;
+  const claudeSet = safeStr(claude.set);
+  if (claudeSet) {
+    const claudeSetLower = claudeSet.toLowerCase();
+    const cardSetLower = card.set?.name?.toLowerCase() ?? "";
+    if (cardSetLower && cardSetLower === claudeSetLower) s += 40;
+    else if (cardSetLower && (cardSetLower.includes(claudeSetLower) || claudeSetLower.includes(cardSetLower))) s += 25;
+  }
   if (expectedVariants(claude.rarity).includes(card.variant)) s += 20;
   if (hasUsablePrices(card)) s += 15;
-  if (card.name.toLowerCase() === claude.name.toLowerCase()) s += 10;
+  const claudeName = safeStr(claude.name);
+  const cardName = safeStr(card.name);
+  if (claudeName && cardName && cardName.toLowerCase() === claudeName.toLowerCase()) s += 10;
   return s;
 }
 
@@ -172,10 +192,10 @@ function topRawPrice(card: PokeTraceCard): TopPrice | null {
 }
 
 export type ClaudeCardLite = {
-  name: string;
-  set: string;
-  cardNumber: string;
-  rarity: string;
+  name: string | null | undefined;
+  set: string | null | undefined;
+  cardNumber: string | null | undefined;
+  rarity: string | null | undefined;
 };
 
 async function fetchCards(params: Record<string, string>): Promise<PokeTraceCard[]> {
@@ -195,13 +215,18 @@ async function fetchCards(params: Record<string, string>): Promise<PokeTraceCard
 }
 
 export async function priceCard(claude: ClaudeCardLite): Promise<CardPricing> {
+  const claudeName = safeStr(claude.name);
+  if (!claudeName) {
+    return { matched: false, reason: PRICE_UNREADABLE };
+  }
+
   const candidates: PokeTraceCard[] = [];
   const seen = new Set<string>();
 
   const slug = slugifySet(claude.set);
   try {
     if (slug) {
-      const setMatches = await fetchCards({ search: claude.name, set: slug, limit: "20" });
+      const setMatches = await fetchCards({ search: claudeName, set: slug, limit: "20" });
       for (const c of setMatches) {
         if (!seen.has(c.id)) {
           seen.add(c.id);
@@ -215,7 +240,7 @@ export async function priceCard(claude: ClaudeCardLite): Promise<CardPricing> {
 
   if (candidates.length === 0) {
     try {
-      const open = await fetchCards({ search: claude.name, limit: "20" });
+      const open = await fetchCards({ search: claudeName, limit: "20" });
       for (const c of open) {
         if (!seen.has(c.id)) {
           seen.add(c.id);

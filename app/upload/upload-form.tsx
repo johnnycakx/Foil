@@ -1,17 +1,23 @@
 "use client";
 
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
-import { scanPhoto, type PricedCard, type ScanResult } from "./actions";
+import { detectScan, identifyScan, type PricedCard, type ScanResult } from "./actions";
 
 const ACCEPT = "image/jpeg,image/png,image/heic,image/heif";
 
 const USD = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 
+type Phase =
+  | { kind: "idle" }
+  | { kind: "detecting" }
+  | { kind: "identifying"; count: number }
+  | { kind: "error"; message: string }
+  | { kind: "done"; result: Extract<ScanResult, { ok: true }> };
+
 export function UploadForm() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [dragOver, setDragOver] = useState(false);
-  const [pending, setPending] = useState(false);
-  const [result, setResult] = useState<ScanResult | null>(null);
+  const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const [fileName, setFileName] = useState<string | null>(null);
 
   function openPicker() {
@@ -19,19 +25,29 @@ export function UploadForm() {
   }
 
   async function submit(file: File) {
-    setResult(null);
     setFileName(file.name);
-    setPending(true);
-    try {
-      const fd = new FormData();
-      fd.append("photo", file);
-      const res = await scanPhoto(fd);
-      setResult(res);
-    } catch (err) {
-      setResult({ ok: false, error: err instanceof Error ? err.message : "Upload failed." });
-    } finally {
-      setPending(false);
+    setPhase({ kind: "detecting" });
+
+    const fdDetect = new FormData();
+    fdDetect.append("photo", file);
+    const detection = await detectScan(fdDetect);
+    if (!detection.ok) {
+      setPhase({ kind: "error", message: detection.error });
+      return;
     }
+
+    setPhase({ kind: "identifying", count: detection.count });
+
+    const fdIdentify = new FormData();
+    fdIdentify.append("photo", file);
+    fdIdentify.append("detectedCount", String(detection.count));
+    fdIdentify.append("boxes", JSON.stringify(detection.cards));
+    const result = await identifyScan(fdIdentify);
+    if (!result.ok) {
+      setPhase({ kind: "error", message: result.error });
+      return;
+    }
+    setPhase({ kind: "done", result });
   }
 
   function onChange(e: ChangeEvent<HTMLInputElement>) {
@@ -45,6 +61,8 @@ export function UploadForm() {
     const file = e.dataTransfer.files?.[0];
     if (file) submit(file);
   }
+
+  const pending = phase.kind === "detecting" || phase.kind === "identifying";
 
   return (
     <div className="flex flex-col gap-4">
@@ -85,26 +103,46 @@ export function UploadForm() {
         />
       </div>
 
-      {pending && (
-        <div className="flex items-center justify-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-zinc-900 dark:bg-zinc-100" />
-          Identifying cards and fetching live prices…
-        </div>
-      )}
+      <PhaseBanner phase={phase} />
 
-      {result && !result.ok && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
-          {result.error}
-        </div>
-      )}
-
-      {result && result.ok && <ScanResultView result={result} />}
+      {phase.kind === "done" && <ScanResultView result={phase.result} />}
     </div>
   );
 }
 
+function PhaseBanner({ phase }: { phase: Phase }) {
+  if (phase.kind === "detecting") {
+    return (
+      <div className="flex items-center justify-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <span className="h-2 w-2 animate-pulse rounded-full bg-zinc-900 dark:bg-zinc-100" />
+        Detecting cards in your photo…
+      </div>
+    );
+  }
+  if (phase.kind === "identifying") {
+    const label =
+      phase.count <= 1
+        ? "Analyzing card and fetching live prices…"
+        : `Detected ${phase.count} cards, analyzing each in parallel…`;
+    return (
+      <div className="flex items-center justify-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <span className="h-2 w-2 animate-pulse rounded-full bg-zinc-900 dark:bg-zinc-100" />
+        {label}
+      </div>
+    );
+  }
+  if (phase.kind === "error") {
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+        {phase.message}
+      </div>
+    );
+  }
+  return null;
+}
+
 function ScanResultView({ result }: { result: Extract<ScanResult, { ok: true }> }) {
-  const { data, latencyMs, pricingMs } = result;
+  const { data, latencyMs, pricingMs, passes, detectedCount } = result;
 
   return (
     <div className="flex flex-col gap-4">
@@ -119,12 +157,14 @@ function ScanResultView({ result }: { result: Extract<ScanResult, { ok: true }> 
               {data.pricedCount} of {data.cards.length} priced
               {data.unidentifiedCount > 0 &&
                 ` · ${data.unidentifiedCount} unidentified`}
+              {passes === "multi" && ` · ${detectedCount} cards detected`}
             </p>
           </div>
           <div className="text-right">
             <ConfidenceBadge value={data.overallConfidence} />
             <p className="mt-1 text-xs text-zinc-400 tabular-nums">
               {(latencyMs / 1000).toFixed(1)}s vision · {(pricingMs / 1000).toFixed(1)}s prices
+              {passes === "multi" && " · multi-pass"}
             </p>
           </div>
         </div>
