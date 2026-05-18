@@ -2,6 +2,7 @@
 
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { scanPhoto, type ScanResult } from "./actions";
+import type { IdentifiedCard } from "@/lib/vision";
 
 const ACCEPT = "image/jpeg,image/png,image/heic,image/heif";
 
@@ -68,7 +69,7 @@ export function UploadForm() {
         <p className="text-base font-medium">
           {pending ? "Scanning..." : "Tap or drop a card photo"}
         </p>
-        <p className="text-sm text-zinc-500">JPG, PNG, or HEIC — one image</p>
+        <p className="text-sm text-zinc-500">JPG or PNG — one image, up to 50 cards</p>
         {fileName && !pending && (
           <p className="mt-2 truncate text-xs text-zinc-500">{fileName}</p>
         )}
@@ -90,11 +91,84 @@ export function UploadForm() {
         </div>
       )}
 
-      {result && (
-        <pre className="overflow-x-auto rounded-xl bg-zinc-950 p-4 text-xs text-zinc-100">
-          {JSON.stringify(result, null, 2)}
-        </pre>
+      {result && !result.ok && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+          {result.error}
+        </div>
       )}
+
+      {result && result.ok && <ScanResultView result={result} />}
     </div>
+  );
+}
+
+function ScanResultView({ result }: { result: Extract<ScanResult, { ok: true }> }) {
+  const { data, latencyMs } = result;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="mb-4 flex items-baseline justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">
+              {data.cards.length} card{data.cards.length === 1 ? "" : "s"} identified
+            </h2>
+            {data.unidentifiedCount > 0 && (
+              <p className="text-sm text-zinc-500">
+                {data.unidentifiedCount} card{data.unidentifiedCount === 1 ? "" : "s"} couldn&apos;t be identified
+              </p>
+            )}
+          </div>
+          <div className="text-right">
+            <ConfidenceBadge value={data.overallConfidence} />
+            <p className="mt-1 text-xs text-zinc-400">{(latencyMs / 1000).toFixed(1)}s</p>
+          </div>
+        </div>
+
+        {data.cards.length === 0 ? (
+          <p className="text-sm text-zinc-500">No cards were identified with sufficient confidence.</p>
+        ) : (
+          <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
+            {data.cards.map((card, idx) => (
+              <CardRow key={idx} card={card} />
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <details className="rounded-xl bg-zinc-950 p-4 text-xs text-zinc-100">
+        <summary className="cursor-pointer text-zinc-400">Raw JSON</summary>
+        <pre className="mt-3 overflow-x-auto">{JSON.stringify(result, null, 2)}</pre>
+      </details>
+    </div>
+  );
+}
+
+function CardRow({ card }: { card: IdentifiedCard }) {
+  return (
+    <li className="flex items-start justify-between gap-4 py-3">
+      <div className="min-w-0 flex-1">
+        <p className="truncate font-medium">{card.name}</p>
+        <p className="truncate text-sm text-zinc-500">
+          {card.set} · #{card.cardNumber} · {card.rarity}
+        </p>
+        <p className="text-xs text-zinc-400">{card.conditionEstimate}</p>
+      </div>
+      <ConfidenceBadge value={card.confidence} />
+    </li>
+  );
+}
+
+function ConfidenceBadge({ value }: { value: number }) {
+  const tone =
+    value >= 80
+      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+      : value >= 50
+        ? "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
+        : "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300";
+  return (
+    <span className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-medium ${tone}`}>
+      {value}% confident
+    </span>
   );
 }

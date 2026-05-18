@@ -5,7 +5,16 @@
       "Bash(npm run *)",
       "Bash(curl -sS -o /dev/null -w \"GET / -> %{http_code} loc=%{redirect_url}\\\\n\" http://localhost:3000/)",
       "Bash(curl -sS -o /dev/null -w \"GET /upload -> %{http_code} loc=%{redirect_url}\\\\n\" http://localhost:3000/upload)",
-      "Bash(curl -sS -o /dev/null -w \"GET /login -> %{http_code}\\\\n\" http://localhost:3000/login)"
+      "Bash(curl -sS -o /dev/null -w \"GET /login -> %{http_code}\\\\n\" http://localhost:3000/login)",
+      "Skill(claude-api)",
+      "Bash(curl -fsSL -o \"C:/Users/John/dev/foil/tmp/charizard.png\" \"https://images.pokemontcg.io/base1/4_hires.png\")",
+      "Bash(node --experimental-strip-types scripts/verify-vision.ts)",
+      "Bash(node --experimental-strip-types --no-warnings scripts/verify-vision.ts)",
+      "Bash(curl -fsSL -o \"C:/Users/John/dev/foil/tmp/pikachu.png\" \"https://images.pokemontcg.io/swsh45/SV049_hires.png\")",
+      "Bash(node --experimental-strip-types --no-warnings scripts/verify-vision.ts tmp/pikachu.png)",
+      "Bash(curl -fsSL -o \"C:/Users/John/dev/foil/tmp/pikachu.png\" \"https://images.pokemontcg.io/base1/58_hires.png\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
