@@ -66,11 +66,14 @@ export type FailureCode =
   | "lookup_error";
 
 export type CandidateSummary = {
+  id: string;
   name: string;
   set: string;
   setSlug: string;
   cardNumber: string;
   variant: string;
+  image: string | null;
+  score: number;
 };
 
 export type Failure = {
@@ -342,13 +345,16 @@ async function fetchCards(params: Record<string, string>): Promise<PokeTraceCard
   return json.data ?? [];
 }
 
-function summarize(card: PokeTraceCard): CandidateSummary {
+function summarize(card: PokeTraceCard, scoreValue: number): CandidateSummary {
   return {
+    id: card.id,
     name: card.name,
     set: card.set?.name ?? "(unknown set)",
     setSlug: card.set?.slug ?? "",
     cardNumber: card.cardNumber,
     variant: card.variant,
+    image: card.image ?? null,
+    score: scoreValue,
   };
 }
 
@@ -357,7 +363,7 @@ function topCandidatesFor(candidates: PokeTraceCard[], claude: ClaudeCardLite, l
     .map((c) => ({ card: c, s: score(claude, c) }))
     .sort((a, b) => b.s - a.s)
     .slice(0, limit)
-    .map(({ card }) => summarize(card));
+    .map(({ card, s }) => summarize(card, s));
 }
 
 function buildCandidateLines(top: CandidateSummary[]): string {
@@ -549,6 +555,68 @@ export async function priceCard(claude: ClaudeCardLite): Promise<CardPricing> {
 
 export async function priceCards(cards: ClaudeCardLite[]): Promise<CardPricing[]> {
   return Promise.all(cards.map((c) => priceCard(c)));
+}
+
+/**
+ * Build a matched CardPricing from a specific PokeTrace card we already fetched
+ * (e.g. the one chosen by the visual confirmation pass). Returns null if the
+ * candidate carries no usable prices.
+ */
+export async function priceByCardId(
+  candidate: CandidateSummary,
+): Promise<CardPricing | null> {
+  let card: PokeTraceCard | null = null;
+  try {
+    const res = await fetch(`${BASE_URL}/cards/${candidate.id}`, {
+      headers: {
+        "X-API-Key": process.env.POKETRACE_API_KEY ?? "",
+        Accept: "application/json",
+      },
+    });
+    if (res.ok) {
+      const json = (await res.json()) as { data?: PokeTraceCard } | PokeTraceCard;
+      card = ("data" in json ? json.data : json) as PokeTraceCard | null;
+    }
+  } catch {
+    /* fall through */
+  }
+
+  if (!card) {
+    // Fallback: re-fetch via search; less precise but still useful.
+    try {
+      const r = await fetchCards({ search: candidate.name, set: candidate.setSlug, limit: "20" });
+      card = r.find((c) => c.id === candidate.id) ?? null;
+    } catch {
+      return null;
+    }
+  }
+  if (!card) return null;
+
+  const topPrice = topRawPrice(card);
+  const graded = bestGraded(card);
+  if (!topPrice && !graded) return null;
+
+  return {
+    matched: true,
+    lowConfidence: false,
+    candidate: {
+      id: card.id,
+      name: card.name,
+      set: card.set.name,
+      setSlug: card.set.slug,
+      cardNumber: card.cardNumber,
+      variant: card.variant,
+      image: card.image,
+    },
+    raw: {
+      ebayNearMintAvg: snapAvg(card.prices?.ebay?.NEAR_MINT),
+      tcgplayerNearMintAvg: snapAvg(card.prices?.tcgplayer?.NEAR_MINT),
+      cardmarketNearMintAvg: snapAvg(card.prices?.cardmarket?.NEAR_MINT),
+    },
+    bestGraded: graded,
+    topPrice,
+    topCandidates: [],
+  };
 }
 
 export function collectionTotalRawNm(pricings: CardPricing[]): number {

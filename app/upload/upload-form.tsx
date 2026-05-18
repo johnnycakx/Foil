@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { detectScan, identifyScan, type PricedCard, type ScanResult } from "./actions";
 import { CorrectionLink } from "./correction-form";
+import { ConfirmRightButton } from "./confirm-right-button";
 
 const ACCEPT = "image/jpeg,image/png,image/heic,image/heif";
 
@@ -208,14 +210,16 @@ function ScanResultView({ result }: { result: Extract<ScanResult, { ok: true }> 
 function CardRow({ card }: { card: PricedCard }) {
   const insufficient = card.status === "insufficient_information";
   const lowConfidence = card.pricing.matched && card.pricing.lowConfidence;
+  const matched = card.pricing.matched ? card.pricing : null;
 
-  const displayName = card.name ?? (insufficient ? "Unreadable card" : "(no name)");
-  const setLabel = card.setCode ?? card.setCodeRaw ?? card.setSymbolDescription ?? "?";
-  const numberLabel = card.collectorNumber ?? "?";
+  const displayName = matched?.candidate.name ?? card.name ?? (insufficient ? "Unreadable card" : "(no name)");
+  const setLabel = matched?.candidate.set ?? card.setCode ?? card.setCodeRaw ?? card.setSymbolDescription ?? "?";
+  const numberLabel = matched?.candidate.cardNumber ?? card.collectorNumber ?? "?";
   const rarityLabel = card.rarity ?? "?";
 
   return (
-    <li className="flex items-start justify-between gap-4 py-3">
+    <li className="flex items-start gap-4 py-3">
+      <ReferenceThumb card={card} />
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">
           {displayName}
@@ -227,6 +231,11 @@ function CardRow({ card }: { card: PricedCard }) {
           {!insufficient && lowConfidence && (
             <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-800 dark:bg-amber-950 dark:text-amber-300">
               low confidence
+            </span>
+          )}
+          {card.visuallyConfirmed && (
+            <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+              visual match
             </span>
           )}
           {card.language && card.language !== "EN" && card.language !== "unknown" && (
@@ -252,15 +261,96 @@ function CardRow({ card }: { card: PricedCard }) {
           )}
         </p>
         <PricingLine card={card} />
-        <CorrectionLink
-          originalName={card.name ?? ""}
-          originalSet={card.setCode ?? card.setCodeRaw ?? ""}
-          originalCardNumber={card.collectorNumber ?? ""}
-          startOpen={insufficient || lowConfidence}
-        />
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {matched && (
+            <ConfirmRightButton
+              cardId={matched.candidate.id}
+              matchedImageUrl={matched.candidate.image}
+              cardName={matched.candidate.name}
+              cardSet={matched.candidate.set}
+              cardNumber={matched.candidate.cardNumber}
+            />
+          )}
+          <CorrectionLink
+            originalName={card.name ?? ""}
+            originalSet={card.setCode ?? card.setCodeRaw ?? ""}
+            originalCardNumber={card.collectorNumber ?? ""}
+            startOpen={insufficient || lowConfidence}
+          />
+        </div>
       </div>
       <ConfidenceBadge value={card.confidence} status={card.status} />
     </li>
+  );
+}
+
+function ReferenceThumb({ card }: { card: PricedCard }) {
+  const matched = card.pricing.matched ? card.pricing : null;
+  const refUrl = matched?.candidate.image ?? null;
+  const cropUrl = card.cropDataUrl ?? null;
+
+  // insufficient_information: show only user's crop, with the yellow border treatment.
+  if (card.status === "insufficient_information" || !refUrl) {
+    if (cropUrl) {
+      return (
+        <div className="group relative shrink-0 overflow-hidden rounded-lg border border-amber-300 dark:border-amber-900/60">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={cropUrl}
+            alt="Your photo"
+            width={80}
+            height={112}
+            className="block h-[112px] w-[80px] object-cover"
+          />
+        </div>
+      );
+    }
+    return <div className="h-[112px] w-[80px] shrink-0 rounded-lg bg-zinc-100 dark:bg-zinc-800" />;
+  }
+
+  return (
+    <div className="group relative shrink-0">
+      <Image
+        src={refUrl}
+        alt={`Reference: ${matched!.candidate.name}`}
+        width={80}
+        height={112}
+        unoptimized
+        className="block h-[112px] w-[80px] rounded-lg border border-zinc-200 object-cover dark:border-zinc-700"
+      />
+      {/* Hover popover: side-by-side compare */}
+      {cropUrl && (
+        <div className="pointer-events-none invisible absolute left-0 top-full z-30 mt-2 w-[520px] rounded-xl border border-zinc-200 bg-white p-3 opacity-0 shadow-xl transition group-hover:visible group-hover:opacity-100 dark:border-zinc-700 dark:bg-zinc-950">
+          <p className="mb-2 text-xs font-medium text-zinc-700 dark:text-zinc-200">
+            Foil thinks this is what you uploaded — agree?
+          </p>
+          <div className="flex gap-3">
+            <div className="flex-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={cropUrl}
+                alt="Your photo"
+                className="h-[336px] w-[240px] rounded-md border border-zinc-300 object-contain dark:border-zinc-700"
+              />
+              <p className="mt-1 text-center text-[11px] text-zinc-500">Your photo</p>
+            </div>
+            <div className="flex-1">
+              <Image
+                src={refUrl}
+                alt={`Reference: ${matched!.candidate.name}`}
+                width={240}
+                height={336}
+                unoptimized
+                className="h-[336px] w-[240px] rounded-md border border-zinc-300 object-contain dark:border-zinc-700"
+              />
+              <p className="mt-1 text-center text-[11px] text-zinc-500">
+                {matched!.candidate.set} · #{matched!.candidate.cardNumber}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

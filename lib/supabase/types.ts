@@ -59,6 +59,45 @@ export type Database = {
         }>;
         Relationships: [];
       };
+      match_confirmations: {
+        Row: {
+          id: string;
+          user_id: string;
+          scan_id: string | null;
+          card_id: string | null;
+          matched_image_url: string | null;
+          card_name: string | null;
+          card_set: string | null;
+          card_number: string | null;
+          user_confirmed: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          scan_id?: string | null;
+          card_id?: string | null;
+          matched_image_url?: string | null;
+          card_name?: string | null;
+          card_set?: string | null;
+          card_number?: string | null;
+          user_confirmed: boolean;
+          created_at?: string;
+        };
+        Update: Partial<{
+          id: string;
+          user_id: string;
+          scan_id: string | null;
+          card_id: string | null;
+          matched_image_url: string | null;
+          card_name: string | null;
+          card_set: string | null;
+          card_number: string | null;
+          user_confirmed: boolean;
+          created_at: string;
+        }>;
+        Relationships: [];
+      };
       corrections: {
         Row: {
           id: string;

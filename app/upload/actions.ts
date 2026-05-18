@@ -18,18 +18,22 @@ import {
 } from "@/lib/vision";
 import {
   collectionTotalRawNm,
+  priceByCardId,
   priceCard,
   priceCards,
   PRICE_NEEDS_REVIEW,
   type CardPricing,
 } from "@/lib/poketrace";
 import { retryIdentify } from "@/lib/vision-retry";
+import { confirmMatch } from "@/lib/vision-confirm";
 import { getEntitlements, recordScan } from "@/lib/entitlements";
 import { FREE_DAILY_SCAN_LIMIT } from "@/lib/stripe";
 
 export type PricedCard = IdentifiedCard & {
   pricing: CardPricing;
   retried?: boolean;
+  visuallyConfirmed?: boolean;
+  cropDataUrl?: string;
   previousAttempt?: Pick<
     IdentifiedCard,
     "name" | "setCode" | "collectorNumber" | "rarity" | "confidence"
@@ -362,6 +366,68 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
     })),
   );
 
+  // Map each crop to a data URL we can pass to UI + visual confirmation.
+  const cardCropDataUrls: string[] = cardSources.map(
+    (s) => `data:${s.media_type};base64,${s.data}`,
+  );
+
+  // -------- Visual confirmation pass (Sonnet 4.6, multi-image) --------
+  // For cards where text-only matching is ambiguous (low_score, no_score in a
+  // tight band) but Vision DID read enough fields, ask the model to compare
+  // the user's crop against the top PokeTrace candidate images.
+  const CONFIRMABLE: ReadonlySet<string> = new Set(["low_score", "no_candidates", "regulation_mismatch"]);
+  const visuallyConfirmed = new Array<boolean>(payload.cards.length).fill(false);
+  let confirmMs = 0;
+
+  const confirmIndices = pricings
+    .map((p, i) => (p.matched ? -1 : i))
+    .filter((i) => i >= 0)
+    .filter((i) => {
+      if (payload.cards[i].status !== "identified") return false;
+      const f = (pricings[i] as { failure?: { code: string; topCandidates?: { image: string | null }[] } }).failure;
+      if (!f || !CONFIRMABLE.has(f.code)) return false;
+      const withImages = (f.topCandidates ?? []).filter((c) => c.image);
+      return withImages.length >= 1;
+    });
+
+  if (confirmIndices.length > 0) {
+    const confirmStart = Date.now();
+    await Promise.all(
+      confirmIndices.map(async (i) => {
+        const failed = pricings[i];
+        if (failed.matched) return;
+        const candidates = (failed.failure.topCandidates ?? [])
+          .filter((c) => c.image)
+          .slice(0, 3);
+        if (candidates.length === 0) return;
+        try {
+          const result = await confirmMatch(
+            cardCropDataUrls[i],
+            candidates.map((c) => ({
+              image: c.image as string,
+              name: c.name,
+              set: c.set,
+              collectorNumber: c.cardNumber,
+            })),
+          );
+          if (result.chosenIndex == null || result.confidence === "low") return;
+          const picked = candidates[result.chosenIndex];
+          const repriced = await priceByCardId(picked);
+          if (repriced) {
+            pricings[i] = repriced;
+            visuallyConfirmed[i] = true;
+            console.log(
+              `[identifyScan] visual-confirm card=${i} picked="${picked.name}" #${picked.cardNumber} confidence=${result.confidence}`,
+            );
+          }
+        } catch (err) {
+          console.error(`[identifyScan] confirmMatch failed for card ${i}: ${err instanceof Error ? err.message : err}`);
+        }
+      }),
+    );
+    confirmMs = Date.now() - confirmStart;
+  }
+
   // -------- Retry pass: re-identify failed cards with Opus 4.5 + failure context --------
   // Framework rule: only retry status === "identified" with codes that imply
   // Vision could be improved (no_candidates, low_score). Skip
@@ -437,6 +503,8 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
     ...card,
     pricing: pricings[i],
     retried: retried[i] || undefined,
+    visuallyConfirmed: visuallyConfirmed[i] || undefined,
+    cropDataUrl: cardCropDataUrls[i],
     previousAttempt: previousAttempts[i],
   }));
   const totalValue = collectionTotalRawNm(pricings);
@@ -454,8 +522,9 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
   });
 
   const retryCount = retried.filter(Boolean).length;
+  const visualConfirmCount = visuallyConfirmed.filter(Boolean).length;
   console.log(
-    `[identifyScan] user=${r.userId} tier=${ent.tier} mode=${useMulti ? "multi" : "single"} crops=${useMulti ? boxes.length : 1} identified=${payload.cards.length} priced=${pricedCount} retried=${retryCount} total=$${totalValue} unidentified=${payload.unidentifiedCount} overallConfidence=${payload.overallConfidence} visionMs=${visionMs} retryMs=${retryMs} pricingMs=${pricingMs} cache_read=${cacheRead} cache_write=${cacheWrite}`,
+    `[identifyScan] user=${r.userId} tier=${ent.tier} mode=${useMulti ? "multi" : "single"} crops=${useMulti ? boxes.length : 1} identified=${payload.cards.length} priced=${pricedCount} visualConfirmed=${visualConfirmCount} retried=${retryCount} total=$${totalValue} unidentified=${payload.unidentifiedCount} overallConfidence=${payload.overallConfidence} visionMs=${visionMs} confirmMs=${confirmMs} retryMs=${retryMs} pricingMs=${pricingMs} cache_read=${cacheRead} cache_write=${cacheWrite}`,
   );
 
   return {
