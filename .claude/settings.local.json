@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(curl -sS -o /dev/null -w \"GET / -> %{http_code} loc=%{redirect_url}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -sS -o /dev/null -w \"GET /upload -> %{http_code} loc=%{redirect_url}\\\\n\" http://localhost:3000/upload)",
+      "Bash(curl -sS -o /dev/null -w \"GET /login -> %{http_code}\\\\n\" http://localhost:3000/login)"
+    ]
+  }
+}
