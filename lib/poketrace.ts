@@ -1,4 +1,13 @@
+import { supabaseAdmin } from "./supabase/admin.ts";
+
 const BASE_URL = "https://api.poketrace.com/v1";
+const IMAGE_BUCKET = "card-images";
+
+// Resolved lazily so callers loading .env *after* the module imports
+// (e.g. standalone Node scripts) still get the right base URL.
+function imagePublicBase(): string {
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ""}/storage/v1/object/public/${IMAGE_BUCKET}`;
+}
 
 export type PriceTierKey =
   | "DAMAGED"
@@ -345,6 +354,139 @@ async function fetchCards(params: Record<string, string>): Promise<PokeTraceCard
   return json.data ?? [];
 }
 
+// ---- Image caching (Supabase Storage) -----------------------------------
+//
+// PokeTrace's image URLs are stable per card, so we can pin the bytes once
+// and serve from our own Supabase Storage bucket forever after. This:
+//   - avoids hammering PokeTrace's CDN on every scan,
+//   - lets us survive PokeTrace outages or URL changes,
+//   - and keeps next/image's loader on one trusted host.
+//
+// Bucket layout: `card-images/<cardId>.<ext>`. The bucket is created
+// idempotently on first use. Failures fall back silently to the source URL —
+// caching is a perf optimization, not a correctness requirement.
+
+const IMAGE_EXT_FROM_CT: Record<string, string> = {
+  "image/webp": "webp",
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/gif": "gif",
+};
+
+function sniffImageExt(buf: Buffer): "jpg" | "png" | "gif" | "webp" {
+  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "jpg";
+  if (buf.length >= 8 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return "png";
+  if (buf.length >= 6 && buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x38) return "gif";
+  if (
+    buf.length >= 12 &&
+    buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46 &&
+    buf[8] === 0x57 && buf[9] === 0x45 && buf[10] === 0x42 && buf[11] === 0x50
+  ) {
+    return "webp";
+  }
+  return "jpg";
+}
+
+let _bucketEnsured = false;
+async function ensureBucket(): Promise<void> {
+  if (_bucketEnsured) return;
+  try {
+    const admin = supabaseAdmin();
+    const { data: existing } = await admin.storage.getBucket(IMAGE_BUCKET);
+    if (!existing) {
+      await admin.storage.createBucket(IMAGE_BUCKET, {
+        public: true,
+        fileSizeLimit: 5 * 1024 * 1024,
+        allowedMimeTypes: ["image/webp", "image/jpeg", "image/png", "image/gif"],
+      });
+    }
+    _bucketEnsured = true;
+  } catch (err) {
+    // Don't memoize a failure — let a later call retry.
+    console.warn(`[poketrace] ensureBucket failed: ${err instanceof Error ? err.message : err}`);
+  }
+}
+
+// In-process LRU-ish cache so repeated lookups in one scan don't re-issue
+// HEAD requests against Storage.
+const _knownCachedUrls = new Map<string, string>();
+
+/**
+ * Cache a PokeTrace card image in Supabase Storage on first sight and return
+ * the Storage public URL. Subsequent calls for the same cardId short-circuit
+ * to the cached URL.
+ *
+ * Returns the original sourceUrl on any failure — caching never blocks the
+ * happy path of returning a usable image.
+ */
+export async function cacheCardImage(cardId: string, sourceUrl: string | null): Promise<string | null> {
+  if (!sourceUrl) return null;
+  if (!cardId) return sourceUrl;
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return sourceUrl;
+
+  const memo = _knownCachedUrls.get(cardId);
+  if (memo) return memo;
+
+  await ensureBucket();
+  const admin = supabaseAdmin();
+
+  // Try every known extension first — we don't know the format yet.
+  for (const ext of ["webp", "jpg", "png", "gif"] as const) {
+    const key = `${cardId}.${ext}`;
+    try {
+      const { data: head } = await admin.storage.from(IMAGE_BUCKET).list("", {
+        search: key,
+        limit: 1,
+      });
+      if (head && head.some((f) => f.name === key)) {
+        const url = `${imagePublicBase()}/${key}`;
+        _knownCachedUrls.set(cardId, url);
+        return url;
+      }
+    } catch {
+      /* fall through */
+    }
+  }
+
+  // Not cached yet — fetch + upload.
+  let buf: Buffer;
+  let extFromCt: string | undefined;
+  try {
+    const res = await fetch(sourceUrl, {
+      headers: { Accept: "image/webp,image/jpeg,image/png,*/*" },
+    });
+    if (!res.ok) return sourceUrl;
+    extFromCt = IMAGE_EXT_FROM_CT[res.headers.get("content-type") ?? ""];
+    buf = Buffer.from(await res.arrayBuffer());
+  } catch (err) {
+    console.warn(`[cacheCardImage] fetch failed for ${cardId}: ${err instanceof Error ? err.message : err}`);
+    return sourceUrl;
+  }
+
+  const ext = sniffImageExt(buf) ?? extFromCt ?? "jpg";
+  const contentType = ext === "jpg" ? "image/jpeg" : `image/${ext}`;
+  const key = `${cardId}.${ext}`;
+
+  try {
+    const { error } = await admin.storage.from(IMAGE_BUCKET).upload(key, buf, {
+      contentType,
+      upsert: true,
+      cacheControl: "31536000, immutable",
+    });
+    if (error) {
+      console.warn(`[cacheCardImage] upload failed for ${cardId}: ${error.message}`);
+      return sourceUrl;
+    }
+  } catch (err) {
+    console.warn(`[cacheCardImage] upload threw for ${cardId}: ${err instanceof Error ? err.message : err}`);
+    return sourceUrl;
+  }
+
+  const url = `${imagePublicBase()}/${key}`;
+  _knownCachedUrls.set(cardId, url);
+  return url;
+}
+
 function summarize(card: PokeTraceCard, scoreValue: number): CandidateSummary {
   return {
     id: card.id,
@@ -530,6 +672,10 @@ export async function priceCard(claude: ClaudeCardLite): Promise<CardPricing> {
 
   const lowConfidence = lookupTier === "name_only";
 
+  // Cache the matched card's image so subsequent scans (and the UI's
+  // next/image loader) hit our Storage bucket instead of the PokeTrace CDN.
+  const cachedImage = await cacheCardImage(bestCard.id, bestCard.image);
+
   return {
     matched: true,
     lowConfidence,
@@ -540,7 +686,7 @@ export async function priceCard(claude: ClaudeCardLite): Promise<CardPricing> {
       setSlug: bestCard.set.slug,
       cardNumber: bestCard.cardNumber,
       variant: bestCard.variant,
-      image: bestCard.image,
+      image: cachedImage,
     },
     raw: {
       ebayNearMintAvg: snapAvg(bestCard.prices?.ebay?.NEAR_MINT),
@@ -596,6 +742,8 @@ export async function priceByCardId(
   const graded = bestGraded(card);
   if (!topPrice && !graded) return null;
 
+  const cachedImage = await cacheCardImage(card.id, card.image);
+
   return {
     matched: true,
     lowConfidence: false,
@@ -606,7 +754,7 @@ export async function priceByCardId(
       setSlug: card.set.slug,
       cardNumber: card.cardNumber,
       variant: card.variant,
-      image: card.image,
+      image: cachedImage,
     },
     raw: {
       ebayNearMintAvg: snapAvg(card.prices?.ebay?.NEAR_MINT),

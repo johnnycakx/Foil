@@ -44,7 +44,8 @@
       "Bash(curl -sS -o /dev/null -w \"GET /opengraph-image -> %{http_code}\\\\n\" http://localhost:3000/opengraph-image)",
       "Bash(npm test *)",
       "Bash(curl -sS -o /dev/null -w \"cdn.poketrace.com: %{http_code} ct=%{content_type}\\\\n\" \"https://cdn.poketrace.com/cards/d64defcfc64ff4ea.webp\")",
-      "Bash(curl -sS -o /dev/null -w \"images.pokemontcg.io: %{http_code} ct=%{content_type}\\\\n\" \"https://images.pokemontcg.io/base1/4_hires.png\")"
+      "Bash(curl -sS -o /dev/null -w \"images.pokemontcg.io: %{http_code} ct=%{content_type}\\\\n\" \"https://images.pokemontcg.io/base1/4_hires.png\")",
+      "Bash(node --experimental-strip-types --no-warnings scripts/verify-cache.ts)"
     ]
   }
 }
