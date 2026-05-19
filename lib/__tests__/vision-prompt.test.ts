@@ -115,7 +115,12 @@ async function scan(file: string): Promise<{ cards: IdentifiedCard[]; pricings: 
 
   const crops = await Promise.all(detected.cards.map((b) => cropFromBuffer(buf, b)));
   const sources = crops.map((c) => ({ type: "base64" as const, media_type: c.mediaType, data: c.base64 }));
-  const payloads = await Promise.all(sources.map(identify));
+  // Serialized: a binder of 10+ cards fanned out in parallel blows past the
+  // org's 30k-input-tokens/minute budget. Test stability > test speed.
+  const payloads: ScanPayload[] = [];
+  for (const s of sources) {
+    payloads.push(await identify(s));
+  }
   const cards = payloads.flatMap((p) => p.cards);
 
   const pricings = await Promise.all(

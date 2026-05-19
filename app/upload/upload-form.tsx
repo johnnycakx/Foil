@@ -1,10 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
+import { useMemo, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { detectScan, identifyScan, type PricedCard, type ScanResult } from "./actions";
 import { CorrectionLink } from "./correction-form";
 import { ConfirmRightButton } from "./confirm-right-button";
+import type { RawConditionTier } from "@/lib/poketrace";
+
+const CONDITIONS: { tier: RawConditionTier; label: string }[] = [
+  { tier: "NEAR_MINT", label: "NM" },
+  { tier: "LIGHTLY_PLAYED", label: "LP" },
+  { tier: "MODERATELY_PLAYED", label: "MP" },
+  { tier: "HEAVILY_PLAYED", label: "HP" },
+  { tier: "DAMAGED", label: "DMG" },
+];
 
 const ACCEPT = "image/jpeg,image/png,image/heic,image/heif";
 
@@ -163,14 +172,36 @@ function PhaseBanner({ phase }: { phase: Phase }) {
 function ScanResultView({ result }: { result: Extract<ScanResult, { ok: true }> }) {
   const { data, latencyMs, pricingMs, passes } = result;
 
-  // Authoritative counts: every detected card lives in data.cards, and a card
-  // counts as "priced" only if it both matched AND wasn't a low-confidence
-  // fuzzy match. Everything else is review. priced + review === detected.
+  // Each priced row carries its own selected condition. The map's keys are
+  // row indices in data.cards.
+  const [conditions, setConditions] = useState<Record<number, RawConditionTier>>({});
+  const [zoomedIdx, setZoomedIdx] = useState<number | null>(null);
+
+  // Authoritative counts: every detected card lives in data.cards. A card is
+  // "priced" only if it both matched AND wasn't a low-confidence fuzzy match.
   const priced = data.cards.filter(
     (c) => c.pricing.matched && !c.pricing.lowConfidence,
   ).length;
   const detected = data.cards.length;
   const review = detected - priced;
+
+  // Live total: sum each row's currently-selected condition price, falling
+  // back to NM / topPrice when the selected tier has no data. Recomputes on
+  // every condition change.
+  const liveTotal = useMemo(() => {
+    let sum = 0;
+    data.cards.forEach((c, i) => {
+      if (!c.pricing.matched) return;
+      const tier = conditions[i] ?? "NEAR_MINT";
+      const v =
+        c.pricing.raw.byCondition[tier] ??
+        c.pricing.raw.byCondition.NEAR_MINT ??
+        c.pricing.topPrice?.amount ??
+        0;
+      sum += v;
+    });
+    return Math.round(sum * 100) / 100;
+  }, [data.cards, conditions]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -179,7 +210,7 @@ function ScanResultView({ result }: { result: Extract<ScanResult, { ok: true }> 
           <div>
             <p className="text-xs uppercase tracking-wide text-zinc-500">Estimated value</p>
             <p className="mt-1 text-3xl font-semibold tabular-nums">
-              {USD.format(data.totalValue)}
+              {USD.format(liveTotal)}
             </p>
             <p className="mt-1 text-xs text-zinc-500">
               {priced} priced · {review} need review · {detected} cards detected
@@ -199,11 +230,26 @@ function ScanResultView({ result }: { result: Extract<ScanResult, { ok: true }> 
         ) : (
           <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {data.cards.map((card, idx) => (
-              <CardRow key={idx} card={card} />
+              <CardRow
+                key={idx}
+                card={card}
+                condition={conditions[idx] ?? "NEAR_MINT"}
+                onCondition={(tier) =>
+                  setConditions((prev) => ({ ...prev, [idx]: tier }))
+                }
+                onZoom={() => setZoomedIdx(idx)}
+              />
             ))}
           </ul>
         )}
       </div>
+
+      {zoomedIdx !== null && data.cards[zoomedIdx]?.pricing.matched && (
+        <ZoomOverlay
+          card={data.cards[zoomedIdx]}
+          onClose={() => setZoomedIdx(null)}
+        />
+      )}
 
       <details className="rounded-xl bg-zinc-950 p-4 text-xs text-zinc-100">
         <summary className="cursor-pointer text-zinc-400">Raw JSON</summary>
@@ -213,7 +259,17 @@ function ScanResultView({ result }: { result: Extract<ScanResult, { ok: true }> 
   );
 }
 
-function CardRow({ card }: { card: PricedCard }) {
+function CardRow({
+  card,
+  condition,
+  onCondition,
+  onZoom,
+}: {
+  card: PricedCard;
+  condition: RawConditionTier;
+  onCondition: (tier: RawConditionTier) => void;
+  onZoom: () => void;
+}) {
   const insufficient = card.status === "insufficient_information";
   const lowConfidence = card.pricing.matched && card.pricing.lowConfidence;
   const matched = card.pricing.matched ? card.pricing : null;
@@ -225,7 +281,7 @@ function CardRow({ card }: { card: PricedCard }) {
 
   return (
     <li className="flex items-start gap-4 py-3">
-      <ReferenceThumb card={card} />
+      <ReferenceThumb card={card} onZoom={onZoom} />
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">
           {displayName}
@@ -266,7 +322,14 @@ function CardRow({ card }: { card: PricedCard }) {
             </span>
           )}
         </p>
-        <PricingLine card={card} />
+        <PricingLine card={card} condition={condition} />
+        {matched && !lowConfidence && (
+          <ConditionPicker
+            byCondition={matched.raw.byCondition}
+            selected={condition}
+            onChange={onCondition}
+          />
+        )}
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {matched && (
             <ConfirmRightButton
@@ -290,77 +353,118 @@ function CardRow({ card }: { card: PricedCard }) {
   );
 }
 
-function ReferenceThumb({ card }: { card: PricedCard }) {
+function ReferenceThumb({ card, onZoom }: { card: PricedCard; onZoom: () => void }) {
   const matched = card.pricing.matched ? card.pricing : null;
   const refUrl = matched?.candidate.image ?? null;
-  const cropUrl = card.cropDataUrl ?? null;
 
-  // insufficient_information: show only user's crop, with the yellow border treatment.
+  // insufficient_information rows: no thumbnail — empty placeholder. The
+  // user's crop is no longer shown anywhere in the UI (it stays server-side
+  // for the visual confirmation pass only).
   if (card.status === "insufficient_information" || !refUrl) {
-    if (cropUrl) {
-      return (
-        <div className="group relative shrink-0 overflow-hidden rounded-lg border border-amber-300 dark:border-amber-900/60">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={cropUrl}
-            alt="Your photo"
-            width={80}
-            height={112}
-            className="block h-[112px] w-[80px] object-cover"
-          />
-        </div>
-      );
-    }
-    return <div className="h-[112px] w-[80px] shrink-0 rounded-lg bg-zinc-100 dark:bg-zinc-800" />;
+    return (
+      <div className="h-[112px] w-[80px] shrink-0 rounded-lg border border-dashed border-amber-300 bg-amber-50/50 dark:border-amber-900/60 dark:bg-amber-950/20" />
+    );
   }
 
   return (
-    <div className="group relative shrink-0">
+    <button
+      type="button"
+      onClick={onZoom}
+      className="shrink-0 cursor-zoom-in rounded-lg border border-zinc-200 transition hover:border-zinc-400 dark:border-zinc-700 dark:hover:border-zinc-500"
+      aria-label={`Zoom: ${matched!.candidate.name}`}
+    >
       <Image
         src={refUrl}
         alt={`Reference: ${matched!.candidate.name}`}
         width={80}
         height={112}
         unoptimized
-        className="block h-[112px] w-[80px] rounded-lg border border-zinc-200 object-cover dark:border-zinc-700"
+        className="block h-[112px] w-[80px] rounded-lg object-cover"
       />
-      {/* Hover popover: side-by-side compare */}
-      {cropUrl && (
-        <div className="pointer-events-none invisible absolute left-0 top-full z-30 mt-2 w-[520px] rounded-xl border border-zinc-200 bg-white p-3 opacity-0 shadow-xl transition group-hover:visible group-hover:opacity-100 dark:border-zinc-700 dark:bg-zinc-950">
-          <p className="mb-2 text-xs font-medium text-zinc-700 dark:text-zinc-200">
-            Foil thinks this is what you uploaded — agree?
-          </p>
-          <div className="flex gap-3">
-            <div className="flex-1">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={cropUrl}
-                alt="Your photo"
-                className="h-[336px] w-[240px] rounded-md border border-zinc-300 object-contain dark:border-zinc-700"
-              />
-              <p className="mt-1 text-center text-[11px] text-zinc-500">Your photo</p>
-            </div>
-            <div className="flex-1">
-              <Image
-                src={refUrl}
-                alt={`Reference: ${matched!.candidate.name}`}
-                width={240}
-                height={336}
-                unoptimized
-                className="h-[336px] w-[240px] rounded-md border border-zinc-300 object-contain dark:border-zinc-700"
-              />
-              <p className="mt-1 text-center text-[11px] text-zinc-500">
-                {matched!.candidate.set} · #{matched!.candidate.cardNumber}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+    </button>
+  );
+}
+
+function ZoomOverlay({ card, onClose }: { card: PricedCard; onClose: () => void }) {
+  const matched = card.pricing.matched ? card.pricing : null;
+  if (!matched || !matched.candidate.image) return null;
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6"
+    >
+      <div
+        className="flex flex-col items-center gap-3 rounded-2xl bg-white p-4 shadow-2xl dark:bg-zinc-950"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+          Foil matched this card
+        </p>
+        <Image
+          src={matched.candidate.image}
+          alt={matched.candidate.name}
+          width={240}
+          height={336}
+          unoptimized
+          className="h-[336px] w-[240px] rounded-md border border-zinc-300 object-contain dark:border-zinc-700"
+        />
+        <p className="text-sm font-medium">
+          {matched.candidate.name}
+        </p>
+        <p className="text-xs text-zinc-500">
+          {matched.candidate.set} · #{matched.candidate.cardNumber}
+        </p>
+        <button
+          type="button"
+          onClick={onClose}
+          className="mt-1 rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900"
+        >
+          Close
+        </button>
+      </div>
     </div>
   );
 }
 
-function PricingLine({ card }: { card: PricedCard }) {
+function ConditionPicker({
+  byCondition,
+  selected,
+  onChange,
+}: {
+  byCondition: Record<RawConditionTier, number | null>;
+  selected: RawConditionTier;
+  onChange: (tier: RawConditionTier) => void;
+}) {
+  return (
+    <div className="mt-2 inline-flex overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700">
+      {CONDITIONS.map(({ tier, label }) => {
+        const available = byCondition[tier] !== null;
+        const isSelected = selected === tier;
+        const classes = isSelected
+          ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+          : available
+            ? "bg-white text-zinc-700 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            : "bg-zinc-100 text-zinc-400 dark:bg-zinc-900 dark:text-zinc-600";
+        return (
+          <button
+            key={tier}
+            type="button"
+            disabled={!available}
+            onClick={() => available && onChange(tier)}
+            className={`min-w-[34px] border-r border-zinc-200 px-2 py-1 text-[11px] font-medium uppercase tracking-wide last:border-r-0 disabled:cursor-not-allowed dark:border-zinc-700 ${classes}`}
+            aria-pressed={isSelected}
+          >
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function PricingLine({ card, condition }: { card: PricedCard; condition: RawConditionTier }) {
   const p = card.pricing;
   if (!p.matched) {
     if (
@@ -373,23 +477,27 @@ function PricingLine({ card }: { card: PricedCard }) {
       <p className="mt-1.5 text-xs italic text-zinc-400">{p.reason}</p>
     );
   }
-  const top = p.topPrice;
   const lc = p.lowConfidence;
+  const tierAmount = p.raw.byCondition[condition];
+  const fallback = p.topPrice;
+  const amount = tierAmount ?? (condition === "NEAR_MINT" ? fallback?.amount ?? null : null);
   return (
     <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      {top ? (
+      {amount !== null ? (
         <>
           <span className="text-sm font-semibold tabular-nums">
             {lc && "~"}
-            {USD.format(top.amount)}
+            {USD.format(amount)}
           </span>
           <span className="text-xs text-zinc-500">
-            {top.sourceLabel}
+            {condition === "NEAR_MINT" && fallback ? fallback.sourceLabel : tierLabel(condition)}
             {lc && " (low confidence)"}
           </span>
         </>
       ) : (
-        <span className="text-xs italic text-zinc-400">No raw NM price available</span>
+        <span className="text-xs italic text-zinc-400">
+          No {tierLabel(condition)} price available
+        </span>
       )}
       {p.bestGraded && (
         <span className="text-xs text-zinc-400">
@@ -398,6 +506,21 @@ function PricingLine({ card }: { card: PricedCard }) {
       )}
     </div>
   );
+}
+
+function tierLabel(tier: RawConditionTier): string {
+  switch (tier) {
+    case "NEAR_MINT":
+      return "NM";
+    case "LIGHTLY_PLAYED":
+      return "LP";
+    case "MODERATELY_PLAYED":
+      return "MP";
+    case "HEAVILY_PLAYED":
+      return "HP";
+    case "DAMAGED":
+      return "DMG";
+  }
 }
 
 function ConfidenceBadge({

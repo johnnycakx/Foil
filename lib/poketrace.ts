@@ -92,6 +92,15 @@ export type Failure = {
   topCandidates: CandidateSummary[];
 };
 
+export type RawConditionTier =
+  | "NEAR_MINT"
+  | "LIGHTLY_PLAYED"
+  | "MODERATELY_PLAYED"
+  | "HEAVILY_PLAYED"
+  | "DAMAGED";
+
+export type ByCondition = Record<RawConditionTier, number | null>;
+
 export type CardPricing =
   | {
       matched: true;
@@ -109,6 +118,7 @@ export type CardPricing =
         ebayNearMintAvg: number | null;
         tcgplayerNearMintAvg: number | null;
         cardmarketNearMintAvg: number | null;
+        byCondition: ByCondition;
       };
       bestGraded: GradedPrice | null;
       topPrice: TopPrice | null;
@@ -313,6 +323,29 @@ function bestGraded(card: PokeTraceCard): GradedPrice | null {
     }
   }
   return best;
+}
+
+// Best (highest) raw price across ebay/tcgplayer/cardmarket for a single
+// condition tier. PokeTrace returns each source independently; the UI shows
+// the best so collectors aren't told their card is worth less than it
+// realistically would sell for.
+function bestRawByTier(card: PokeTraceCard, tier: RawConditionTier): number | null {
+  let best: number | null = null;
+  for (const source of ["ebay", "tcgplayer", "cardmarket"] as const) {
+    const v = snapAvg(card.prices?.[source]?.[tier]);
+    if (v !== null && (best === null || v > best)) best = v;
+  }
+  return best;
+}
+
+function buildByCondition(card: PokeTraceCard): ByCondition {
+  return {
+    NEAR_MINT: bestRawByTier(card, "NEAR_MINT"),
+    LIGHTLY_PLAYED: bestRawByTier(card, "LIGHTLY_PLAYED"),
+    MODERATELY_PLAYED: bestRawByTier(card, "MODERATELY_PLAYED"),
+    HEAVILY_PLAYED: bestRawByTier(card, "HEAVILY_PLAYED"),
+    DAMAGED: bestRawByTier(card, "DAMAGED"),
+  };
 }
 
 function topRawPrice(card: PokeTraceCard): TopPrice | null {
@@ -698,6 +731,7 @@ export async function priceCard(claude: ClaudeCardLite): Promise<CardPricing> {
       ebayNearMintAvg: snapAvg(bestCard.prices?.ebay?.NEAR_MINT),
       tcgplayerNearMintAvg: snapAvg(bestCard.prices?.tcgplayer?.NEAR_MINT),
       cardmarketNearMintAvg: snapAvg(bestCard.prices?.cardmarket?.NEAR_MINT),
+      byCondition: buildByCondition(bestCard),
     },
     bestGraded: graded,
     topPrice,
@@ -791,6 +825,7 @@ export async function priceByCardId(
       ebayNearMintAvg: snapAvg(card.prices?.ebay?.NEAR_MINT),
       tcgplayerNearMintAvg: snapAvg(card.prices?.tcgplayer?.NEAR_MINT),
       cardmarketNearMintAvg: snapAvg(card.prices?.cardmarket?.NEAR_MINT),
+      byCondition: buildByCondition(card),
     },
     bestGraded: graded,
     topPrice,

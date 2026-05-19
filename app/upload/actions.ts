@@ -12,10 +12,12 @@ import {
   VISION_MODEL,
   VISION_SYSTEM_PROMPT,
   type BoundingBox,
+  type DetectedCard,
   type DetectPayload,
   type IdentifiedCard,
   type ScanPayload,
 } from "@/lib/vision";
+import { filterDetections } from "@/lib/detect-filter";
 import {
   collectionTotalRawNm,
   priceByCardId,
@@ -31,11 +33,13 @@ import { applyLowConfidenceGate } from "@/lib/low-confidence-gate";
 import { getEntitlements, recordScan } from "@/lib/entitlements";
 import { FREE_DAILY_SCAN_LIMIT } from "@/lib/stripe";
 
+// PricedCard intentionally does NOT carry the user's crop. The crop is only
+// used server-side by the visual-confirmation pass. The UI renders the
+// PokeTrace reference image (pricing.candidate.image) for matched cards.
 export type PricedCard = IdentifiedCard & {
   pricing: CardPricing;
   retried?: boolean;
   visuallyConfirmed?: boolean;
-  cropDataUrl?: string;
   previousAttempt?: Pick<
     IdentifiedCard,
     "name" | "setCode" | "collectorNumber" | "rarity" | "confidence"
@@ -66,7 +70,7 @@ export type ScanResult =
   | { ok: false; error: string; rateLimited?: boolean; remainingFreeScans?: number };
 
 export type DetectResult =
-  | { ok: true; count: number; cards: BoundingBox[]; detectMs: number }
+  | { ok: true; count: number; cards: DetectedCard[]; detectMs: number }
   | { ok: false; error: string; rateLimited?: boolean; remainingFreeScans?: number };
 
 const SUPPORTED_MEDIA: Record<string, "image/jpeg" | "image/png" | "image/gif" | "image/webp"> = {
@@ -229,11 +233,16 @@ export async function detectScan(formData: FormData): Promise<DetectResult> {
   const start = Date.now();
   try {
     const detected = await runDetect(r.source);
+    const filtered = filterDetections(detected.cards);
     const detectMs = Date.now() - start;
+    const s = filtered.stats;
     console.log(
-      `[detectScan] user=${r.userId} tier=${ent.tier} count=${detected.count} detectMs=${detectMs}`,
+      `[detect] raw=${s.raw} areaDrop=${s.areaDrop} confDrop=${s.confDrop} aspectDrop=${s.aspectDrop} iouMerge=${s.iouMerge} final=${s.final}`,
     );
-    return { ok: true, count: detected.count, cards: detected.cards, detectMs };
+    console.log(
+      `[detectScan] user=${r.userId} tier=${ent.tier} count=${filtered.cards.length} detectMs=${detectMs}`,
+    );
+    return { ok: true, count: filtered.cards.length, cards: filtered.cards, detectMs };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error(`[detectScan] error: ${message}`);
@@ -526,7 +535,6 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
     pricing: pricings[i],
     retried: retried[i] || undefined,
     visuallyConfirmed: visuallyConfirmed[i] || undefined,
-    cropDataUrl: cardCropDataUrls[i],
     previousAttempt: previousAttempts[i],
   }));
   const totalValue = collectionTotalRawNm(pricings);

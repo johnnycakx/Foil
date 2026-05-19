@@ -136,7 +136,7 @@ export const CARD_SCAN_SCHEMA = {
 export const DETECT_SYSTEM_PROMPT = `You are a Pokémon TCG card detector. Given a photo that may contain multiple Pokémon cards laid out on a surface, in a binder page, in stacks, or fanned out, your only job is to return the bounding box of each visible card. Do not identify the cards. Do not name the Pokémon or read the text. Just locate and box.
 
 Return strict JSON matching the schema:
-{ "count": <integer ≥ 0>, "cards": [{ "x": <0–1>, "y": <0–1>, "width": <0–1>, "height": <0–1> } ...] }
+{ "count": <integer ≥ 0>, "cards": [{ "x": <0–1>, "y": <0–1>, "width": <0–1>, "height": <0–1>, "detectionConfidence": <0–1> } ...] }
 
 All coordinates are **fractions of the image's dimensions** in normalized [0, 1] space:
 - x, y is the top-left corner of the box.
@@ -144,13 +144,15 @@ All coordinates are **fractions of the image's dimensions** in normalized [0, 1]
 - 0,0 is the top-left of the image; 1,1 is the bottom-right.
 
 Rules:
-- Include every distinct Pokémon card you can see, even partially. A card is countable if at least the artwork window is visible.
-- If two cards overlap (a stack or a fan), return one box per visible card front — boxes may overlap.
+- A box should ONLY enclose a card you can see in full enough to read both the Pokémon name at the top AND the collector number at the bottom. Edge slivers, half-cropped cards bleeding off the photo, and cards buried behind others where you can only see a corner are NOT countable — skip them.
+- If two cards overlap (a stack or a fan), return one box per visible card front only when each front independently passes the name + collector number test. If you can only see one card's name + number through the pile, return one box.
 - Pad each box by ~3% on every side so the entire card border is inside the box. Do not box just the artwork window; box the whole card including the yellow/silver border.
+- Two boxes for the same card front are not allowed — if you find yourself drawing a second box on the same printed card, drop one.
+- detectionConfidence (0–1): your confidence this box contains exactly one full, individually readable card. 1.0 = unambiguous, single card, full borders visible, name + number both readable. 0.5 = a card is plausibly there but partially obscured or the framing is messy. <0.5 = you are guessing. Be conservative: returning fewer high-confidence boxes is better than returning many low-confidence ones.
 - Order the cards top-to-bottom, then left-to-right within rows.
 - If the photo contains zero Pokémon cards, return { "count": 0, "cards": [] }.
-- If the photo is a single card filling most of the frame, return one box with coordinates approximately { x: 0, y: 0, width: 1, height: 1 } (clamped to the actual card extent).
-- Do not return boxes for sleeves, top-loaders, or background objects — only cards.
+- If the photo is a single card filling most of the frame, return one box with coordinates approximately { x: 0, y: 0, width: 1, height: 1 } (clamped to the actual card extent) and detectionConfidence ≥ 0.9.
+- Do not return boxes for sleeves, top-loaders, binder pockets, or background objects — only the cards themselves.
 
 Output JSON only. No prose, no Markdown fences.`;
 
@@ -167,8 +169,9 @@ export const DETECT_SCHEMA = {
           y: { type: "number" },
           width: { type: "number" },
           height: { type: "number" },
+          detectionConfidence: { type: "number" },
         },
-        required: ["x", "y", "width", "height"],
+        required: ["x", "y", "width", "height", "detectionConfidence"],
         additionalProperties: false,
       },
     },
@@ -184,9 +187,13 @@ export type BoundingBox = {
   height: number;
 };
 
+export type DetectedCard = BoundingBox & {
+  detectionConfidence: number;
+};
+
 export type DetectPayload = {
   count: number;
-  cards: BoundingBox[];
+  cards: DetectedCard[];
 };
 
 export type CardStatus = (typeof CARD_STATUS_VALUES)[number];
