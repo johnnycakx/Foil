@@ -6,7 +6,7 @@ Stack
 Next.js 16 (App Router, TypeScript, Tailwind 4, Turbopack, no src/ directory)
 Supabase auth (Email magic link, no email confirmation in dev) + Postgres + Storage
 Stripe subscription ($14.99/mo Pro tier)
-Anthropic Claude Vision for card identification
+Anthropic Claude Vision for card identification (Sonnet 4.6 for identify + visual confirm, Opus 4.5 for retry pass)
 PokeTrace API for multi-source pricing (TCGplayer + eBay + Cardmarket + graded)
 Vercel hosting
 
@@ -48,8 +48,8 @@ Surfaces anomaly flags for suspicious listings
 
 Claude Vision:
 
-Use Claude 4 Sonnet for cost balance
-Photos contain 1-50 cards; handle multi-card binder pages
+Sonnet 4.6 for the identify + visual confirm passes; Opus 4.5 for the retry pass on failed PokeTrace lookups
+Photos contain 1–50 cards; handle multi-card binder pages
 Edge cases: holos, reverse holos, first editions, foreign-language, fakes
 
 UX Principles
@@ -61,14 +61,14 @@ Graceful degradation — unidentified cards show as "manual review needed" not e
 
 MVP Critical Path (build order)
 
-Auth: magic link signup/login + session middleware
-Upload page (mobile-first): drag-or-tap photo upload
-Claude Vision integration → identified cards JSON
-PokeTrace integration → pricing per card
-Aggregation logic → total value + confidence
-Results page: per-card prices + overall + share image
-Free tier rate limit (1/day, server-enforced via Supabase)
-Stripe Pro subscription + paywall on scan #2/day
+Auth: magic link signup/login + session middleware ✅
+Upload page (mobile-first): drag-or-tap photo upload ✅
+Claude Vision integration → identified cards JSON ✅
+PokeTrace integration → pricing per card ✅
+Aggregation logic → total value + confidence ✅
+Results page: per-card prices + overall + share image ✅ (share image pending)
+Free tier rate limit (1/day, server-enforced via Supabase) ✅
+Stripe Pro subscription + paywall on scan #2/day ✅
 
 Deferred (NOT in V1)
 
@@ -81,3 +81,58 @@ Anomaly detection beyond surfacing PokeTrace flags
 
 Founder
 John Craig — solo founder, Oracle SDR background, semi-technical. Operates a TCGplayer storefront (Level 4 seller). Will be the public face / content creator for launch (Twitter primary).
+
+Vision pipeline rules (emerged from May 18–19 work)
+These are the rules that make Foil trustworthy. They override generic Vision-LLM helpfulness.
+
+Return null over guess. Vision never fabricates a collector number, set code, or name. If a field is illegible → null. If name AND (setCode OR collectorNumber) are both null → status insufficient_information. This is a feature, not a failure.
+Don't auto-correct printed numbers. Left number > right number in XXX/YYY (e.g. 188/132) IS a real secret rare. Pass through verbatim.
+3-letter set codes are atomic. SVI, MEW, SSP, BLK, MEG. Pass through, don't translate to set names. Better setCode: null than a fabricated code.
+Low-confidence text matches require visual confirmation. A name-only PokeTrace fuzzy match is not a priced result until confirmMatch agrees with "high" confidence.
+
+Pipeline order (app/upload/actions.ts)
+
+detectScan — DETECT pass returns bounding boxes with detectionConfidence scores
+Post-detect filter — drop area < 1.5% of image, drop detectionConfidence < 0.55, drop aspect outside [0.55, 0.95], IoU-merge any pair > 0.35
+Crop per surviving box — lib/crop.ts, sharp, lanczos3, 1024–1600px long edge
+identifyScan — IDENTIFY pass reads each crop's printed fields (returns null over guess)
+priceCard — PokeTrace lookup priority: exact (collectorNumber + setCode) → fuzzy (name + setCode) → name-only (lowConfidence flag)
+confirmMatch — visual side-by-side for low-confidence matches AND ambiguous PokeTrace results
+retryIdentify — Opus retry for cards still failing on no_candidates / low_score / regulation_mismatch
+
+Key files
+
+docs/foil-card-id-framework.md — Pokemon Card Identification Framework. Read before touching vision.ts or poketrace.ts.
+lib/vision.ts — VISION_SYSTEM_PROMPT, CARD_SCAN_SCHEMA, DETECT_SCHEMA, DETECT_SYSTEM_PROMPT
+lib/vision-retry.ts — Opus 4.5 retry pass with PokeTrace topCandidates context
+lib/vision-confirm.ts — Sonnet 4.6 multi-image side-by-side comparison
+lib/poketrace.ts — Client + cacheCardImage (Supabase Storage) + byCondition rollup (NM/LP/MP/HP/DMG)
+lib/crop.ts — Per-card crops via sharp
+lib/detect-filter.ts — Bounding-box filtering + IoU dedup
+app/upload/actions.ts — Pipeline orchestrator (detectScan, identifyScan)
+app/upload/upload-form.tsx — UI: PokeTrace reference images + condition picker + live total
+
+Common commands
+
+npm run dev — Dev server, port 3000 (Turbopack)
+npm test — All suites (vision-prompt, vision-confirm, low-confidence-gate, detect-filter)
+npx tsc --noEmit — Typecheck
+npm run build — Production build
+stripe listen --forward-to localhost:3000/api/webhooks/stripe — Webhook tunnel for paywall testing
+supabase db push — Apply pending migrations (after linking project)
+
+Hard rules for new /goal commands
+
+Any goal touching identification must read docs/foil-card-id-framework.md first.
+Every goal ends with npm test passing AND npx tsc --noEmit clean before commit.
+Conventional commit prefixes only: feat:, fix:, docs:, test:, refactor:.
+Never git push --force on main. Never rewrite history.
+When fixing a bug surfaced by a real upload, add a fixture to lib/__fixtures__/cards/ and a test that pins the fix.
+
+Shipped commits (May 18–19, 2026)
+
+997f73f — feat(vision): apply Pokemon Card Identification Framework (null-over-guess)
+25ce6a1 — feat(vision): visual confirmation pass + reference images
+877c841 — feat(poketrace): cacheCardImage — Supabase Storage cache
+f8046a5 — fix(vision): gate low-confidence matches behind visual confirm + fix stat counting
+e16c1e4 — feat: detect filter + PokeTrace images + per-card condition picker
