@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "./supabase/admin.ts";
+import type { GradeTier, PriceQuote, PriceQuoteSource } from "./pricing.ts";
 
 const BASE_URL = "https://api.poketrace.com/v1";
 const IMAGE_BUCKET = "card-images";
@@ -53,18 +54,6 @@ type SearchResponse = {
   pagination: { hasMore: boolean; nextCursor: string | null; count: number };
 };
 
-export type GradedPrice = {
-  tier: string;
-  source: PriceSource;
-  avg: number;
-};
-
-export type TopPrice = {
-  amount: number;
-  source: PriceSource;
-  sourceLabel: string;
-};
-
 export type FailureCode =
   | "insufficient_information"
   | "unreadable"
@@ -92,50 +81,6 @@ export type Failure = {
   topCandidates: CandidateSummary[];
 };
 
-export type RawConditionTier =
-  | "NEAR_MINT"
-  | "LIGHTLY_PLAYED"
-  | "MODERATELY_PLAYED"
-  | "HEAVILY_PLAYED"
-  | "DAMAGED";
-
-export type ByCondition = Record<RawConditionTier, number | null>;
-
-// Standard collector-market condition discounts off NM. PokeTrace typically
-// only stores raw NEAR_MINT prices, so without these multipliers the LP/MP/HP/DMG
-// tiers in the UI picker are perma-disabled and clicking them does nothing.
-// Source: typical TCGplayer/eBay sold-comp ratios for played singles.
-export const CONDITION_MULTIPLIER: Record<RawConditionTier, number> = {
-  NEAR_MINT: 1.0,
-  LIGHTLY_PLAYED: 0.88,
-  MODERATELY_PLAYED: 0.75,
-  HEAVILY_PLAYED: 0.6,
-  DAMAGED: 0.4,
-};
-
-/**
- * Resolve the displayable price for a given condition tier. Falls back to
- * NM * multiplier when the raw tier is missing. Returns null if neither the
- * raw tier nor any anchor (NM or topPrice) is available.
- *
- * `estimated` distinguishes raw market data from a derived estimate so the UI
- * can label fallbacks (e.g. with an "est." badge).
- */
-export function effectivePrice(
-  byCondition: ByCondition,
-  topPrice: TopPrice | null,
-  tier: RawConditionTier,
-): { amount: number; estimated: boolean } | null {
-  const raw = byCondition[tier];
-  if (raw !== null) return { amount: raw, estimated: false };
-  const anchor = byCondition.NEAR_MINT ?? topPrice?.amount ?? null;
-  if (anchor === null) return null;
-  return {
-    amount: Math.round(anchor * CONDITION_MULTIPLIER[tier] * 100) / 100,
-    estimated: true,
-  };
-}
-
 export type CardPricing =
   | {
       matched: true;
@@ -149,14 +94,10 @@ export type CardPricing =
         variant: string;
         image: string | null;
       };
-      raw: {
-        ebayNearMintAvg: number | null;
-        tcgplayerNearMintAvg: number | null;
-        cardmarketNearMintAvg: number | null;
-        byCondition: ByCondition;
-      };
-      bestGraded: GradedPrice | null;
-      topPrice: TopPrice | null;
+      // Unified price ladder. PokeTrace contributes one RAW_UNGRADED quote per
+      // source (eBay / TCGplayer / Cardmarket) plus any graded tiers PokeTrace
+      // has on file. PriceCharting's quotes are merged in later by the pipeline.
+      quotes: PriceQuote[];
       topCandidates: CandidateSummary[];
     }
   | { matched: false; reason: string; failure: Failure };
@@ -343,58 +284,44 @@ function snapAvg(snap: RawPriceSnapshot | undefined): number | null {
   return typeof v === "number" && Number.isFinite(v) ? v : null;
 }
 
-const GRADED_RE = /^(PSA|BGS|CGC)_/;
+// Map PokeTrace's tier strings (PSA_10, BGS_10, etc.) to our unified GradeTier.
+// Unknown / off-ladder tiers (e.g. PSA_3, partial grades) are dropped — the UI
+// ladder is fixed and we don't fabricate rows.
+function pokeTraceTierToGradeTier(tier: string): GradeTier | null {
+  if (tier === "NEAR_MINT") return "RAW_UNGRADED";
+  if (tier === "PSA_7" || tier === "PSA_8" || tier === "PSA_9" || tier === "PSA_10") return tier;
+  if (tier === "PSA_9_5" || tier === "PSA_9.5") return "PSA_9_5";
+  if (tier === "BGS_10") return "BGS_10";
+  if (tier === "CGC_10") return "CGC_10";
+  if (tier === "SGC_10") return "SGC_10";
+  return null;
+}
 
-function bestGraded(card: PokeTraceCard): GradedPrice | null {
-  let best: GradedPrice | null = null;
-  for (const source of ["ebay", "tcgplayer", "cardmarket"] as const) {
+const POKETRACE_SOURCES = ["ebay", "tcgplayer", "cardmarket"] as const;
+
+/**
+ * Build the per-card unified PriceQuote[] from a PokeTrace card. Includes
+ * RAW_UNGRADED from each source's NEAR_MINT field plus every graded tier
+ * PokeTrace has on file. Zero / null / non-finite snapshots are skipped.
+ */
+function quotesFromPokeTrace(card: PokeTraceCard): PriceQuote[] {
+  const quotes: PriceQuote[] = [];
+  for (const source of POKETRACE_SOURCES) {
     const tiers = card.prices?.[source];
     if (!tiers) continue;
     for (const [tier, snap] of Object.entries(tiers)) {
-      if (!GRADED_RE.test(tier)) continue;
-      const avg = snapAvg(snap);
-      if (avg === null) continue;
-      if (!best || avg > best.avg) best = { tier, source, avg };
+      const gradeTier = pokeTraceTierToGradeTier(tier);
+      if (!gradeTier) continue;
+      const amount = snapAvg(snap);
+      if (amount === null || amount <= 0) continue;
+      quotes.push({ source: source as PriceQuoteSource, tier: gradeTier, amount });
     }
   }
-  return best;
+  return quotes;
 }
 
-// Best (highest) raw price across ebay/tcgplayer/cardmarket for a single
-// condition tier. PokeTrace returns each source independently; the UI shows
-// the best so collectors aren't told their card is worth less than it
-// realistically would sell for.
-function bestRawByTier(card: PokeTraceCard, tier: RawConditionTier): number | null {
-  let best: number | null = null;
-  for (const source of ["ebay", "tcgplayer", "cardmarket"] as const) {
-    const v = snapAvg(card.prices?.[source]?.[tier]);
-    if (v !== null && (best === null || v > best)) best = v;
-  }
-  return best;
-}
-
-function buildByCondition(card: PokeTraceCard): ByCondition {
-  return {
-    NEAR_MINT: bestRawByTier(card, "NEAR_MINT"),
-    LIGHTLY_PLAYED: bestRawByTier(card, "LIGHTLY_PLAYED"),
-    MODERATELY_PLAYED: bestRawByTier(card, "MODERATELY_PLAYED"),
-    HEAVILY_PLAYED: bestRawByTier(card, "HEAVILY_PLAYED"),
-    DAMAGED: bestRawByTier(card, "DAMAGED"),
-  };
-}
-
-function topRawPrice(card: PokeTraceCard): TopPrice | null {
-  const ebay = snapAvg(card.prices?.ebay?.NEAR_MINT);
-  if (ebay !== null) return { amount: ebay, source: "ebay", sourceLabel: "eBay sold (NM)" };
-  const tcg = snapAvg(card.prices?.tcgplayer?.NEAR_MINT);
-  if (tcg !== null) return { amount: tcg, source: "tcgplayer", sourceLabel: "TCGplayer (NM)" };
-  const cmNm = snapAvg(card.prices?.cardmarket?.NEAR_MINT);
-  if (cmNm !== null) return { amount: cmNm, source: "cardmarket", sourceLabel: "Cardmarket (NM)" };
-  const cmAgg = snapAvg(card.prices?.cardmarket?.AGGREGATED);
-  if (cmAgg !== null) return { amount: cmAgg, source: "cardmarket", sourceLabel: "Cardmarket (avg)" };
-  const ebayAgg = snapAvg(card.prices?.ebay?.AGGREGATED);
-  if (ebayAgg !== null) return { amount: ebayAgg, source: "ebay", sourceLabel: "eBay (avg)" };
-  return null;
+function hasAnyQuote(quotes: PriceQuote[]): boolean {
+  return quotes.length > 0;
 }
 
 export type ClaudeCardLite = {
@@ -724,10 +651,9 @@ export async function priceCard(claude: ClaudeCardLite): Promise<CardPricing> {
     };
   }
 
-  const topPrice = topRawPrice(bestCard);
-  const graded = bestGraded(bestCard);
+  const quotes = quotesFromPokeTrace(bestCard);
 
-  if (!topPrice && !graded) {
+  if (!hasAnyQuote(quotes)) {
     return {
       matched: false,
       reason: PRICE_UNAVAILABLE,
@@ -762,14 +688,7 @@ export async function priceCard(claude: ClaudeCardLite): Promise<CardPricing> {
       variant: bestCard.variant,
       image: cachedImage,
     },
-    raw: {
-      ebayNearMintAvg: snapAvg(bestCard.prices?.ebay?.NEAR_MINT),
-      tcgplayerNearMintAvg: snapAvg(bestCard.prices?.tcgplayer?.NEAR_MINT),
-      cardmarketNearMintAvg: snapAvg(bestCard.prices?.cardmarket?.NEAR_MINT),
-      byCondition: buildByCondition(bestCard),
-    },
-    bestGraded: graded,
-    topPrice,
+    quotes,
     topCandidates: top,
   };
 }
@@ -838,9 +757,8 @@ export async function priceByCardId(
   }
   if (!card) return null;
 
-  const topPrice = topRawPrice(card);
-  const graded = bestGraded(card);
-  if (!topPrice && !graded) return null;
+  const quotes = quotesFromPokeTrace(card);
+  if (!hasAnyQuote(quotes)) return null;
 
   const cachedImage = await cacheCardImage(card.id, card.image);
 
@@ -856,22 +774,7 @@ export async function priceByCardId(
       variant: card.variant,
       image: cachedImage,
     },
-    raw: {
-      ebayNearMintAvg: snapAvg(card.prices?.ebay?.NEAR_MINT),
-      tcgplayerNearMintAvg: snapAvg(card.prices?.tcgplayer?.NEAR_MINT),
-      cardmarketNearMintAvg: snapAvg(card.prices?.cardmarket?.NEAR_MINT),
-      byCondition: buildByCondition(card),
-    },
-    bestGraded: graded,
-    topPrice,
+    quotes,
     topCandidates: [],
   };
-}
-
-export function collectionTotalRawNm(pricings: CardPricing[]): number {
-  let total = 0;
-  for (const p of pricings) {
-    if (p.matched && p.topPrice) total += p.topPrice.amount;
-  }
-  return Math.round(total * 100) / 100;
 }

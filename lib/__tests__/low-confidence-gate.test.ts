@@ -58,20 +58,11 @@ function makeLowConfPricing(): CardPricing {
       variant: candidate.variant,
       image: candidate.image,
     },
-    raw: {
-      ebayNearMintAvg: 14.99,
-      tcgplayerNearMintAvg: 12.0,
-      cardmarketNearMintAvg: 10.0,
-      byCondition: {
-        NEAR_MINT: 14.99,
-        LIGHTLY_PLAYED: 11.5,
-        MODERATELY_PLAYED: 8.25,
-        HEAVILY_PLAYED: null,
-        DAMAGED: null,
-      },
-    },
-    bestGraded: null,
-    topPrice: { amount: 14.99, source: "ebay", sourceLabel: "eBay sold (NM)" },
+    quotes: [
+      { source: "ebay", tier: "RAW_UNGRADED", amount: 14.99 },
+      { source: "tcgplayer", tier: "RAW_UNGRADED", amount: 12.0 },
+      { source: "cardmarket", tier: "RAW_UNGRADED", amount: 10.0 },
+    ],
     topCandidates: [candidate],
   };
 }
@@ -116,8 +107,8 @@ test("low-confidence match is demoted to insufficient_information when confirmMa
     assert.strictEqual(out.failure.code, "low_confidence_unconfirmed");
   }
   assert.ok(
-    !("topPrice" in out),
-    "demoted pricing must not carry a topPrice (no fake price shown to user)",
+    !("quotes" in out),
+    "demoted pricing must not carry quotes (no fake price shown to user)",
   );
 
   const outCard = result.cards[0];
@@ -151,22 +142,10 @@ test("low-confidence match is preserved when confirmMatch returns high on the sa
   assert.strictEqual(out.matched, true, "pricing must remain matched on a high-confidence confirm");
   if (out.matched) {
     assert.strictEqual(out.lowConfidence, false, "lowConfidence flag must be cleared");
-    // byCondition must be populated on every matched pricing so the UI
-    // condition picker has data to swap to.
-    assert.ok(out.raw.byCondition, "byCondition must be present");
-    assert.strictEqual(typeof out.raw.byCondition.NEAR_MINT, "number");
-    for (const tier of [
-      "NEAR_MINT",
-      "LIGHTLY_PLAYED",
-      "MODERATELY_PLAYED",
-      "HEAVILY_PLAYED",
-      "DAMAGED",
-    ] as const) {
-      assert.ok(
-        tier in out.raw.byCondition,
-        `byCondition is missing tier ${tier}`,
-      );
-    }
+    // quotes[] must survive the gate so the UI has prices to display.
+    assert.ok(out.quotes.length > 0, "quotes must be present and non-empty");
+    const ungraded = out.quotes.filter((q) => q.tier === "RAW_UNGRADED");
+    assert.ok(ungraded.length > 0, "must have at least one ungraded quote");
   }
   assert.strictEqual(result.cards[0].status, "identified");
   assert.strictEqual(result.visuallyConfirmed[0], true);
@@ -200,6 +179,7 @@ test("PricedCard shape does not include cropDataUrl (user crops stay server-side
   const pricedCard = {
     ...gated.cards[0],
     pricing: gated.pricings[0],
+    quotes: gated.pricings[0].matched ? gated.pricings[0].quotes : [],
     retried: undefined,
     visuallyConfirmed: gated.visuallyConfirmed[0] || undefined,
     previousAttempt: undefined,

@@ -19,7 +19,6 @@ import {
 } from "@/lib/vision";
 import { filterDetections } from "@/lib/detect-filter";
 import {
-  collectionTotalRawNm,
   priceByCardId,
   priceCard,
   priceCards,
@@ -27,6 +26,8 @@ import {
   PRICE_NEEDS_REVIEW,
   type CardPricing,
 } from "@/lib/poketrace";
+import { lookupMany } from "@/lib/pricecharting";
+import { collectionUngradedTotal, type PriceQuote } from "@/lib/pricing";
 import { retryIdentify } from "@/lib/vision-retry";
 import { confirmMatch } from "@/lib/vision-confirm";
 import { applyLowConfidenceGate } from "@/lib/low-confidence-gate";
@@ -36,8 +37,13 @@ import { FREE_DAILY_SCAN_LIMIT } from "@/lib/stripe";
 // PricedCard intentionally does NOT carry the user's crop. The crop is only
 // used server-side by the visual-confirmation pass. The UI renders the
 // PokeTrace reference image (pricing.candidate.image) for matched cards.
+//
+// `quotes` is the merged PokeTrace + PriceCharting price ladder. Empty for
+// unmatched cards. UI consumes this exclusively — there is no longer any
+// per-condition multiplier estimation.
 export type PricedCard = IdentifiedCard & {
   pricing: CardPricing;
+  quotes: PriceQuote[];
   retried?: boolean;
   visuallyConfirmed?: boolean;
   previousAttempt?: Pick<
@@ -554,16 +560,52 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
     return { ...p, reason: PRICE_NEEDS_REVIEW };
   });
 
+  // -------- PriceCharting fan-out (parallel, after PokeTrace settles) --------
+  // PokeTrace remains authoritative for IDENTIFICATION + the ungraded
+  // multi-source view (eBay / TCGplayer / Cardmarket NM). PriceCharting is
+  // authoritative for the GRADED ladder (PSA 7/8/9/9.5/10, CGC 10, SGC 10,
+  // BGS 10) and also serves as a 4th cross-reference for ungraded.
+  // Each card's PriceCharting product ID is cached in Supabase after the
+  // first scan, so subsequent scans pay one fewer API call per matched card.
+  const pcStart = Date.now();
+  const pcInputs = pricings.map((p) =>
+    p.matched
+      ? {
+          poketraceId: p.candidate.id,
+          name: p.candidate.name,
+          setName: p.candidate.set,
+          collectorNumber: p.candidate.cardNumber,
+        }
+      : null,
+  );
+  const pcInputsCompact = pcInputs.filter((i): i is NonNullable<typeof i> => i !== null);
+  const pcResultsCompact = pcInputsCompact.length > 0 ? await lookupMany(pcInputsCompact) : [];
+  const pcResults: Array<Awaited<ReturnType<typeof lookupMany>>[number] | null> = [];
+  let resultIdx = 0;
+  for (const input of pcInputs) {
+    pcResults.push(input ? (pcResultsCompact[resultIdx++] ?? null) : null);
+  }
+  const pricechartingMs = Date.now() - pcStart;
+  const pricechartingHits = pcResults.filter((r) => r !== null).length;
+
+  // Merge per-card: each row carries quotes from PokeTrace + PriceCharting.
+  const mergedQuotes: PriceQuote[][] = pricings.map((p, i) => {
+    if (!p.matched) return [];
+    const pcQuotes = pcResults[i]?.quotes ?? [];
+    return [...p.quotes, ...pcQuotes];
+  });
+
   const pricingMs = Date.now() - pricingStart;
 
   const pricedCards: PricedCard[] = payload.cards.map((card, i) => ({
     ...card,
     pricing: pricings[i],
+    quotes: mergedQuotes[i],
     retried: retried[i] || undefined,
     visuallyConfirmed: visuallyConfirmed[i] || undefined,
     previousAttempt: previousAttempts[i],
   }));
-  const totalValue = collectionTotalRawNm(pricings);
+  const totalValue = collectionUngradedTotal(pricedCards);
   const pricedCount = pricings.filter((p) => p.matched && !p.lowConfidence).length;
   const unidentifiedCount = payload.cards.filter(
     (c) => c.status === "insufficient_information",
@@ -583,7 +625,7 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
   const retryCount = retried.filter(Boolean).length;
   const visualConfirmCount = visuallyConfirmed.filter(Boolean).length;
   console.log(
-    `[identifyScan] user=${r.userId} tier=${ent.tier} mode=${useMulti ? "multi" : "single"} crops=${useMulti ? boxes.length : 1} identified=${payload.cards.length} priced=${pricedCount} visualConfirmed=${visualConfirmCount} retried=${retryCount} total=$${totalValue} unidentified=${payload.unidentifiedCount} overallConfidence=${payload.overallConfidence} visionMs=${visionMs} confirmMs=${confirmMs} retryMs=${retryMs} pricingMs=${pricingMs} cache_read=${cacheRead} cache_write=${cacheWrite}`,
+    `[identifyScan] user=${r.userId} tier=${ent.tier} mode=${useMulti ? "multi" : "single"} crops=${useMulti ? boxes.length : 1} identified=${payload.cards.length} priced=${pricedCount} visualConfirmed=${visualConfirmCount} retried=${retryCount} total=$${totalValue} unidentified=${payload.unidentifiedCount} overallConfidence=${payload.overallConfidence} visionMs=${visionMs} confirmMs=${confirmMs} retryMs=${retryMs} pricingMs=${pricingMs} pricechartingMs=${pricechartingMs} pricechartingHits=${pricechartingHits} cache_read=${cacheRead} cache_write=${cacheWrite}`,
   );
 
   return {

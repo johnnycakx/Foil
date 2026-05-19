@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { priceCard, collectionTotalRawNm, type CardPricing } from "../lib/poketrace.ts";
+import { priceCard, type CardPricing } from "../lib/poketrace.ts";
+import { bestUngraded, gradedLadder, collectionUngradedTotal, SOURCE_LABELS, TIER_LABELS } from "../lib/pricing.ts";
 
 const envPath = path.join(process.cwd(), ".env.local");
 for (const line of fs.readFileSync(envPath, "utf8").split(/\r?\n/)) {
@@ -10,16 +11,16 @@ for (const line of fs.readFileSync(envPath, "utf8").split(/\r?\n/)) {
 if (!process.env.POKETRACE_API_KEY) throw new Error("POKETRACE_API_KEY missing");
 
 const fixtures = [
-  { name: "Charizard", set: "Base Set", cardNumber: "4/102", rarity: "Holo Rare (1st Edition)" },
-  { name: "Pikachu", set: "Base Set", cardNumber: "58/102", rarity: "Common (1st Edition)" },
-  { name: "Mewtwo", set: "Base Set", cardNumber: "10/102", rarity: "Holo Rare" },
+  { name: "Charizard", setCode: "Base Set", collectorNumber: "4/102", rarity: "Holo Rare (1st Edition)" },
+  { name: "Pikachu", setCode: "Base Set", collectorNumber: "58/102", rarity: "Common (1st Edition)" },
+  { name: "Mewtwo", setCode: "Base Set", collectorNumber: "10/102", rarity: "Holo Rare" },
   // Misidentified — wrong set
-  { name: "Charizard", set: "Made-Up Set Name", cardNumber: "999/999", rarity: "Holo Rare" },
+  { name: "Charizard", setCode: "Made-Up Set Name", collectorNumber: "999/999", rarity: "Holo Rare" },
   // Null-field regressions (the bug from the field)
-  { name: "Charizard", set: "Base Set", cardNumber: null, rarity: "Holo Rare" },
-  { name: "Pikachu", set: null, cardNumber: "58/102", rarity: "Common" },
-  { name: null, set: "Base Set", cardNumber: "4/102", rarity: "Holo Rare" },
-  { name: "Mewtwo", set: "Base Set", cardNumber: null, rarity: null },
+  { name: "Charizard", setCode: "Base Set", collectorNumber: null, rarity: "Holo Rare" },
+  { name: "Pikachu", setCode: null, collectorNumber: "58/102", rarity: "Common" },
+  { name: null, setCode: "Base Set", collectorNumber: "4/102", rarity: "Holo Rare" },
+  { name: "Mewtwo", setCode: "Base Set", collectorNumber: null, rarity: null },
 ];
 
 const results: CardPricing[] = [];
@@ -27,21 +28,28 @@ for (const f of fixtures) {
   const start = Date.now();
   const p = await priceCard(f);
   const ms = Date.now() - start;
-  console.log(`\n[${f.name ?? "(no name)"} | ${f.set ?? "(no set)"} #${f.cardNumber ?? "(no number)"}] (${ms}ms)`);
+  console.log(
+    `\n[${f.name ?? "(no name)"} | ${f.setCode ?? "(no set)"} #${f.collectorNumber ?? "(no number)"}] (${ms}ms)`,
+  );
   if (!p.matched) {
     console.log(`  ✗ ${p.reason}`);
   } else {
     console.log(
       `  ✓ matched: ${p.candidate.name} | ${p.candidate.set} #${p.candidate.cardNumber} | ${p.candidate.variant}`,
     );
-    console.log(
-      `    raw: ebay=${p.raw.ebayNearMintAvg ?? "—"} tcg=${p.raw.tcgplayerNearMintAvg ?? "—"} cm=${p.raw.cardmarketNearMintAvg ?? "—"}`,
-    );
-    if (p.topPrice) console.log(`    top: $${p.topPrice.amount} (${p.topPrice.sourceLabel})`);
-    if (p.bestGraded)
-      console.log(`    best graded: ${p.bestGraded.tier} @ ${p.bestGraded.source} = $${p.bestGraded.avg}`);
+    const ungraded = bestUngraded(p.quotes);
+    if (ungraded)
+      console.log(
+        `    ungraded: $${ungraded.amount} (${SOURCE_LABELS[ungraded.source]})${p.lowConfidence ? " [low_confidence]" : ""}`,
+      );
+    else console.log(`    ungraded: —`);
+    const ladder = gradedLadder(p.quotes);
+    for (const { tier, best } of ladder) {
+      console.log(`    ${TIER_LABELS[tier]}: $${best.amount} (${SOURCE_LABELS[best.source]})`);
+    }
   }
   results.push(p);
 }
 
-console.log(`\n[total raw NM] $${collectionTotalRawNm(results)}`);
+const matched = results.filter((p): p is Extract<CardPricing, { matched: true }> => p.matched);
+console.log(`\n[total ungraded] $${collectionUngradedTotal(matched)}`);

@@ -13,6 +13,7 @@ import {
 } from "../lib/vision.ts";
 import { cropFromBuffer } from "../lib/crop.ts";
 import { priceCard, type CardPricing } from "../lib/poketrace.ts";
+import { bestUngraded } from "../lib/pricing.ts";
 import { retryIdentify } from "../lib/vision-retry.ts";
 
 const envPath = path.join(process.cwd(), ".env.local");
@@ -111,7 +112,7 @@ console.log(
 cards.forEach((c, i) => {
   const p = firstPricings[i];
   const status = p.matched
-    ? `✓ $${p.topPrice?.amount ?? "—"} (${p.candidate.set} #${p.candidate.cardNumber})${p.lowConfidence ? " [low_confidence]" : ""}`
+    ? `✓ $${bestUngraded(p.quotes)?.amount ?? "—"} (${p.candidate.set} #${p.candidate.cardNumber})${p.lowConfidence ? " [low_confidence]" : ""}`
     : `✗ ${(p as { failure: { code: string } }).failure.code}`;
   const langTag = c.language && c.language !== "EN" && c.language !== "unknown" ? ` [${c.language}]` : "";
   console.log(`  [${i + 1}] ${c.name ?? "(unreadable)"} (${c.setCode ?? "?"} #${c.collectorNumber ?? "?"})${langTag} → ${status}`);
@@ -160,7 +161,7 @@ finalCards.forEach((c, i) => {
     c.setCode !== before.setCode ||
     c.collectorNumber !== before.collectorNumber;
   const status = p.matched
-    ? `✓ $${p.topPrice?.amount ?? "—"} (${p.candidate.set} #${p.candidate.cardNumber})${p.lowConfidence ? " [low_confidence]" : ""}`
+    ? `✓ $${bestUngraded(p.quotes)?.amount ?? "—"} (${p.candidate.set} #${p.candidate.cardNumber})${p.lowConfidence ? " [low_confidence]" : ""}`
     : c.status === "insufficient_information"
       ? `⚠ ${c.insufficientReason ?? "needs review"}`
       : `✗ needs manual review`;

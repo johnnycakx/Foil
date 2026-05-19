@@ -158,6 +158,30 @@ export type Database = {
         }>;
         Relationships: [];
       };
+      pricecharting_id_map: {
+        Row: {
+          poketrace_id: string;
+          pricecharting_id: string;
+          pricecharting_name: string;
+          console_name: string;
+          last_synced: string;
+        };
+        Insert: {
+          poketrace_id: string;
+          pricecharting_id: string;
+          pricecharting_name: string;
+          console_name: string;
+          last_synced?: string;
+        };
+        Update: Partial<{
+          poketrace_id: string;
+          pricecharting_id: string;
+          pricecharting_name: string;
+          console_name: string;
+          last_synced: string;
+        }>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

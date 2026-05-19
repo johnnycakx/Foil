@@ -1,19 +1,18 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useRef, useState, type ChangeEvent, type DragEvent } from "react";
+import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { detectScan, identifyScan, type PricedCard, type ScanResult } from "./actions";
 import { CorrectionLink } from "./correction-form";
 import { ConfirmRightButton } from "./confirm-right-button";
-import { effectivePrice, type RawConditionTier, type TopPrice } from "@/lib/poketrace";
-
-const CONDITIONS: { tier: RawConditionTier; label: string }[] = [
-  { tier: "NEAR_MINT", label: "NM" },
-  { tier: "LIGHTLY_PLAYED", label: "LP" },
-  { tier: "MODERATELY_PLAYED", label: "MP" },
-  { tier: "HEAVILY_PLAYED", label: "HP" },
-  { tier: "DAMAGED", label: "DMG" },
-];
+import {
+  SOURCE_LABELS,
+  TIER_LABELS,
+  bestUngraded,
+  gradedLadder,
+  quotesAtTier,
+  type PriceQuote,
+} from "@/lib/pricing";
 
 const ACCEPT = "image/jpeg,image/png,image/heic,image/heif";
 
@@ -171,43 +170,22 @@ function PhaseBanner({ phase }: { phase: Phase }) {
 
 function ScanResultView({ result }: { result: Extract<ScanResult, { ok: true }> }) {
   const { data, latencyMs, pricingMs, passes } = result;
-
-  // Each priced row carries its own selected condition. The map's keys are
-  // row indices in data.cards.
-  const [conditions, setConditions] = useState<Record<number, RawConditionTier>>({});
   const [zoomedIdx, setZoomedIdx] = useState<number | null>(null);
 
-  // "detected" is the post-filter DETECT count, not data.cards.length —
-  // identify can return 0 or 1 cards per crop, so identifiedCount drifts from
-  // detectedCount and we want the label to mean "real cards in the photo".
   const priced = data.cards.filter(
     (c) => c.pricing.matched && !c.pricing.lowConfidence,
   ).length;
   const detected = result.detectedCount;
   const review = Math.max(0, data.cards.length - priced);
 
-  // Live total: sum each row's currently-selected condition price using the
-  // shared effectivePrice helper (raw → estimate-from-NM → null). Recomputes
-  // on every condition change.
-  const liveTotal = useMemo(() => {
-    let sum = 0;
-    data.cards.forEach((c, i) => {
-      if (!c.pricing.matched) return;
-      const tier = conditions[i] ?? "NEAR_MINT";
-      const eff = effectivePrice(c.pricing.raw.byCondition, c.pricing.topPrice, tier);
-      if (eff) sum += eff.amount;
-    });
-    return Math.round(sum * 100) / 100;
-  }, [data.cards, conditions]);
-
   return (
     <div className="flex flex-col gap-4">
       <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="mb-5 flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-wide text-zinc-500">Estimated value</p>
+            <p className="text-xs uppercase tracking-wide text-zinc-500">Estimated value (ungraded)</p>
             <p className="mt-1 text-3xl font-semibold tabular-nums">
-              {USD.format(liveTotal)}
+              {USD.format(data.totalValue)}
             </p>
             <p className="mt-1 text-xs text-zinc-500">
               {priced} priced · {review} need review · {detected} cards detected
@@ -227,15 +205,7 @@ function ScanResultView({ result }: { result: Extract<ScanResult, { ok: true }> 
         ) : (
           <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {data.cards.map((card, idx) => (
-              <CardRow
-                key={idx}
-                card={card}
-                condition={conditions[idx] ?? "NEAR_MINT"}
-                onCondition={(tier) =>
-                  setConditions((prev) => ({ ...prev, [idx]: tier }))
-                }
-                onZoom={() => setZoomedIdx(idx)}
-              />
+              <CardRow key={idx} card={card} onZoom={() => setZoomedIdx(idx)} />
             ))}
           </ul>
         )}
@@ -256,17 +226,7 @@ function ScanResultView({ result }: { result: Extract<ScanResult, { ok: true }> 
   );
 }
 
-function CardRow({
-  card,
-  condition,
-  onCondition,
-  onZoom,
-}: {
-  card: PricedCard;
-  condition: RawConditionTier;
-  onCondition: (tier: RawConditionTier) => void;
-  onZoom: () => void;
-}) {
+function CardRow({ card, onZoom }: { card: PricedCard; onZoom: () => void }) {
   const insufficient = card.status === "insufficient_information";
   const lowConfidence = card.pricing.matched && card.pricing.lowConfidence;
   const matched = card.pricing.matched ? card.pricing : null;
@@ -319,15 +279,7 @@ function CardRow({
             </span>
           )}
         </p>
-        <PricingLine card={card} condition={condition} />
-        {matched && !lowConfidence && (
-          <ConditionPicker
-            byCondition={matched.raw.byCondition}
-            topPrice={matched.topPrice}
-            selected={condition}
-            onChange={onCondition}
-          />
-        )}
+        <PriceSummary card={card} />
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {matched && (
             <ConfirmRightButton
@@ -355,9 +307,6 @@ function ReferenceThumb({ card, onZoom }: { card: PricedCard; onZoom: () => void
   const matched = card.pricing.matched ? card.pricing : null;
   const refUrl = matched?.candidate.image ?? null;
 
-  // Review rows (no PokeTrace candidate): show a small muted "?" puck instead
-  // of a large dashed placeholder. The 80-wide outer container keeps column
-  // alignment with priced rows so the row rhythm stays consistent.
   if (card.status === "insufficient_information" || !refUrl) {
     return (
       <div className="flex h-[112px] w-[80px] shrink-0 items-center justify-center">
@@ -433,48 +382,7 @@ function ZoomOverlay({ card, onClose }: { card: PricedCard; onClose: () => void 
   );
 }
 
-function ConditionPicker({
-  byCondition,
-  topPrice,
-  selected,
-  onChange,
-}: {
-  byCondition: Record<RawConditionTier, number | null>;
-  topPrice: TopPrice | null;
-  selected: RawConditionTier;
-  onChange: (tier: RawConditionTier) => void;
-}) {
-  return (
-    <div className="mt-2 inline-flex overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700">
-      {CONDITIONS.map(({ tier, label }) => {
-        // effectivePrice returns null only when even NM is missing. In that
-        // case every tier is genuinely unavailable — disable the button.
-        const eff = effectivePrice(byCondition, topPrice, tier);
-        const available = eff !== null;
-        const isSelected = selected === tier;
-        const classes = isSelected
-          ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-          : available
-            ? "bg-white text-zinc-700 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
-            : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600";
-        return (
-          <button
-            key={tier}
-            type="button"
-            disabled={!available}
-            onClick={() => available && onChange(tier)}
-            className={`min-w-[34px] border-r border-zinc-200 px-2 py-1 text-[11px] font-medium uppercase tracking-wide last:border-r-0 disabled:cursor-not-allowed dark:border-zinc-700 ${classes}`}
-            aria-pressed={isSelected}
-          >
-            {label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function PricingLine({ card, condition }: { card: PricedCard; condition: RawConditionTier }) {
+function PriceSummary({ card }: { card: PricedCard }) {
   const p = card.pricing;
   if (!p.matched) {
     if (
@@ -483,57 +391,74 @@ function PricingLine({ card, condition }: { card: PricedCard; condition: RawCond
     ) {
       return null;
     }
-    return (
-      <p className="mt-1.5 text-xs italic text-zinc-400">{p.reason}</p>
-    );
+    return <p className="mt-1.5 text-xs italic text-zinc-400">{p.reason}</p>;
   }
+
   const lc = p.lowConfidence;
-  const eff = effectivePrice(p.raw.byCondition, p.topPrice, condition);
-  const sourceLabel =
-    condition === "NEAR_MINT" && p.topPrice && !eff?.estimated
-      ? p.topPrice.sourceLabel
-      : tierLabel(condition);
+  const ungraded = bestUngraded(card.quotes);
+  const allUngraded = quotesAtTier(card.quotes, "RAW_UNGRADED");
+  const graded = gradedLadder(card.quotes);
+
   return (
-    <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      {eff ? (
-        <>
+    <div className="mt-1.5">
+      {ungraded ? (
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <span className="text-sm font-semibold tabular-nums">
             {lc && "~"}
-            {USD.format(eff.amount)}
+            {USD.format(ungraded.amount)}
           </span>
           <span className="text-xs text-zinc-500">
-            {sourceLabel}
-            {eff.estimated && " · est."}
-            {lc && " (low confidence)"}
+            ungraded · best of {allUngraded.length} {allUngraded.length === 1 ? "source" : "sources"}
+            {lc && " · low confidence"}
           </span>
-        </>
+        </div>
       ) : (
-        <span className="text-xs italic text-zinc-400">
-          No {tierLabel(condition)} price available
-        </span>
+        <p className="text-xs italic text-zinc-400">No ungraded price available</p>
       )}
-      {p.bestGraded && (
-        <span className="text-xs text-zinc-400">
-          · graded {p.bestGraded.tier.replace(/_/g, " ")}: {USD.format(p.bestGraded.avg)}
-        </span>
+
+      {graded.length > 0 && (
+        <details className="mt-1.5">
+          <summary className="cursor-pointer text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">
+            Show graded prices ({graded.length} {graded.length === 1 ? "tier" : "tiers"})
+          </summary>
+          <ul className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs text-zinc-600 dark:text-zinc-400 sm:grid-cols-3">
+            {graded.map(({ tier, best }) => (
+              <li key={tier} className="flex items-baseline justify-between gap-2">
+                <span className="text-zinc-500">{TIER_LABELS[tier]}</span>
+                <span className="tabular-nums font-medium text-zinc-700 dark:text-zinc-300">
+                  {USD.format(best.amount)}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-1 text-[10px] text-zinc-400">
+            Best of {SOURCE_LABELS[graded[0].best.source]}
+            {graded.length > 1 && graded.some((g) => g.best.source !== graded[0].best.source) && " + others"}
+          </p>
+        </details>
+      )}
+
+      {/* Per-source ungraded breakdown for transparency when >1 source agrees. */}
+      {allUngraded.length > 1 && (
+        <details className="mt-1">
+          <summary className="cursor-pointer text-[11px] text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">
+            Compare ungraded sources
+          </summary>
+          <ul className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 text-[11px] text-zinc-600 dark:text-zinc-400 sm:grid-cols-4">
+            {allUngraded
+              .slice()
+              .sort((a: PriceQuote, b: PriceQuote) => b.amount - a.amount)
+              .map((q, i) => (
+                <li key={`${q.source}-${i}`} className="flex items-baseline justify-between gap-2">
+                  <span className="text-zinc-500">{SOURCE_LABELS[q.source]}</span>
+                  <span className="tabular-nums">{USD.format(q.amount)}</span>
+                </li>
+              ))}
+          </ul>
+        </details>
       )}
     </div>
   );
-}
-
-function tierLabel(tier: RawConditionTier): string {
-  switch (tier) {
-    case "NEAR_MINT":
-      return "NM";
-    case "LIGHTLY_PLAYED":
-      return "LP";
-    case "MODERATELY_PLAYED":
-      return "MP";
-    case "HEAVILY_PLAYED":
-      return "HP";
-    case "DAMAGED":
-      return "DMG";
-  }
 }
 
 function ConfidenceBadge({
