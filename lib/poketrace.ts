@@ -284,11 +284,21 @@ function snapAvg(snap: RawPriceSnapshot | undefined): number | null {
   return typeof v === "number" && Number.isFinite(v) ? v : null;
 }
 
-// Map PokeTrace's tier strings (PSA_10, BGS_10, etc.) to our unified GradeTier.
-// Unknown / off-ladder tiers (e.g. PSA_3, partial grades) are dropped — the UI
-// ladder is fixed and we don't fabricate rows.
-function pokeTraceTierToGradeTier(tier: string): GradeTier | null {
-  if (tier === "NEAR_MINT") return "RAW_UNGRADED";
+// PokeTrace's ungraded tiers. NEAR_MINT is per-condition; AGGREGATED and MARKET
+// are roll-ups that PokeTrace emits for many modern cards INSTEAD of per-source
+// NEAR_MINT. The old topRawPrice() (deleted in ba35a63) used these as a
+// fallback ladder; without them, modern-set cards with no explicit NEAR_MINT
+// produce zero ungraded quotes → matched=false → 0 priced in the UI total.
+// Preference order: NEAR_MINT > AGGREGATED > MARKET. Per source.
+const UNGRADED_TIER_PREFERENCE = ["NEAR_MINT", "AGGREGATED", "MARKET"] as const;
+
+// Map PokeTrace's tier strings to our unified GradeTier. Ungraded tier names
+// (NEAR_MINT/AGGREGATED/MARKET) all collapse to RAW_UNGRADED — quotesFromPokeTrace
+// dedupes per-source so we don't emit competing ungraded quotes from the same
+// source. Unknown / off-ladder tiers (e.g. PSA_3, partial grades) are dropped:
+// the UI ladder is fixed and we don't fabricate rows.
+export function pokeTraceTierToGradeTier(tier: string): GradeTier | null {
+  if (tier === "NEAR_MINT" || tier === "AGGREGATED" || tier === "MARKET") return "RAW_UNGRADED";
   if (tier === "PSA_7" || tier === "PSA_8" || tier === "PSA_9" || tier === "PSA_10") return tier;
   if (tier === "PSA_9_5" || tier === "PSA_9.5") return "PSA_9_5";
   if (tier === "BGS_10") return "BGS_10";
@@ -300,18 +310,36 @@ function pokeTraceTierToGradeTier(tier: string): GradeTier | null {
 const POKETRACE_SOURCES = ["ebay", "tcgplayer", "cardmarket"] as const;
 
 /**
- * Build the per-card unified PriceQuote[] from a PokeTrace card. Includes
- * RAW_UNGRADED from each source's NEAR_MINT field plus every graded tier
- * PokeTrace has on file. Zero / null / non-finite snapshots are skipped.
+ * Build the per-card unified PriceQuote[] from a PokeTrace card. For each
+ * source, emits at most ONE RAW_UNGRADED quote — preferring NEAR_MINT, falling
+ * back to AGGREGATED, then MARKET. Graded tiers are emitted as-is. Zero /
+ * null / non-finite snapshots are skipped.
+ *
+ * Exported for direct unit testing of the AGGREGATED-fallback path; regression
+ * caught in lib/__tests__/poketrace-quotes.test.ts.
  */
-function quotesFromPokeTrace(card: PokeTraceCard): PriceQuote[] {
+export function quotesFromPokeTrace(card: PokeTraceCard): PriceQuote[] {
   const quotes: PriceQuote[] = [];
   for (const source of POKETRACE_SOURCES) {
     const tiers = card.prices?.[source];
     if (!tiers) continue;
+
+    // Per-source ungraded: take the first non-empty value in the preference
+    // ladder. This restores the fallback behavior the pre-ba35a63 topRawPrice
+    // had — modern cards without explicit NEAR_MINT still get a price.
+    for (const ungradedKey of UNGRADED_TIER_PREFERENCE) {
+      const amount = snapAvg(tiers[ungradedKey]);
+      if (amount !== null && amount > 0) {
+        quotes.push({ source: source as PriceQuoteSource, tier: "RAW_UNGRADED", amount });
+        break;
+      }
+    }
+
+    // Graded tiers: every non-ungraded entry maps via pokeTraceTierToGradeTier.
     for (const [tier, snap] of Object.entries(tiers)) {
+      if ((UNGRADED_TIER_PREFERENCE as readonly string[]).includes(tier)) continue;
       const gradeTier = pokeTraceTierToGradeTier(tier);
-      if (!gradeTier) continue;
+      if (!gradeTier || gradeTier === "RAW_UNGRADED") continue;
       const amount = snapAvg(snap);
       if (amount === null || amount <= 0) continue;
       quotes.push({ source: source as PriceQuoteSource, tier: gradeTier, amount });
