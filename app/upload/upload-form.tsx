@@ -5,7 +5,7 @@ import { useMemo, useRef, useState, type ChangeEvent, type DragEvent } from "rea
 import { detectScan, identifyScan, type PricedCard, type ScanResult } from "./actions";
 import { CorrectionLink } from "./correction-form";
 import { ConfirmRightButton } from "./confirm-right-button";
-import type { RawConditionTier } from "@/lib/poketrace";
+import { effectivePrice, type RawConditionTier, type TopPrice } from "@/lib/poketrace";
 
 const CONDITIONS: { tier: RawConditionTier; label: string }[] = [
   { tier: "NEAR_MINT", label: "NM" },
@@ -177,28 +177,25 @@ function ScanResultView({ result }: { result: Extract<ScanResult, { ok: true }> 
   const [conditions, setConditions] = useState<Record<number, RawConditionTier>>({});
   const [zoomedIdx, setZoomedIdx] = useState<number | null>(null);
 
-  // Authoritative counts: every detected card lives in data.cards. A card is
-  // "priced" only if it both matched AND wasn't a low-confidence fuzzy match.
+  // "detected" is the post-filter DETECT count, not data.cards.length —
+  // identify can return 0 or 1 cards per crop, so identifiedCount drifts from
+  // detectedCount and we want the label to mean "real cards in the photo".
   const priced = data.cards.filter(
     (c) => c.pricing.matched && !c.pricing.lowConfidence,
   ).length;
-  const detected = data.cards.length;
-  const review = detected - priced;
+  const detected = result.detectedCount;
+  const review = Math.max(0, data.cards.length - priced);
 
-  // Live total: sum each row's currently-selected condition price, falling
-  // back to NM / topPrice when the selected tier has no data. Recomputes on
-  // every condition change.
+  // Live total: sum each row's currently-selected condition price using the
+  // shared effectivePrice helper (raw → estimate-from-NM → null). Recomputes
+  // on every condition change.
   const liveTotal = useMemo(() => {
     let sum = 0;
     data.cards.forEach((c, i) => {
       if (!c.pricing.matched) return;
       const tier = conditions[i] ?? "NEAR_MINT";
-      const v =
-        c.pricing.raw.byCondition[tier] ??
-        c.pricing.raw.byCondition.NEAR_MINT ??
-        c.pricing.topPrice?.amount ??
-        0;
-      sum += v;
+      const eff = effectivePrice(c.pricing.raw.byCondition, c.pricing.topPrice, tier);
+      if (eff) sum += eff.amount;
     });
     return Math.round(sum * 100) / 100;
   }, [data.cards, conditions]);
@@ -326,6 +323,7 @@ function CardRow({
         {matched && !lowConfidence && (
           <ConditionPicker
             byCondition={matched.raw.byCondition}
+            topPrice={matched.topPrice}
             selected={condition}
             onChange={onCondition}
           />
@@ -357,12 +355,19 @@ function ReferenceThumb({ card, onZoom }: { card: PricedCard; onZoom: () => void
   const matched = card.pricing.matched ? card.pricing : null;
   const refUrl = matched?.candidate.image ?? null;
 
-  // insufficient_information rows: no thumbnail — empty placeholder. The
-  // user's crop is no longer shown anywhere in the UI (it stays server-side
-  // for the visual confirmation pass only).
+  // Review rows (no PokeTrace candidate): show a small muted "?" puck instead
+  // of a large dashed placeholder. The 80-wide outer container keeps column
+  // alignment with priced rows so the row rhythm stays consistent.
   if (card.status === "insufficient_information" || !refUrl) {
     return (
-      <div className="h-[112px] w-[80px] shrink-0 rounded-lg border border-dashed border-amber-300 bg-amber-50/50 dark:border-amber-900/60 dark:bg-amber-950/20" />
+      <div className="flex h-[112px] w-[80px] shrink-0 items-center justify-center">
+        <div
+          aria-hidden
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
+        >
+          <span className="text-base font-semibold">?</span>
+        </div>
+      </div>
     );
   }
 
@@ -430,23 +435,28 @@ function ZoomOverlay({ card, onClose }: { card: PricedCard; onClose: () => void 
 
 function ConditionPicker({
   byCondition,
+  topPrice,
   selected,
   onChange,
 }: {
   byCondition: Record<RawConditionTier, number | null>;
+  topPrice: TopPrice | null;
   selected: RawConditionTier;
   onChange: (tier: RawConditionTier) => void;
 }) {
   return (
     <div className="mt-2 inline-flex overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700">
       {CONDITIONS.map(({ tier, label }) => {
-        const available = byCondition[tier] !== null;
+        // effectivePrice returns null only when even NM is missing. In that
+        // case every tier is genuinely unavailable — disable the button.
+        const eff = effectivePrice(byCondition, topPrice, tier);
+        const available = eff !== null;
         const isSelected = selected === tier;
         const classes = isSelected
           ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
           : available
             ? "bg-white text-zinc-700 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
-            : "bg-zinc-100 text-zinc-400 dark:bg-zinc-900 dark:text-zinc-600";
+            : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600";
         return (
           <button
             key={tier}
@@ -478,19 +488,22 @@ function PricingLine({ card, condition }: { card: PricedCard; condition: RawCond
     );
   }
   const lc = p.lowConfidence;
-  const tierAmount = p.raw.byCondition[condition];
-  const fallback = p.topPrice;
-  const amount = tierAmount ?? (condition === "NEAR_MINT" ? fallback?.amount ?? null : null);
+  const eff = effectivePrice(p.raw.byCondition, p.topPrice, condition);
+  const sourceLabel =
+    condition === "NEAR_MINT" && p.topPrice && !eff?.estimated
+      ? p.topPrice.sourceLabel
+      : tierLabel(condition);
   return (
     <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      {amount !== null ? (
+      {eff ? (
         <>
           <span className="text-sm font-semibold tabular-nums">
             {lc && "~"}
-            {USD.format(amount)}
+            {USD.format(eff.amount)}
           </span>
           <span className="text-xs text-zinc-500">
-            {condition === "NEAR_MINT" && fallback ? fallback.sourceLabel : tierLabel(condition)}
+            {sourceLabel}
+            {eff.estimated && " · est."}
             {lc && " (low confidence)"}
           </span>
         </>

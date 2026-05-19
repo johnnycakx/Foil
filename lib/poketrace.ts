@@ -101,6 +101,41 @@ export type RawConditionTier =
 
 export type ByCondition = Record<RawConditionTier, number | null>;
 
+// Standard collector-market condition discounts off NM. PokeTrace typically
+// only stores raw NEAR_MINT prices, so without these multipliers the LP/MP/HP/DMG
+// tiers in the UI picker are perma-disabled and clicking them does nothing.
+// Source: typical TCGplayer/eBay sold-comp ratios for played singles.
+export const CONDITION_MULTIPLIER: Record<RawConditionTier, number> = {
+  NEAR_MINT: 1.0,
+  LIGHTLY_PLAYED: 0.88,
+  MODERATELY_PLAYED: 0.75,
+  HEAVILY_PLAYED: 0.6,
+  DAMAGED: 0.4,
+};
+
+/**
+ * Resolve the displayable price for a given condition tier. Falls back to
+ * NM * multiplier when the raw tier is missing. Returns null if neither the
+ * raw tier nor any anchor (NM or topPrice) is available.
+ *
+ * `estimated` distinguishes raw market data from a derived estimate so the UI
+ * can label fallbacks (e.g. with an "est." badge).
+ */
+export function effectivePrice(
+  byCondition: ByCondition,
+  topPrice: TopPrice | null,
+  tier: RawConditionTier,
+): { amount: number; estimated: boolean } | null {
+  const raw = byCondition[tier];
+  if (raw !== null) return { amount: raw, estimated: false };
+  const anchor = byCondition.NEAR_MINT ?? topPrice?.amount ?? null;
+  if (anchor === null) return null;
+  return {
+    amount: Math.round(anchor * CONDITION_MULTIPLIER[tier] * 100) / 100,
+    estimated: true,
+  };
+}
+
 export type CardPricing =
   | {
       matched: true;

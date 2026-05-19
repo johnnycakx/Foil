@@ -143,7 +143,22 @@ type IdentifyOutcome = {
   inputTokens: number;
 };
 
-async function runIdentify(source: Source): Promise<IdentifyOutcome> {
+// In multi-pass mode every IDENTIFY call receives a single-card crop, but the
+// generic "identify every card" prompt makes the model hallucinate ghost cards
+// from edge bleed (10 crops → 28 entries on the May 19 eyeball test).
+// SINGLE_CARD_USER_TEXT pins it to one entry max.
+const MULTI_CARD_USER_TEXT =
+  "Identify every Pokémon card visible in this photo and return the JSON described in your instructions.";
+const SINGLE_CARD_USER_TEXT =
+  "This image is a tight crop of exactly ONE Pokémon card from a larger photo. " +
+  "Return AT MOST one entry in cards[]. If the card cannot be read at all, return cards: []. " +
+  "Do NOT report neighboring cards, edge slivers, or background — there is only one card in this image.";
+
+async function runIdentify(
+  source: Source,
+  opts?: { singleCardCrop?: boolean },
+): Promise<IdentifyOutcome> {
+  const singleCardCrop = opts?.singleCardCrop ?? false;
   const response = await anthropic().messages.create({
     model: VISION_MODEL,
     max_tokens: 16000,
@@ -162,7 +177,7 @@ async function runIdentify(source: Source): Promise<IdentifyOutcome> {
           { type: "image", source },
           {
             type: "text",
-            text: "Identify every Pokémon card visible in this photo and return the JSON described in your instructions.",
+            text: singleCardCrop ? SINGLE_CARD_USER_TEXT : MULTI_CARD_USER_TEXT,
           },
         ],
       },
@@ -174,6 +189,15 @@ async function runIdentify(source: Source): Promise<IdentifyOutcome> {
     .map((b) => b.text)
     .join("");
   const payload = JSON.parse(text) as ScanPayload;
+
+  // Defensive: even with the single-card prompt the model occasionally returns
+  // multiple entries. Keep the first only — it's almost always the intended card.
+  if (singleCardCrop && payload.cards.length > 1) {
+    console.log(
+      `[runIdentify] singleCardCrop returned ${payload.cards.length} cards; truncating to first`,
+    );
+    payload.cards = payload.cards.slice(0, 1);
+  }
 
   return {
     payload,
@@ -340,7 +364,9 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
         media_type: crop.mediaType,
         data: crop.base64,
       }));
-      const outcomes = await Promise.all(cropSources.map((s) => runIdentify(s)));
+      const outcomes = await Promise.all(
+        cropSources.map((s) => runIdentify(s, { singleCardCrop: true })),
+      );
       payload = aggregatePayloads(outcomes.map((o) => o.payload));
       for (const o of outcomes) {
         cacheRead += o.cacheRead;
