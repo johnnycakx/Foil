@@ -72,6 +72,7 @@ export type FailureCode =
   | "low_score"
   | "no_prices"
   | "regulation_mismatch"
+  | "low_confidence_unconfirmed"
   | "lookup_error";
 
 export type CandidateSummary = {
@@ -670,7 +671,12 @@ export async function priceCard(claude: ClaudeCardLite): Promise<CardPricing> {
     };
   }
 
-  const lowConfidence = lookupTier === "name_only";
+  // A match is low-confidence whenever the inputs that uniquely identify a
+  // printing are missing: either we had to fall back to name-only search, OR
+  // Vision couldn't read the collector number (the framework's primary key).
+  // Routing these through the visual-confirmation gate prevents fake prices
+  // from leaking onto cards whose printing wasn't actually nailed down.
+  const lowConfidence = lookupTier === "name_only" || !claudeNumber;
 
   // Cache the matched card's image so subsequent scans (and the UI's
   // next/image loader) hit our Storage bucket instead of the PokeTrace CDN.
@@ -701,6 +707,31 @@ export async function priceCard(claude: ClaudeCardLite): Promise<CardPricing> {
 
 export async function priceCards(cards: ClaudeCardLite[]): Promise<CardPricing[]> {
   return Promise.all(cards.map((c) => priceCard(c)));
+}
+
+/**
+ * Fresh PokeTrace lookup by name (+ optional set code) returning the top
+ * candidates ranked by score against the supplied ClaudeCardLite-like input.
+ * Used by the low-confidence visual-confirmation gate when a matched card's
+ * own `topCandidates` array is empty.
+ */
+export async function searchCandidates(
+  claude: ClaudeCardLite,
+  limit = 5,
+): Promise<CandidateSummary[]> {
+  const claudeName = safeStr(claude.name);
+  if (!claudeName) return [];
+  const claudeSetCode = safeStr(claude.setCode)?.toUpperCase();
+  const setSlug = claudeSetCode ? SET_CODE_TO_SLUG[claudeSetCode] : undefined;
+  const params: Record<string, string> = { search: claudeName, limit: "20" };
+  if (setSlug) params.set = setSlug;
+  let cards: PokeTraceCard[] = [];
+  try {
+    cards = await fetchCards(params);
+  } catch {
+    return [];
+  }
+  return topCandidatesFor(cards, claude, limit);
 }
 
 /**

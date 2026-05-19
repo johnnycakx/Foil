@@ -24,6 +24,7 @@ For every card visible in the image, find and report:
 - If a field is not legible, return null for that field. NEVER guess. NEVER fabricate a collector number, set code, or rarity.
 - If left number > right number (e.g. 188/132), the card IS a secret rare. Do not "fix" it.
 - Set codes are exactly 3 uppercase letters. If you can only see 2 letters or the third is illegible, return setCode: null and put what you saw in setCodeRaw.
+- The Set Code Reference table below is exhaustive for the SV era. If the 3-letter code you read is not in that table, return setCode: null and put what you saw in setCodeRaw. Never invent or guess a code. Returning null is always preferable to fabricating.
 - Promo cards have a black star with "PROMO" inside instead of a set symbol. Their collector number is a prefix code (SVP027, SWSH262) — no slash.
 - Japanese cards have different collector numbers than their English equivalents even for identical artwork. Report language: "JA" — do not translate.
 - If name AND (set code OR collector number) are both null/illegible, return status: "insufficient_information" for that card with insufficientReason explaining what was unreadable. This is a REQUIRED outcome, not a failure — it's better than guessing.

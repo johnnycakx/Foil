@@ -161,7 +161,16 @@ function PhaseBanner({ phase }: { phase: Phase }) {
 }
 
 function ScanResultView({ result }: { result: Extract<ScanResult, { ok: true }> }) {
-  const { data, latencyMs, pricingMs, passes, detectedCount } = result;
+  const { data, latencyMs, pricingMs, passes } = result;
+
+  // Authoritative counts: every detected card lives in data.cards, and a card
+  // counts as "priced" only if it both matched AND wasn't a low-confidence
+  // fuzzy match. Everything else is review. priced + review === detected.
+  const priced = data.cards.filter(
+    (c) => c.pricing.matched && !c.pricing.lowConfidence,
+  ).length;
+  const detected = data.cards.length;
+  const review = detected - priced;
 
   return (
     <div className="flex flex-col gap-4">
@@ -173,10 +182,7 @@ function ScanResultView({ result }: { result: Extract<ScanResult, { ok: true }> 
               {USD.format(data.totalValue)}
             </p>
             <p className="mt-1 text-xs text-zinc-500">
-              {data.pricedCount} of {data.cards.length} priced
-              {data.unidentifiedCount > 0 &&
-                ` · ${data.unidentifiedCount} unidentified`}
-              {passes === "multi" && ` · ${detectedCount} cards detected`}
+              {priced} priced · {review} need review · {detected} cards detected
             </p>
           </div>
           <div className="text-right">
@@ -357,7 +363,10 @@ function ReferenceThumb({ card }: { card: PricedCard }) {
 function PricingLine({ card }: { card: PricedCard }) {
   const p = card.pricing;
   if (!p.matched) {
-    if (p.failure.code === "insufficient_information") {
+    if (
+      p.failure.code === "insufficient_information" ||
+      p.failure.code === "low_confidence_unconfirmed"
+    ) {
       return null;
     }
     return (

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --no-warnings --test lib/__tests__/vision-prompt.test.ts lib/__tests__/vision-confirm.test.ts"
+    "test": "node --experimental-strip-types --no-warnings --test lib/__tests__/vision-prompt.test.ts lib/__tests__/vision-confirm.test.ts lib/__tests__/low-confidence-gate.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.96.0",

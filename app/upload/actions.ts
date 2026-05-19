@@ -21,11 +21,13 @@ import {
   priceByCardId,
   priceCard,
   priceCards,
+  searchCandidates,
   PRICE_NEEDS_REVIEW,
   type CardPricing,
 } from "@/lib/poketrace";
 import { retryIdentify } from "@/lib/vision-retry";
 import { confirmMatch } from "@/lib/vision-confirm";
+import { applyLowConfidenceGate } from "@/lib/low-confidence-gate";
 import { getEntitlements, recordScan } from "@/lib/entitlements";
 import { FREE_DAILY_SCAN_LIMIT } from "@/lib/stripe";
 
@@ -428,6 +430,26 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
     confirmMs = Date.now() - confirmStart;
   }
 
+  // -------- Low-confidence gate --------
+  // PokeTrace returns lowConfidence=true when it had to fall back to name-only
+  // fuzzy matching. Those matches frequently land on the wrong printing — e.g.
+  // a Chimchar Vision misread as "MEW #041" fuzzied to POP Series 6. Run the
+  // visual confirmation pass against the top candidates; demote to "needs
+  // review" unless the model picks one with high confidence.
+  if (pricings.some((p) => p.matched && p.lowConfidence)) {
+    const gateStart = Date.now();
+    const gated = await applyLowConfidenceGate(
+      { pricings, cards: payload.cards, cardCropDataUrls },
+      { confirmMatch, priceByCardId, searchCandidates },
+    );
+    pricings = gated.pricings;
+    payload.cards = gated.cards;
+    for (let i = 0; i < gated.visuallyConfirmed.length; i++) {
+      if (gated.visuallyConfirmed[i]) visuallyConfirmed[i] = true;
+    }
+    confirmMs += Date.now() - gateStart;
+  }
+
   // -------- Retry pass: re-identify failed cards with Opus 4.5 + failure context --------
   // Framework rule: only retry status === "identified" with codes that imply
   // Vision could be improved (no_candidates, low_score). Skip
@@ -508,7 +530,10 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
     previousAttempt: previousAttempts[i],
   }));
   const totalValue = collectionTotalRawNm(pricings);
-  const pricedCount = pricings.filter((p) => p.matched).length;
+  const pricedCount = pricings.filter((p) => p.matched && !p.lowConfidence).length;
+  const unidentifiedCount = payload.cards.filter(
+    (c) => c.status === "insufficient_information",
+  ).length;
 
   // Record the scan AFTER it succeeds. Free users now have 0 remaining today.
   await recordScan(r.supabase, r.userId, {
@@ -540,7 +565,7 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
     data: {
       cards: pricedCards,
       overallConfidence: payload.overallConfidence,
-      unidentifiedCount: payload.unidentifiedCount,
+      unidentifiedCount,
       totalValue,
       pricedCount,
     },
