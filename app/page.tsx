@@ -86,7 +86,7 @@ function Hero() {
       </p>
 
       <div className="mt-8 max-w-xl">
-        <WaitlistForm source="hero" variant="hero" />
+        <WaitlistForm source="homepage_hero" variant="hero" />
         <p className="mt-3 text-xs text-zinc-500">
           No spam, one email when early access opens.{" "}
           <a
@@ -393,7 +393,7 @@ function FinalCTA() {
           1,000 signups get an extended free trial of Pro.
         </p>
         <div className="mt-6 max-w-xl">
-          <WaitlistForm source="final_cta" variant="hero" />
+          <WaitlistForm source="homepage_final_cta" variant="hero" />
         </div>
       </div>
     </section>

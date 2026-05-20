@@ -1,9 +1,25 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { joinWaitlist, type WaitlistState } from "./waitlist-action";
 
 const INITIAL: WaitlistState = { status: "idle" };
+
+type Attribution = {
+  utm_source: string;
+  utm_medium: string;
+  utm_campaign: string;
+  landing_page: string;
+  referrer: string;
+};
+
+const EMPTY_ATTRIBUTION: Attribution = {
+  utm_source: "",
+  utm_medium: "",
+  utm_campaign: "",
+  landing_page: "",
+  referrer: "",
+};
 
 export function WaitlistForm({
   source = "hero",
@@ -13,6 +29,22 @@ export function WaitlistForm({
   variant?: "hero" | "compact";
 }) {
   const [state, action, pending] = useActionState(joinWaitlist, INITIAL);
+  const [attribution, setAttribution] = useState<Attribution>(EMPTY_ATTRIBUTION);
+
+  // Captured once on mount — the URL/referrer at landing time, not at submit
+  // time. Querystring may be cleared by SPA navigation before the user
+  // submits, so we snapshot eagerly.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    setAttribution({
+      utm_source: params.get("utm_source") ?? "",
+      utm_medium: params.get("utm_medium") ?? "",
+      utm_campaign: params.get("utm_campaign") ?? "",
+      landing_page: window.location.pathname,
+      referrer: document.referrer,
+    });
+  }, []);
 
   if (state.status === "ok") {
     return (
@@ -37,6 +69,11 @@ export function WaitlistForm({
       noValidate
     >
       <input type="hidden" name="source" value={source} />
+      <input type="hidden" name="utm_source" value={attribution.utm_source} />
+      <input type="hidden" name="utm_medium" value={attribution.utm_medium} />
+      <input type="hidden" name="utm_campaign" value={attribution.utm_campaign} />
+      <input type="hidden" name="landing_page" value={attribution.landing_page} />
+      <input type="hidden" name="referrer" value={attribution.referrer} />
       <label htmlFor={`email-${source}`} className="sr-only">
         Email address
       </label>
