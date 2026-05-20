@@ -140,16 +140,37 @@ npm run build — Production build
 stripe listen --forward-to localhost:3000/api/webhooks/stripe — Webhook tunnel for paywall testing
 supabase db push — Apply pending migrations (after linking project)
 
-Weekly SEO content engine
+Autonomous content engine
 
-The content engine drafts a new blog post every Monday from the cluster backlog in docs/seo-strategy.md, then opens a review PR. John reviews in the Vercel preview and merges to publish — or closes the PR to skip the topic.
+The content engine generates a new blog post TWICE A WEEK (Mondays + Thursdays 14:03 UTC), runs 8 quality gates against the draft, and publishes directly to main with NO human review step. Vercel auto-deploys. The gates are the safety net — quality is enforced structurally, not editorially. Kill-switch: set repo variable AUTO_PUBLISH_WEEKLY_POSTS=false to fall back to _pending/ drafts.
 
-- node --experimental-strip-types scripts/generate-weekly-post.ts — pick next backlog topic, draft via Claude Sonnet 4.6, write to app/blog/posts/_pending/{slug}.mdx
-- node --experimental-strip-types scripts/refresh-internal-links.ts [slug] — scan for incoming + outgoing link opportunities for the most recently shipped post (or the named slug); writes docs/internal-link-suggestions.md
-- node --experimental-strip-types scripts/competitive-gap-scan.ts [url ...] — pull competitor URLs, diff headings against Foil's topic coverage, write docs/competitive-gaps.md
-- Scheduled run: .github/workflows/weekly-content.yml — Mondays 14:03 UTC, requires repo secret ANTHROPIC_API_KEY (and optionally WEEKLY_POST_WEBHOOK_URL for ping)
+Pipeline (lib/seo/):
+- content-engine.ts → generateWeeklyPost(): picks next unshipped cluster topic from docs/seo-strategy.md → pulls SERP context (Brave Search + cheerio scrape) → pulls Foil data snapshot (Supabase) → calls Claude Sonnet 4.6 with the DUD prompt → runs quality-gates → re-prompts with failures up to 3 times → returns passing draft or throws GenerationFailedAfterRetries.
+- quality-gates.ts → 8 gates: (a) word count 1200-2200, (b) 5+ unique dollar figures, (c) 2+ recent-date (2025/2026) citations, (d) 1+ Foil-data citation, (e) zero banned phrases, (f) valid Article + FAQPage JSON-LD, (g) FAQ section 200+ words, (h) 2+ internal links. To add a gate: edit lib/seo/quality-gates.ts and add a positive + negative test in lib/__tests__/seo-quality-gates.test.ts.
+- serp-fetch.ts → Brave Search API + top-3 outline scrape. Optional 24h Supabase cache. Degrades silently if BRAVE_SEARCH_API_KEY missing or rate-limited.
+- data-injection.ts → Foil-proprietary stats (scans count, waitlist mix). Returns null per-field on empty/error; engine just renders fewer cited statistics.
 
-Pending posts live under app/blog/posts/_pending/ (underscore prefix → ignored by app/blog/posts-meta.ts so they don't enter generateStaticParams). To publish: git mv app/blog/posts/_pending/{slug}.mdx app/blog/posts/{slug}.mdx, then run refresh-internal-links.
+Scripts:
+- scripts/generate-weekly-post.ts — main entry. Flags: --slug <existing> for retroactive regenerate.
+- scripts/refresh-internal-links.ts [slug] — writes docs/internal-link-suggestions.md.
+- scripts/competitive-gap-scan.ts [url ...] — writes docs/competitive-gaps.md.
+
+Scheduled workflow: .github/workflows/weekly-content.yml runs both cron entries:
+  - '3 14 * * 1'  # Mondays 14:03 UTC
+  - '3 14 * * 4'  # Thursdays 14:03 UTC
+On gate pass: commits + pushes to main. On 3-strike gate failure: exits 2, workflow logs warning + sends webhook + skips commit (next cron picks a different topic).
+
+Required secrets (Repository → Settings → Secrets → Actions):
+- ANTHROPIC_API_KEY (mandatory)
+- BRAVE_SEARCH_API_KEY (optional — SERP context falls back to "no competitor reference" without it)
+- NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (optional — data injection skipped without)
+- WEEKLY_POST_WEBHOOK_URL (optional — POST on publish + on gate-exhaustion failure)
+
+Reading failure logs: GitHub Actions → weekly-content workflow run → "Generate post (autonomous)" step. The script logs every gate failure with the prompt-ready failure string on each retry; a "GenerationFailedAfterRetries" exit means all 3 attempts logged failures and no commit happened. The next scheduled run picks a different topic from the backlog.
+
+Disabling autonomy: set repository variable (not secret) AUTO_PUBLISH_WEEKLY_POSTS=false. Drafts then land in app/blog/posts/_pending/ for manual review. To revert to per-PR review entirely, replace the "Commit + push to main" step in the workflow with peter-evans/create-pull-request (the prior architecture).
+
+Adjusting cadence: edit the `on.schedule` entries in .github/workflows/weekly-content.yml. Prefer minute marks NOT on :00 or :30 to avoid the global cron stampede on the Anthropic API.
 
 Hard rules for new /goal commands
 

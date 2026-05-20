@@ -8,6 +8,7 @@ import {
   schemaGraph,
   serializeJsonLd,
 } from "@/lib/seo/schema-helpers";
+import { FAQ } from "@/mdx-components";
 
 export const dynamicParams = false;
 
@@ -152,6 +153,11 @@ export default async function BlogPostPage({
           <div className="mt-10 prose prose-invert max-w-none prose-headings:tracking-tight prose-headings:text-white prose-h2:mt-12 prose-h2:text-2xl prose-h3:text-xl prose-p:text-zinc-300 prose-a:text-[#FF6B5C] prose-strong:text-white prose-li:text-zinc-300 prose-blockquote:border-l-[#FF6B5C]/40 prose-blockquote:text-zinc-300">
             <PostBody />
           </div>
+
+          {/* Single source of truth for the FAQ — same array also feeds the
+              FAQPage JSON-LD above. Posts can omit `faq` in frontmatter and
+              this just no-renders. */}
+          {post.faq && post.faq.length > 0 && <FAQ items={post.faq} />}
         </article>
 
         {related.length > 0 && (

@@ -1,18 +1,20 @@
-// The weekly content engine. Picks a topic from the strategy doc backlog,
-// calls Claude Sonnet 4.6 with a tightly-scoped system prompt, and returns a
-// fully-formed MDX draft (frontmatter + body + FAQs) ready to write to disk.
+// The content engine — full-autonomy edition. Pipeline:
 //
-// What this module DOES guarantee:
-//   - Topic selection respects shipped slugs (no duplicates).
-//   - Output ALWAYS has frontmatter, a body, and a non-empty FAQ array.
-//   - System prompt forbids the AI-tell phrases that trigger E-E-A-T downgrades.
-//   - The post mentions the parent pillar by primary keyword exactly once.
+//   1. Pick next unshipped cluster topic from docs/seo-strategy.md
+//   2. Fetch SERP context (Brave Search + cheerio scrape of top 3) — degrades silently
+//   3. Pull Foil data snapshot from Supabase — degrades silently
+//   4. Generate draft via Claude Sonnet 4.6 with DUD prompt + SERP + data context
+//   5. Run quality gates → if pass, return draft
+//   6. If fail and retries remain, re-prompt Claude with the failures list and retry
+//   7. If all retries exhausted, throw with failure context (caller writes to log,
+//      pings webhook, skips publishing this run)
 //
-// What this module does NOT do:
-//   - Publish anything. Output goes to _pending/ via the script wrapper.
-//   - Edit existing posts. That's lib/seo/internal-linking.ts's job.
-//   - Fetch live keyword data. The backlog is the source of truth — swap in
-//     a Google Trends client when one exists.
+// What this module DOES NOT do:
+//   - File I/O (script wrapper owns that)
+//   - Webhook notification (script wrapper)
+//   - Git operations (script wrapper / CI)
+//
+// Anthropic rate-limit handling: exponential backoff (1s, 5s, 30s) on 429/5xx.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -23,42 +25,44 @@ import {
   slugify,
   type ClusterCandidate,
 } from "./keyword-backlog.ts";
+import {
+  collectFoilData,
+  emptySnapshot,
+  renderDataInjectionPrompt,
+  type DataClient,
+  type FoilDataSnapshot,
+} from "./data-injection.ts";
+import {
+  fetchSerpContext,
+  renderSerpContextPrompt,
+  type Cache as SerpCache,
+  type SerpContext,
+} from "./serp-fetch.ts";
+import { runQualityGates, type GateResult } from "./quality-gates.ts";
+import type { GeneratedDraft } from "./content-engine-types.ts";
 
 export const CONTENT_MODEL = "claude-sonnet-4-6";
+export const MAX_RETRIES = 3;
+export const BACKOFF_MS: readonly number[] = [1000, 5000, 30000];
 
-export type GeneratedDraft = {
-  candidate: ClusterCandidate;
-  slug: string;
-  frontmatter: {
-    title: string;
-    description: string;
-    date: string; // ISO YYYY-MM-DD
-    tags: string[];
-    pillar: string;
-    primaryKeyword: string;
-  };
-  body: string; // Full MDX body excluding frontmatter fence
-  faq: { question: string; answer: string }[];
-  wordCount: number;
-};
+export type { GeneratedDraft };
 
 /**
- * Build the full MDX file text including frontmatter, body, and a serialized
- * FAQ block ready to render. Keeps frontmatter formatting deterministic so a
- * git diff between two weekly runs is meaningful.
+ * serializeDraft → MDX text with deterministic frontmatter. Used by the
+ * script wrapper to write the final file. Frontmatter shape matches what
+ * posts-meta.ts reads + what the [slug] route emits for JSON-LD.
  */
 export function serializeDraft(draft: GeneratedDraft): string {
   const fm = draft.frontmatter;
   const tagsArray = fm.tags.length
-    ? `[${fm.tags.map((t) => `"${t}"`).join(", ")}]`
+    ? `[${fm.tags.map((t) => `"${escapeYamlString(t)}"`).join(", ")}]`
     : "[]";
 
-  const faqBlock = draft.faq.length
-    ? `\n\n## Frequently asked questions\n\n${draft.faq
-        .map((q) => `### ${q.question}\n\n${q.answer}`)
-        .join("\n\n")}\n`
-    : "";
-
+  // FAQ lives ONLY in frontmatter (one source of truth). The page route
+  // reads post.faq and renders <FAQ items={post.faq} /> after the MDX body,
+  // and the same array drives the FAQPage JSON-LD schema. The MDX body
+  // itself doesn't render the FAQ — that would require `frontmatter` to be
+  // in MDX scope, which @next/mdx doesn't provide.
   return `---
 title: "${escapeYamlString(fm.title)}"
 description: "${escapeYamlString(fm.description)}"
@@ -70,7 +74,7 @@ faq:
 ${draft.faq.map((q) => `  - question: "${escapeYamlString(q.question)}"\n    answer: "${escapeYamlString(q.answer)}"`).join("\n")}
 ---
 
-${draft.body.trim()}${faqBlock}
+${draft.body.trim()}
 `;
 }
 
@@ -85,62 +89,158 @@ export type GenerateOptions = {
   today: string;
   /** Path to strategy doc; default = docs/seo-strategy.md from cwd. */
   strategyDocPath?: string;
+  /** Force a specific candidate (used by retroactive regeneration). */
+  forceCandidate?: ClusterCandidate;
+  /** Brave Search API key — undefined disables SERP injection cleanly. */
+  braveSearchApiKey?: string;
+  /** Optional SERP cache (Supabase-backed in prod). */
+  serpCache?: SerpCache;
+  /** Supabase admin client — undefined disables data injection cleanly. */
+  dataClient?: DataClient;
+  /** Site URL used for schema validation. */
+  siteUrl?: string;
 };
 
+export type EngineResult = {
+  draft: GeneratedDraft;
+  attempts: number;
+  serpContext: SerpContext | null;
+  dataSnapshot: FoilDataSnapshot;
+  gateResult: GateResult;
+};
+
+export class GenerationFailedAfterRetries extends Error {
+  readonly attempts: number;
+  readonly lastFailures: string[];
+  readonly lastDraft: GeneratedDraft | null;
+
+  constructor(attempts: number, lastFailures: string[], lastDraft: GeneratedDraft | null) {
+    super(
+      `Generation failed quality gates after ${attempts} attempts. Last failures:\n  - ${lastFailures.join("\n  - ")}`,
+    );
+    this.name = "GenerationFailedAfterRetries";
+    this.attempts = attempts;
+    this.lastFailures = lastFailures;
+    this.lastDraft = lastDraft;
+  }
+}
+
 /**
- * Pick the next candidate from the backlog and generate a draft for it.
- * Throws if there's no backlog, no API key, or Claude returns malformed JSON
- * — the caller (script wrapper) is responsible for surfacing those failures.
+ * The full autonomous pipeline. Returns a draft that passed every quality
+ * gate, or throws GenerationFailedAfterRetries if MAX_RETRIES is exhausted.
+ *
+ * The caller (script wrapper) decides what to do with each outcome — publish
+ * the draft on success, or log + skip + webhook on failure.
  */
-export async function generateWeeklyPost(
-  opts: GenerateOptions,
-): Promise<GeneratedDraft> {
+export async function generateWeeklyPost(opts: GenerateOptions): Promise<EngineResult> {
+  // 1. Topic selection
+  const candidate = opts.forceCandidate ?? pickFromBacklog(opts);
+  const siteUrl = opts.siteUrl ?? "https://foil-rosy.vercel.app";
+  const urlPath = `/blog/${candidate.slug}`;
+
+  // 2. SERP context (degrades silently)
+  let serpContext: SerpContext | null = null;
+  try {
+    const query = candidate.longTail[0] ?? candidate.title;
+    serpContext = await fetchSerpContext(query, opts.braveSearchApiKey, {
+      cache: opts.serpCache,
+    });
+  } catch (err) {
+    console.warn(`[engine] SERP fetch threw (continuing): ${(err as Error).message}`);
+  }
+
+  // 3. Foil data snapshot (degrades silently)
+  const dataSnapshot: FoilDataSnapshot = opts.dataClient
+    ? await collectFoilData(opts.dataClient).catch(() => emptySnapshot())
+    : emptySnapshot();
+
+  // 4-6. Generate + gate + retry
+  const client = anthropic();
+  const history: Array<{ role: "user" | "assistant"; content: string }> = [];
+  let lastDraft: GeneratedDraft | null = null;
+  let lastGate: GateResult = { passed: false, failures: ["no attempts made"] };
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    const userPrompt =
+      attempt === 1
+        ? renderInitialUserPrompt(candidate, opts.today, serpContext, dataSnapshot)
+        : renderRetryUserPrompt(lastGate.failures);
+
+    history.push({ role: "user", content: userPrompt });
+
+    const text = await callClaudeWithBackoff(client, history);
+    history.push({ role: "assistant", content: text });
+
+    let parsed;
+    try {
+      parsed = parseModelOutput(text);
+    } catch (err) {
+      // Treat parse failures as a gate failure so the retry loop kicks in
+      lastGate = {
+        passed: false,
+        failures: [`Model output didn't parse as the required JSON object: ${(err as Error).message}`],
+      };
+      continue;
+    }
+
+    const draft: GeneratedDraft = {
+      candidate,
+      slug: candidate.slug,
+      frontmatter: {
+        title: parsed.title,
+        description: parsed.description,
+        date: opts.today,
+        tags: parsed.tags,
+        pillar: candidate.pillar.slug,
+        primaryKeyword: candidate.longTail[0] ?? candidate.title,
+      },
+      body: parsed.body,
+      faq: parsed.faq,
+      wordCount: countWords(parsed.body),
+    };
+
+    lastDraft = draft;
+    lastGate = runQualityGates(draft, urlPath, siteUrl);
+
+    console.log(
+      `[engine] attempt ${attempt}/${MAX_RETRIES}: ${lastGate.passed ? "PASS" : `FAIL (${lastGate.failures.length} gate violations)`}`,
+    );
+
+    if (lastGate.passed) {
+      return {
+        draft,
+        attempts: attempt,
+        serpContext,
+        dataSnapshot,
+        gateResult: lastGate,
+      };
+    }
+
+    // Log the failures so they show up in the GitHub Actions log
+    for (const failure of lastGate.failures) {
+      console.log(`[engine]   - ${failure}`);
+    }
+  }
+
+  throw new GenerationFailedAfterRetries(MAX_RETRIES, lastGate.failures, lastDraft);
+}
+
+function pickFromBacklog(opts: GenerateOptions): ClusterCandidate {
   const strategyPath =
     opts.strategyDocPath ?? path.join(process.cwd(), "docs", "seo-strategy.md");
   const strategyDoc = fs.readFileSync(strategyPath, "utf8");
   const candidates = parseStrategyDoc(strategyDoc);
   if (candidates.length === 0) {
-    throw new Error(
-      `No cluster candidates parsed from ${strategyPath}. Has the strategy doc been edited into a non-parseable shape?`,
-    );
+    throw new Error(`No cluster candidates parsed from ${strategyPath}.`);
   }
 
   const candidate = pickNextCandidate(candidates, opts.shippedSlugs);
   if (!candidate) {
     throw new Error(
-      "Every candidate in docs/seo-strategy.md is already shipped. Add more cluster topics to the doc, then re-run.",
+      "Every candidate in docs/seo-strategy.md is already shipped. Add more cluster topics to the doc.",
     );
   }
-
-  const client = anthropic();
-  const message = await client.messages.create({
-    model: CONTENT_MODEL,
-    max_tokens: 4096,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: renderUserPrompt(candidate, opts.today) }],
-  });
-
-  const textBlock = message.content.find((b) => b.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    throw new Error(`Claude returned no text content for ${candidate.title}`);
-  }
-  const parsed = parseModelOutput(textBlock.text);
-
-  return {
-    candidate,
-    slug: candidate.slug,
-    frontmatter: {
-      title: parsed.title,
-      description: parsed.description,
-      date: opts.today,
-      tags: parsed.tags,
-      pillar: candidate.pillar.slug,
-      primaryKeyword: candidate.longTail[0] ?? candidate.title,
-    },
-    body: parsed.body,
-    faq: parsed.faq,
-    wordCount: countWords(parsed.body),
-  };
+  return candidate;
 }
 
 function countWords(text: string): number {
@@ -148,35 +248,82 @@ function countWords(text: string): number {
 }
 
 // =============================================================================
-// System prompt — the foundation of trustworthy output. Every constraint here
-// reflects a specific failure mode we'd otherwise have to fix in review.
+// Anthropic call with exponential backoff. 429 + 5xx are retryable; 4xx (auth,
+// validation) fail fast — retrying those is just wasted spend.
 // =============================================================================
 
-const SYSTEM_PROMPT = `You are the content writer for Foil, a Pokémon TCG card valuation tool. You write SEO-targeted blog posts that English-speaking Pokémon collectors actually want to read — not generic AI prose.
+async function callClaudeWithBackoff(
+  client: ReturnType<typeof anthropic>,
+  history: Array<{ role: "user" | "assistant"; content: string }>,
+): Promise<string> {
+  for (let i = 0; i <= BACKOFF_MS.length; i++) {
+    try {
+      const message = await client.messages.create({
+        model: CONTENT_MODEL,
+        max_tokens: 4096,
+        system: SYSTEM_PROMPT,
+        messages: history.map((m) => ({ role: m.role, content: m.content })),
+      });
+      const textBlock = message.content.find((b) => b.type === "text");
+      if (!textBlock || textBlock.type !== "text") {
+        throw new Error("Claude returned no text block");
+      }
+      return textBlock.text;
+    } catch (err) {
+      const status = (err as { status?: number }).status;
+      const retryable = status === 429 || (typeof status === "number" && status >= 500);
+      if (!retryable || i >= BACKOFF_MS.length) throw err;
+      const wait = BACKOFF_MS[i];
+      console.warn(`[engine] Claude ${status} — backing off ${wait}ms (attempt ${i + 1}/${BACKOFF_MS.length})`);
+      await new Promise((r) => setTimeout(r, wait));
+    }
+  }
+  throw new Error("unreachable");
+}
 
-# What Foil is
+// =============================================================================
+// System prompt — the DUD framework: Design, Update, Depth.
+// Every constraint reflects a specific failure mode the quality gates would
+// otherwise reject in review.
+// =============================================================================
 
-Foil reads three printed fields off a Pokémon card photo (name, set code, collector number), then prices the card using live eBay sold averages, TCGplayer market price, and PriceCharting's graded ladder (PSA 7-10, BGS 9.5/10, CGC 10, SGC 10). The product's defensible wedge is reading the printed metadata (including Japanese sv-era set codes) as the source of truth, rather than guessing from artwork.
+const SYSTEM_PROMPT = `You are the content writer for Foil — a Pokémon TCG card valuation tool that reads name + set code + collector number off a photo and prices the card via eBay sold + TCGplayer market + PriceCharting graded ladder. You write SEO-targeted blog posts that beat the top-3 Google results on currency, evidence, and Information Gain.
+
+# The DUD framework (apply to every post)
+
+**D — Design:** Use the available custom components to make the post structurally different from a wall of text. <Callout variant="tip|warning|info"> for break-out evidence. <CardScannerEmbed /> exactly once, mid-article, at the conversion-relevant moment. <TopicLink href="/pillar"> for pillar attribution and sibling-cluster cross-links. Tables (Markdown table syntax) when comparing grades, sources, or prices.
+
+**U — Update:** Use 2026 data only. If you reference a price, grading fee, set release, or pop count, it must be a 2026 figure (or a defensible round-number range cited as "as of 2026"). Never cite 2024/2025 data when the 2026 equivalent exists. If you don't know the exact 2026 number, state a range and tag "(approximate)" — never fabricate a precise number.
+
+**D — Depth:** Original analysis the top-3 ranking competitors don't have. The SERP context block in your prompt shows what the top-3 already cover; your job is to reference their angle (briefly, by URL or attribution) and then provide a stronger or more current claim. The Foil data block gives you proprietary statistics no competitor can match — use them.
+
+# Information Gain mandate
+
+Every H2 section MUST contain at least ONE of: a specific dollar figure (e.g. "$313"), a recent date (within the last 6 months — anchored to 2026), or a Foil data citation ("Foil's scan data: ..."). A section without any of these gets cut and rewritten.
 
 # Hard rules
 
-1. **No generic openings.** Never start with "In today's fast-paced world", "Pokémon cards have captured the hearts of collectors worldwide", "Have you ever wondered", "Let's dive in", or any variant. Open with a concrete scenario or a specific number.
+1. **No generic openings.** Open with a concrete scenario or a specific number — never "In today's digital world", "Pokémon cards have captured...", "Have you ever wondered". Banned phrases that auto-fail quality gates: "in conclusion", "in summary", "as we've seen", "in today's digital world", "the world of pokemon", "as a collector".
 
-2. **No AI tells.** Forbidden phrases: "delve into", "tapestry", "navigate the landscape", "in the realm of", "ever-evolving", "embark on a journey", "it's important to note", "in conclusion", "leverage", "utilize" (use "use"), "garnered". When a sentence reads like it could appear in any blog on any topic, rewrite it specifically.
+2. **The three-field framework.** When discussing card identification, reference reading name + set code + collector number off the card. Never recommend identifying by artwork — that's the failure mode Foil's product is designed to correct.
 
-3. **Factual citations required.** Any specific number (price, population count, grading fee, release date) needs to be either (a) a defensible round-number range, or (b) explicitly named as approximate ("around $25", "roughly 30-45 days as of 2026"). NEVER make up a precise number you can't source. If you don't know the exact number, write the range and note "as of 2026, check current".
+3. **Pillar attribution.** Link to the parent pillar exactly ONCE, near the beginning, using its primary keyword as anchor. Don't link to it again — over-anchoring degrades E-E-A-T.
 
-4. **The three-field framework.** When discussing card identification, always reference reading name + set code + collector number. NEVER suggest identifying a card by artwork — that's a known failure mode the product corrects for.
+4. **Pokémon spelling.** Always "Pokémon" with the é. Exception: code identifiers, set codes, URLs.
 
-5. **Pillar attribution.** Link to the parent pillar exactly ONCE, near the beginning, using its primary keyword as anchor text. Don't link to it again — over-anchoring is a known E-E-A-T downgrade.
+5. **FAQ section.** Generate 5-6 substantive FAQs. Each answer is 2-4 sentences. The combined FAQ text must total 200+ words.
 
-6. **Pokémon spelling.** Always "Pokémon" with the é, never "Pokemon", unless inside a code identifier, URL, or set code where the é doesn't belong.
+6. **Internal links.** At least TWO internal links (markdown [text](/path) or MDX href="/path") to existing Foil pages — pillars, sibling clusters, the homepage, the blog index.
 
-7. **FAQ section.** Generate 5-6 substantive FAQs. Each answer is 2-4 sentences, not a single sentence and not a wall of text.
+7. **Dollar figures.** At least 5 UNIQUE dollar figures in the body. Each should be sourced or defensible as a 2026 round-number estimate.
+
+8. **Recent dates.** At least 2 mentions of "2025" or "2026" in the body (outside URLs).
+
+9. **Word count.** Body 1200-2200 words. Tight, dense, evidence-led — not padded.
 
 # Tone
 
-Direct, declarative, written from experience. You've been collecting since the original Base Set. You operate a TCGplayer storefront. You know what a 70/30-centered card looks like under PSA inspection. Write like you're answering a friend who just texted you the question — knowledgeable, but with no padding.
+Direct, declarative, written from operational experience. You operate a TCGplayer storefront. You've inspected thousands of cards under PSA criteria. You know what a 70/30-centered card looks like. Write like you're answering a friend who just texted you the question — knowledgeable, no padding.
 
 # Output format
 
@@ -184,38 +331,65 @@ Return a SINGLE JSON object inside a \`\`\`json fence. Schema:
 
 \`\`\`json
 {
-  "title": "string — the H1 title, 50-65 chars, includes the primary keyword",
-  "description": "string — meta description, 140-160 chars, includes the primary keyword",
+  "title": "string — 50-65 chars, includes primary keyword",
+  "description": "string — 140-160 chars meta description, includes primary keyword",
   "tags": ["string", "..."],
-  "body": "string — full MDX body, starts with a 1-sentence direct answer to the primary keyword query, uses ## H2 sections, includes at least one <Callout variant=\\"tip\\"> or <Callout variant=\\"warning\\">, includes one <CardScannerEmbed /> mid-article, ends with a 'Related guides' section linking to the parent pillar via <TopicLink>",
+  "body": "string — full MDX body. Opens with a 1-sentence direct answer to the primary keyword. Uses ## H2 sections. Every H2 has at least 1 dollar figure OR 1 recent date OR 1 Foil data citation. Includes 1+ <Callout> and exactly 1 <CardScannerEmbed />. Includes 2+ internal links via [text](/path) or <TopicLink>. Body word count 1200-2200. Do NOT include a frontmatter fence in body — frontmatter is filled from the JSON fields.",
   "faq": [
-    { "question": "string", "answer": "string — 2-4 sentences" }
+    { "question": "string", "answer": "string — 2-4 sentences, no fluff" }
   ]
 }
 \`\`\`
 
-The body is rendered as MDX. You may use these custom components: <Callout variant="info|warning|tip">...</Callout>, <CardScannerEmbed />, <TopicLink href="/path">anchor</TopicLink>. Do NOT include a frontmatter fence in the body — frontmatter is filled in from the JSON fields.`;
+Custom components available: <Callout variant="info|warning|tip">...</Callout>, <CardScannerEmbed />, <TopicLink href="/path">anchor</TopicLink>.`;
 
-function renderUserPrompt(candidate: ClusterCandidate, today: string): string {
-  return `Today is ${today}.
+function renderInitialUserPrompt(
+  candidate: ClusterCandidate,
+  today: string,
+  serpContext: SerpContext | null,
+  dataSnapshot: FoilDataSnapshot,
+): string {
+  const sections: string[] = [];
 
-Write a blog post targeting this cluster topic:
+  sections.push(`Today is ${today}.`);
+  sections.push("");
+  sections.push("# Topic assignment");
+  sections.push(`- **Candidate title:** ${candidate.title}`);
+  sections.push(`- **Rationale:** ${candidate.rationale}`);
+  sections.push(`- **Long-tail keywords:** ${candidate.longTail.join(", ") || "(none specified)"}`);
+  sections.push(`- **Parent pillar URL:** ${candidate.pillar.url}`);
+  sections.push(`- **Parent pillar primary keyword:** ${candidate.pillar.primaryKeyword}`);
+  sections.push(`- **Publish path:** /blog/${candidate.slug}`);
+  sections.push(`- **Primary keyword to feature:** ${candidate.longTail[0] ?? candidate.title}`);
+  sections.push("");
 
-- **Candidate title:** ${candidate.title}
-- **Rationale:** ${candidate.rationale}
-- **Long-tail keywords to target:** ${candidate.longTail.join(", ") || "(none specified — use your judgment)"}
-- **Parent pillar URL:** ${candidate.pillar.url}
-- **Parent pillar primary keyword:** ${candidate.pillar.primaryKeyword}
+  if (serpContext) {
+    sections.push("# Beat-the-top-3 SERP context");
+    sections.push(renderSerpContextPrompt(serpContext));
+    sections.push("");
+  }
 
-The post will be published at /blog/${candidate.slug}. The primary keyword to feature in title, description, and the opening sentence is: **${candidate.longTail[0] ?? candidate.title}**.
+  sections.push("# Foil proprietary data");
+  sections.push(renderDataInjectionPrompt(dataSnapshot));
+  sections.push("");
 
-Target length: 900-1400 words of body prose (the FAQ section is additional). Return the JSON object only, inside a single \`\`\`json fence.`;
+  sections.push("Generate the JSON object now. Apply the DUD framework, the Information Gain mandate, and every hard rule from the system prompt. Body 1200-2200 words. 5+ dollar figures, 2+ recent (2025/2026) dates, 2+ internal links, 5-6 FAQs totaling 200+ words.");
+
+  return sections.join("\n");
+}
+
+function renderRetryUserPrompt(failures: string[]): string {
+  return `Your previous draft failed the following quality gates. Regenerate the JSON object, fixing EVERY failure listed below. Don't shorten the post to satisfy a single gate — fix the gaps in place.
+
+Failures:
+${failures.map((f) => `- ${f}`).join("\n")}
+
+Return ONLY the corrected JSON object inside a \`\`\`json fence.`;
 }
 
 /**
  * Extract the JSON payload from the model's response. Tolerates fences with
- * extra whitespace + an optional language tag, but rejects anything that
- * doesn't parse to the expected schema shape.
+ * extra whitespace + an optional language tag. Throws on schema mismatch.
  */
 export function parseModelOutput(text: string): {
   title: string;
@@ -271,5 +445,4 @@ function expectString(v: unknown, field: string): string {
   return v;
 }
 
-/** Re-exported so the slug helper is reachable without importing two modules. */
 export { slugify };

@@ -5,11 +5,8 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-  parseModelOutput,
-  serializeDraft,
-  type GeneratedDraft,
-} from "../seo/content-engine.ts";
+import { parseModelOutput, serializeDraft } from "../seo/content-engine.ts";
+import type { GeneratedDraft } from "../seo/content-engine-types.ts";
 
 test("parseModelOutput extracts the JSON object from a ```json fence", () => {
   const text = `Here you go:
@@ -94,7 +91,8 @@ test("serializeDraft produces valid YAML frontmatter that gray-matter can roundt
   assert.ok(mdx.includes('date: "2026-05-20"'));
   assert.ok(mdx.includes('pillar: "pokemon-card-value-calculator"'));
   assert.ok(mdx.includes("Body text here."));
-  // FAQ block appears after the body
-  assert.ok(mdx.includes("## Frequently asked questions"));
-  assert.ok(mdx.includes("### Q?"));
+  // FAQ lives in frontmatter only; the page route renders it after the MDX
+  // body (so both the visible UI and the FAQPage JSON-LD read from one source).
+  assert.ok(mdx.includes('question: "Q?"'));
+  assert.equal(mdx.includes("<FAQ items"), false);
 });
