@@ -8,6 +8,20 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-20 — Session 5: Second-brain docs + briefing generator
+
+**Commits:** `7689801`, plus this commit
+
+**Summary.** Shipped the 5 second-brain docs (ROADMAP, DECISIONS, SESSION-LOG, ENV-VARS, RISKS) and the CLAUDE.md hard contract that requires every future goal to read + update them. Follow-on: built `scripts/generate-briefing.ts`, which composes a single ~22KB briefing file (`docs/BRIEFING.md`) from CLAUDE.md + the top SESSION-LOG entry + ROADMAP NOW/NEXT + High/Medium risks. Use case: paste the briefing as the opening message of a fresh Claude.ai web chat to bring it cold-start up to current state without losing context to the message limit. Generator overwrites BRIEFING.md on each run so it always reflects the latest docs.
+
+**Key decisions made.** None new — applied the existing contract.
+
+**Follow-ups added to ROADMAP.** None.
+
+**State at session end.** Local commit not yet pushed at time of writing. Run `node --experimental-strip-types scripts/generate-briefing.ts` before any new strategy chat to refresh the briefing.
+
+---
+
 ## 2026-05-20 — Session 4: Content engine v2 (full autonomy)
 
 **Commits:** `8848382`, `ce4f6d3`, `c969388`, `ad316e5`, `749b21a`
