@@ -37,7 +37,7 @@ Foil's SEO bet is topic clusters: a small number of authoritative **pillar pages
 
 **URL:** `/pokemon-card-value-calculator`
 **Primary keyword:** *pokemon card value calculator*
-**Status:** To be written (this goal scaffolds the route only; landing page content in a separate goal).
+**Status:** Pillar shipped 2026-05-20, needs cluster build-out.
 **Why this pillar:** Highest-volume keyword in the space. Even modest ranking drives Foil's primary use case (Marketplace pricing check). Competitive — but most competitors are dead static databases, not interactive scanners.
 
 ### Cluster posts (target 6–10)
@@ -63,7 +63,7 @@ Foil's SEO bet is topic clusters: a small number of authoritative **pillar pages
 
 **URL:** `/pokemon-card-condition-guide`
 **Primary keyword:** *pokemon card condition guide*
-**Status:** To be written.
+**Status:** Pillar shipped 2026-05-20, needs cluster build-out.
 **Why this pillar:** Condition is the variable that turns a $5 card into a $500 card. Strong long-tail demand (NM / LP / MP definitions) and a natural funnel into Foil's graded-comp feature.
 
 ### Cluster posts (target 6–10)
