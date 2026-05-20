@@ -1,0 +1,94 @@
+# Known Risks
+
+Tracking-only doc. Risks that are blocking get bumped to [ROADMAP NOW](ROADMAP.md#now--this-week--2026-05-27). Risks that are merely watching get a status row here.
+
+Severity scale: **High** = could cost real money or trust if it fires. **Medium** = degrades the launch but recoverable. **Low** = monitor; cheap to mitigate when triggered.
+
+Status values: `accepted` (we've decided the trade-off is worth it), `mitigating` (work in progress), `monitoring` (no action — waiting for trigger), `resolved` (closed; keep the row for posterity).
+
+---
+
+## R-001 — Content engine fabrication
+
+**Severity:** High
+**Status:** `accepted` pre-launch (see [ADR-006](DECISIONS.md#adr-006--full-autonomy-no-human-review-step-gates-as-the-safety-net))
+
+**The risk.** The 8 quality gates check structure (word count, dollar figures, banned phrases, valid JSON-LD), not facts. A hallucinated "$45,000 Charizard sale" or a fabricated "PSA pop count of 234" passes every gate because it has correct dollar formatting and recent-date citations. With full autonomy, anything Claude invents ships to the live domain unreviewed.
+
+**Why accepted.** Pre-launch, traffic is zero. A wrong fact in week 1 hurts nobody. The kill-switch (`AUTO_PUBLISH_WEEKLY_POSTS=false`) reverts to `_pending/` drafts in seconds.
+
+**Trigger to escalate.** First time the gates pass something embarrassing OR sustained organic traffic begins (defined as: ≥100 sessions/day to blog content for 7 consecutive days).
+
+**Mitigation candidates** (tracked at [ROADMAP item #15](ROADMAP.md#later--1-3-months-2026-06-11--2026-08-20)):
+1. Manual spot-check requirement on every autonomous post (revert toward the v1 review-PR architecture).
+2. 24-hour `noindex` window before posts become search-visible (gives me a day to catch issues).
+3. Add a 9th gate for citation density + named-entity verification ([ROADMAP item #5](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10)).
+
+---
+
+## R-002 — Topic backlog exhaustion (~week 10-15)
+
+**Severity:** Medium
+**Status:** `monitoring` — re-evaluate 2026-07-15
+
+**The risk.** `docs/seo-strategy.md` has ~35 cluster topics. At the twice-weekly cadence (ADR-005), that's ~17 weeks of runway — exhaustion lands around 2026-09-09. After exhaustion, the engine's `pickNextCandidate` throws because every backlog slug is shipped.
+
+**Why monitoring.** 17 weeks of buffer. We'll have ranking data by then to inform which clusters to deepen.
+
+**Trigger to mitigate.** First whichever-comes-first: (a) backlog drops below 8 unshipped items, (b) any pillar's cluster list drops below 3 unshipped items.
+
+**Mitigation playbook.**
+1. Run `scripts/competitive-gap-scan.ts` against an expanded competitor list to generate fresh topic candidates.
+2. Add 10-15 new cluster bullets to `docs/seo-strategy.md` per the existing format.
+3. Consider adding a 4th pillar (most likely: graded card economics, modern set EV, or specific era deep-dive).
+
+---
+
+## R-003 — Brave Search API rate limit
+
+**Severity:** Low
+**Status:** `monitoring`
+
+**The risk.** Brave Search free tier caps at 2,000 queries/month. At 2 posts/week × ~4 SERP fetches per post + retries, current usage is ~32/month. Lots of headroom.
+
+**Trigger to escalate.** Cadence increase >4 posts/week OR usage trends above 1,500 in a calendar month.
+
+**Mitigation.** `lib/seo/serp-fetch.ts` already implements a 24h cache (Supabase-backed when wired). If we hit the limit, the engine degrades gracefully — drafts ship without competitor context, just with lower depth. Long-term: upgrade to Brave's paid tier ($5/CPM) if cadence justifies it.
+
+---
+
+## R-004 — Vercel Pro Trial expiration
+
+**Severity:** Low
+**Status:** `monitoring`
+
+**The risk.** Vercel Pro Trial runs 14 days from activation. If active and not converted, deployment limits kick back in (10s server-action timeout, 100GB bandwidth/mo). Some of our pipeline calls (vision identify, confirm, retry passes chained) may approach the 10s ceiling on cold starts.
+
+**Trigger to escalate.** 7 days before trial expiry (set a CronCreate reminder or add to ROADMAP NOW when the date falls in-window).
+
+**Mitigation.** Either convert ($20/mo) or refactor any server actions approaching 10s to use background jobs + polling. Track decision deadline at [ROADMAP item #16](ROADMAP.md#later--1-3-months-2026-06-11--2026-08-20).
+
+---
+
+## R-005 — Per-card persistence gap blocks accuracy diagnostics
+
+**Severity:** Medium
+**Status:** `monitoring`
+
+**The risk.** `scans` table only stores the image metadata (filename, size, mime). The actual per-card identifications + prices live in a transient `scanResults` returned by `app/upload/actions.ts` and rendered once. We can't answer "what's the actual identification accuracy across users?" or "which cards are people scanning most?" because the data isn't persisted.
+
+**Why monitoring.** Pre-launch, the production-grade accuracy diagnostics aren't needed yet. The data-injection helpers in `lib/seo/data-injection.ts` that would surface this stat (`mostScannedCards`) return `null` and degrade silently.
+
+**Trigger to mitigate.** First whichever: (a) we want to A/B test vision-prompt changes against real user scans, (b) the autonomous content engine's data injection has been silent on `mostScannedCards` for >30 days and we want it back online.
+
+**Mitigation.** Add a `scan_cards` table per [ROADMAP item #14](ROADMAP.md#later--1-3-months-2026-06-11--2026-08-20). One row per identified card per scan. Schema: `scan_id`, `card_name`, `set_code`, `collector_number`, `confidence`, `price_quotes_jsonb`. RLS: users see their own; service role sees all for aggregate analytics.
+
+---
+
+## How to log a new risk
+
+1. Next available ID (`R-NNN`, monotonically increasing).
+2. Pick severity honestly. "What's the worst that happens if this fires unmitigated?"
+3. Status starts as `monitoring`. Move to `mitigating` only when a ROADMAP item is actively being worked.
+4. **Trigger to escalate** is the most important field. Without it, monitoring risks become forgotten risks.
+5. When a risk fires or is closed: flip status to `resolved`, add a sentence on what happened, leave the row in place. The history is the point.

@@ -172,6 +172,26 @@ Disabling autonomy: set repository variable (not secret) AUTO_PUBLISH_WEEKLY_POS
 
 Adjusting cadence: edit the `on.schedule` entries in .github/workflows/weekly-content.yml. Prefer minute marks NOT on :00 or :30 to avoid the global cron stampede on the Anthropic API.
 
+Project Second Brain
+
+The repo carries five docs under docs/ that persist context across Claude Code sessions. Ideas, decisions, and risks discussed in chat get lost between sessions; these docs are how we stop that.
+
+- docs/ROADMAP.md — NOW / NEXT / LATER / PARKED. The "what's next" backlog.
+- docs/DECISIONS.md — one ADR per major architectural choice with Context + Decision + Consequences. "Why did we pick X?" lives here.
+- docs/SESSION-LOG.md — reverse-chronological per-session log. Each entry: date, commits, summary paragraph, key decisions, follow-ups added to ROADMAP, state at session end.
+- docs/ENV-VARS.md — registry of every env var, where it's configured, and whether it's public or secret.
+- docs/RISKS.md — known risks with severity + status + trigger-to-escalate + mitigation plan.
+
+**Hard contract for every goal:**
+
+1. **Read** docs/ROADMAP.md and docs/SESSION-LOG.md AT THE START of work, before touching code. Surface anything relevant to the current goal — pending items, blockers, related prior sessions.
+2. **Update** docs/SESSION-LOG.md with a one-paragraph summary AND any new ROADMAP items discovered during the goal, BEFORE committing the goal's work. The session-log entry is part of the goal's commit (or a follow-on commit in the same push).
+3. **If the goal addresses a RISKS.md entry,** update its Status field (e.g. `monitoring` → `mitigating` → `resolved`) and add a sentence on what changed. Don't delete resolved rows — the history is the point.
+4. **If the goal introduces a non-obvious architectural choice,** add an ADR to docs/DECISIONS.md in the same commit.
+5. **If the goal adds or removes any env var,** update docs/ENV-VARS.md in the same commit.
+
+This contract is non-negotiable. Skipping it loses context across sessions and the build drifts. If a goal claims to be too small to log — log it anyway in one sentence. Future-you will thank you.
+
 Hard rules for new /goal commands
 
 Any goal touching identification must read docs/foil-card-id-framework.md first.
