@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -46,7 +47,15 @@ export default async function UploadPage() {
             Free tier · {ent.scansToday}/{FREE_DAILY_SCAN_LIMIT} scans used today
           </p>
         )}
-        {ent.rateLimited ? <Paywall /> : <UploadForm tier={ent.tier} />}
+        {ent.rateLimited ? (
+          <Paywall />
+        ) : (
+          // UploadForm uses useSearchParams (for ?mode=binder|single). Suspense
+          // boundary keeps Next.js happy during streaming.
+          <Suspense fallback={null}>
+            <UploadForm tier={ent.tier} />
+          </Suspense>
+        )}
       </section>
     </main>
   );

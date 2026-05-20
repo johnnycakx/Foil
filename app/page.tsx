@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { WaitlistForm } from "./landing/waitlist-form";
 
-const SITE_TITLE = "Foil — Know what any Pokémon listing is worth in 10 seconds";
+const SITE_TITLE = "Foil — Scan any Pokémon card in 10 seconds (including Japanese)";
 const SITE_DESCRIPTION =
-  "Snap a photo of any Pokémon card listing on Facebook Marketplace, eBay, or a binder page. Foil identifies every card and shows you real market prices — eBay sold, TCGplayer, and graded comps — before the other buyer clicks Buy.";
+  "Snap one card, get a real market valuation in 10 seconds. eBay sold averages, TCGplayer market, PriceCharting graded comps — across English, Japanese, and modern Mega ex printings. Binder-page mode for power users.";
 
 export const metadata: Metadata = {
   title: SITE_TITLE,
@@ -74,13 +74,15 @@ function Hero() {
         Pre-launch · early access opening Oct 7
       </p>
       <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
-        Know what any Pokémon listing is worth in{" "}
-        <span className="text-[#FF6B5C]">10 seconds</span>.
+        Scan any Pokémon card —{" "}
+        <span className="text-[#FF6B5C]">including Japanese</span> —
+        in 10 seconds.
       </h1>
       <p className="mt-5 max-w-2xl text-lg text-zinc-300 sm:text-xl">
-        You&apos;re on Marketplace at 11pm. The seller wants $40 for a stack of cards.
-        Snap one photo — Foil reads every card, fetches eBay sold averages and graded
-        comps, and tells you what they&apos;re actually worth before the next buyer clicks Buy.
+        Snap one card. Foil reads the printed name, set code, and collector number,
+        cross-references eBay sold averages, TCGplayer market, and graded comps from
+        PSA to BGS 10, and tells you what the card is actually worth. Got a binder page?{" "}
+        <span className="text-zinc-400">Advanced mode prices the whole stack at once.</span>
       </p>
 
       <div className="mt-8 max-w-xl">
@@ -103,18 +105,18 @@ function HowItWorks() {
   const steps = [
     {
       num: "1",
-      title: "Snap a photo",
-      body: "Marketplace listing, binder page, a fan of cards on the kitchen table. One photo, up to 50 cards.",
+      title: "Snap a single card",
+      body: "Hold the card flat, fill the frame. One card per photo is the default — fastest and most accurate. Binder pages are an advanced toggle for power users.",
     },
     {
       num: "2",
-      title: "AI identifies every card",
-      body: "Claude Vision reads the set symbol, card number, and rarity on each card — even at angles, through sleeves, under bad lighting.",
+      title: "AI reads the printed text",
+      body: "Claude Vision parses the name, set code, collector number, and regulation mark — English, Japanese, modern Mega ex, all of it. No artwork guessing — only what's actually printed.",
     },
     {
       num: "3",
-      title: "Get real market prices",
-      body: "Live eBay sold averages, TCGplayer market, and best graded comps. The total of the whole stack appears at the top.",
+      title: "Real comps across 4 sources",
+      body: "Ungraded NM from eBay, TCGplayer, Cardmarket. Graded ladder (PSA 7/8/9/9.5/10, BGS 10, CGC 10, SGC 10) from PriceCharting. Best-of pick on the headline; full breakdown one tap away.",
     },
   ];
 
@@ -165,15 +167,23 @@ function ExampleResult() {
             <li className="flex items-start gap-3">
               <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
               <span>
-                <span className="font-medium text-white">Calibrated confidence.</span> When the set
-                symbol is ambiguous, Foil shows you 75% instead of confidently guessing wrong.
+                <span className="font-medium text-white">One card, ten seconds.</span> Single-card scans
+                skip the detect pass and go straight to identify + pricing. Sub-8s end-to-end.
               </span>
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
               <span>
-                <span className="font-medium text-white">Multi-card photos.</span> A binder page or a
-                stack — Foil crops each card and prices them in parallel.
+                <span className="font-medium text-white">Japanese + Mega ex covered.</span> Reads the
+                printed text, not the artwork — Japanese sets and brand-new Mega Evolution cards work
+                from day one.
+              </span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
+              <span>
+                <span className="font-medium text-white">Binder mode for power users.</span> Advanced
+                toggle scans up to 50 cards in one photo. Slower, but no per-card retyping.
               </span>
             </li>
             <li className="flex items-start gap-3">

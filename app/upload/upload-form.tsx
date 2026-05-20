@@ -1,7 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type DragEvent,
+} from "react";
 import { detectScan, identifyScan, type PricedCard, type ScanResult } from "./actions";
 import { CorrectionLink } from "./correction-form";
 import { ConfirmRightButton } from "./confirm-right-button";
@@ -12,7 +20,9 @@ import {
   gradedLadder,
   quotesAtTier,
   type PriceQuote,
+  type PriceQuoteSource,
 } from "@/lib/pricing";
+import { runScanPipeline, type ScanMode } from "@/lib/scan-pipeline";
 
 const ACCEPT = "image/jpeg,image/png,image/heic,image/heif";
 
@@ -37,9 +47,7 @@ const RESIZE_QUALITY = 0.85;
  * stay sharp without paying for redundant pixels.
  */
 async function maybeResizeImage(file: File): Promise<File> {
-  // Non-jpegable / unsupported types: skip preprocessing.
   if (!/^image\/(jpeg|png|webp)$/i.test(file.type)) return file;
-
   const bitmap = await createImageBitmap(file).catch(() => null);
   if (!bitmap) return file;
   const long = Math.max(bitmap.width, bitmap.height);
@@ -76,11 +84,40 @@ async function maybeResizeImage(file: File): Promise<File> {
   return resized;
 }
 
+function parseMode(value: string | null): ScanMode {
+  return value === "binder" ? "binder" : "single";
+}
+
 export function UploadForm({ tier }: { tier?: "free" | "pro" }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialMode = parseMode(searchParams.get("mode"));
+  const [mode, setModeState] = useState<ScanMode>(initialMode);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const [fileName, setFileName] = useState<string | null>(null);
+
+  // Mirror the mode to the URL so users can share a specific scan mode link
+  // and refreshes preserve the chosen mode.
+  const setMode = useCallback(
+    (next: ScanMode) => {
+      setModeState(next);
+      const params = new URLSearchParams(searchParams);
+      if (next === "single") params.delete("mode");
+      else params.set("mode", next);
+      const qs = params.toString();
+      router.replace(qs ? `/upload?${qs}` : "/upload", { scroll: false });
+    },
+    [router, searchParams],
+  );
+
+  // If the URL param changes externally (back/forward navigation), sync state.
+  useEffect(() => {
+    const next = parseMode(searchParams.get("mode"));
+    if (next !== mode) setModeState(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   function openPicker() {
     inputRef.current?.click();
@@ -90,23 +127,17 @@ export function UploadForm({ tier }: { tier?: "free" | "pro" }) {
     setFileName(file.name);
     setPhase({ kind: "optimizing" });
     const optimized = await maybeResizeImage(file).catch(() => file);
-    setPhase({ kind: "detecting" });
 
-    const fdDetect = new FormData();
-    fdDetect.append("photo", optimized);
-    const detection = await detectScan(fdDetect);
-    if (!detection.ok) {
-      setPhase({ kind: "error", message: detection.error, rateLimited: detection.rateLimited });
-      return;
-    }
+    const result = await runScanPipeline(
+      optimized,
+      mode,
+      { detectScan, identifyScan },
+      {
+        onDetect: () => setPhase({ kind: "detecting" }),
+        onIdentify: (count) => setPhase({ kind: "identifying", count }),
+      },
+    );
 
-    setPhase({ kind: "identifying", count: detection.count });
-
-    const fdIdentify = new FormData();
-    fdIdentify.append("photo", optimized);
-    fdIdentify.append("detectedCount", String(detection.count));
-    fdIdentify.append("boxes", JSON.stringify(detection.cards));
-    const result = await identifyScan(fdIdentify);
     if (!result.ok) {
       setPhase({ kind: "error", message: result.error, rateLimited: result.rateLimited });
       return;
@@ -129,6 +160,15 @@ export function UploadForm({ tier }: { tier?: "free" | "pro" }) {
   const pending =
     phase.kind === "optimizing" || phase.kind === "detecting" || phase.kind === "identifying";
 
+  const dropCopy =
+    mode === "single"
+      ? "Tap or drop a Pokémon card photo"
+      : "Tap or drop a binder page photo";
+  const dropHint =
+    mode === "single"
+      ? "One card per photo · JPG or PNG"
+      : "Multiple cards per photo · up to 50 cards";
+
   return (
     <div className="flex flex-col gap-4">
       <div
@@ -150,11 +190,9 @@ export function UploadForm({ tier }: { tier?: "free" | "pro" }) {
             : "border-zinc-300 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
         }`}
       >
-        <p className="text-base font-medium">
-          {pending ? "Scanning..." : "Tap or drop a card photo"}
-        </p>
+        <p className="text-base font-medium">{pending ? "Scanning..." : dropCopy}</p>
         <p className="text-sm text-zinc-500">
-          JPG or PNG — one image, up to 50 cards
+          {dropHint}
           {tier === "pro" && " · Pro: unlimited"}
         </p>
         {fileName && !pending && (
@@ -171,9 +209,49 @@ export function UploadForm({ tier }: { tier?: "free" | "pro" }) {
         />
       </div>
 
+      <ModeToggle mode={mode} onChange={setMode} disabled={pending} />
       <PhaseBanner phase={phase} />
 
       {phase.kind === "done" && <ScanResultView result={phase.result} />}
+    </div>
+  );
+}
+
+function ModeToggle({
+  mode,
+  onChange,
+  disabled,
+}: {
+  mode: ScanMode;
+  onChange: (m: ScanMode) => void;
+  disabled: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-center gap-2 text-xs text-zinc-500">
+      {mode === "single" ? (
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => onChange("binder")}
+          className="underline decoration-zinc-300 underline-offset-4 hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 dark:decoration-zinc-700 dark:hover:text-zinc-300"
+        >
+          Advanced: scan a binder page (multiple cards)
+        </button>
+      ) : (
+        <>
+          <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+            Binder mode
+          </span>
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => onChange("single")}
+            className="underline decoration-zinc-300 underline-offset-4 hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 dark:decoration-zinc-700 dark:hover:text-zinc-300"
+          >
+            Switch back to single-card
+          </button>
+        </>
+      )}
     </div>
   );
 }
@@ -198,7 +276,7 @@ function PhaseBanner({ phase }: { phase: Phase }) {
   if (phase.kind === "identifying") {
     const label =
       phase.count <= 1
-        ? "Analyzing card and fetching live prices…"
+        ? "Reading your card and fetching live prices…"
         : `Detected ${phase.count} cards, analyzing each in parallel…`;
     return (
       <div className="flex items-center justify-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
@@ -231,6 +309,258 @@ function PhaseBanner({ phase }: { phase: Phase }) {
 }
 
 function ScanResultView({ result }: { result: Extract<ScanResult, { ok: true }> }) {
+  // The server's `passes` is authoritative for layout — even if the user
+  // toggles mode after a scan, the result reflects what actually ran.
+  if (result.passes === "single") {
+    return <SingleCardResultView result={result} />;
+  }
+  return <BinderResultView result={result} />;
+}
+
+// ===== Single-card result =====
+
+function SingleCardResultView({ result }: { result: Extract<ScanResult, { ok: true }> }) {
+  const { data, latencyMs, pricingMs } = result;
+  const [zoom, setZoom] = useState(false);
+
+  if (data.cards.length === 0) {
+    return (
+      <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+        We couldn&apos;t read a Pokémon card in that photo. Try a closer shot under
+        even lighting, or switch to{" "}
+        <span className="font-medium text-zinc-900 dark:text-zinc-100">Binder mode</span>{" "}
+        if the photo has more than one card.
+      </div>
+    );
+  }
+
+  // Single-card mode usually returns exactly one card. If the model saw more
+  // (rare on a clean single-card photo), we focus on the highest-confidence
+  // match and surface the others as a hint.
+  const sorted = [...data.cards].sort(
+    (a, b) => (b.confidence ?? 0) - (a.confidence ?? 0),
+  );
+  const primary = sorted[0];
+  const extras = sorted.slice(1);
+  const totalMs = latencyMs + pricingMs;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <SingleCardView card={primary} onZoom={() => setZoom(true)} />
+        <div className="border-t border-zinc-100 px-5 py-3 text-[11px] text-zinc-400 dark:border-zinc-800 tabular-nums">
+          Scanned in {(totalMs / 1000).toFixed(1)}s · single-card mode
+        </div>
+      </div>
+
+      {extras.length > 0 && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+          We also picked up{" "}
+          <span className="font-semibold">
+            {extras.length} other card{extras.length === 1 ? "" : "s"}
+          </span>{" "}
+          in this photo:{" "}
+          {extras
+            .map((c) => c.pricing.matched ? c.pricing.candidate.name : c.name ?? "(unreadable)")
+            .join(", ")}
+          . Switch to Binder mode for full per-card pricing.
+        </div>
+      )}
+
+      {zoom && primary.pricing.matched && primary.pricing.candidate.image && (
+        <ZoomOverlay card={primary} onClose={() => setZoom(false)} />
+      )}
+
+      <details className="rounded-xl bg-zinc-950 p-4 text-xs text-zinc-100">
+        <summary className="cursor-pointer text-zinc-400">Raw JSON</summary>
+        <pre className="mt-3 overflow-x-auto">{JSON.stringify(result, null, 2)}</pre>
+      </details>
+    </div>
+  );
+}
+
+function SingleCardView({ card, onZoom }: { card: PricedCard; onZoom: () => void }) {
+  const insufficient = card.status === "insufficient_information";
+  const lowConfidence = card.pricing.matched && card.pricing.lowConfidence;
+  const matched = card.pricing.matched ? card.pricing : null;
+  const refUrl = matched?.candidate.image ?? null;
+
+  const displayName =
+    matched?.candidate.name ?? card.name ?? (insufficient ? "Couldn't read this card" : "(no name)");
+  const setLabel =
+    matched?.candidate.set ?? card.setCode ?? card.setCodeRaw ?? card.setSymbolDescription ?? "?";
+  const numberLabel = matched?.candidate.cardNumber ?? card.collectorNumber ?? "?";
+  const rarityLabel = card.rarity ?? "—";
+
+  const ungraded = bestUngraded(card.quotes);
+  const ungradedBySource = quotesAtTier(card.quotes, "RAW_UNGRADED");
+  const graded = gradedLadder(card.quotes);
+
+  return (
+    <div className="flex flex-col gap-5 p-5 sm:flex-row sm:p-6">
+      {/* Reference image — large, click to zoom */}
+      <div className="shrink-0 self-start">
+        {refUrl ? (
+          <button
+            type="button"
+            onClick={onZoom}
+            className="block cursor-zoom-in rounded-xl border border-zinc-200 transition hover:border-zinc-400 dark:border-zinc-700 dark:hover:border-zinc-500"
+            aria-label={`Zoom: ${matched!.candidate.name}`}
+          >
+            <Image
+              src={refUrl}
+              alt={`Reference: ${matched!.candidate.name}`}
+              width={240}
+              height={336}
+              unoptimized
+              className="block h-[336px] w-[240px] rounded-[10px] object-cover"
+            />
+          </button>
+        ) : (
+          <div className="flex h-[336px] w-[240px] items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800/30">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-200 text-2xl font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+              ?
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Detail column */}
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="truncate text-xl font-semibold tracking-tight sm:text-2xl">
+              {displayName}
+            </h2>
+            <p className="mt-0.5 truncate text-sm text-zinc-500">
+              {setLabel} · #{numberLabel} · {rarityLabel}
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              {insufficient && (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                  Couldn&apos;t read — needs review
+                </span>
+              )}
+              {!insufficient && lowConfidence && (
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                  Low confidence
+                </span>
+              )}
+              {card.visuallyConfirmed && (
+                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                  Visual match
+                </span>
+              )}
+              {card.recovered && (
+                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                  Recovered
+                </span>
+              )}
+              {card.language && card.language !== "EN" && card.language !== "unknown" && (
+                <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                  {card.language}
+                </span>
+              )}
+              {card.regulationMark && (
+                <span className="inline-block rounded border border-zinc-300 px-1 text-[10px] font-medium text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
+                  Reg {card.regulationMark}
+                </span>
+              )}
+            </div>
+          </div>
+          <ConfidenceBadge value={card.confidence} status={card.status} />
+        </div>
+
+        {/* Headline price */}
+        <div className="mt-5">
+          <p className="text-[11px] uppercase tracking-wider text-zinc-500">
+            Estimated value (ungraded)
+          </p>
+          {ungraded ? (
+            <p className="mt-1 text-4xl font-bold tabular-nums text-zinc-900 dark:text-zinc-50">
+              {lowConfidence && "~"}
+              {USD.format(ungraded.amount)}
+            </p>
+          ) : (
+            <p className="mt-1 text-xl italic text-zinc-400">No ungraded price available</p>
+          )}
+
+          {/* All ungraded sources inline */}
+          {ungradedBySource.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {sortedSources(ungradedBySource).map((q, i) => (
+                <SourceChip key={`${q.source}-${i}`} source={q.source} amount={q.amount} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Graded ladder — expanded by default in single-card mode */}
+        {graded.length > 0 && (
+          <div className="mt-5">
+            <p className="text-[11px] uppercase tracking-wider text-zinc-500">
+              Graded comps ({graded.length} {graded.length === 1 ? "tier" : "tiers"})
+            </p>
+            <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm sm:grid-cols-3">
+              {graded.map(({ tier, best }) => (
+                <li key={tier} className="flex items-baseline justify-between gap-2">
+                  <span className="text-zinc-500">{TIER_LABELS[tier]}</span>
+                  <span className="tabular-nums font-medium text-zinc-700 dark:text-zinc-300">
+                    {USD.format(best.amount)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Failure reason for unmatched cards */}
+        {!card.pricing.matched && !insufficient && (
+          <p className="mt-5 text-xs italic text-zinc-400">{card.pricing.reason}</p>
+        )}
+
+        {/* Actions */}
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          {matched && (
+            <ConfirmRightButton
+              cardId={matched.candidate.id}
+              matchedImageUrl={matched.candidate.image}
+              cardName={matched.candidate.name}
+              cardSet={matched.candidate.set}
+              cardNumber={matched.candidate.cardNumber}
+            />
+          )}
+          <CorrectionLink
+            originalName={card.name ?? ""}
+            originalSet={card.setCode ?? card.setCodeRaw ?? ""}
+            originalCardNumber={card.collectorNumber ?? ""}
+            startOpen={insufficient || !!lowConfidence}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function sortedSources(quotes: PriceQuote[]): PriceQuote[] {
+  // Display order: highest amount first, but always show all four if present.
+  return [...quotes].sort((a, b) => b.amount - a.amount);
+}
+
+function SourceChip({ source, amount }: { source: PriceQuoteSource; amount: number }) {
+  return (
+    <span className="inline-flex items-baseline gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-medium dark:border-zinc-700 dark:bg-zinc-800">
+      <span className="text-zinc-500">{SOURCE_LABELS[source]}</span>
+      <span className="tabular-nums text-zinc-900 dark:text-zinc-100">
+        {USD.format(amount)}
+      </span>
+    </span>
+  );
+}
+
+// ===== Binder result (multi-card list, unchanged behavior) =====
+
+function BinderResultView({ result }: { result: Extract<ScanResult, { ok: true }> }) {
   const { data, latencyMs, pricingMs, passes } = result;
   const [zoomedIdx, setZoomedIdx] = useState<number | null>(null);
 
@@ -361,7 +691,7 @@ function CardRow({ card, onZoom }: { card: PricedCard; onZoom: () => void }) {
             originalName={card.name ?? ""}
             originalSet={card.setCode ?? card.setCodeRaw ?? ""}
             originalCardNumber={card.collectorNumber ?? ""}
-            startOpen={insufficient || lowConfidence}
+            startOpen={insufficient || !!lowConfidence}
           />
         </div>
       </div>
@@ -503,14 +833,9 @@ function PriceSummary({ card }: { card: PricedCard }) {
               </li>
             ))}
           </ul>
-          <p className="mt-1 text-[10px] text-zinc-400">
-            Best of {SOURCE_LABELS[graded[0].best.source]}
-            {graded.length > 1 && graded.some((g) => g.best.source !== graded[0].best.source) && " + others"}
-          </p>
         </details>
       )}
 
-      {/* Per-source ungraded breakdown for transparency when >1 source agrees. */}
       {allUngraded.length > 1 && (
         <details className="mt-1">
           <summary className="cursor-pointer text-[11px] text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">

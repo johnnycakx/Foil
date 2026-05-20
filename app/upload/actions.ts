@@ -738,6 +738,15 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
   console.log(
     `[identifyScan] user=${r.userId} tier=${ent.tier} mode=${useMulti ? "multi" : "single"} crops=${useMulti ? boxes.length : 1} identified=${payload.cards.length} aggregatedRows=${pricedCards.length} priced=${pricedCount} recovered=${recoveredCount} visualConfirmed=${visualConfirmCount} retried=${retryCount} total=$${totalValue} unidentified=${payload.unidentifiedCount} overallConfidence=${payload.overallConfidence} visionMs=${visionMs} recoveryMs=${recoveryMs} confirmMs=${confirmMs} retryMs=${retryMs} pricingMs=${pricingMs} pricechartingMs=${pricechartingMs} pricechartingHits=${pricechartingHits} cache_read=${cacheRead} cache_write=${cacheWrite}`,
   );
+  if (!useMulti) {
+    // Tagged log so dev-log filtering by mode is trivial. Single-card mode
+    // skips detect entirely (no boxes formData entry) and runs identify on
+    // the full image. Target: <8s end-to-end for typical phone uploads.
+    const totalMs = visionMs + recoveryMs + confirmMs + retryMs + pricingMs;
+    console.log(
+      `[single] identified=${payload.cards.length} priced=${pricedCount} total=$${totalValue} latencyMs=${totalMs}`,
+    );
+  }
 
   return {
     ok: true,
