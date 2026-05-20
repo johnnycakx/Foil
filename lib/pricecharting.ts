@@ -272,3 +272,43 @@ export async function lookupMany(
 ): Promise<Array<PriceChartingResult | null>> {
   return Promise.all(inputs.map((i) => lookupPriceCharting(i).catch(() => null)));
 }
+
+export type PriceChartingCandidate = {
+  id: string;
+  productName: string;
+  consoleName: string;
+  cardNumber: string | null;     // parsed from "#N" in product-name
+};
+
+/**
+ * Multi-candidate search variant used by the partial-ID recovery pass.
+ * Returns up to `limit` ranked candidates without committing to a single
+ * winner. Skips the detail call (and the cache write) — recovery only needs
+ * cardNumbers to disambiguate, not full price ladders.
+ */
+export async function searchPriceCharting(
+  input: { name: string; setName: string },
+  limit = 5,
+): Promise<PriceChartingCandidate[]> {
+  const query = ["pokemon", input.name, input.setName]
+    .map((p) => p.toLowerCase().trim())
+    .filter((p) => p.length > 0)
+    .join(" ");
+  const url = `${BASE_URL}/products?t=${encodeURIComponent(token())}&q=${encodeURIComponent(query)}`;
+  const search = await fetchJson<ProductsResponse>(url);
+  if (!search || search.status !== "success" || !search.products?.length) return [];
+
+  return search.products
+    .slice(0, limit)
+    .map((p) => {
+      const name = p["product-name"] ?? "";
+      const m = name.match(/#(\d+)/);
+      return {
+        id: p.id != null ? String(p.id) : "",
+        productName: name,
+        consoleName: p["console-name"] ?? "",
+        cardNumber: m ? m[1] : null,
+      };
+    })
+    .filter((c) => c.id.length > 0);
+}

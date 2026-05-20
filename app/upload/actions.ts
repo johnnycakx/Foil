@@ -26,11 +26,13 @@ import {
   PRICE_NEEDS_REVIEW,
   type CardPricing,
 } from "@/lib/poketrace";
-import { lookupMany } from "@/lib/pricecharting";
+import { lookupMany, searchPriceCharting } from "@/lib/pricecharting";
 import { collectionUngradedTotal, type PriceQuote } from "@/lib/pricing";
 import { retryIdentify } from "@/lib/vision-retry";
 import { confirmMatch } from "@/lib/vision-confirm";
 import { applyLowConfidenceGate } from "@/lib/low-confidence-gate";
+import { needsRecovery, recoverPartialIdentification } from "@/lib/identify-recovery";
+import { aggregateByIdentity, identityKey } from "@/lib/aggregation";
 import { getEntitlements, recordScan } from "@/lib/entitlements";
 import { FREE_DAILY_SCAN_LIMIT } from "@/lib/stripe";
 
@@ -44,6 +46,8 @@ import { FREE_DAILY_SCAN_LIMIT } from "@/lib/stripe";
 export type PricedCard = IdentifiedCard & {
   pricing: CardPricing;
   quotes: PriceQuote[];
+  quantity: number;             // ≥ 1; aggregated binder duplicates surface as one row with quantity = N
+  recovered?: boolean;          // true when partial-ID recovery filled in collectorNumber
   retried?: boolean;
   visuallyConfirmed?: boolean;
   previousAttempt?: Pick<
@@ -280,26 +284,30 @@ export async function detectScan(formData: FormData): Promise<DetectResult> {
   }
 }
 
-function safeParseBoxes(raw: FormDataEntryValue | null): BoundingBox[] | null {
+function safeParseDetections(raw: FormDataEntryValue | null): DetectedCard[] | null {
   if (typeof raw !== "string" || raw.length === 0) return null;
   try {
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return null;
     return parsed
       .filter(
-        (b): b is BoundingBox =>
+        (b): b is DetectedCard =>
           b !== null &&
           typeof b === "object" &&
-          typeof (b as BoundingBox).x === "number" &&
-          typeof (b as BoundingBox).y === "number" &&
-          typeof (b as BoundingBox).width === "number" &&
-          typeof (b as BoundingBox).height === "number",
+          typeof (b as DetectedCard).x === "number" &&
+          typeof (b as DetectedCard).y === "number" &&
+          typeof (b as DetectedCard).width === "number" &&
+          typeof (b as DetectedCard).height === "number",
       )
       .map((b) => ({
         x: Math.max(0, Math.min(1, b.x)),
         y: Math.max(0, Math.min(1, b.y)),
         width: Math.max(0, Math.min(1, b.width)),
         height: Math.max(0, Math.min(1, b.height)),
+        detectionConfidence:
+          typeof b.detectionConfidence === "number" && Number.isFinite(b.detectionConfidence)
+            ? Math.max(0, Math.min(1, b.detectionConfidence))
+            : 0.5,
       }));
   } catch {
     return null;
@@ -341,7 +349,10 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
     };
   }
 
-  const boxes = safeParseBoxes(formData.get("boxes"));
+  const detections = safeParseDetections(formData.get("boxes"));
+  const boxes: BoundingBox[] | null = detections
+    ? detections.map((d) => ({ x: d.x, y: d.y, width: d.width, height: d.height }))
+    : null;
   const rawDetected = formData.get("detectedCount");
   const detectedCount =
     typeof rawDetected === "string" ? parseInt(rawDetected, 10) || 0 : boxes?.length ?? 0;
@@ -356,6 +367,10 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
   // Per-card crop source so we can re-feed the exact same image to the retry pass.
   // For single-pass mode there's one crop = the whole image.
   let cardSources: Source[] = [];
+  // Per-card detection (bounding box + detectionConfidence) so the aggregation
+  // pass can do IoU dedup. In single-pass mode every card maps to a synthetic
+  // full-frame detection.
+  let cardDetections: DetectedCard[] = [];
   let cacheRead = 0;
   let cacheWrite = 0;
   let inputTokens = 0;
@@ -382,6 +397,9 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
       // Map every identified card back to the crop it came from.
       // Each crop's payload typically has 0 or 1 cards; we splay sources to match.
       cardSources = outcomes.flatMap((o, i) => o.payload.cards.map(() => cropSources[i]));
+      cardDetections = outcomes.flatMap((o, i) =>
+        o.payload.cards.map(() => detections![i]),
+      );
     } else {
       const outcome = await runIdentify(r.source);
       payload = outcome.payload;
@@ -389,6 +407,15 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
       cacheWrite = outcome.cacheWrite;
       inputTokens = outcome.inputTokens;
       cardSources = payload.cards.map(() => r.source);
+      // Synthetic full-frame detection so the aggregation contract is the same
+      // in both modes.
+      cardDetections = payload.cards.map(() => ({
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+        detectionConfidence: 1,
+      }));
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
@@ -396,6 +423,52 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
     return { ok: false, error: `Vision call failed: ${message}` };
   }
   const visionMs = Date.now() - visionStart;
+
+  // Map each crop to a data URL up-front — the recovery + confirm passes both
+  // need it to compare against PokeTrace/PriceCharting candidate images.
+  const cardCropDataUrls: string[] = cardSources.map(
+    (s) => `data:${s.media_type};base64,${s.data}`,
+  );
+
+  // -------- Partial-ID recovery pass --------
+  // Vision sometimes reads NAME + SET CODE but misses the collector number
+  // (typical on Mega ex cards where the bottom edge is cropped or holo-warped).
+  // Recovery looks up name + setCode across PokeTrace + PriceCharting and
+  // populates the missing collector number when a single candidate emerges —
+  // or visually confirms one of several. Anything ambiguous stays as-is and
+  // will route to review like before.
+  const recovered = new Array<boolean>(payload.cards.length).fill(false);
+  const recoveryStart = Date.now();
+  const recoveryIndices = payload.cards
+    .map((c, i) => (needsRecovery(c) ? i : -1))
+    .filter((i) => i >= 0);
+  if (recoveryIndices.length > 0) {
+    await Promise.all(
+      recoveryIndices.map(async (i) => {
+        const c = payload.cards[i];
+        if (!c.name || !c.setCode) return;
+        try {
+          const outcome = await recoverPartialIdentification(
+            { name: c.name, setCode: c.setCode, cropDataUrl: cardCropDataUrls[i] },
+            { searchPokeTrace: searchCandidates, searchPriceCharting, confirmMatch },
+          );
+          if (outcome.resolved) {
+            payload.cards[i] = { ...c, collectorNumber: outcome.collectorNumber };
+            recovered[i] = true;
+            console.log(
+              `[identifyScan] recovery card=${i} "${c.name}" ${c.setCode} → #${outcome.collectorNumber} via=${outcome.via}`,
+            );
+          }
+        } catch (err) {
+          console.error(
+            `[identifyScan] recovery threw for card ${i}: ${err instanceof Error ? err.message : err}`,
+          );
+        }
+      }),
+    );
+  }
+  const recoveryMs = Date.now() - recoveryStart;
+  const recoveredCount = recovered.filter(Boolean).length;
 
   const pricingStart = Date.now();
   let pricings = await priceCards(
@@ -407,11 +480,6 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
       rarity: c.rarity,
       regulationMark: c.regulationMark,
     })),
-  );
-
-  // Map each crop to a data URL we can pass to UI + visual confirmation.
-  const cardCropDataUrls: string[] = cardSources.map(
-    (s) => `data:${s.media_type};base64,${s.data}`,
   );
 
   // -------- Visual confirmation pass (Sonnet 4.6, multi-image) --------
@@ -597,17 +665,58 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
 
   const pricingMs = Date.now() - pricingStart;
 
-  const pricedCards: PricedCard[] = payload.cards.map((card, i) => ({
-    ...card,
-    pricing: pricings[i],
-    quotes: mergedQuotes[i],
-    retried: retried[i] || undefined,
-    visuallyConfirmed: visuallyConfirmed[i] || undefined,
-    previousAttempt: previousAttempts[i],
-  }));
+  // -------- Aggregation: IoU dedup + quantity rollup --------
+  // Cards with the same identity (setCode + collectorNumber + variant) collapse
+  // into one row. Overlapping detections drop down to quantity=1 (the
+  // detector boxed one card twice); non-overlapping detections roll into
+  // quantity=N (binder page with multiples). Cards without a usable identity
+  // key — insufficient_information rows, unmatched-no-number cards — are left
+  // ungrouped and surface as individual review rows.
+  const aggregateItems = payload.cards.map((card, i) => {
+    const matched = pricings[i].matched ? pricings[i] : null;
+    const setCode =
+      matched && "candidate" in matched ? matched.candidate.setSlug : card.setCode;
+    const collectorNumber =
+      matched && "candidate" in matched
+        ? matched.candidate.cardNumber
+        : card.collectorNumber;
+    const variant =
+      matched && "candidate" in matched ? matched.candidate.variant : card.variant;
+    return {
+      key: identityKey({ setCode, collectorNumber, variant }),
+      box: cardDetections[i],
+      detectionConfidence: cardDetections[i].detectionConfidence,
+    };
+  });
+  const decisions = aggregateByIdentity(aggregateItems);
+  const aggregatedDrops = decisions.filter((d) => d.type === "merged").length;
+  if (aggregatedDrops > 0) {
+    console.log(
+      `[identifyScan] aggregation collapsed ${aggregatedDrops} duplicate row(s) — ${payload.cards.length} → ${payload.cards.length - aggregatedDrops}`,
+    );
+  }
+
+  const pricedCards: PricedCard[] = [];
+  for (let i = 0; i < payload.cards.length; i++) {
+    const d = decisions[i];
+    if (d.type !== "kept") continue;
+    pricedCards.push({
+      ...payload.cards[i],
+      pricing: pricings[i],
+      quotes: mergedQuotes[i],
+      quantity: d.quantity,
+      recovered: recovered[i] || undefined,
+      retried: retried[i] || undefined,
+      visuallyConfirmed: visuallyConfirmed[i] || undefined,
+      previousAttempt: previousAttempts[i],
+    });
+  }
+
   const totalValue = collectionUngradedTotal(pricedCards);
-  const pricedCount = pricings.filter((p) => p.matched && !p.lowConfidence).length;
-  const unidentifiedCount = payload.cards.filter(
+  const pricedCount = pricedCards.filter(
+    (c) => c.pricing.matched && !c.pricing.lowConfidence,
+  ).length;
+  const unidentifiedCount = pricedCards.filter(
     (c) => c.status === "insufficient_information",
   ).length;
 
@@ -625,7 +734,7 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
   const retryCount = retried.filter(Boolean).length;
   const visualConfirmCount = visuallyConfirmed.filter(Boolean).length;
   console.log(
-    `[identifyScan] user=${r.userId} tier=${ent.tier} mode=${useMulti ? "multi" : "single"} crops=${useMulti ? boxes.length : 1} identified=${payload.cards.length} priced=${pricedCount} visualConfirmed=${visualConfirmCount} retried=${retryCount} total=$${totalValue} unidentified=${payload.unidentifiedCount} overallConfidence=${payload.overallConfidence} visionMs=${visionMs} confirmMs=${confirmMs} retryMs=${retryMs} pricingMs=${pricingMs} pricechartingMs=${pricechartingMs} pricechartingHits=${pricechartingHits} cache_read=${cacheRead} cache_write=${cacheWrite}`,
+    `[identifyScan] user=${r.userId} tier=${ent.tier} mode=${useMulti ? "multi" : "single"} crops=${useMulti ? boxes.length : 1} identified=${payload.cards.length} aggregatedRows=${pricedCards.length} priced=${pricedCount} recovered=${recoveredCount} visualConfirmed=${visualConfirmCount} retried=${retryCount} total=$${totalValue} unidentified=${payload.unidentifiedCount} overallConfidence=${payload.overallConfidence} visionMs=${visionMs} recoveryMs=${recoveryMs} confirmMs=${confirmMs} retryMs=${retryMs} pricingMs=${pricingMs} pricechartingMs=${pricechartingMs} pricechartingHits=${pricechartingHits} cache_read=${cacheRead} cache_write=${cacheWrite}`,
   );
 
   return {

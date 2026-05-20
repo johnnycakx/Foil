@@ -20,10 +20,61 @@ const USD = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" 
 
 type Phase =
   | { kind: "idle" }
+  | { kind: "optimizing" }
   | { kind: "detecting" }
   | { kind: "identifying"; count: number }
   | { kind: "error"; message: string; rateLimited?: boolean }
   | { kind: "done"; result: Extract<ScanResult, { ok: true }> };
+
+const MAX_LONG_EDGE_PX = 2400;
+const RESIZE_QUALITY = 0.85;
+
+/**
+ * Browser-side canvas resize. Returns the original file if the long edge is
+ * already <= MAX_LONG_EDGE_PX, otherwise a JPEG-encoded copy capped at
+ * MAX_LONG_EDGE_PX on the long edge. This keeps Server Action body sizes
+ * predictable so binder photos don't hit the 10MB cap and lets Vision crops
+ * stay sharp without paying for redundant pixels.
+ */
+async function maybeResizeImage(file: File): Promise<File> {
+  // Non-jpegable / unsupported types: skip preprocessing.
+  if (!/^image\/(jpeg|png|webp)$/i.test(file.type)) return file;
+
+  const bitmap = await createImageBitmap(file).catch(() => null);
+  if (!bitmap) return file;
+  const long = Math.max(bitmap.width, bitmap.height);
+  if (long <= MAX_LONG_EDGE_PX) {
+    bitmap.close();
+    return file;
+  }
+  const scale = MAX_LONG_EDGE_PX / long;
+  const w = Math.round(bitmap.width * scale);
+  const h = Math.round(bitmap.height * scale);
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    bitmap.close();
+    return file;
+  }
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  bitmap.close();
+
+  const blob: Blob | null = await new Promise((resolve) =>
+    canvas.toBlob(resolve, "image/jpeg", RESIZE_QUALITY),
+  );
+  if (!blob) return file;
+
+  const renamed = file.name.replace(/\.[^.]+$/, "") + ".jpg";
+  const resized = new File([blob], renamed, { type: "image/jpeg", lastModified: Date.now() });
+
+  const mb = (n: number) => (n / 1024 / 1024).toFixed(2);
+  console.log(
+    `[upload] resized ${bitmap.width}x${bitmap.height} (${mb(file.size)}MB) -> ${w}x${h} (${mb(resized.size)}MB)`,
+  );
+  return resized;
+}
 
 export function UploadForm({ tier }: { tier?: "free" | "pro" }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -37,10 +88,12 @@ export function UploadForm({ tier }: { tier?: "free" | "pro" }) {
 
   async function submit(file: File) {
     setFileName(file.name);
+    setPhase({ kind: "optimizing" });
+    const optimized = await maybeResizeImage(file).catch(() => file);
     setPhase({ kind: "detecting" });
 
     const fdDetect = new FormData();
-    fdDetect.append("photo", file);
+    fdDetect.append("photo", optimized);
     const detection = await detectScan(fdDetect);
     if (!detection.ok) {
       setPhase({ kind: "error", message: detection.error, rateLimited: detection.rateLimited });
@@ -50,7 +103,7 @@ export function UploadForm({ tier }: { tier?: "free" | "pro" }) {
     setPhase({ kind: "identifying", count: detection.count });
 
     const fdIdentify = new FormData();
-    fdIdentify.append("photo", file);
+    fdIdentify.append("photo", optimized);
     fdIdentify.append("detectedCount", String(detection.count));
     fdIdentify.append("boxes", JSON.stringify(detection.cards));
     const result = await identifyScan(fdIdentify);
@@ -73,7 +126,8 @@ export function UploadForm({ tier }: { tier?: "free" | "pro" }) {
     if (file) submit(file);
   }
 
-  const pending = phase.kind === "detecting" || phase.kind === "identifying";
+  const pending =
+    phase.kind === "optimizing" || phase.kind === "detecting" || phase.kind === "identifying";
 
   return (
     <div className="flex flex-col gap-4">
@@ -125,6 +179,14 @@ export function UploadForm({ tier }: { tier?: "free" | "pro" }) {
 }
 
 function PhaseBanner({ phase }: { phase: Phase }) {
+  if (phase.kind === "optimizing") {
+    return (
+      <div className="flex items-center justify-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <span className="h-2 w-2 animate-pulse rounded-full bg-zinc-900 dark:bg-zinc-100" />
+        Optimizing image…
+      </div>
+    );
+  }
   if (phase.kind === "detecting") {
     return (
       <div className="flex items-center justify-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
@@ -242,6 +304,11 @@ function CardRow({ card, onZoom }: { card: PricedCard; onZoom: () => void }) {
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">
           {displayName}
+          {card.quantity > 1 && (
+            <span className="ml-2 inline-block rounded-md bg-zinc-900 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-white dark:bg-zinc-100 dark:text-zinc-900">
+              × {card.quantity}
+            </span>
+          )}
           {insufficient && (
             <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-800 dark:bg-amber-950 dark:text-amber-300">
               Couldn&apos;t read — needs review
@@ -411,6 +478,11 @@ function PriceSummary({ card }: { card: PricedCard }) {
             ungraded · best of {allUngraded.length} {allUngraded.length === 1 ? "source" : "sources"}
             {lc && " · low confidence"}
           </span>
+          {card.quantity > 1 && (
+            <span className="text-xs font-medium tabular-nums text-zinc-700 dark:text-zinc-300">
+              · × {card.quantity} = {USD.format(Math.round(ungraded.amount * card.quantity * 100) / 100)}
+            </span>
+          )}
         </div>
       ) : (
         <p className="text-xs italic text-zinc-400">No ungraded price available</p>

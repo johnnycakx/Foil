@@ -24,6 +24,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    // Default is 1MB. Binder photos easily exceed it before reaching the
+    // server. Client-side resize keeps typical uploads well under this cap;
+    // 10MB is the ceiling for pathological inputs that resize doesn't help.
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
+  },
 };
 
 export default nextConfig;

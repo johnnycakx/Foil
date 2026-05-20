@@ -107,16 +107,18 @@ export function quotesAtTier(quotes: PriceQuote[], tier: GradeTier): PriceQuote[
 }
 
 /**
- * Sum each card's best ungraded quote into a collection total. Cards with no
- * ungraded data contribute 0 — never extrapolated from graded prices.
+ * Sum each card's best ungraded quote × quantity into a collection total.
+ * Cards with no ungraded data contribute 0 — never extrapolated from graded
+ * prices. Quantity defaults to 1 when the field is omitted (back-compat).
  */
 export function collectionUngradedTotal(
-  cards: Array<{ quotes: PriceQuote[] }>,
+  cards: Array<{ quotes: PriceQuote[]; quantity?: number }>,
 ): number {
   let total = 0;
   for (const c of cards) {
     const best = bestUngraded(c.quotes);
-    if (best) total += best.amount;
+    if (!best) continue;
+    total += best.amount * (c.quantity ?? 1);
   }
   return Math.round(total * 100) / 100;
 }
