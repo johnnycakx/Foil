@@ -18,7 +18,7 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 **Follow-ups added to ROADMAP.** None.
 
-**State at session end.** Local commit not yet pushed at time of writing. Run `node --experimental-strip-types scripts/generate-briefing.ts` before any new strategy chat to refresh the briefing.
+**State at session end.** All work pushed to origin/main (latest `6e0a5e5`). Working tree clean of project changes. Run `node --experimental-strip-types scripts/generate-briefing.ts` before any new strategy chat to refresh the briefing.
 
 ---
 
