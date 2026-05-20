@@ -10,6 +10,12 @@ export type PostFrontmatter = {
   updated?: string;
   tags: string[];
   pillar?: string;
+  /** Optional primary keyword (filled by the content engine; absent on
+   *  hand-written posts where the title doubles as the keyword). */
+  primaryKeyword?: string;
+  /** Optional FAQ block — when present, the [slug] route emits FAQPage
+   *  JSON-LD in addition to the Article schema. */
+  faq?: { question: string; answer: string }[];
 };
 
 const POSTS_DIR = path.join(process.cwd(), "app", "blog", "posts");
@@ -32,8 +38,21 @@ function readFrontmatter(file: string): PostFrontmatter {
     ? data.tags.filter((t): t is string => typeof t === "string")
     : [];
   const pillar = typeof data.pillar === "string" ? data.pillar : undefined;
+  const primaryKeyword =
+    typeof data.primaryKeyword === "string" ? data.primaryKeyword : undefined;
+  const faq = Array.isArray(data.faq)
+    ? data.faq
+        .map((entry: unknown) => {
+          if (!entry || typeof entry !== "object") return null;
+          const e = entry as Record<string, unknown>;
+          const q = typeof e.question === "string" ? e.question : null;
+          const a = typeof e.answer === "string" ? e.answer : null;
+          return q && a ? { question: q, answer: a } : null;
+        })
+        .filter((e): e is { question: string; answer: string } => e !== null)
+    : undefined;
 
-  return { slug, title, description, date, updated, tags, pillar };
+  return { slug, title, description, date, updated, tags, pillar, primaryKeyword, faq };
 }
 
 export function getAllPosts(): PostFrontmatter[] {

@@ -140,6 +140,17 @@ npm run build — Production build
 stripe listen --forward-to localhost:3000/api/webhooks/stripe — Webhook tunnel for paywall testing
 supabase db push — Apply pending migrations (after linking project)
 
+Weekly SEO content engine
+
+The content engine drafts a new blog post every Monday from the cluster backlog in docs/seo-strategy.md, then opens a review PR. John reviews in the Vercel preview and merges to publish — or closes the PR to skip the topic.
+
+- node --experimental-strip-types scripts/generate-weekly-post.ts — pick next backlog topic, draft via Claude Sonnet 4.6, write to app/blog/posts/_pending/{slug}.mdx
+- node --experimental-strip-types scripts/refresh-internal-links.ts [slug] — scan for incoming + outgoing link opportunities for the most recently shipped post (or the named slug); writes docs/internal-link-suggestions.md
+- node --experimental-strip-types scripts/competitive-gap-scan.ts [url ...] — pull competitor URLs, diff headings against Foil's topic coverage, write docs/competitive-gaps.md
+- Scheduled run: .github/workflows/weekly-content.yml — Mondays 14:03 UTC, requires repo secret ANTHROPIC_API_KEY (and optionally WEEKLY_POST_WEBHOOK_URL for ping)
+
+Pending posts live under app/blog/posts/_pending/ (underscore prefix → ignored by app/blog/posts-meta.ts so they don't enter generateStaticParams). To publish: git mv app/blog/posts/_pending/{slug}.mdx app/blog/posts/{slug}.mdx, then run refresh-internal-links.
+
 Hard rules for new /goal commands
 
 Any goal touching identification must read docs/foil-card-id-framework.md first.

@@ -90,6 +90,38 @@ export function CardScannerEmbed({
 }
 
 /**
+ * Renders a FAQ section. Posts pass the same {question, answer} array that
+ * lives in frontmatter — keeping content in one place means the rendered FAQ
+ * and the FAQPage JSON-LD never drift apart. Use as `<FAQ items={faq} />` from
+ * MDX (the page route passes the parsed frontmatter array down) or pass items
+ * inline for one-off cases.
+ */
+export function FAQ({
+  items,
+  heading = "Frequently asked questions",
+}: {
+  items: ReadonlyArray<{ question: string; answer: string }>;
+  heading?: string;
+}) {
+  if (!items.length) return null;
+  return (
+    <section className="not-prose mt-12">
+      <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+        {heading}
+      </h2>
+      <div className="mt-6 space-y-6">
+        {items.map((q) => (
+          <div key={q.question}>
+            <h3 className="text-lg font-semibold text-white">{q.question}</h3>
+            <p className="mt-2 text-zinc-300">{q.answer}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/**
  * Internal pillar/cluster link with a trailing arrow. Used in MDX to make
  * topic-cluster cross-links visually distinct from inline prose links so the
  * site graph is obvious to both readers and crawlers.
@@ -138,6 +170,7 @@ function Anchor({
 const components: MDXComponents = {
   Callout,
   CardScannerEmbed,
+  FAQ,
   TopicLink,
   a: Anchor,
   pre: (props: HTMLAttributes<HTMLPreElement>) => (

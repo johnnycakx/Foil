@@ -2,6 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllPosts, getPost, getPostSlugs } from "../posts-meta";
+import {
+  articleSchema,
+  faqPageSchema,
+  schemaGraph,
+  serializeJsonLd,
+} from "@/lib/seo/schema-helpers";
 
 export const dynamicParams = false;
 
@@ -85,25 +91,14 @@ export default async function BlogPostPage({
     .slice(0, 3);
 
   const base = siteUrl();
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: post.title,
-    description: post.description,
-    datePublished: post.date,
-    dateModified: post.updated ?? post.date,
-    author: { "@type": "Organization", name: "Foil" },
-    publisher: {
-      "@type": "Organization",
-      name: "Foil",
-      url: base,
-    },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `${base}/blog/${post.slug}`,
-    },
-    keywords: post.tags.join(", "),
-  };
+  const urlPath = `/blog/${post.slug}`;
+  // Article + (optional) FAQPage under one @graph wrapper. Every post gets
+  // Article; posts that ship an `faq` frontmatter array also get FAQPage.
+  // Both are filtered by schemaGraph() so an empty FAQ list cleanly drops out.
+  const jsonLd = schemaGraph(
+    articleSchema({ frontmatter: post, urlPath, siteUrl: base }),
+    post.faq && post.faq.length ? faqPageSchema(post.faq) : null,
+  );
 
   return (
     <div className="flex min-h-dvh flex-1 flex-col bg-[#0B1428] text-white antialiased">
@@ -128,9 +123,7 @@ export default async function BlogPostPage({
       <main className="mx-auto w-full max-w-3xl flex-1 px-5 pt-10 pb-20 sm:px-8 sm:pt-16">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
-          }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
         />
 
         <article>
