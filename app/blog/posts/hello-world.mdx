@@ -1,0 +1,71 @@
+---
+title: "Hello, Foil — what this blog is for"
+description: "A short post to verify the MDX pipeline and explain the editorial premise: practical, evidence-driven posts on Pokémon card valuation."
+date: "2026-05-20"
+tags: ["meta"]
+pillar: "pokemon-card-value-calculator"
+---
+
+This is the first post on the Foil blog. It also doubles as a smoke test for the MDX pipeline — every custom component the blog supports renders below.
+
+## What this blog is for
+
+The Foil scanner answers one question fast: *what is this Pokémon card actually worth right now?* This blog is for the questions that need more than a single number — how to read a [Japanese set code](/japanese-pokemon-cards-value), why a PSA 9 sometimes outsells a PSA 10, and how to spot the cards that are quietly worth more than the listing.
+
+<Callout variant="info" title="What you'll see here">
+Posts skew toward sourcing, condition grading, and Japanese-set deep dives — the corners of the hobby where the data Foil pulls actually changes a buying decision.
+</Callout>
+
+## Things the components do
+
+Below is the full set of MDX building blocks. If you're reading this on the live site, all three should be styled.
+
+<Callout variant="warning">
+**Warning callouts** flag a footgun — a misread that costs money. Use sparingly so the signal stays sharp.
+</Callout>
+
+<Callout variant="tip">
+**Tip callouts** are for non-obvious shortcuts — "use the rarity symbol, not the artwork" — surfaced where a reader would otherwise miss them.
+</Callout>
+
+### Inline scanner
+
+When a post leads to a clear buying decision, the inline scanner is the call to action:
+
+<CardScannerEmbed />
+
+You can also override the copy per-post, when the prompt should be more specific:
+
+<CardScannerEmbed
+  headline="Got a Japanese card you can't read?"
+  body="Foil reads the set code and collector number — you don't need to translate the name."
+  cta="Scan a Japanese card"
+/>
+
+### Topic links
+
+Cross-links between posts use `TopicLink` so the cluster graph is visually obvious:
+
+- <TopicLink href="/japanese-pokemon-cards-value">Japanese Pokémon cards value</TopicLink>
+- <TopicLink href="/pokemon-card-value-calculator">Pokémon card value calculator</TopicLink>
+- <TopicLink href="/pokemon-card-condition-guide">Pokémon card condition guide</TopicLink>
+
+### Markdown still works
+
+A regular bulleted list:
+
+- Charizard, Base Set, 4/102 — the obvious one.
+- Lugia, Neo Genesis, 9/111 — the underrated one.
+- Umbreon Gold Star, POP Series 5, 17/17 — the absurd one.
+
+And a code block, for the rare times we need one:
+
+```ts
+const card = {
+  name: "Charizard",
+  setCode: "BS",
+  collectorNumber: "4/102",
+};
+```
+
+That's it. The pipeline works.

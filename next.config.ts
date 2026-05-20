@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import createMDX from "@next/mdx";
 
 // Parse the Supabase project host out of NEXT_PUBLIC_SUPABASE_URL so
 // next/image accepts the public-bucket URLs cacheCardImage emits.
@@ -13,6 +14,8 @@ function supabaseStorageHost(): string {
 }
 
 const nextConfig: NextConfig = {
+  // .mdx pages render directly via file-based routing alongside .tsx
+  pageExtensions: ["ts", "tsx", "md", "mdx"],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "cdn.poketrace.com" },
@@ -34,4 +37,21 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Plugin names must be strings (not imported functions) so Turbopack can pass
+// them across the Rust boundary. Serializable options only.
+const withMDX = createMDX({
+  options: {
+    remarkPlugins: ["remark-gfm"],
+    rehypePlugins: [
+      [
+        "rehype-pretty-code",
+        {
+          theme: "github-dark-dimmed",
+          keepBackground: false,
+        },
+      ],
+    ],
+  },
+});
+
+export default withMDX(nextConfig);
