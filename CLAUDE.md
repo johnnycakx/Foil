@@ -112,6 +112,25 @@ lib/detect-filter.ts — Bounding-box filtering + IoU dedup
 app/upload/actions.ts — Pipeline orchestrator (detectScan, identifyScan)
 app/upload/upload-form.tsx — UI: PokeTrace reference images + condition picker + live total
 
+Auth gate (lib/supabase/proxy.ts)
+
+The proxy is default-deny — every request redirects unauthenticated users to /login unless its path is in the PUBLIC_ROUTES allowlist. When you add a new route under app/, decide which list it belongs on:
+
+PUBLIC (marketing/SEO/auth/3rd-party — add to PUBLIC_ROUTES in lib/supabase/proxy.ts):
+- / (homepage)
+- /japanese-pokemon-cards-value, /pokemon-card-value-calculator, /pokemon-card-condition-guide (pillars)
+- /blog and /blog/* (blog index + every post)
+- /login (sign-in form)
+- /auth/* (magic-link callback — MUST be public or the magic link redirect-loops and consumes the OTP)
+- /api/webhooks/* (Stripe and any other 3rd-party POSTs with their own signature scheme)
+- /robots.txt, /sitemap.xml, /opengraph-image, /twitter-image, /manifest.webmanifest (metadata routes)
+
+GATED (user-data — do NOT add to PUBLIC_ROUTES; they self-gate via redirect("/login") after getUser()):
+- /upload, /account
+- Any future /api/scan, /api/identify, /api/cards endpoints
+
+The contract is pinned in lib/__tests__/proxy.test.ts. If you add or remove a public route, update that test.
+
 Common commands
 
 npm run dev — Dev server, port 3000 (Turbopack)
