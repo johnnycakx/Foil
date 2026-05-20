@@ -25,6 +25,27 @@ function read(relPath: string): string {
 }
 
 /**
+ * Inline Claude Code's `@filename.md` import directive. The directive resolves
+ * inline at Claude Code runtime — but in a Claude.ai web chat, it's just a
+ * literal string that does nothing. We resolve it here so the briefing is
+ * self-contained no matter where it's pasted.
+ */
+function resolveClaudeImports(text: string): string {
+  return text.replace(/^@([\w./-]+\.md)$/gm, (_match, importPath: string) => {
+    const imported = read(importPath);
+    return imported.trim();
+  });
+}
+
+/**
+ * Strip a trailing horizontal-rule line so concatenating sections with my own
+ * `---` dividers doesn't produce stacked dividers.
+ */
+function trimTrailingHr(text: string): string {
+  return text.replace(/\n---\s*$/, "").trim();
+}
+
+/**
  * SESSION-LOG entries are separated by `---`. The "top entry" is everything
  * from the first `## ` heading up to (but not including) the next `---`.
  */
@@ -107,10 +128,10 @@ function highMediumRisks(): string {
   return out.join("\n").trim() || "(no High/Medium risks open)";
 }
 
-const claudeMd = read("CLAUDE.md");
-const sessionEntry = topSessionLogEntry();
-const roadmap = roadmapNowAndNext();
-const risks = highMediumRisks();
+const claudeMd = trimTrailingHr(resolveClaudeImports(read("CLAUDE.md")));
+const sessionEntry = trimTrailingHr(topSessionLogEntry());
+const roadmap = trimTrailingHr(roadmapNowAndNext());
+const risks = trimTrailingHr(highMediumRisks());
 
 const today = new Date().toISOString().slice(0, 10);
 

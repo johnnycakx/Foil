@@ -7,7 +7,11 @@ bring it up to speed on the build before discussing anything new.
 
 ## What Foil is + the stack
 
-@AGENTS.md
+<!-- BEGIN:nextjs-agent-rules -->
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+<!-- END:nextjs-agent-rules -->
 Foil
 Consumer AI app that valuates Pokemon TCG card collections from a photo in <10 seconds. Target user: someone scrolling Facebook Marketplace seeing a Pokemon card listing who wants to know if it's worth buying before another buyer commits.
 Stack
@@ -221,21 +225,17 @@ e16c1e4 — feat: detect filter + PokeTrace images + per-card condition picker
 
 ## Most recent session
 
-## 2026-05-20 — Session 4: Content engine v2 (full autonomy)
+## 2026-05-20 — Session 5: Second-brain docs + briefing generator
 
-**Commits:** `8848382`, `ce4f6d3`, `c969388`, `ad316e5`, `749b21a`
+**Commits:** `7689801`, plus this commit
 
-**Summary.** Four-stage build: (1) MDX blog infrastructure + topic-cluster strategy doc, (2) two new pillar landing pages for the value calculator and condition guide, (3) auth-proxy fix to stop the new marketing surfaces from getting gated to `/login`, (4) autonomous content engine v1 (drafts to `_pending/`, opens review PR), (5) full-autonomy upgrade (8 quality gates, 3-retry loop, twice-weekly direct-commit-to-main, SERP context injection via Brave Search, Foil data injection via Supabase). Two real posts shipped end-to-end via the autonomous pipeline: `how-to-read-a-japanese-pokemon-card` and `near-mint-vs-lightly-played-…`. Both passed all 8 gates on first attempt.
+**Summary.** Shipped the 5 second-brain docs (ROADMAP, DECISIONS, SESSION-LOG, ENV-VARS, RISKS) and the CLAUDE.md hard contract that requires every future goal to read + update them. Follow-on: built `scripts/generate-briefing.ts`, which composes a single ~22KB briefing file (`docs/BRIEFING.md`) from CLAUDE.md + the top SESSION-LOG entry + ROADMAP NOW/NEXT + High/Medium risks. Use case: paste the briefing as the opening message of a fresh Claude.ai web chat to bring it cold-start up to current state without losing context to the message limit. Generator overwrites BRIEFING.md on each run so it always reflects the latest docs.
 
-**Key decisions made.**
-- [ADR-004](DECISIONS.md#adr-004--brave-search-for-serp-context-injection-2kmo-free-fits-2xweek-cadence) Brave Search over SerpApi/DataForSEO.
-- [ADR-005](DECISIONS.md#adr-005--twice-weekly-content-cadence-mondays--thursdays-at-1403-utc) Twice-weekly Mon + Thu 14:03 UTC.
-- [ADR-006](DECISIONS.md#adr-006--full-autonomy-no-human-review-step-gates-as-the-safety-net) Full autonomy, no review step.
-- [ADR-007](DECISIONS.md#adr-007--8-quality-gates--3-retries--skip-on-failure-not-fail-the-build) Skip-on-failure (not fail-the-build) on gate exhaustion.
+**Key decisions made.** None new — applied the existing contract.
 
-**Follow-ups added to ROADMAP.** Items #1-9 (NOW + NEXT) are net-new this session. The fabrication risk discussed in ADR-006 is tracked as [RISKS.md R-001](RISKS.md).
+**Follow-ups added to ROADMAP.** None.
 
-**State at session end.** Both commits pushed to `main` (`c969388..749b21a`). Vercel auto-deployed. Local working tree clean. First scheduled cron fires Mon 2026-05-25 14:03 UTC — blocked on GitHub Actions secrets (ROADMAP item #1).
+**State at session end.** Local commit not yet pushed at time of writing. Run `node --experimental-strip-types scripts/generate-briefing.ts` before any new strategy chat to refresh the briefing.
 
 ---
 
@@ -261,8 +261,6 @@ e16c1e4 — feat: detect filter + PokeTrace images + per-card condition picker
 | 7 | **Run `searchfit-seo:ai-visibility` baseline** | Once domain is GSC-verified. Establishes the "before" snapshot we'll re-measure monthly. | Document the report location in `docs/SESSION-LOG.md`. |
 | 8 | **Expand `seo-strategy.md` before week-10 topic exhaustion** | Backlog currently has ~35 cluster topics. At 2/week we run out around 2026-08-19. Need to add another 10-15 cluster topics OR introduce a new pillar. | Either ask the engine to propose new topics from competitive-gap reports, or hand-curate from PokeScope's blog. |
 | 9 | **Scrydex API migration** | Triggered by waitlist hitting ~50 signups OR PokeTrace rate limits biting. Scrydex has per-card endpoints we'd need for programmatic per-card landing pages. | Tracked separately in [DECISIONS.md](DECISIONS.md). |
-
----
 
 ---
 
