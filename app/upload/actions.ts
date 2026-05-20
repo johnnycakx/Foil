@@ -271,7 +271,7 @@ export async function detectScan(formData: FormData): Promise<DetectResult> {
     const detectMs = Date.now() - start;
     const s = filtered.stats;
     console.log(
-      `[detect] raw=${s.raw} areaDrop=${s.areaDrop} confDrop=${s.confDrop} aspectDrop=${s.aspectDrop} iouMerge=${s.iouMerge} final=${s.final}`,
+      `[detect] raw=${s.raw} areaDrop=${s.areaDrop} confDrop=${s.confDrop} aspectDrop=${s.aspectDrop} aspectMode=${s.aspectMode} iouMerge=${s.iouMerge} final=${s.final}`,
     );
     console.log(
       `[detectScan] user=${r.userId} tier=${ent.tier} count=${filtered.cards.length} detectMs=${detectMs}`,
@@ -674,6 +674,8 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
   // ungrouped and surface as individual review rows.
   const aggregateItems = payload.cards.map((card, i) => {
     const matched = pricings[i].matched ? pricings[i] : null;
+    const name =
+      matched && "candidate" in matched ? matched.candidate.name : card.name;
     const setCode =
       matched && "candidate" in matched ? matched.candidate.setSlug : card.setCode;
     const collectorNumber =
@@ -683,7 +685,7 @@ export async function identifyScan(formData: FormData): Promise<ScanResult> {
     const variant =
       matched && "candidate" in matched ? matched.candidate.variant : card.variant;
     return {
-      key: identityKey({ setCode, collectorNumber, variant }),
+      key: identityKey({ name, setCode, collectorNumber, variant }),
       box: cardDetections[i],
       detectionConfidence: cardDetections[i].detectionConfidence,
     };

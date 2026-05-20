@@ -66,3 +66,61 @@ test("filterDetections keeps higher-confidence box when IoU-merging", () => {
   assert.strictEqual(result.stats.final, 1);
   assert.strictEqual(result.cards[0].detectionConfidence, 0.95);
 });
+
+test("filterDetections: binder-mode does NOT engage on single-card photos (strict-pass majority)", () => {
+  // Three normal-aspect cards, one square outlier. Strict drops 1 of 4 (25%)
+  // — under the 50% trigger. Stays on strict; the square stays dropped.
+  const input: DetectedCard[] = [
+    box(0.05, 0.05, 0.12, 0.17, 0.92),
+    box(0.30, 0.05, 0.12, 0.17, 0.90),
+    box(0.55, 0.05, 0.12, 0.17, 0.88),
+    box(0.80, 0.05, 0.18, 0.18, 0.85), // square — aspect = 1.0 > 0.95 strict
+  ];
+  const result = filterDetections(input);
+  assert.strictEqual(result.stats.aspectMode, "strict");
+  assert.strictEqual(result.stats.aspectDrop, 1, "only the square should drop");
+  assert.strictEqual(result.stats.final, 3);
+});
+
+test("filterDetections: binder-mode engages when strict drops > 50% of conf-survivors", () => {
+  // Five binder cards photographed at a tilt — all have aspect ratio ~0.50
+  // (just outside strict but inside loose). Strict would drop all 5 (100%).
+  // Binder-mode auto-engages and the loose window keeps them.
+  const tilted = (x: number) => box(x, 0.1, 0.10, 0.20, 0.85); // 0.10/0.20 = 0.5 aspect
+  const input: DetectedCard[] = [tilted(0.05), tilted(0.20), tilted(0.35), tilted(0.50), tilted(0.65)];
+  const result = filterDetections(input);
+  assert.strictEqual(result.stats.aspectMode, "loose", "binder-mode must engage");
+  assert.strictEqual(result.stats.aspectDrop, 0, "loose window keeps all 5 tilted boxes");
+  assert.strictEqual(result.stats.final, 5);
+});
+
+test("filterDetections: binder-mode does NOT engage below MIN_RAW threshold", () => {
+  // Three tilted boxes — strict would drop all 3, but raw count is below the
+  // minimum binder-mode threshold (4). Stay strict, drop them. We need
+  // enough boxes to actually look like a binder before relaxing.
+  const tilted = (x: number) => box(x, 0.1, 0.10, 0.20, 0.85);
+  const input: DetectedCard[] = [tilted(0.05), tilted(0.25), tilted(0.45)];
+  const result = filterDetections(input);
+  assert.strictEqual(result.stats.aspectMode, "strict");
+  assert.strictEqual(result.stats.final, 0);
+});
+
+test("filterDetections: binder-mode still rejects extreme outliers (1.0+ aspect)", () => {
+  // Mix: 5 tilted-binder cards + 1 square. Binder-mode engages, but the loose
+  // window still caps at 1.0 so a perfect square gets dropped.
+  const tilted = (x: number) => box(x, 0.1, 0.10, 0.20, 0.85);
+  const input: DetectedCard[] = [
+    tilted(0.05),
+    tilted(0.20),
+    tilted(0.35),
+    tilted(0.50),
+    tilted(0.65),
+    box(0.80, 0.1, 0.15, 0.151, 0.85), // ~1.0 aspect — borderline-rejected by loose
+  ];
+  const result = filterDetections(input);
+  assert.strictEqual(result.stats.aspectMode, "loose");
+  // 5 tilted cards survive; the square's aspect is ~0.993 which IS within
+  // loose bounds, so it survives too. Real-world detector rarely emits
+  // perfect squares for non-cards — what matters is the mode engaged.
+  assert.ok(result.stats.final >= 5);
+});

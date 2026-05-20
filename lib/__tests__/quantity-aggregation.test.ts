@@ -99,18 +99,104 @@ test("aggregation: singleton groups pass through with quantity 1", () => {
   assert.deepStrictEqual(result[0], { type: "kept", quantity: 1 });
 });
 
-test("identityKey: missing setCode or collectorNumber returns null (ungroupable)", () => {
-  assert.strictEqual(identityKey({ setCode: null, collectorNumber: "037", variant: "Holofoil" }), null);
-  assert.strictEqual(identityKey({ setCode: "MEG", collectorNumber: null, variant: "Holofoil" }), null);
+test("aggregation: two review-state cards with fallback key (name+setCode) merge into × 2", () => {
+  // The Mega Lopunny ex case: Vision reads name + setCode for both copies but
+  // can't read the collector number on either. With the fallback identityKey
+  // both rows share "name:mega lopunny ex|MEG|holofoil" and aggregate.
+  const fallbackKey = identityKey({
+    name: "Mega Lopunny ex",
+    setCode: "MEG",
+    collectorNumber: null,
+    variant: "Holofoil",
+  });
+  assert.ok(fallbackKey, "fallback key must be non-null when name + setCode present");
+
+  const items = [
+    { key: fallbackKey, box: box(0.05, 0.05, 0.12, 0.17), detectionConfidence: 0.9 },
+    { key: fallbackKey, box: box(0.60, 0.05, 0.12, 0.17), detectionConfidence: 0.85 },
+  ];
+  const result = aggregateByIdentity(items);
+  assert.deepStrictEqual(result[0], { type: "kept", quantity: 2 });
+  assert.deepStrictEqual(result[1], { type: "merged", mergedInto: 0 });
 });
 
-test("identityKey: variant case-insensitive + whitespace tolerant", () => {
-  const a = identityKey({ setCode: "MEG", collectorNumber: "037/094", variant: "Holofoil" });
-  const b = identityKey({ setCode: "meg", collectorNumber: "037/094", variant: " holofoil " });
+test("identityKey: strong tier — uses setCode + collectorNumber + variant when all present", () => {
+  const key = identityKey({
+    name: "Vulpix",
+    setCode: "MEW",
+    collectorNumber: "037",
+    variant: "Normal",
+  });
+  assert.strictEqual(key, "MEW|037|normal");
+});
+
+test("identityKey: fallback tier — uses name + setCode when collectorNumber is null", () => {
+  // Mega Lopunny ex review state: Vision read name + setCode but couldn't
+  // read the collector number. Two review rows of the same name in the same
+  // set should merge — the user can't disambiguate them either.
+  const key = identityKey({
+    name: "Mega Lopunny ex",
+    setCode: "MEG",
+    collectorNumber: null,
+    variant: "Holofoil",
+  });
+  assert.strictEqual(key, "name:mega lopunny ex|MEG|holofoil");
+});
+
+test("identityKey: fallback differs from strong tier — no collision", () => {
+  // The fallback prefix "name:" ensures a fallback key never accidentally
+  // collides with a strong-tier key, even if string concatenation happens
+  // to land on the same characters.
+  const fallback = identityKey({
+    name: "X",
+    setCode: "MEG",
+    collectorNumber: null,
+    variant: "Normal",
+  });
+  const strong = identityKey({
+    name: "Y",
+    setCode: "MEG",
+    collectorNumber: "X",
+    variant: "Normal",
+  });
+  assert.notStrictEqual(fallback, strong);
+});
+
+test("identityKey: ungroupable — no setCode means no key (can't safely merge)", () => {
+  // Without a setCode we can't tell if two same-name cards are the same
+  // printing. Stay separate.
+  assert.strictEqual(
+    identityKey({ name: "Vulpix", setCode: null, collectorNumber: "037", variant: "Normal" }),
+    null,
+  );
+  assert.strictEqual(
+    identityKey({ name: null, setCode: null, collectorNumber: null, variant: null }),
+    null,
+  );
+});
+
+test("identityKey: variant case-insensitive + whitespace tolerant (strong tier)", () => {
+  const a = identityKey({
+    name: "Vulpix",
+    setCode: "MEG",
+    collectorNumber: "037/094",
+    variant: "Holofoil",
+  });
+  const b = identityKey({
+    name: "Vulpix",
+    setCode: "meg",
+    collectorNumber: "037/094",
+    variant: " holofoil ",
+  });
   assert.strictEqual(a, b);
 });
 
 test("identityKey: null variant collapses to 'unknown'", () => {
-  const key = identityKey({ setCode: "MEG", collectorNumber: "037/094", variant: null });
+  const key = identityKey({
+    name: "Vulpix",
+    setCode: "MEG",
+    collectorNumber: "037/094",
+    variant: null,
+  });
   assert.strictEqual(key, "MEG|037/094|unknown");
 });

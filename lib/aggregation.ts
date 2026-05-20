@@ -111,17 +111,33 @@ export function aggregateByIdentity(items: AggregateInput[]): AggregateDecision[
 }
 
 /**
- * Convenience: derive the identity key for an items[]. Cards without a usable
- * (setCode + collectorNumber + variant) tuple return null and stay
- * ungrouped — we never collapse rows we can't positively prove are the
- * same card.
+ * Derive the identity key for an items[]. Two-tier strategy:
+ *
+ *   1. Strong identity: setCode + collectorNumber + variant. Two cards with
+ *      this tuple in common are unambiguously the same printing.
+ *   2. Fallback identity: name + setCode + variant. Used when Vision read
+ *      enough of the card to know its name and set but couldn't read the
+ *      collector number (typical Mega ex review-state failure). Two review
+ *      rows of the same name-in-the-same-set safely collapse — there are
+ *      occasional sets with two cards of the same name (different printings)
+ *      but the user would expect to merge them anyway since neither is
+ *      individually identifiable.
+ *
+ * Returns null only when neither tier yields enough to safely group — a card
+ * with no name AND no collectorNumber stays its own row.
  */
 export function identityKey(parts: {
+  name: string | null;
   setCode: string | null;
   collectorNumber: string | null;
   variant: string | null;
 }): string | null {
-  if (!parts.setCode || !parts.collectorNumber) return null;
   const v = parts.variant?.trim().toLowerCase() || "unknown";
-  return `${parts.setCode.toUpperCase()}|${parts.collectorNumber}|${v}`;
+  if (parts.setCode && parts.collectorNumber) {
+    return `${parts.setCode.toUpperCase()}|${parts.collectorNumber}|${v}`;
+  }
+  if (parts.name && parts.setCode) {
+    return `name:${parts.name.trim().toLowerCase()}|${parts.setCode.toUpperCase()}|${v}`;
+  }
+  return null;
 }

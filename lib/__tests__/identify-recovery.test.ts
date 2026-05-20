@@ -145,7 +145,12 @@ test("recovery: 3 candidates, visual confirm picks one with HIGH → resolved vi
   }
 });
 
-test("recovery: 5 candidates, visual confirm returns MEDIUM → stays unresolved", async () => {
+test("recovery: 5 candidates, visual confirm returns MEDIUM → RESOLVED (re-verification context)", async () => {
+  // Recovery is a re-verification context (Vision already pinned name + set;
+  // confirmMatch is only picking the collector number). Accept "medium" —
+  // this is the Mega Lopunny ex case from the foil.jpg eyeball test where the
+  // model said "this is probably card N" without high confidence and the
+  // strict gate left the card in review unnecessarily.
   const result = await recoverPartialIdentification(
     { name: "Mega Lopunny ex", setCode: "MEG", cropDataUrl: "data:image/jpeg;base64,xxx" },
     {
@@ -158,7 +163,24 @@ test("recovery: 5 candidates, visual confirm returns MEDIUM → stays unresolved
       ],
       searchPriceCharting: async () => [],
       confirmMatch: async () =>
-        ({ chosenIndex: 0, confidence: "medium", reasoning: "" }) as ConfirmResult,
+        ({ chosenIndex: 2, confidence: "medium", reasoning: "" }) as ConfirmResult,
+    },
+  );
+  assert.strictEqual(result.resolved, true);
+  if (result.resolved) {
+    assert.strictEqual(result.collectorNumber, "030/094");
+    assert.strictEqual(result.via, "visual_confirm");
+  }
+});
+
+test("recovery: LOW confidence still does NOT resolve (floor stays)", async () => {
+  const result = await recoverPartialIdentification(
+    { name: "Mega Lopunny ex", setCode: "MEG", cropDataUrl: "data:image/jpeg;base64,xxx" },
+    {
+      searchPokeTrace: async () => [ptCandidate("001"), ptCandidate("020"), ptCandidate("030")],
+      searchPriceCharting: async () => [],
+      confirmMatch: async () =>
+        ({ chosenIndex: 0, confidence: "low", reasoning: "" }) as ConfirmResult,
     },
   );
   assert.deepStrictEqual(result, { resolved: false, reason: "multiple_unconfirmed" });

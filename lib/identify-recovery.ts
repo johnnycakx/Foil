@@ -166,7 +166,15 @@ export async function recoverPartialIdentification(
     return { resolved: false, reason: "lookup_error" };
   }
 
-  if (confirm.chosenIndex === null || confirm.confidence !== "high") {
+  // Re-verification context: we already know the name + setCode are right;
+  // confirmMatch is only picking the collector number from a short list. That
+  // is a safer call than a fresh visual identification from a blank slate, so
+  // we accept "medium" here even though the fresh-rescue path in actions.ts
+  // stays at "high" only.
+  if (confirm.chosenIndex === null) {
+    return { resolved: false, reason: "multiple_unconfirmed" };
+  }
+  if (confirm.confidence !== "high" && confirm.confidence !== "medium") {
     return { resolved: false, reason: "multiple_unconfirmed" };
   }
 

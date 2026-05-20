@@ -190,7 +190,11 @@ test("PricedCard shape does not include cropDataUrl (user crops stay server-side
   );
 });
 
-test("low-confidence match is demoted on medium confidence too", async () => {
+test("low-confidence match SURVIVES on medium confidence (re-verification context)", async () => {
+  // Reverification context: priceCard already text-matched this card. The
+  // gate is only confirming the printing visually. Accept medium — under
+  // Vision-LLM nondeterminism the same photo flickers high ↔ medium across
+  // runs ($741 ↔ $437 on the binder eyeball test).
   const card = makeCard();
   const pricing = makeLowConfPricing();
 
@@ -209,9 +213,33 @@ test("low-confidence match is demoted on medium confidence too", async () => {
   );
 
   const out = result.pricings[0];
-  assert.strictEqual(out.matched, false, "medium confidence should NOT pass the gate for lowConfidence cards");
-  if (!out.matched) {
-    assert.strictEqual(out.failure.code, "low_confidence_unconfirmed");
+  assert.strictEqual(out.matched, true, "medium MUST pass the gate when re-verifying an already-matched card");
+  if (out.matched) {
+    assert.strictEqual(out.lowConfidence, false, "lowConfidence flag must clear on medium-confidence rescue");
   }
+  assert.strictEqual(result.cards[0].status, "identified");
+  assert.strictEqual(result.visuallyConfirmed[0], true);
+});
+
+test("low-confidence match is demoted only on LOW confidence or null pick", async () => {
+  // Floor stays — chosenIndex=null or confidence=low both demote.
+  const card = makeCard();
+  const pricing = makeLowConfPricing();
+
+  const result = await applyLowConfidenceGate(
+    {
+      pricings: [pricing],
+      cards: [card],
+      cardCropDataUrls: ["data:image/jpeg;base64,aGVsbG8="],
+    },
+    {
+      confirmMatch: async () =>
+        ({ chosenIndex: 0, confidence: "low", reasoning: "stub" }) as ConfirmResult,
+      priceByCardId: async () => null,
+      searchCandidates: async () => [],
+    },
+  );
+
+  assert.strictEqual(result.pricings[0].matched, false, "low confidence must still demote");
   assert.strictEqual(result.cards[0].status, "insufficient_information");
 });

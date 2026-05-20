@@ -106,7 +106,17 @@ export async function applyLowConfidenceGate(
         return;
       }
 
-      if (result.chosenIndex !== null && result.confidence === "high") {
+      // Re-verification context: priceCard already matched this card by text
+      // (the lowConfidence flag means name-only fuzzy match), and confirmMatch
+      // is verifying that the chosen printing actually looks like the user's
+      // crop. Accept "medium" here — under Vision-LLM nondeterminism the same
+      // photo flickers between high/medium runs ($741 ↔ $437 on the binder
+      // image). Fresh visual rescue from a blank slate (actions.ts CONFIRMABLE
+      // block) stays at "high" only — different context, different risk.
+      if (
+        result.chosenIndex !== null &&
+        (result.confidence === "high" || result.confidence === "medium")
+      ) {
         const picked = candidates[result.chosenIndex];
         if (picked.id === p.candidate.id) {
           pricings[i] = { ...p, lowConfidence: false };
