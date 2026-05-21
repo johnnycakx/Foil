@@ -41,6 +41,14 @@ test("3rd-party webhooks are public — Stripe POSTs with its own signature", ()
   assert.equal(isPublicRoute("/api/webhooks/stripe"), true);
 });
 
+test("newsletter subscribe endpoint is public — unauth visitors can opt in", () => {
+  // The EmailCapture component currently calls a Server Action colocated with
+  // the blog page (POSTs to /blog/<slug>, which is already public). Pin
+  // /api/subscribe as the contract anchor so refactoring to a discrete route
+  // can't accidentally regress to gated.
+  assert.equal(isPublicRoute("/api/subscribe"), true);
+});
+
 test("metadata routes are public so crawlers can fetch them", () => {
   assert.equal(isPublicRoute("/robots.txt"), true);
   assert.equal(isPublicRoute("/sitemap.xml"), true);

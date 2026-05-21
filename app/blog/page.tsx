@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllPosts } from "./posts-meta";
+import { EmailCapture } from "@/components/email-capture";
 
 const TITLE = "Foil Blog — Pokémon card valuation, scanning, and grading";
 const DESCRIPTION =
@@ -117,8 +118,11 @@ export default function BlogIndexPage() {
       </main>
 
       <footer className="border-t border-white/5 bg-[#0B1428]">
-        <div className="mx-auto w-full max-w-4xl px-5 py-8 text-sm text-zinc-500 sm:px-8">
-          © {new Date().getFullYear()} Foil. Pokémon TCG card valuation, in seconds.
+        <div className="mx-auto w-full max-w-4xl px-5 py-10 sm:px-8">
+          <EmailCapture source="site-footer" variant="footer" />
+          <p className="mt-8 text-sm text-zinc-500">
+            © {new Date().getFullYear()} Foil. Pokémon TCG card valuation, in seconds.
+          </p>
         </div>
       </footer>
     </div>

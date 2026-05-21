@@ -23,6 +23,8 @@ When you add a new env var anywhere in the codebase, add a row here in the same 
 | `AUTO_PUBLISH_WEEKLY_POSTS` | Kill-switch for autonomy. `"false"` reverts to `_pending/` drafts; any other value (or unset) → publish direct to `main`. | GitHub Actions repository **variable** (not secret) | Public | `scripts/generate-weekly-post.ts` |
 | `WEEKLY_POST_WEBHOOK_URL` | URL POSTed to on successful publish + on gate-exhaustion failure. Free-form — Discord, Slack, Zapier, n8n. | `.env.local` · GitHub Actions (autonomy) | Secret | `scripts/generate-weekly-post.ts` |
 | `VERCEL_DEPLOY_HOOK_URL` | Vercel Deploy Hook URL — POSTed by the autonomous workflow after a successful commit to trigger a production build. Decouples the bot's commit author from Vercel team membership (see [ADR-008](DECISIONS.md#adr-008--vercel-deploy-hook-for-autonomous-content-not-github-integration-auto-deploys)). | GitHub Actions (autonomy workflow only) | Secret | `.github/workflows/weekly-content.yml` — "Trigger Vercel deploy" step |
+| `BEEHIIV_API_KEY` | Beehiiv API key for newsletter subscription writes. Server-side only — CORS blocks browser calls (see [ADR-010](DECISIONS.md#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key)). | `.env.local` · Vercel (production + preview + development) | Secret | `lib/beehiiv.ts` |
+| `BEEHIIV_PUBLICATION_ID` | Beehiiv publication ID (prefixed `pub_…`). Identifies the "Foil" publication for every SDK call. | `.env.local` · Vercel (production + preview + development) | Secret | `lib/beehiiv.ts` |
 
 ---
 

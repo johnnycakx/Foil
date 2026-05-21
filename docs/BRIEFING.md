@@ -1,4 +1,4 @@
-# Foil — Project Briefing (auto-generated 2026-05-20)
+# Foil — Project Briefing (auto-generated 2026-05-21)
 
 Paste this whole file as the opening message of a fresh Claude.ai chat to
 bring it up to speed on the build before discussing anything new.
@@ -113,6 +113,10 @@ priceCard — PokeTrace lookup priority: exact (collectorNumber + setCode) → f
 confirmMatch — visual side-by-side for low-confidence matches AND ambiguous PokeTrace results
 retryIdentify — Opus retry for cards still failing on no_candidates / low_score / regulation_mismatch
 
+Newsletter (Beehiiv)
+
+`lib/beehiiv.ts` is the ONLY module allowed to import `@beehiiv/sdk`. Beehiiv blocks browser-origin requests via CORS and the API key must stay server-side — call `subscribeEmail({ email, source })` from a Server Action (`app/actions/subscribe.ts`) or another server module, never from a Client Component. If a new feature needs another Beehiiv endpoint (Posts, segments, custom fields), add it to `lib/beehiiv.ts` and re-export — keep the import boundary intact. See [ADR-010](docs/DECISIONS.md) for the rationale.
+
 Key files
 
 docs/foil-card-id-framework.md — Pokemon Card Identification Framework. Read before touching vision.ts or poketrace.ts.
@@ -143,6 +147,24 @@ GATED (user-data — do NOT add to PUBLIC_ROUTES; they self-gate via redirect("/
 - Any future /api/scan, /api/identify, /api/cards endpoints
 
 The contract is pinned in lib/__tests__/proxy.test.ts. If you add or remove a public route, update that test.
+
+Local CLI tooling for autonomous infra changes
+
+The repo has three CLIs installed and authenticated. Future goals SHOULD use them directly instead of writing manual rollout playbooks for John. Reserve manual playbooks for actions the CLIs genuinely can't do (e.g. accepting a domain-transfer email, clicking through a Stripe Connect onboarding).
+
+- **`vercel` CLI** — v54.3.0, authenticated as `johnnycakx`. Project linked to `team_MYkF82HXU8It3L9TjpJia1zB / prj_0FH8NcWH3AIRUI6FnF719QaEC4ug` (foil). Use for: project settings, env vars, deploy hooks, domains, deploys, log inspection. See `vercel:*` plugin skills (also installed) for guided flows — `vercel:env`, `vercel:deploy`, `vercel:env-vars`, `vercel:deployments-cicd`, `vercel:vercel-cli`.
+- **Vercel Plugin for Claude Code** — installed during `vercel link`. Surfaces ~30 `vercel:*` skills (full list shows in the session skills sidebar). Prefer the skills over raw `vercel ...` calls when one matches the task — they encode platform-specific guardrails.
+- **`gh` CLI** — v2.92.0, authenticated as `johnnycakx` (keyring, HTTPS protocol, scopes: gist/read:org/repo/workflow). Use for: GitHub repo secrets (`gh secret set`), workflow dispatch (`gh workflow run`), releases, PR creation, PR review/inspection, issue management.
+
+**Routing rule for new goals:**
+- Touches Vercel project settings / env vars / deploy hooks / domains → `vercel ...`
+- Touches GitHub secrets / workflow dispatch / releases / PRs → `gh ...`
+- Touches both (e.g. "wire a new env var end-to-end") → run both, no UI clicks
+- Touches neither → ignore this section, code as normal
+
+**Path caveat (transient):** If `gh` isn't on the shell PATH (`which gh` returns nothing in a Bash tool call), the binary still exists at `C:\Program Files\GitHub CLI\gh.exe`. Invoke as `& "C:\Program Files\GitHub CLI\gh.exe" <args>` from PowerShell, or restart Claude Code to pick up the updated PATH. This caveat goes away on the next session start.
+
+**Kill-switch** (revoke autonomous infra access): `gh auth logout` + Vercel UI → Account Settings → Tokens → Revoke. Both are session-bound credentials with no machine-wide effect beyond their respective CLI scopes.
 
 Common commands
 
@@ -225,17 +247,24 @@ e16c1e4 — feat: detect filter + PokeTrace images + per-card condition picker
 
 ## Most recent session
 
-## 2026-05-20 — Session 5: Second-brain docs + briefing generator
+## 2026-05-21 — Session 8: Beehiiv email capture on the blog
 
-**Commits:** `7689801`, plus this commit
+**Commits:** this commit only
 
-**Summary.** Shipped the 5 second-brain docs (ROADMAP, DECISIONS, SESSION-LOG, ENV-VARS, RISKS) and the CLAUDE.md hard contract that requires every future goal to read + update them. Follow-on: built `scripts/generate-briefing.ts`, which composes a single ~22KB briefing file (`docs/BRIEFING.md`) from CLAUDE.md + the top SESSION-LOG entry + ROADMAP NOW/NEXT + High/Medium risks. Use case: paste the briefing as the opening message of a fresh Claude.ai web chat to bring it cold-start up to current state without losing context to the message limit. Generator overwrites BRIEFING.md on each run so it always reflects the latest docs.
+**Summary.** Wired up newsletter capture end-to-end. `@beehiiv/sdk` (v0.1.9) + `zod` installed. `lib/beehiiv.ts` is the single allowed entry point for any Beehiiv call (CORS forces server-side; the import boundary now enforces it structurally). `subscribeEmail({ email, source })` zod-validates input, calls `subscriptions.create` with the fixed UTM payload from [ADR-010](DECISIONS.md#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key) (`utm_source="foil-blog"`, `utm_medium="email-capture"`, `utm_campaign={source}`, `referring_site="foiltcg.com"`), `reactivate_existing=true`, `send_welcome_email=false`. Rate-limit (429) errors retry once with linear backoff; other errors collapse to a generic `Could not subscribe. Try again.` so Beehiiv internals never leak. `app/actions/subscribe.ts` is the Server Action front door; `components/email-capture.tsx` is the Client Component reusing Foil's existing tokens from `app/page.tsx` (no new design surface invented). Rendered inline at the end of every `app/blog/[slug]/page.tsx` post and in the shared footer on `/blog` + `/blog/[slug]`. `BEEHIIV_API_KEY` + `BEEHIIV_PUBLICATION_ID` mirrored to Vercel across production + preview + development via `vercel env add` (Session 7's CLI tooling paid off — no UI clicks). `ENV-VARS.md` updated with both rows.
 
-**Key decisions made.** None new — applied the existing contract.
+Test coverage: `lib/__tests__/beehiiv.test.ts` mocks the SDK via `__setClientForTests`, pinning (a) bad-input short-circuit before any network call, (b) the exact UTM payload shape, (c) one rate-limit retry then success, (d) reactivation collapses to `{ok:true,status:"subscribed"}`, (e) non-rate-limit errors never throw. `proxy.test.ts` pins `/api/subscribe` as the public-route anchor for the contract even though the Server Action piggy-backs on the host page today.
 
-**Follow-ups added to ROADMAP.** None.
+**13 legacy subscribers context.** Beehiiv shows 13 pre-existing subscribers from earlier experimentation. They're dead-list — the future segment that excludes them is deferred. Baseline for the verification step below is 13.
 
-**State at session end.** Local commit not yet pushed at time of writing. Run `node --experimental-strip-types scripts/generate-briefing.ts` before any new strategy chat to refresh the briefing.
+**End-to-end verification (via Beehiiv MCP, deferred to next session — see "State at session end").** First MCP call OAuths interactively, so the verification step is the natural next-session opener. Plan: `get_publication` → assert `name="Foil"`, `list_subscriptions` → baseline 13, POST Server Action with `claude-code-verification+{ts}@foiltcg.com` → `{ok:true}`, recount → 14, document below.
+
+**Key decisions made.**
+- [ADR-010](DECISIONS.md#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key) Official SDK + single-field form + server-side key. Newsletter draft generator deferred until ≥50 signups.
+
+**Follow-ups added to ROADMAP.** None today — deferred items (welcome automation, sender change, legacy-sub segment, Posts API draft generator, Recommendations Network) are tracked in [ADR-010](DECISIONS.md#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key) rather than ROADMAP because they're "after signups exist" triggers, not week-scoped work.
+
+**State at session end.** All tests green (160 / 160 incl. 6 new beehiiv contract tests). Typecheck clean. Working tree carries the new lib + action + component + tests + docs. Push lands next.
 
 ---
 

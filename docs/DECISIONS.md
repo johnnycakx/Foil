@@ -157,6 +157,34 @@ Future goals MUST prefer `vercel ...` / `gh ...` calls over writing manual UI pl
 
 **Kill-switch.** `gh auth logout` revokes GitHub access. Vercel UI → Account Settings → Tokens → Revoke kills Vercel access. Both are session-scoped credentials with no machine-wide effect beyond their respective CLI scopes.
 
+---
+
+## ADR-010 — Beehiiv for newsletter list management: official SDK, single-field form, server-side key
+
+**Date:** 2026-05-21
+**Status:** Accepted
+
+**Context.** Blog posts ship twice a week via the autonomous content engine ([ADR-006](#adr-006--full-autonomy-no-human-review-step-gates-as-the-safety-net)) but there's no surface that lets a reader keep up without re-checking the feed. The waitlist sign-up form on the homepage captures launch-intent leads, not "I want to keep reading" leads — different funnel, different list. Beehiiv was already set up as the newsletter host (publication `pub_8bc42240-1964-4252-b798-7e0a6f135526`, domains `newsletter.foiltcg.com` + `mail.foiltcg.com` verified end-to-end with SPF/DKIM/DMARC). 13 dead-list subscribers from prior experimentation are still on the publication — they'll get scoped out via a future segment, tracked separately.
+
+Three implementation options:
+
+1. **Beehiiv embed form (iframe)** — fastest to ship, but breaks the design system, slows pages, and routes through `embeds.beehiiv.com` which gets ad-blocked.
+2. **Direct browser → Beehiiv API call** — looks clean from a UX perspective but Beehiiv's CORS policy blocks browser origins entirely. The browser also can't safely hold the API key.
+3. **Form → Server Action → official `@beehiiv/sdk`** — server-side key, no iframe, native form styling, sets us up to call other Beehiiv endpoints (segments, posts) from the same wrapper later.
+
+**Decision.** Option 3. Single shared `lib/beehiiv.ts` is the only place that imports `@beehiiv/sdk` (so the CORS constraint becomes a structural one, not a code-review one). `subscribeEmail({ email, source })` is the only export today; future Posts API + segments work extends the same wrapper. UTM payload is fixed per ADR-010: `utm_source="foil-blog"`, `utm_medium="email-capture"`, `utm_campaign={source}`, `referring_site="foiltcg.com"`. `reactivate_existing=true` so previously-unsubscribed visitors get re-added cleanly; `send_welcome_email=false` because there's no automation wired yet and the welcome flow ships in a later goal. The Server Action returns generic copy on failure — Beehiiv error text never reaches the user.
+
+Newsletter draft generation via Beehiiv's Posts API is **deferred until ≥50 signups** — it's not worth building a draft pipeline for an audience that's still effectively pre-launch. Cross-refs [ADR-008](#adr-008--vercel-deploy-hook-for-autonomous-content-not-github-integration-auto-deploys) (the deploy-hook plumbing that makes the blog content reliable enough to be worth subscribing to) and [ADR-009](#adr-009--local-cli-tooling-for-autonomous-infra-changes) (which gave us `vercel env add` so this goal could mirror keys end-to-end without UI clicks).
+
+**Consequences.**
+
+- **Pro:** Email capture renders inline with the blog's design tokens. No iframe, no third-party styling, no ad-blocker exposure on the form itself.
+- **Pro:** API key is never shipped to the client bundle. Audit boundary lives at the import — anything importing `@beehiiv/sdk` outside `lib/beehiiv.ts` is the bug.
+- **Pro:** Server Action piggy-backs on the host page's URL (`/blog/[slug]`, `/blog`), both already in `PUBLIC_ROUTES`. No new auth-gate surface to maintain.
+- **Con:** Reactivation vs. new-create is opaque from the response shape — we collapse both to `{ ok: true, status: "subscribed" }`. If we ever want different copy for "welcome back" vs. "you're in", we'd need to call `subscriptions.getByEmail` first. Not worth the extra round-trip today.
+- **Con:** No welcome automation yet — first email a subscriber sees is the next scheduled post. Acceptable until the welcome-flow goal ships.
+- **Caveat:** Sender currently shows as the default Beehiiv address. Change to `john@mail.foiltcg.com` is deferred to a future config goal (Beehiiv UI; CLI doesn't expose it).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

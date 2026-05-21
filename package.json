@@ -7,10 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --no-warnings --test lib/__tests__/vision-prompt.test.ts lib/__tests__/vision-confirm.test.ts lib/__tests__/low-confidence-gate.test.ts lib/__tests__/detect-filter.test.ts lib/__tests__/pricecharting.test.ts lib/__tests__/poketrace-quotes.test.ts lib/__tests__/identify-recovery.test.ts lib/__tests__/quantity-aggregation.test.ts lib/__tests__/single-card-mode.test.ts lib/__tests__/waitlist-attribution.test.ts lib/__tests__/proxy.test.ts lib/__tests__/seo-schema.test.ts lib/__tests__/seo-keyword-backlog.test.ts lib/__tests__/seo-internal-linking.test.ts lib/__tests__/seo-competitive-analysis.test.ts lib/__tests__/seo-content-engine.test.ts lib/__tests__/seo-quality-gates.test.ts lib/__tests__/seo-serp-fetch.test.ts lib/__tests__/seo-data-injection.test.ts"
+    "test": "node --experimental-strip-types --no-warnings --test lib/__tests__/vision-prompt.test.ts lib/__tests__/vision-confirm.test.ts lib/__tests__/low-confidence-gate.test.ts lib/__tests__/detect-filter.test.ts lib/__tests__/pricecharting.test.ts lib/__tests__/poketrace-quotes.test.ts lib/__tests__/identify-recovery.test.ts lib/__tests__/quantity-aggregation.test.ts lib/__tests__/single-card-mode.test.ts lib/__tests__/waitlist-attribution.test.ts lib/__tests__/proxy.test.ts lib/__tests__/seo-schema.test.ts lib/__tests__/seo-keyword-backlog.test.ts lib/__tests__/seo-internal-linking.test.ts lib/__tests__/seo-competitive-analysis.test.ts lib/__tests__/seo-content-engine.test.ts lib/__tests__/seo-quality-gates.test.ts lib/__tests__/seo-serp-fetch.test.ts lib/__tests__/seo-data-injection.test.ts lib/__tests__/beehiiv.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.96.0",
+    "@beehiiv/sdk": "^0.1.9",
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
     "@next/mdx": "^16.2.6",
@@ -24,7 +25,8 @@
     "react-dom": "19.2.4",
     "rehype-pretty-code": "^0.14.3",
     "remark-gfm": "^4.0.1",
-    "stripe": "^22.1.1"
+    "stripe": "^22.1.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

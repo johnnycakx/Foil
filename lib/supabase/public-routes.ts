@@ -43,6 +43,12 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // 3rd-party webhooks — Stripe POSTs here with its own signature scheme.
   { kind: "prefix", path: "/api/webhooks" },
 
+  // Newsletter subscribe endpoint. Today the EmailCapture component invokes a
+  // colocated Server Action so the POST piggy-backs on the host page (already
+  // public). Listed here as the contract anchor: if we ever extract to a real
+  // /api/subscribe route, anonymous visitors must still be able to reach it.
+  { kind: "exact", path: "/api/subscribe" },
+
   // Next.js metadata routes. Already crawler-bound; redirecting them to
   // /login would break SEO indexing of robots.txt / sitemap.xml entirely.
   { kind: "exact", path: "/robots.txt" },

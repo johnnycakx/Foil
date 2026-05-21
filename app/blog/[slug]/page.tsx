@@ -9,6 +9,7 @@ import {
   serializeJsonLd,
 } from "@/lib/seo/schema-helpers";
 import { FAQ } from "@/mdx-components";
+import { EmailCapture } from "@/components/email-capture";
 
 export const dynamicParams = false;
 
@@ -158,6 +159,8 @@ export default async function BlogPostPage({
               FAQPage JSON-LD above. Posts can omit `faq` in frontmatter and
               this just no-renders. */}
           {post.faq && post.faq.length > 0 && <FAQ items={post.faq} />}
+
+          <EmailCapture source={`blog-${post.slug}`} variant="inline" />
         </article>
 
         {related.length > 0 && (
@@ -185,8 +188,11 @@ export default async function BlogPostPage({
       </main>
 
       <footer className="border-t border-white/5 bg-[#0B1428]">
-        <div className="mx-auto w-full max-w-3xl px-5 py-8 text-sm text-zinc-500 sm:px-8">
-          © {new Date().getFullYear()} Foil. Pokémon TCG card valuation, in seconds.
+        <div className="mx-auto w-full max-w-3xl px-5 py-10 sm:px-8">
+          <EmailCapture source="site-footer" variant="footer" />
+          <p className="mt-8 text-sm text-zinc-500">
+            © {new Date().getFullYear()} Foil. Pokémon TCG card valuation, in seconds.
+          </p>
         </div>
       </footer>
     </div>

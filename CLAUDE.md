@@ -100,6 +100,10 @@ priceCard — PokeTrace lookup priority: exact (collectorNumber + setCode) → f
 confirmMatch — visual side-by-side for low-confidence matches AND ambiguous PokeTrace results
 retryIdentify — Opus retry for cards still failing on no_candidates / low_score / regulation_mismatch
 
+Newsletter (Beehiiv)
+
+`lib/beehiiv.ts` is the ONLY module allowed to import `@beehiiv/sdk`. Beehiiv blocks browser-origin requests via CORS and the API key must stay server-side — call `subscribeEmail({ email, source })` from a Server Action (`app/actions/subscribe.ts`) or another server module, never from a Client Component. If a new feature needs another Beehiiv endpoint (Posts, segments, custom fields), add it to `lib/beehiiv.ts` and re-export — keep the import boundary intact. See [ADR-010](docs/DECISIONS.md) for the rationale.
+
 Key files
 
 docs/foil-card-id-framework.md — Pokemon Card Identification Framework. Read before touching vision.ts or poketrace.ts.

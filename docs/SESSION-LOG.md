@@ -8,6 +8,27 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-21 — Session 8: Beehiiv email capture on the blog
+
+**Commits:** this commit only
+
+**Summary.** Wired up newsletter capture end-to-end. `@beehiiv/sdk` (v0.1.9) + `zod` installed. `lib/beehiiv.ts` is the single allowed entry point for any Beehiiv call (CORS forces server-side; the import boundary now enforces it structurally). `subscribeEmail({ email, source })` zod-validates input, calls `subscriptions.create` with the fixed UTM payload from [ADR-010](DECISIONS.md#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key) (`utm_source="foil-blog"`, `utm_medium="email-capture"`, `utm_campaign={source}`, `referring_site="foiltcg.com"`), `reactivate_existing=true`, `send_welcome_email=false`. Rate-limit (429) errors retry once with linear backoff; other errors collapse to a generic `Could not subscribe. Try again.` so Beehiiv internals never leak. `app/actions/subscribe.ts` is the Server Action front door; `components/email-capture.tsx` is the Client Component reusing Foil's existing tokens from `app/page.tsx` (no new design surface invented). Rendered inline at the end of every `app/blog/[slug]/page.tsx` post and in the shared footer on `/blog` + `/blog/[slug]`. `BEEHIIV_API_KEY` + `BEEHIIV_PUBLICATION_ID` mirrored to Vercel across production + preview + development via `vercel env add` (Session 7's CLI tooling paid off — no UI clicks). `ENV-VARS.md` updated with both rows.
+
+Test coverage: `lib/__tests__/beehiiv.test.ts` mocks the SDK via `__setClientForTests`, pinning (a) bad-input short-circuit before any network call, (b) the exact UTM payload shape, (c) one rate-limit retry then success, (d) reactivation collapses to `{ok:true,status:"subscribed"}`, (e) non-rate-limit errors never throw. `proxy.test.ts` pins `/api/subscribe` as the public-route anchor for the contract even though the Server Action piggy-backs on the host page today.
+
+**13 legacy subscribers context.** Beehiiv shows 13 pre-existing subscribers from earlier experimentation. They're dead-list — the future segment that excludes them is deferred. Baseline for the verification step below is 13.
+
+**End-to-end verification (via Beehiiv MCP, deferred to next session — see "State at session end").** First MCP call OAuths interactively, so the verification step is the natural next-session opener. Plan: `get_publication` → assert `name="Foil"`, `list_subscriptions` → baseline 13, POST Server Action with `claude-code-verification+{ts}@foiltcg.com` → `{ok:true}`, recount → 14, document below.
+
+**Key decisions made.**
+- [ADR-010](DECISIONS.md#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key) Official SDK + single-field form + server-side key. Newsletter draft generator deferred until ≥50 signups.
+
+**Follow-ups added to ROADMAP.** None today — deferred items (welcome automation, sender change, legacy-sub segment, Posts API draft generator, Recommendations Network) are tracked in [ADR-010](DECISIONS.md#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key) rather than ROADMAP because they're "after signups exist" triggers, not week-scoped work.
+
+**State at session end.** All tests green (160 / 160 incl. 6 new beehiiv contract tests). Typecheck clean. Working tree carries the new lib + action + component + tests + docs. Push lands next.
+
+---
+
 ## 2026-05-21 — Session 7: Local CLI tooling for autonomous infra changes
 
 **Commits:** this commit only
