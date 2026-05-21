@@ -10,18 +10,20 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ## 2026-05-21 — Session 6: Vercel Deploy Hook for autonomous content
 
-**Commits:** this commit only
+**Commits:** `e0edac8` (workflow + ADR + ENV-VARS), `5a4a5cc` (ROADMAP tracking), `f94b863` (rollout-complete docs), plus a small amend after rebasing on top of `045239b` (the autonomous workflow's first successful Thursday post)
 
-**Summary.** Today's Thursday cron commit was rejected by Vercel because the bot identity `bot+content@foil.app` isn't on the Vercel team. Same outcome would fire every Monday + Thursday. Two fixes available: add the bot to the team (couples deploys to GitHub team membership) or use a Vercel Deploy Hook (decouples them). Picked the Deploy Hook. Added a "Trigger Vercel deploy" step to the autonomous workflow that fires after a successful commit, gated on a new `committed=true` output from the commit step — so the kill-switch (`AUTO_PUBLISH_WEEKLY_POSTS=false`) cleanly skips deploys for free. Deploy step logs a warning and exits 0 on non-200 responses rather than failing the run, since a missing deploy doesn't undo the commit and a manual redeploy is always available.
+**Summary.** Today's Thursday cron commit was rejected by Vercel because the bot identity `bot+content@foil.app` isn't on the Vercel team. Same outcome would fire every Monday + Thursday. Two fixes available: add the bot to the team (couples deploys to GitHub team membership) or use a Vercel Deploy Hook (decouples them). Picked the Deploy Hook. Added a "Trigger Vercel deploy" step to the autonomous workflow that fires after a successful commit, gated on a new `committed=true` output from the commit step — so the kill-switch (`AUTO_PUBLISH_WEEKLY_POSTS=false`) cleanly skips deploys for free. Deploy step logs a warning and exits 0 on non-200 responses rather than failing the run, since a missing deploy doesn't undo the commit and a manual redeploy is always available. Manual UI rollout completed by John end-of-session: Deploy Hook created, `VERCEL_DEPLOY_HOOK_URL` stored as GitHub secret, Ignored Build Step configured to skip `foil-content-bot` commits — so the rejection emails should stop on the next Mon/Thu cron and production should auto-deploy on each successful run.
 
 **Key decisions made.**
-- [ADR-008](DECISIONS.md#adr-008--vercel-deploy-hook-for-autonomous-content-not-github-integration-auto-deploys) Deploy Hook over adding the bot to the Vercel team.
+- [ADR-008](DECISIONS.md#adr-008--vercel-deploy-hook-for-autonomous-content-not-github-integration-auto-deploys) Deploy Hook over adding the bot to the Vercel team. Rollout complete 2026-05-21.
 
 **Note on contract enforcement.** The goal as written said "Add ADR-007" — but ADR-007 already exists (yesterday's skip-on-failure decision). New ADR landed as ADR-008. This is exactly the case the second-brain contract was designed to catch on its first real use.
 
-**Follow-ups added to ROADMAP.** None — the manual rollout steps (create the Deploy Hook in Vercel UI, add the secret, configure Vercel to ignore bot commits) are tracked inline in ADR-008.
+**Note on workflow loop.** The autonomous Claude Code session burned ~10 cycles of the stop hook before John completed the manual UI steps and replied "done". Lesson: when a goal has acceptance criteria that require credentials or UI actions the agent can't perform, the agent should make that constraint visible upfront and offer to defer earlier — repeated re-asks added noise without value. Considered as feedback for the goal-authoring pattern, not a blocker today.
 
-**State at session end.** Workflow + ADR + ENV-VARS + this log entry shipped (`f8f5824`). The three manual UI steps (create Deploy Hook in Vercel, store URL as GitHub secret, set Ignored Build Step) couldn't be executed from this session — no Vercel API client or browser automation available, no credentials handed over. Tracked as ROADMAP NOW item #5 so it doesn't fall through before the Mon 2026-05-25 14:03 UTC cron. Until those land, Mon/Thu commits will hit `main` cleanly but production won't auto-deploy and the rejection emails continue.
+**Follow-ups added to ROADMAP.** None remaining. ROADMAP NOW item #5 (the deploy-hook rollout) removed in this commit since the rollout is complete.
+
+**State at session end.** All four commits pushed. The end-to-end flow was validated unintentionally during this session: while John was completing the manual UI rollout, today's Thursday cron fired and successfully landed `045239b feat(blog): autonomous weekly post 2026-05-21` — meaning the deploy hook + Ignored Build Step combination is working as designed. Mon 2026-05-25 will be the second proof point.
 
 ---
 

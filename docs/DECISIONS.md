@@ -100,7 +100,7 @@ Add new ADRs at the bottom. Don't edit historic ADRs except to flip their status
 ## ADR-008 — Vercel Deploy Hook for autonomous content, not GitHub-integration auto-deploys
 
 **Date:** 2026-05-21
-**Status:** Accepted
+**Status:** Accepted — rollout complete 2026-05-21 (Deploy Hook created, `VERCEL_DEPLOY_HOOK_URL` stored as GitHub secret, Ignored Build Step configured to skip `foil-content-bot` commits)
 
 **Context.** The autonomous content workflow (see [ADR-006](#adr-006--full-autonomy-no-human-review-step-gates-as-the-safety-net)) commits as `bot+content@foil.app` via the workflow's configured git identity. Vercel's GitHub integration auto-deploys commits to `main` only when the commit author is on the Vercel team — and the bot identity isn't. The first Thursday cron (2026-05-21) shipped a commit fine but Vercel rejected the deploy and sent a rejection email. Same outcome guaranteed every Monday + Thursday.
 
