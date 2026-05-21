@@ -23,7 +23,26 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 - `lib/__tests__/newsletter-quality-gates.test.ts` (13 tests) — every gate has a positive AND negative case, including a multi-failure case to prove no early-exit. The R-001 guard (gate d) has both a fabrication-rejection case and a comma-normalization passing case.
 - `lib/__tests__/newsletter-draft-generator.test.ts` (10 tests) — happy path, parse-tolerance, stripHtml, retry-after-fabrication, 3-strike exhaustion, empty-input rejection without an API call. Stubs Anthropic via prototype patch (cheapest seam — production code unaltered).
 
-**End-to-end MCP verification** — recorded once Beehiiv responds. Goal step 14 calls for: pick a recent blog slug → run generator via temp script → `mcp__beehiiv__list_posts(status="draft")` → `get_post_content` → assert blog link + Foil CTA + word count in band. Result captured at the bottom of this entry after verification runs.
+**End-to-end MCP verification — Posts API gated to Enterprise tier, exactly as ADR-011 anticipated.**
+
+Picked `near-mint-vs-lightly-played-the-difference-that-doubles-a-card-s-price` (the most recent autonomous post) and ran the production pipeline via a temp script. Generator output:
+
+| Field | Value |
+|---|---|
+| Subject (35 chars) | "The NM/LP gap that costs you 38–45%" |
+| Preview text | "One rounded corner, $180 gone — here's the math" |
+| 3rd candidate | "Why sellers miss this NM disqualifier every time" |
+| Word count | 529 (gate band: 300-600) ✓ |
+| Quality gates | all 6 passed first attempt ✓ |
+| Source blog word count | 1,499 |
+
+Subject + body sit cleanly inside every quality gate. `createDraftPost` then hit Beehiiv with `status="draft"` and the API returned **403 Forbidden, `SEND_API_NOT_ENTERPRISE_PLAN`** ("This endpoint is only available on the enterprise plan") — exactly the failure mode ADR-011 calls out under Consequences. Our wrapper caught the error, logged it, returned `{ok:false}`. The blog publish path would have been unaffected.
+
+`mcp__beehiiv__list_posts(publication_id, status="draft")` confirms zero new drafts landed (three pre-existing entries from Jan 2025 are unrelated Oracle/SDR-era content from before Foil). So the verification result is "every layer of our pipeline works; Beehiiv's tier gates the final upload" — the architectural contract held.
+
+**What this means for the cron.** Mondays + Thursdays 14:03 UTC will now run the newsletter step. Until John upgrades to Beehiiv Enterprise (or Beehiiv exposes Posts API on lower tiers), every run will: ✓ generate a passing draft, ✗ get 403'd by the API, log the warning, send the failure webhook, exit 0. Blog publishes are unaffected. Workflow logs will show one warning per run; that's the signal to tier-upgrade if/when the newsletter value justifies it.
+
+**Subject line + body are real artifacts available for review** — the structured logs from this verification capture the exact subject candidates Claude produced for that blog post, so John can sanity-check the tone/voice quality without needing the Beehiiv UI surface. Tone read: terse, direct, no padding. Subject "The NM/LP gap that costs you 38–45%" is on-brand.
 
 **State at session end.** Tests + typecheck green. Newsletter pipeline is opt-in via env vars — Mon 2026-05-25 cron will be the first scheduled fire that touches it.
 
