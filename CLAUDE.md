@@ -192,6 +192,8 @@ Reading failure logs: GitHub Actions → weekly-content workflow run → "Genera
 
 Disabling autonomy: set repository variable (not secret) AUTO_PUBLISH_WEEKLY_POSTS=false. Drafts then land in app/blog/posts/_pending/ for manual review. To revert to per-PR review entirely, replace the "Commit + push to main" step in the workflow with peter-evans/create-pull-request (the prior architecture).
 
+Newsletter draft step (ADR-011): after every successful blog publish, the workflow runs `lib/newsletter/draft-generator.ts` to transform the post into a 300-600 word newsletter, then `lib/beehiiv-posts.createDraftPost` to land it in Beehiiv as `status: "draft"`. **Drafts NEVER auto-send.** John reviews in Beehiiv's UI and presses send manually. The step is soft-fail — a Beehiiv outage, a quality-gate exhaustion, or an SDK breaking change cannot undo a blog publish. Beehiiv calls go only through `lib/beehiiv.ts` (subscribe) or `lib/beehiiv-posts.ts` (drafts) — those two modules are the import boundary; any other module importing `@beehiiv/sdk` is the bug. Newsletter quality gate (d) blocks dollar figures absent from the source blog post (R-001 amplification guard). To disable the step temporarily, pass `--skip-newsletter` to the script or unset `BEEHIIV_*` env vars in the workflow.
+
 Adjusting cadence: edit the `on.schedule` entries in .github/workflows/weekly-content.yml. Prefer minute marks NOT on :00 or :30 to avoid the global cron stampede on the Anthropic API.
 
 Project Second Brain

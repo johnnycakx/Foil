@@ -185,6 +185,46 @@ Newsletter draft generation via Beehiiv's Posts API is **deferred until ≥50 si
 - **Con:** No welcome automation yet — first email a subscriber sees is the next scheduled post. Acceptable until the welcome-flow goal ships.
 - **Caveat:** Sender currently shows as the default Beehiiv address. Change to `john@mail.foiltcg.com` is deferred to a future config goal (Beehiiv UI; CLI doesn't expose it).
 
+---
+
+## ADR-011 — Newsletter drafts auto-generated, never auto-sent
+
+**Date:** 2026-05-21
+**Status:** Accepted
+
+**Context.** [ADR-010](#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key) wired Beehiiv subscribe capture; [ADR-006](#adr-006--full-autonomy-no-human-review-step-gates-as-the-safety-net) wired full-autonomy blog publishing twice a week. The natural next step is companion newsletters — every blog post becomes an email teaser, which roughly doubles the value of the content engine for a marginal-cost generation step. But the email channel re-raises the fabrication risk ([R-001](RISKS.md#r-001--content-engine-fabrication)) in a non-trivial way:
+
+- Subscribers grant the channel more trust than a SERP result. A wrong PSA pop count or fabricated $30,000 sale in a newsletter is read as "the team confirmed this to me directly".
+- Email is harder to retract than a blog post. The blog can be corrected in place; an inbox copy can't be recalled.
+- Newsletter subjects + previews are pre-rendered in inbox lists, so even unopened mistakes leak.
+
+Three architecturally distinct options:
+
+1. **Full autonomy parity** — auto-publish newsletters at the same cadence as blog posts. Highest leverage, highest blast radius. The blog's gates don't transfer cleanly (different word-count band, different link contract), and the fabrication amplification above makes this a bad fit pre-launch.
+2. **Manual newsletters** — John writes each one. Best quality control, zero leverage; the whole point of the content engine is to remove this kind of weekly drag.
+3. **Auto-draft, never auto-send** — engine generates a draft + 3 subject candidates, lands them in Beehiiv's drafts list, sends a webhook ping; John reviews + sends manually. Keeps the leverage (no blank-page writing) while preserving a human checkpoint before the email actually moves.
+
+**Decision.** Option 3. Newsletters are generated automatically from each blog publish via the content engine's autonomy workflow (`scripts/generate-weekly-post.ts` → `lib/newsletter/draft-generator.ts` → `lib/beehiiv-posts.createDraftPost` with `status: "draft"`). Drafts NEVER send without explicit human review in Beehiiv's UI. The contract is enforced architecturally:
+
+- `lib/beehiiv-posts.ts` is the ONLY module allowed to call `client.posts.create`. The `status` field is hard-coded to `"draft"` — there is no code path in this repo that passes any other value.
+- The newsletter step is soft-fail in the workflow: a Beehiiv outage, a quality-gate exhaustion, or an SDK breaking change cannot undo a successful blog publish.
+- Six quality gates run before the draft is created: (a) word count 300-600, (b) ≥1 link to `/blog/{slug}`, (c) ≥1 link to `foiltcg.com/upload`, (d) **no dollar figures absent from the source blog post** (R-001 guard), (e) no banned phrases (same list as blog gates), (f) subject 30-65 chars. Up to 3 retries with the failure list passed back to Claude.
+- Subject lines are produced 3-at-a-time in the same JSON output as the body — one Claude call per attempt, not two. Best candidate becomes the subject; second feeds the inbox preview text; third is kept for a future A/B-test goal.
+
+The newsletter draft generator deferral noted in ADR-010 ("until ≥50 signups") is **lifted** by this ADR. Cost-benefit reassessment: generating a draft costs ~$0.02 per call, the draft sits in Beehiiv's UI until John reviews, and zero subscribers see it without his explicit send action — so the "wait until audience exists" trigger doesn't apply when the audience risk is bounded by manual review.
+
+**Consequences.**
+
+- **Pro:** Newsletter copy auto-generated for every blog post starting Mon 2026-05-25. John's marginal cost per email drops to "open Beehiiv → read → edit subject → send".
+- **Pro:** The fact-grounding gate (newDollarFigures check against blog content) makes fabrication a structural impossibility for the most failure-prone class of newsletter mistake — invented prices. Subject + opener can still drift in tone, which is exactly what manual review catches.
+- **Pro:** Workflow soft-fail design means the newsletter pipeline is fully optional from the blog pipeline's perspective. If Beehiiv's Posts API breaks (it's flagged "beta / Enterprise" in their SDK docs), the blog autonomy keeps running.
+- **Pro:** The 3-subject-candidates pattern sets up cheap future A/B testing — pick at random per send, attribute opens.
+- **Con:** Drafts pile up if John doesn't review them. Mon + Thu cadence means 8 unsent drafts per month at minimum. Mitigation: webhook notification on draft creation gives John a Discord/Slack ping; if drafts age >7d, that's a signal the cadence is wrong.
+- **Con:** Posts API may not be available on our Beehiiv tier (the SDK docstring flags it as Enterprise / beta). If it's not, `createDraftPost` will fail with 401/403 and the workflow will soft-log "newsletter step skipped" indefinitely until the tier changes. This is acceptable: the blog pipeline is unaffected, the failure mode is visible in workflow logs, and we'll know what to do when the tier signal comes back.
+- **Con:** Newsletter prompt is a second LLM surface to maintain. The DUD framework on the blog side and the "fact-grounding" rule on the newsletter side need to stay in sync if we ever change the underlying tone/voice — drift will compound across both channels.
+
+**Cross-refs.** [R-001](RISKS.md#r-001--content-engine-fabrication) (amplification rationale), [ADR-006](#adr-006--full-autonomy-no-human-review-step-gates-as-the-safety-net) (the autonomy pattern this borrows from), [ADR-010](#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key) (the import-boundary contract; this ADR adds `lib/beehiiv-posts.ts` to the same boundary).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

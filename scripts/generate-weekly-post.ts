@@ -29,6 +29,11 @@ import {
   serializeDraft,
 } from "../lib/seo/content-engine.ts";
 import { parseStrategyDoc } from "../lib/seo/keyword-backlog.ts";
+import {
+  generateNewsletterDraft,
+  NewsletterGenerationFailed,
+} from "../lib/newsletter/draft-generator.ts";
+import { createDraftPost } from "../lib/beehiiv-posts.ts";
 
 const envPath = path.join(process.cwd(), ".env.local");
 if (fs.existsSync(envPath)) {
@@ -44,6 +49,7 @@ if (!process.env.ANTHROPIC_API_KEY) {
 }
 
 const AUTO_PUBLISH = process.env.AUTO_PUBLISH_WEEKLY_POSTS !== "false"; // default true
+const SKIP_NEWSLETTER = process.argv.includes("--skip-newsletter");
 const POSTS_DIR = path.join(process.cwd(), "app", "blog", "posts");
 const PENDING_DIR = path.join(POSTS_DIR, "_pending");
 fs.mkdirSync(POSTS_DIR, { recursive: true });
@@ -194,3 +200,77 @@ await postWebhook({
   previewUrl,
   publishedPath: outPath,
 });
+
+// ---------------------------------------------------------------------------
+// Newsletter draft step (ADR-011). Runs AFTER the blog file has been written.
+// Soft-fail: any error here logs + webhooks but does NOT propagate to the
+// process exit code, so a Beehiiv outage cannot undo a successful blog
+// publish. Drafts NEVER auto-send — they land in Beehiiv's drafts list
+// awaiting John's manual review.
+// ---------------------------------------------------------------------------
+if (SKIP_NEWSLETTER) {
+  console.log("[newsletter] --skip-newsletter flag set, skipping draft step");
+} else if (!process.env.BEEHIIV_API_KEY || !process.env.BEEHIIV_PUBLICATION_ID) {
+  console.log("[newsletter] BEEHIIV_* env vars not set — skipping draft step");
+} else {
+  try {
+    console.log("[newsletter] generating draft from blog post…");
+    const newsletter = await generateNewsletterDraft({
+      slug: finalSlug,
+      title: result.draft.frontmatter.title,
+      description: result.draft.frontmatter.description,
+      content: result.draft.body,
+      tags: result.draft.frontmatter.tags,
+      primaryKeyword: result.draft.frontmatter.primaryKeyword,
+    });
+
+    const draftResult = await createDraftPost({
+      title: newsletter.subject,
+      subjectLine: newsletter.previewText || newsletter.subject,
+      htmlBody: newsletter.htmlBody,
+      originalBlogSlug: finalSlug,
+    });
+
+    if (draftResult.ok) {
+      console.log(`[newsletter] ✓ draft created: post_id=${draftResult.postId}`);
+      console.log(`[newsletter]   subject       : ${newsletter.subject}`);
+      console.log(`[newsletter]   preview text  : ${newsletter.previewText}`);
+      console.log(`[newsletter]   word count    : ${newsletter.wordCount}`);
+      console.log(`[newsletter]   review URL    : https://app.beehiiv.com (Posts → Drafts)`);
+      await postWebhook({
+        event: "newsletter_draft_created",
+        blogSlug: finalSlug,
+        subject: newsletter.subject,
+        postId: draftResult.postId,
+        wordCount: newsletter.wordCount,
+      });
+    } else {
+      console.warn("[newsletter] ⚠ Beehiiv rejected createDraftPost — blog publish unaffected");
+      await postWebhook({
+        event: "newsletter_draft_failed",
+        blogSlug: finalSlug,
+        reason: "beehiiv_create_failed",
+      });
+    }
+  } catch (err) {
+    if (err instanceof NewsletterGenerationFailed) {
+      console.warn(`[newsletter] ⚠ quality gates exhausted after ${err.attempts} attempts — blog publish unaffected`);
+      for (const f of err.lastFailures) console.warn(`[newsletter]   - ${f}`);
+      await postWebhook({
+        event: "newsletter_draft_failed",
+        blogSlug: finalSlug,
+        reason: "quality_gates_exhausted",
+        attempts: err.attempts,
+        failures: err.lastFailures,
+      });
+    } else {
+      console.warn(`[newsletter] ⚠ unexpected error (blog publish unaffected): ${(err as Error).message}`);
+      await postWebhook({
+        event: "newsletter_draft_failed",
+        blogSlug: finalSlug,
+        reason: "unexpected_error",
+        message: (err as Error).message,
+      });
+    }
+  }
+}

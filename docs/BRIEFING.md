@@ -205,6 +205,8 @@ Reading failure logs: GitHub Actions → weekly-content workflow run → "Genera
 
 Disabling autonomy: set repository variable (not secret) AUTO_PUBLISH_WEEKLY_POSTS=false. Drafts then land in app/blog/posts/_pending/ for manual review. To revert to per-PR review entirely, replace the "Commit + push to main" step in the workflow with peter-evans/create-pull-request (the prior architecture).
 
+Newsletter draft step (ADR-011): after every successful blog publish, the workflow runs `lib/newsletter/draft-generator.ts` to transform the post into a 300-600 word newsletter, then `lib/beehiiv-posts.createDraftPost` to land it in Beehiiv as `status: "draft"`. **Drafts NEVER auto-send.** John reviews in Beehiiv's UI and presses send manually. The step is soft-fail — a Beehiiv outage, a quality-gate exhaustion, or an SDK breaking change cannot undo a blog publish. Beehiiv calls go only through `lib/beehiiv.ts` (subscribe) or `lib/beehiiv-posts.ts` (drafts) — those two modules are the import boundary; any other module importing `@beehiiv/sdk` is the bug. Newsletter quality gate (d) blocks dollar figures absent from the source blog post (R-001 amplification guard). To disable the step temporarily, pass `--skip-newsletter` to the script or unset `BEEHIIV_*` env vars in the workflow.
+
 Adjusting cadence: edit the `on.schedule` entries in .github/workflows/weekly-content.yml. Prefer minute marks NOT on :00 or :30 to avoid the global cron stampede on the Anthropic API.
 
 Project Second Brain
@@ -247,24 +249,24 @@ e16c1e4 — feat: detect filter + PokeTrace images + per-card condition picker
 
 ## Most recent session
 
-## 2026-05-21 — Session 8: Beehiiv email capture on the blog
+## 2026-05-21 — Session 9: Autonomous Beehiiv draft generation (never auto-send)
 
 **Commits:** this commit only
 
-**Summary.** Wired up newsletter capture end-to-end. `@beehiiv/sdk` (v0.1.9) + `zod` installed. `lib/beehiiv.ts` is the single allowed entry point for any Beehiiv call (CORS forces server-side; the import boundary now enforces it structurally). `subscribeEmail({ email, source })` zod-validates input, calls `subscriptions.create` with the fixed UTM payload from [ADR-010](DECISIONS.md#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key) (`utm_source="foil-blog"`, `utm_medium="email-capture"`, `utm_campaign={source}`, `referring_site="foiltcg.com"`), `reactivate_existing=true`, `send_welcome_email=false`. Rate-limit (429) errors retry once with linear backoff; other errors collapse to a generic `Could not subscribe. Try again.` so Beehiiv internals never leak. `app/actions/subscribe.ts` is the Server Action front door; `components/email-capture.tsx` is the Client Component reusing Foil's existing tokens from `app/page.tsx` (no new design surface invented). Rendered inline at the end of every `app/blog/[slug]/page.tsx` post and in the shared footer on `/blog` + `/blog/[slug]`. `BEEHIIV_API_KEY` + `BEEHIIV_PUBLICATION_ID` mirrored to Vercel across production + preview + development via `vercel env add` (Session 7's CLI tooling paid off — no UI clicks). `ENV-VARS.md` updated with both rows.
-
-Test coverage: `lib/__tests__/beehiiv.test.ts` mocks the SDK via `__setClientForTests`, pinning (a) bad-input short-circuit before any network call, (b) the exact UTM payload shape, (c) one rate-limit retry then success, (d) reactivation collapses to `{ok:true,status:"subscribed"}`, (e) non-rate-limit errors never throw. `proxy.test.ts` pins `/api/subscribe` as the public-route anchor for the contract even though the Server Action piggy-backs on the host page today.
-
-**13 legacy subscribers context.** Beehiiv shows 13 pre-existing subscribers from earlier experimentation. They're dead-list — the future segment that excludes them is deferred. Baseline for the verification step below is 13.
-
-**End-to-end verification (via Beehiiv MCP, deferred to next session — see "State at session end").** First MCP call OAuths interactively, so the verification step is the natural next-session opener. Plan: `get_publication` → assert `name="Foil"`, `list_subscriptions` → baseline 13, POST Server Action with `claude-code-verification+{ts}@foiltcg.com` → `{ok:true}`, recount → 14, document below.
+**Summary.** Wired the autonomous content engine to produce a companion Beehiiv newsletter draft for every blog publish. `lib/beehiiv-posts.ts` is the second module in the Beehiiv-import boundary (joining `lib/beehiiv.ts` from [Session 8](#2026-05-21--session-8-beehiiv-email-capture-on-the-blog)); it wraps `client.posts.create` with `status: "draft"` hard-coded — there is no code path in this repo that calls posts.create with any other status. `lib/newsletter/draft-generator.ts` calls Sonnet 4.6 once per attempt to emit `{ subjects: [3 candidates], htmlBody }` in a single JSON output, then runs 6 quality gates (word count 300-600, blog backlink, Foil CTA, NO new-$ figures, no banned phrases, subject 30-65 chars) and retries up to 3x. Wired into `scripts/generate-weekly-post.ts` AFTER the blog file is written — soft-fail try/catch so any newsletter regression cannot undo a successful blog publish. `--skip-newsletter` flag added for local testing. `.github/workflows/weekly-content.yml` now passes `BEEHIIV_API_KEY` + `BEEHIIV_PUBLICATION_ID` to the script. Both are GH Actions secrets (set via `gh secret set` from `.env.local` this session).
 
 **Key decisions made.**
-- [ADR-010](DECISIONS.md#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key) Official SDK + single-field form + server-side key. Newsletter draft generator deferred until ≥50 signups.
+- [ADR-011](DECISIONS.md#adr-011--newsletter-drafts-auto-generated-never-auto-sent) — auto-generated drafts; never auto-sent. R-001 amplification rationale + the architectural contract: status="draft" hard-coded, soft-fail wired, fact-grounding gate against the source blog post. Lifts the "deferred until ≥50 signups" trigger noted in ADR-010 because the audience-risk concern is now bounded by manual review.
 
-**Follow-ups added to ROADMAP.** None today — deferred items (welcome automation, sender change, legacy-sub segment, Posts API draft generator, Recommendations Network) are tracked in [ADR-010](DECISIONS.md#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key) rather than ROADMAP because they're "after signups exist" triggers, not week-scoped work.
+**R-001 update.** Trigger-to-escalate now explicitly includes "first time a Beehiiv draft auto-generated by ADR-011 ships to subscribers without manual review" — that would mean the never-auto-send contract was broken and the engine needs an immediate audit. Channel-amplification subsection added with the three baked-in mitigations.
 
-**State at session end.** All tests green (160 / 160 incl. 6 new beehiiv contract tests). Typecheck clean. Working tree carries the new lib + action + component + tests + docs. Push lands next.
+**Tests added.**
+- `lib/__tests__/newsletter-quality-gates.test.ts` (13 tests) — every gate has a positive AND negative case, including a multi-failure case to prove no early-exit. The R-001 guard (gate d) has both a fabrication-rejection case and a comma-normalization passing case.
+- `lib/__tests__/newsletter-draft-generator.test.ts` (10 tests) — happy path, parse-tolerance, stripHtml, retry-after-fabrication, 3-strike exhaustion, empty-input rejection without an API call. Stubs Anthropic via prototype patch (cheapest seam — production code unaltered).
+
+**End-to-end MCP verification** — recorded once Beehiiv responds. Goal step 14 calls for: pick a recent blog slug → run generator via temp script → `mcp__beehiiv__list_posts(status="draft")` → `get_post_content` → assert blog link + Foil CTA + word count in band. Result captured at the bottom of this entry after verification runs.
+
+**State at session end.** Tests + typecheck green. Newsletter pipeline is opt-in via env vars — Mon 2026-05-25 cron will be the first scheduled fire that touches it.
 
 ---
 
@@ -304,12 +306,14 @@ Test coverage: `lib/__tests__/beehiiv.test.ts` mocks the SDK via `__setClientFor
 
 **Why accepted.** Pre-launch, traffic is zero. A wrong fact in week 1 hurts nobody. The kill-switch (`AUTO_PUBLISH_WEEKLY_POSTS=false`) reverts to `_pending/` drafts in seconds.
 
-**Trigger to escalate.** First time the gates pass something embarrassing OR sustained organic traffic begins (defined as: ≥100 sessions/day to blog content for 7 consecutive days).
+**Trigger to escalate.** First time the gates pass something embarrassing OR sustained organic traffic begins (defined as: ≥100 sessions/day to blog content for 7 consecutive days) OR **the first time a Beehiiv draft auto-generated by ADR-011 ships to subscribers without manual review** (which would mean the never-auto-send architectural contract has been broken — investigate immediately and revert).
 
 **Mitigation candidates** (tracked at [ROADMAP item #15](ROADMAP.md#later--1-3-months-2026-06-11--2026-08-20)):
 1. Manual spot-check requirement on every autonomous post (revert toward the v1 review-PR architecture).
 2. 24-hour `noindex` window before posts become search-visible (gives me a day to catch issues).
 3. Add a 9th gate for citation density + named-entity verification ([ROADMAP item #5](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10)).
+
+**Channel-amplification: newsletter.** [ADR-011](DECISIONS.md#adr-011--newsletter-drafts-auto-generated-never-auto-sent) re-raises this risk for email. Mitigations baked in: (i) newsletter quality gate (d) blocks any dollar figure not present verbatim in the source blog post — fabrication of the most failure-prone class is structurally impossible; (ii) `lib/beehiiv-posts.ts` hard-codes `status: "draft"`, so nothing ships without John pressing send in Beehiiv's UI; (iii) the newsletter pipeline is soft-fail from the workflow's perspective, so a draft-generation regression cannot cascade into the blog publish path.
 
 ## R-002 — Topic backlog exhaustion (~week 10-15)
 

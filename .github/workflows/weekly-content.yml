@@ -52,6 +52,12 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           AUTO_PUBLISH_WEEKLY_POSTS: ${{ vars.AUTO_PUBLISH_WEEKLY_POSTS || 'true' }}
           WEEKLY_POST_WEBHOOK_URL: ${{ secrets.WEEKLY_POST_WEBHOOK_URL }}
+          # Newsletter draft step (ADR-011). Optional — if these are unset the
+          # script logs + skips the draft generation without affecting the
+          # blog publish. Drafts NEVER auto-send; they land in Beehiiv's
+          # drafts list awaiting human review.
+          BEEHIIV_API_KEY: ${{ secrets.BEEHIIV_API_KEY }}
+          BEEHIIV_PUBLICATION_ID: ${{ secrets.BEEHIIV_PUBLICATION_ID }}
         # Exit code 2 = quality-gate exhaustion (logged + webhook sent).
         # Treat as "skip this run", not a workflow failure — the next cron will
         # try a different topic.

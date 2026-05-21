@@ -89,7 +89,11 @@
       "PowerShell(Get-Command *)",
       "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" --version | Select-Object -First 1; Write-Output \"---\"; & \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" auth status 2>&1 | Select-Object -First 8)",
       "Bash(npm i *)",
-      "Bash(vercel env *)"
+      "Bash(vercel env *)",
+      "mcp__claude_ai_beehiiv__list_subscriptions",
+      "mcp__claude_ai_beehiiv__get_publication",
+      "Bash(xargs -I {} cat {})",
+      "PowerShell(Get-Content *)"
     ]
   },
   "enableAllProjectMcpServers": true,
