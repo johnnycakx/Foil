@@ -8,6 +8,23 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-21 — Session 6: Vercel Deploy Hook for autonomous content
+
+**Commits:** this commit only
+
+**Summary.** Today's Thursday cron commit was rejected by Vercel because the bot identity `bot+content@foil.app` isn't on the Vercel team. Same outcome would fire every Monday + Thursday. Two fixes available: add the bot to the team (couples deploys to GitHub team membership) or use a Vercel Deploy Hook (decouples them). Picked the Deploy Hook. Added a "Trigger Vercel deploy" step to the autonomous workflow that fires after a successful commit, gated on a new `committed=true` output from the commit step — so the kill-switch (`AUTO_PUBLISH_WEEKLY_POSTS=false`) cleanly skips deploys for free. Deploy step logs a warning and exits 0 on non-200 responses rather than failing the run, since a missing deploy doesn't undo the commit and a manual redeploy is always available.
+
+**Key decisions made.**
+- [ADR-008](DECISIONS.md#adr-008--vercel-deploy-hook-for-autonomous-content-not-github-integration-auto-deploys) Deploy Hook over adding the bot to the Vercel team.
+
+**Note on contract enforcement.** The goal as written said "Add ADR-007" — but ADR-007 already exists (yesterday's skip-on-failure decision). New ADR landed as ADR-008. This is exactly the case the second-brain contract was designed to catch on its first real use.
+
+**Follow-ups added to ROADMAP.** None — the manual rollout steps (create the Deploy Hook in Vercel UI, add the secret, configure Vercel to ignore bot commits) are tracked inline in ADR-008.
+
+**State at session end.** Workflow + ADR + ENV-VARS + this log entry shipped. Production deploys for autonomous content will work after John completes the three manual steps from ADR-008.
+
+---
+
 ## 2026-05-20 — Session 5: Second-brain docs + briefing generator
 
 **Commits:** `7689801`, plus this commit
