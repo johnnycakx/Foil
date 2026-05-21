@@ -36,6 +36,16 @@ When you add a new env var anywhere in the codebase, add a row here in the same 
 
 ---
 
+## Local dev tooling note
+
+`.env.local` is the source of truth for local development. `vercel env pull` pulls the Vercel-stored env vars and by default writes them into `.env.local`, OVERWRITING any keys you have set locally for development. To avoid clobbering local dev keys, always pull into a separate file:
+
+```sh
+vercel env pull .env.vercel
+```
+
+Then diff manually if you want to reconcile: `diff .env.local .env.vercel`. Never run a bare `vercel env pull` in this repo.
+
 ## Where to set each scope
 
 - **`.env.local`** — local development. Never committed. Loaded by `next dev` automatically and by scripts via the inline regex parser in each `scripts/*.ts` (see e.g. `scripts/generate-weekly-post.ts`).

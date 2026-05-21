@@ -131,6 +131,24 @@ GATED (user-data — do NOT add to PUBLIC_ROUTES; they self-gate via redirect("/
 
 The contract is pinned in lib/__tests__/proxy.test.ts. If you add or remove a public route, update that test.
 
+Local CLI tooling for autonomous infra changes
+
+The repo has three CLIs installed and authenticated. Future goals SHOULD use them directly instead of writing manual rollout playbooks for John. Reserve manual playbooks for actions the CLIs genuinely can't do (e.g. accepting a domain-transfer email, clicking through a Stripe Connect onboarding).
+
+- **`vercel` CLI** — v54.3.0, authenticated as `johnnycakx`. Project linked to `team_MYkF82HXU8It3L9TjpJia1zB / prj_0FH8NcWH3AIRUI6FnF719QaEC4ug` (foil). Use for: project settings, env vars, deploy hooks, domains, deploys, log inspection. See `vercel:*` plugin skills (also installed) for guided flows — `vercel:env`, `vercel:deploy`, `vercel:env-vars`, `vercel:deployments-cicd`, `vercel:vercel-cli`.
+- **Vercel Plugin for Claude Code** — installed during `vercel link`. Surfaces ~30 `vercel:*` skills (full list shows in the session skills sidebar). Prefer the skills over raw `vercel ...` calls when one matches the task — they encode platform-specific guardrails.
+- **`gh` CLI** — v2.92.0, authenticated as `johnnycakx` (keyring, HTTPS protocol, scopes: gist/read:org/repo/workflow). Use for: GitHub repo secrets (`gh secret set`), workflow dispatch (`gh workflow run`), releases, PR creation, PR review/inspection, issue management.
+
+**Routing rule for new goals:**
+- Touches Vercel project settings / env vars / deploy hooks / domains → `vercel ...`
+- Touches GitHub secrets / workflow dispatch / releases / PRs → `gh ...`
+- Touches both (e.g. "wire a new env var end-to-end") → run both, no UI clicks
+- Touches neither → ignore this section, code as normal
+
+**Path caveat (transient):** If `gh` isn't on the shell PATH (`which gh` returns nothing in a Bash tool call), the binary still exists at `C:\Program Files\GitHub CLI\gh.exe`. Invoke as `& "C:\Program Files\GitHub CLI\gh.exe" <args>` from PowerShell, or restart Claude Code to pick up the updated PATH. This caveat goes away on the next session start.
+
+**Kill-switch** (revoke autonomous infra access): `gh auth logout` + Vercel UI → Account Settings → Tokens → Revoke. Both are session-bound credentials with no machine-wide effect beyond their respective CLI scopes.
+
 Common commands
 
 npm run dev — Dev server, port 3000 (Turbopack)

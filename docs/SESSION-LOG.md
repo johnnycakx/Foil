@@ -8,6 +8,23 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-21 — Session 7: Local CLI tooling for autonomous infra changes
+
+**Commits:** this commit only
+
+**Summary.** [Session 6](#2026-05-21--session-6-vercel-deploy-hook-for-autonomous-content) ran into a ~50-min stop-hook loop because the deploy-hook goal's acceptance criteria required Vercel UI actions Claude Code couldn't perform. Fix: installed `vercel` CLI (v54.3.0, authed as `johnnycakx`, project linked) + Vercel Plugin for Claude Code (surfaces ~30 `vercel:*` skills) + `gh` CLI (v2.92.0, authed as `johnnycakx` via keyring with gist/read:org/repo/workflow scopes). Documented the routing rule in CLAUDE.md: any goal touching Vercel project settings / env vars / deploy hooks / domains uses `vercel ...`; any goal touching GitHub secrets / workflow dispatch / releases / PRs uses `gh ...`; manual playbooks are reserved only for actions the CLIs genuinely can't do (e.g. accepting an email-confirmation flow). Verified all three tools authenticated end-of-session.
+
+**Key decisions made.**
+- [ADR-009](DECISIONS.md#adr-009--local-cli-tooling-for-autonomous-infra-changes) Install local CLIs + plugin instead of continuing to write manual rollout playbooks. Cross-refs [ADR-008](DECISIONS.md#adr-008--vercel-deploy-hook-for-autonomous-content-not-github-integration-auto-deploys) (the precipitating incident).
+
+**Path caveat surfaced during verification.** `gh` is installed at `C:\Program Files\GitHub CLI\gh.exe` but isn't on the PATH that Claude Code's spawned shells see in this session — the shells were created before the install. Until Claude Code is restarted, invoke `gh` via full path. Documented in CLAUDE.md's caveat section.
+
+**Follow-ups added to ROADMAP.** None.
+
+**State at session end.** Three CLI tools live, four docs updated (CLAUDE.md, DECISIONS, SESSION-LOG, ENV-VARS). Next infra-touching goal will be the proof point — should run end-to-end with no UI handoff.
+
+---
+
 ## 2026-05-21 — Session 6: Vercel Deploy Hook for autonomous content
 
 **Commits:** `e0edac8` (workflow + ADR + ENV-VARS), `5a4a5cc` (ROADMAP tracking), `f94b863` (rollout-complete docs), plus a small amend after rebasing on top of `045239b` (the autonomous workflow's first successful Thursday post)
