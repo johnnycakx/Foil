@@ -16,6 +16,7 @@ The roadmap has four buckets. NOW is what's actively blocking the next ship. NEX
 | 2 | **v0.dev homepage redesign** | Current `app/page.tsx` hero is functional but plain. v0 generates a stronger hero + social-proof block for the launch surface. | John (paste output) | Pending |
 | 3 | **Google Search Console:** add `foiltcg.com` property, TXT-verify, submit `/sitemap.xml` | Indexing latency is 1-4 weeks. The earlier we submit, the earlier the three pillars + blog start appearing in search. | John (Cloudflare DNS + GSC UI) | Pending |
 | 4 | **Decision: keep or kill the 2 auto-generated posts** | `how-to-read-a-japanese-pokemon-card` + `near-mint-vs-lightly-played-…` shipped via the new autonomy pipeline on 2026-05-20. Both passed gates on first attempt. Read them in the live preview and decide: leave up, edit, or delete. | John (manual review) | Pending |
+| 5 | **Vercel Deploy Hook manual rollout** — 3 UI steps from [ADR-008](DECISIONS.md#adr-008--vercel-deploy-hook-for-autonomous-content-not-github-integration-auto-deploys): (a) create Deploy Hook in Vercel UI, (b) store URL as GitHub secret `VERCEL_DEPLOY_HOOK_URL`, (c) set Ignored Build Step to skip `foil-content-bot` commits | The workflow code is shipped (`f8f5824`). Without these UI steps, Mon/Thu cron commits land on main but production won't auto-deploy (workflow logs a warning and exits clean), and Vercel keeps sending rejection emails. Before first scheduled fire Mon 2026-05-25 14:03 UTC. | John (Vercel UI + GitHub Secrets UI) | Pending |
 
 ---
 

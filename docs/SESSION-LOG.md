@@ -21,7 +21,7 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 **Follow-ups added to ROADMAP.** None — the manual rollout steps (create the Deploy Hook in Vercel UI, add the secret, configure Vercel to ignore bot commits) are tracked inline in ADR-008.
 
-**State at session end.** Workflow + ADR + ENV-VARS + this log entry shipped. Production deploys for autonomous content will work after John completes the three manual steps from ADR-008.
+**State at session end.** Workflow + ADR + ENV-VARS + this log entry shipped (`f8f5824`). The three manual UI steps (create Deploy Hook in Vercel, store URL as GitHub secret, set Ignored Build Step) couldn't be executed from this session — no Vercel API client or browser automation available, no credentials handed over. Tracked as ROADMAP NOW item #5 so it doesn't fall through before the Mon 2026-05-25 14:03 UTC cron. Until those land, Mon/Thu commits will hit `main` cleanly but production won't auto-deploy and the rejection emails continue.
 
 ---
 
