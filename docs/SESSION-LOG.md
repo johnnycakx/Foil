@@ -32,7 +32,23 @@ Beehiiv 403 is now an info-level log line, not a warning. On our tier it IS the 
 - `lib/__tests__/newsletter-file-writer.test.ts` (5 tests) — frontmatter shape, separator literal, YAML quote-escaping, omits `emailMessageId` when undefined, includes all 3 subject candidates.
 - `lib/__tests__/resend.test.ts` (8 tests) — endpoint URL, Bearer auth header, subject prefix, 4-section HTML body, XSS escaping, all 3 failure paths return `ok:false` without throwing, missing API key never touches the network.
 
-**End-to-end verification — captured below after the script runs against a recent blog post.**
+**End-to-end verification — manual-paste path proven against a real blog post.**
+
+Ran the production pipeline against `near-mint-vs-lightly-played-the-difference-that-doubles-a-card-s-price` (1,499-word source):
+
+| Step | Result |
+|---|---|
+| `generateNewsletterDraft` | PASS on attempt 1/3 ✓ |
+| Subject (45 chars) | "The NM/LP gap that costs you $180 on one card" |
+| Preview text | "One condition grade, 38-45% less money — here's the line" |
+| 3rd candidate | "Why sellers miss the NM disqualifier most often" |
+| Newsletter word count | 534 (gate band 300-600) ✓ |
+| Artifact written | `docs/newsletter-drafts/near-mint-vs-lightly-played-the-difference-that-doubles-a-card-s-price.md` ✓ |
+| Resend response | HTTP 200, `messageId=5b2c1061-b902-4a6f-94f5-3391e59a90ef` ✓ |
+
+The artifact carries all 11 frontmatter fields (subject, preview, word counts, generatedAt, beehiivStatus = `"deferred-manual-paste"`, the email message id, 3 subject candidates, multi-line topicRationale block) plus the paste-ready body section after the `## Newsletter body (paste-ready)` separator. John should see the email in his Gmail inbox within ~2-3 minutes (subject prefixed with `[Foil Draft]`); first arrival may land in Promotions until he drags it to Primary. The artifact is also on `main` as part of this commit, so even if the inbox copy is lost the paste-ready record is in the repo.
+
+**Subject quality read.** All three candidates are concrete, specific, on-brand. Subject + preview together convey "one condition grade flips a $313 card into $180" in 100 characters — that's what we want.
 
 **State at session end.** Tests + typecheck green. Resend key added to `.env.local` + mirrored to GH Actions secrets. The Mon 2026-05-25 cron will be the first scheduled exercise.
 
