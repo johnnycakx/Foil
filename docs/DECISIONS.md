@@ -190,7 +190,7 @@ Newsletter draft generation via Beehiiv's Posts API is **deferred until ≥50 si
 ## ADR-011 — Newsletter drafts auto-generated, never auto-sent
 
 **Date:** 2026-05-21
-**Status:** Accepted
+**Status:** Superseded by [ADR-012](#adr-012--newsletter-manual-paste-fallback-via-email-supersedes-adr-011-api-path) for the Beehiiv Posts API write path. The R-001 amplification reasoning + quality-gate design + `lib/newsletter/` pipeline still stand — ADR-012 only changes what happens with the gate-passing draft.
 
 **Context.** [ADR-010](#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key) wired Beehiiv subscribe capture; [ADR-006](#adr-006--full-autonomy-no-human-review-step-gates-as-the-safety-net) wired full-autonomy blog publishing twice a week. The natural next step is companion newsletters — every blog post becomes an email teaser, which roughly doubles the value of the content engine for a marginal-cost generation step. But the email channel re-raises the fabrication risk ([R-001](RISKS.md#r-001--content-engine-fabrication)) in a non-trivial way:
 
@@ -224,6 +224,42 @@ The newsletter draft generator deferral noted in ADR-010 ("until ≥50 signups")
 - **Con:** Newsletter prompt is a second LLM surface to maintain. The DUD framework on the blog side and the "fact-grounding" rule on the newsletter side need to stay in sync if we ever change the underlying tone/voice — drift will compound across both channels.
 
 **Cross-refs.** [R-001](RISKS.md#r-001--content-engine-fabrication) (amplification rationale), [ADR-006](#adr-006--full-autonomy-no-human-review-step-gates-as-the-safety-net) (the autonomy pattern this borrows from), [ADR-010](#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key) (the import-boundary contract; this ADR adds `lib/beehiiv-posts.ts` to the same boundary).
+
+---
+
+## ADR-012 — Newsletter manual-paste fallback via email (supersedes ADR-011 API path)
+
+**Date:** 2026-05-21
+**Status:** Accepted — supersedes the API-write path in [ADR-011](#adr-011--newsletter-drafts-auto-generated-never-auto-sent). ADR-011's R-001 amplification reasoning + the 6 newsletter quality gates + `lib/newsletter/draft-generator.ts` remain in force; the only change is what happens with the gate-passing artifact.
+
+**Context.** [Session 9's end-to-end verification](SESSION-LOG.md) confirmed that Beehiiv's `POST /v2/publications/:id/posts` endpoint is gated behind an Enterprise tier (`HTTP 403 SEND_API_NOT_ENTERPRISE_PLAN`). The autonomous pipeline currently generates a publishable draft, then bounces off the API and logs a warning. Acceptable as a transitional state but the leverage of the engine is wasted — John has no easy path from "draft exists in the workflow logs" to "draft scheduled in Beehiiv". Three options to close the loop:
+
+1. **Pay for Beehiiv Enterprise.** Solves the API issue; ~$X00/mo on a tier that includes lots of features we don't need today (custom CSS, white-labeling, etc). Wrong order of operations pre-launch.
+2. **Re-architect onto another newsletter platform** (Resend Audiences, Substack, Buttondown). Throws away ADR-010's Beehiiv setup + the 13 legacy subs + the verified domains.
+3. **Generate the draft as today + ship it to John via email + version-control a paste-ready repo artifact.** John pastes into Beehiiv's UI manually, schedules, sends. Zero new infra beyond a Resend account.
+
+**Decision.** Option 3. The manual paste step is a feature, not a bug — it IS the [R-001](RISKS.md#r-001--content-engine-fabrication) human-review checkpoint that ADR-011 envisioned would happen inside Beehiiv's draft UI. Specifically:
+
+- `lib/notifications/resend.ts` is the second transactional channel (joining `lib/beehiiv.ts` for subscribes). Free Resend tier (3K emails/mo) is plenty for 2 sends/week. Sender is `onboarding@resend.dev` — no DNS configuration needed because the destination is `john.c.craig24@gmail.com` (founder inbox, self-to-self).
+- After the newsletter passes its 6 quality gates, the autonomy script ALWAYS:
+  1. Writes `docs/newsletter-drafts/{slug}.md` — paste-ready Markdown with full YAML frontmatter (subject, preview text, word counts, topic rationale, Beehiiv status, optional email message id).
+  2. Sends the email via Resend with 4 labeled sections: (a) WHY THIS TOPIC, (b) NEWSLETTER PREVIEW (subject + preview + body), (c) HOW TO PUBLISH (5 numbered steps), (d) SOURCE BLOG POST (slug, URL, word counts).
+- `lib/beehiiv-posts.createDraftPost` is downgraded from "expected to succeed" to "best-effort". The 403 path now logs an informational line ("Posts API Enterprise-gated; falling back to manual-paste path") rather than a warning — that's the steady-state outcome on our tier, not an exception.
+- The Resend send is itself soft-fail. If Resend's API is down or returns non-2xx, the .md artifact still lands and the workflow exits successfully. The artifact is the canonical record; the email is the immediate ping.
+- The auto-commit step in `.github/workflows/weekly-content.yml` includes `docs/newsletter-drafts/` automatically (its parent `docs/` is already staged), so the artifact lands on `main` alongside the blog post in the same commit.
+- Topic rationale is captured by a new `pickNextCandidateWithRationale` helper in `lib/seo/keyword-backlog.ts` — same selection logic, returns a human-readable explanation ("Selected from the X pillar. This was rank #N of M, …") alongside the chosen candidate. Threaded through `generateWeeklyPost` → script → email + artifact.
+
+**Consequences.**
+
+- **Pro:** John gets a paste-ready draft in his Gmail inbox within ~2-3 minutes of each blog publish. Same R-001 review opportunity as ADR-011 envisioned — he reads it, edits if needed, pastes, sends.
+- **Pro:** The repo artifact (`docs/newsletter-drafts/{slug}.md`) is the permanent record. If the email is lost, the artifact is recoverable; if both are lost, the source blog post is still on the site and the generator is deterministic enough to recreate from frontmatter.
+- **Pro:** Email + artifact + workflow logs is a triple-record: ops visibility doesn't depend on any one channel staying up.
+- **Pro:** The fallback works regardless of Beehiiv tier — if/when we move to Enterprise later, `createDraftPost` will start succeeding and the artifact/email will mark `beehiivStatus: "auto-drafted"` instead of `"deferred-manual-paste"`. No code change required.
+- **Con:** Two ops surfaces (email + Beehiiv UI) instead of one. Slack/Discord ops workspace would consolidate, tracked in [ROADMAP NEXT](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10).
+- **Con:** Resend free tier caps at 100 emails/day. Mon + Thu cadence × 2 emails/week = 8/month, leaves 2,992 of monthly headroom. Comfortable until we add other transactional surfaces (waitlist confirmations, scan-result notifications).
+- **Caveat:** The default Resend sender (`onboarding@resend.dev`) lands in Gmail's Promotions tab unless John whitelists it. Acceptable since the recipient is John himself and he can drag the first one to Primary. Replacing with a custom-domain sender (`autonomy@mail.foiltcg.com`) is deferred to a future config goal — needs DKIM+SPF setup that already partially exists from Session 7's mail-domain work.
+
+**Cross-refs.** [ADR-011](#adr-011--newsletter-drafts-auto-generated-never-auto-sent) (the architectural contract this supersedes for the write path; R-001 reasoning + gates still in force), [R-001](RISKS.md#r-001--content-engine-fabrication) (the human-review checkpoint is now manual paste, not Beehiiv-UI review of an API-created draft), [ROADMAP](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10) (Slack/Discord ops workspace would let us consolidate this email channel with deploy, subscriber, and error pings).
 
 ## How to add an ADR
 

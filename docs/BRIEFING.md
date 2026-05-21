@@ -205,7 +205,7 @@ Reading failure logs: GitHub Actions → weekly-content workflow run → "Genera
 
 Disabling autonomy: set repository variable (not secret) AUTO_PUBLISH_WEEKLY_POSTS=false. Drafts then land in app/blog/posts/_pending/ for manual review. To revert to per-PR review entirely, replace the "Commit + push to main" step in the workflow with peter-evans/create-pull-request (the prior architecture).
 
-Newsletter draft step (ADR-011): after every successful blog publish, the workflow runs `lib/newsletter/draft-generator.ts` to transform the post into a 300-600 word newsletter, then `lib/beehiiv-posts.createDraftPost` to land it in Beehiiv as `status: "draft"`. **Drafts NEVER auto-send.** John reviews in Beehiiv's UI and presses send manually. The step is soft-fail — a Beehiiv outage, a quality-gate exhaustion, or an SDK breaking change cannot undo a blog publish. Beehiiv calls go only through `lib/beehiiv.ts` (subscribe) or `lib/beehiiv-posts.ts` (drafts) — those two modules are the import boundary; any other module importing `@beehiiv/sdk` is the bug. Newsletter quality gate (d) blocks dollar figures absent from the source blog post (R-001 amplification guard). To disable the step temporarily, pass `--skip-newsletter` to the script or unset `BEEHIIV_*` env vars in the workflow.
+Newsletter draft step (ADR-011 + ADR-012): after every successful blog publish, the workflow runs `lib/newsletter/draft-generator.ts` to transform the post into a 300-600 word newsletter, then ALWAYS writes `docs/newsletter-drafts/{slug}.md` (the canonical record) and emails the founder via `lib/notifications/resend.ts` with a paste-ready copy + topic rationale + 5-step publish instructions. It also TRIES to land the draft via Beehiiv's API as `status: "draft"`, but on our free tier that call returns 403 `SEND_API_NOT_ENTERPRISE_PLAN` — the email + artifact is the supported path; the API attempt is best-effort for the day we upgrade. **Drafts NEVER auto-send.** Beehiiv calls go only through `lib/beehiiv.ts` (subscribe) or `lib/beehiiv-posts.ts` (drafts); Resend calls go only through `lib/notifications/resend.ts` — those three modules are the import boundary. Newsletter quality gate (d) blocks dollar figures absent from the source blog post (R-001 amplification guard). To disable the step temporarily, pass `--skip-newsletter` to the script or unset `BEEHIIV_*` / `RESEND_API_KEY` env vars in the workflow.
 
 Adjusting cadence: edit the `on.schedule` entries in .github/workflows/weekly-content.yml. Prefer minute marks NOT on :00 or :30 to avoid the global cron stampede on the Anthropic API.
 
@@ -249,24 +249,33 @@ e16c1e4 — feat: detect filter + PokeTrace images + per-card condition picker
 
 ## Most recent session
 
-## 2026-05-21 — Session 9: Autonomous Beehiiv draft generation (never auto-send)
+## 2026-05-21 — Session 10: Newsletter manual-paste fallback via email (supersedes ADR-011 API path)
 
 **Commits:** this commit only
 
-**Summary.** Wired the autonomous content engine to produce a companion Beehiiv newsletter draft for every blog publish. `lib/beehiiv-posts.ts` is the second module in the Beehiiv-import boundary (joining `lib/beehiiv.ts` from [Session 8](#2026-05-21--session-8-beehiiv-email-capture-on-the-blog)); it wraps `client.posts.create` with `status: "draft"` hard-coded — there is no code path in this repo that calls posts.create with any other status. `lib/newsletter/draft-generator.ts` calls Sonnet 4.6 once per attempt to emit `{ subjects: [3 candidates], htmlBody }` in a single JSON output, then runs 6 quality gates (word count 300-600, blog backlink, Foil CTA, NO new-$ figures, no banned phrases, subject 30-65 chars) and retries up to 3x. Wired into `scripts/generate-weekly-post.ts` AFTER the blog file is written — soft-fail try/catch so any newsletter regression cannot undo a successful blog publish. `--skip-newsletter` flag added for local testing. `.github/workflows/weekly-content.yml` now passes `BEEHIIV_API_KEY` + `BEEHIIV_PUBLICATION_ID` to the script. Both are GH Actions secrets (set via `gh secret set` from `.env.local` this session).
+**Summary.** [Session 9](#2026-05-21--session-9-autonomous-beehiiv-draft-generation-never-auto-send)'s end-to-end verification confirmed Beehiiv's Posts API is Enterprise-gated (HTTP 403 `SEND_API_NOT_ENTERPRISE_PLAN`). Today's goal closed the loop: every gate-passing newsletter draft now lands in `docs/newsletter-drafts/{slug}.md` (the canonical, version-controlled artifact) AND ships to `john.c.craig24@gmail.com` via Resend with paste-ready copy + topic rationale + 5-step publish instructions. John pastes the body into Beehiiv's UI, picks a send time, hits Schedule. The manual paste IS the R-001 review step — same checkpoint ADR-011 envisioned would happen inside Beehiiv's draft UI, just relocated.
+
+`lib/notifications/resend.ts` is the new transactional channel (free tier: 3K emails/month, 100/day — comfortable headroom). Sender is Resend's default `onboarding@resend.dev` so no DNS work was required for self-to-self transactional. Email body has 4 labeled sections per ADR-012: (a) WHY THIS TOPIC, (b) NEWSLETTER PREVIEW (subject + preview text + full HTML body), (c) HOW TO PUBLISH (numbered steps), (d) SOURCE BLOG POST (slug + URL + word counts).
+
+Topic rationale is now first-class: `pickNextCandidateWithRationale` in `lib/seo/keyword-backlog.ts` returns the chosen candidate plus a human-readable explanation ("Selected from the **X** pillar (URL: /…). This was rank #N of M cluster posts; K remain unshipped …"). Threaded through `generateWeeklyPost` → script → email payload + .md frontmatter.
+
+Beehiiv 403 is now an info-level log line, not a warning. On our tier it IS the steady-state outcome — the fallback path is the supported route. If/when we upgrade to Enterprise, `createDraftPost` will start succeeding and the artifact's `beehiivStatus` field will flip from `"deferred-manual-paste"` to `"auto-drafted"` automatically (no code change required).
 
 **Key decisions made.**
-- [ADR-011](DECISIONS.md#adr-011--newsletter-drafts-auto-generated-never-auto-sent) — auto-generated drafts; never auto-sent. R-001 amplification rationale + the architectural contract: status="draft" hard-coded, soft-fail wired, fact-grounding gate against the source blog post. Lifts the "deferred until ≥50 signups" trigger noted in ADR-010 because the audience-risk concern is now bounded by manual review.
+- [ADR-012](DECISIONS.md#adr-012--newsletter-manual-paste-fallback-via-email-supersedes-adr-011-api-path) — manual-paste fallback. Supersedes ADR-011's API write path. ADR-011's R-001 reasoning + the 6 newsletter quality gates remain in force.
+- [ADR-011 status flipped](DECISIONS.md#adr-011--newsletter-drafts-auto-generated-never-auto-sent) to "Superseded by ADR-012 for the write path".
 
-**R-001 update.** Trigger-to-escalate now explicitly includes "first time a Beehiiv draft auto-generated by ADR-011 ships to subscribers without manual review" — that would mean the never-auto-send contract was broken and the engine needs an immediate audit. Channel-amplification subsection added with the three baked-in mitigations.
+**ROADMAP update.** Added NEXT item #9.5 — Slack/Discord ops workspace. Rationale: as we wire more ops pings (Stripe events, scan errors, autonomy failures, deploy outcomes, AI ask-back), Gmail becomes the lowest-density surface for any of them. Threaded channel per concern would be cleaner.
+
+**R-001 update.** Channel-amplification subsection rewritten to reflect the new architecture: now four baked-in mitigations including "manual paste IS the review step" and the soft-fail-at-every-stage property.
 
 **Tests added.**
-- `lib/__tests__/newsletter-quality-gates.test.ts` (13 tests) — every gate has a positive AND negative case, including a multi-failure case to prove no early-exit. The R-001 guard (gate d) has both a fabrication-rejection case and a comma-normalization passing case.
-- `lib/__tests__/newsletter-draft-generator.test.ts` (10 tests) — happy path, parse-tolerance, stripHtml, retry-after-fabrication, 3-strike exhaustion, empty-input rejection without an API call. Stubs Anthropic via prototype patch (cheapest seam — production code unaltered).
+- `lib/__tests__/newsletter-file-writer.test.ts` (5 tests) — frontmatter shape, separator literal, YAML quote-escaping, omits `emailMessageId` when undefined, includes all 3 subject candidates.
+- `lib/__tests__/resend.test.ts` (8 tests) — endpoint URL, Bearer auth header, subject prefix, 4-section HTML body, XSS escaping, all 3 failure paths return `ok:false` without throwing, missing API key never touches the network.
 
-**End-to-end MCP verification** — recorded once Beehiiv responds. Goal step 14 calls for: pick a recent blog slug → run generator via temp script → `mcp__beehiiv__list_posts(status="draft")` → `get_post_content` → assert blog link + Foil CTA + word count in band. Result captured at the bottom of this entry after verification runs.
+**End-to-end verification — captured below after the script runs against a recent blog post.**
 
-**State at session end.** Tests + typecheck green. Newsletter pipeline is opt-in via env vars — Mon 2026-05-25 cron will be the first scheduled fire that touches it.
+**State at session end.** Tests + typecheck green. Resend key added to `.env.local` + mirrored to GH Actions secrets. The Mon 2026-05-25 cron will be the first scheduled exercise.
 
 ---
 
@@ -292,6 +301,7 @@ e16c1e4 — feat: detect filter + PokeTrace images + per-card condition picker
 | 7 | **Run `searchfit-seo:ai-visibility` baseline** | Once domain is GSC-verified. Establishes the "before" snapshot we'll re-measure monthly. | Document the report location in `docs/SESSION-LOG.md`. |
 | 8 | **Expand `seo-strategy.md` before week-10 topic exhaustion** | Backlog currently has ~35 cluster topics. At 2/week we run out around 2026-08-19. Need to add another 10-15 cluster topics OR introduce a new pillar. | Either ask the engine to propose new topics from competitive-gap reports, or hand-curate from PokeScope's blog. |
 | 9 | **Scrydex API migration** | Triggered by waitlist hitting ~50 signups OR PokeTrace rate limits biting. Scrydex has per-card endpoints we'd need for programmatic per-card landing pages. | Tracked separately in [DECISIONS.md](DECISIONS.md). |
+| 9.5 | **Slack (or Discord) ops workspace** | [ADR-012](DECISIONS.md#adr-012--newsletter-manual-paste-fallback-via-email-supersedes-adr-011-api-path) added a Gmail channel for newsletter drafts. As we wire more ops pings (Stripe events, scan errors, autonomy run failures, deploy outcomes, AI ask-back questions when the agent gets stuck), the inbox becomes the lowest-density surface for any of them. Slack/Discord gives one threaded channel per concern, faster scanning, and the agent can ping-back via slash command. | Tracking: pick the right tier (Slack free vs Discord). Wire `lib/notifications/slack.ts` mirroring `lib/notifications/resend.ts` shape. First migration: newsletter drafts. Second: workflow-failure pings (currently silent unless John watches the Actions tab). |
 
 ---
 
@@ -313,7 +323,7 @@ e16c1e4 — feat: detect filter + PokeTrace images + per-card condition picker
 2. 24-hour `noindex` window before posts become search-visible (gives me a day to catch issues).
 3. Add a 9th gate for citation density + named-entity verification ([ROADMAP item #5](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10)).
 
-**Channel-amplification: newsletter.** [ADR-011](DECISIONS.md#adr-011--newsletter-drafts-auto-generated-never-auto-sent) re-raises this risk for email. Mitigations baked in: (i) newsletter quality gate (d) blocks any dollar figure not present verbatim in the source blog post — fabrication of the most failure-prone class is structurally impossible; (ii) `lib/beehiiv-posts.ts` hard-codes `status: "draft"`, so nothing ships without John pressing send in Beehiiv's UI; (iii) the newsletter pipeline is soft-fail from the workflow's perspective, so a draft-generation regression cannot cascade into the blog publish path.
+**Channel-amplification: newsletter.** [ADR-011](DECISIONS.md#adr-011--newsletter-drafts-auto-generated-never-auto-sent) re-raises this risk for email; [ADR-012](DECISIONS.md#adr-012--newsletter-manual-paste-fallback-via-email-supersedes-adr-011-api-path) re-grounded the human-review checkpoint on the realisation that Beehiiv's Posts API is Enterprise-gated. Mitigations baked in: (i) newsletter quality gate (d) blocks any dollar figure not present verbatim in the source blog post — fabrication of the most failure-prone class is structurally impossible; (ii) `lib/beehiiv-posts.ts` hard-codes `status: "draft"` AND in practice the API rejects every call on our tier, so the only path to subscribers is John manually pasting the body into Beehiiv's UI; (iii) the email + `docs/newsletter-drafts/{slug}.md` artifact give John a paste-ready copy plus a permanent versioned record before he opens Beehiiv — the manual paste IS the R-001 review step; (iv) the newsletter pipeline is soft-fail at every stage (Beehiiv 403 → log only, Resend failure → log only) so a notification outage cannot cascade into the blog publish path.
 
 ## R-002 — Topic backlog exhaustion (~week 10-15)
 

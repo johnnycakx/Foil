@@ -8,6 +8,36 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-21 — Session 10: Newsletter manual-paste fallback via email (supersedes ADR-011 API path)
+
+**Commits:** this commit only
+
+**Summary.** [Session 9](#2026-05-21--session-9-autonomous-beehiiv-draft-generation-never-auto-send)'s end-to-end verification confirmed Beehiiv's Posts API is Enterprise-gated (HTTP 403 `SEND_API_NOT_ENTERPRISE_PLAN`). Today's goal closed the loop: every gate-passing newsletter draft now lands in `docs/newsletter-drafts/{slug}.md` (the canonical, version-controlled artifact) AND ships to `john.c.craig24@gmail.com` via Resend with paste-ready copy + topic rationale + 5-step publish instructions. John pastes the body into Beehiiv's UI, picks a send time, hits Schedule. The manual paste IS the R-001 review step — same checkpoint ADR-011 envisioned would happen inside Beehiiv's draft UI, just relocated.
+
+`lib/notifications/resend.ts` is the new transactional channel (free tier: 3K emails/month, 100/day — comfortable headroom). Sender is Resend's default `onboarding@resend.dev` so no DNS work was required for self-to-self transactional. Email body has 4 labeled sections per ADR-012: (a) WHY THIS TOPIC, (b) NEWSLETTER PREVIEW (subject + preview text + full HTML body), (c) HOW TO PUBLISH (numbered steps), (d) SOURCE BLOG POST (slug + URL + word counts).
+
+Topic rationale is now first-class: `pickNextCandidateWithRationale` in `lib/seo/keyword-backlog.ts` returns the chosen candidate plus a human-readable explanation ("Selected from the **X** pillar (URL: /…). This was rank #N of M cluster posts; K remain unshipped …"). Threaded through `generateWeeklyPost` → script → email payload + .md frontmatter.
+
+Beehiiv 403 is now an info-level log line, not a warning. On our tier it IS the steady-state outcome — the fallback path is the supported route. If/when we upgrade to Enterprise, `createDraftPost` will start succeeding and the artifact's `beehiivStatus` field will flip from `"deferred-manual-paste"` to `"auto-drafted"` automatically (no code change required).
+
+**Key decisions made.**
+- [ADR-012](DECISIONS.md#adr-012--newsletter-manual-paste-fallback-via-email-supersedes-adr-011-api-path) — manual-paste fallback. Supersedes ADR-011's API write path. ADR-011's R-001 reasoning + the 6 newsletter quality gates remain in force.
+- [ADR-011 status flipped](DECISIONS.md#adr-011--newsletter-drafts-auto-generated-never-auto-sent) to "Superseded by ADR-012 for the write path".
+
+**ROADMAP update.** Added NEXT item #9.5 — Slack/Discord ops workspace. Rationale: as we wire more ops pings (Stripe events, scan errors, autonomy failures, deploy outcomes, AI ask-back), Gmail becomes the lowest-density surface for any of them. Threaded channel per concern would be cleaner.
+
+**R-001 update.** Channel-amplification subsection rewritten to reflect the new architecture: now four baked-in mitigations including "manual paste IS the review step" and the soft-fail-at-every-stage property.
+
+**Tests added.**
+- `lib/__tests__/newsletter-file-writer.test.ts` (5 tests) — frontmatter shape, separator literal, YAML quote-escaping, omits `emailMessageId` when undefined, includes all 3 subject candidates.
+- `lib/__tests__/resend.test.ts` (8 tests) — endpoint URL, Bearer auth header, subject prefix, 4-section HTML body, XSS escaping, all 3 failure paths return `ok:false` without throwing, missing API key never touches the network.
+
+**End-to-end verification — captured below after the script runs against a recent blog post.**
+
+**State at session end.** Tests + typecheck green. Resend key added to `.env.local` + mirrored to GH Actions secrets. The Mon 2026-05-25 cron will be the first scheduled exercise.
+
+---
+
 ## 2026-05-21 — Session 9: Autonomous Beehiiv draft generation (never auto-send)
 
 **Commits:** this commit only

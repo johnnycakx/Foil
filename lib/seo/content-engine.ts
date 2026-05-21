@@ -21,7 +21,7 @@ import path from "node:path";
 import { anthropic } from "../anthropic.ts";
 import {
   parseStrategyDoc,
-  pickNextCandidate,
+  pickNextCandidateWithRationale,
   slugify,
   type ClusterCandidate,
 } from "./keyword-backlog.ts";
@@ -107,6 +107,8 @@ export type EngineResult = {
   serpContext: SerpContext | null;
   dataSnapshot: FoilDataSnapshot;
   gateResult: GateResult;
+  /** Why this topic was picked — empty string when forceCandidate was used. */
+  topicRationale: string;
 };
 
 export class GenerationFailedAfterRetries extends Error {
@@ -133,8 +135,18 @@ export class GenerationFailedAfterRetries extends Error {
  * the draft on success, or log + skip + webhook on failure.
  */
 export async function generateWeeklyPost(opts: GenerateOptions): Promise<EngineResult> {
-  // 1. Topic selection
-  const candidate = opts.forceCandidate ?? pickFromBacklog(opts);
+  // 1. Topic selection — capture the WHY alongside the WHAT so the fallback
+  //    email can explain the choice without re-deriving from the strategy doc.
+  let candidate: ClusterCandidate;
+  let topicRationale = "";
+  if (opts.forceCandidate) {
+    candidate = opts.forceCandidate;
+    topicRationale = `Forced via --slug flag (retroactive regenerate). Original strategy-doc ranking not consulted.`;
+  } else {
+    const picked = pickFromBacklog(opts);
+    candidate = picked.candidate;
+    topicRationale = picked.rationale;
+  }
   const siteUrl = opts.siteUrl ?? "https://foil-rosy.vercel.app";
   const urlPath = `/blog/${candidate.slug}`;
 
@@ -213,6 +225,7 @@ export async function generateWeeklyPost(opts: GenerateOptions): Promise<EngineR
         serpContext,
         dataSnapshot,
         gateResult: lastGate,
+        topicRationale,
       };
     }
 
@@ -225,7 +238,7 @@ export async function generateWeeklyPost(opts: GenerateOptions): Promise<EngineR
   throw new GenerationFailedAfterRetries(MAX_RETRIES, lastGate.failures, lastDraft);
 }
 
-function pickFromBacklog(opts: GenerateOptions): ClusterCandidate {
+function pickFromBacklog(opts: GenerateOptions): { candidate: ClusterCandidate; rationale: string } {
   const strategyPath =
     opts.strategyDocPath ?? path.join(process.cwd(), "docs", "seo-strategy.md");
   const strategyDoc = fs.readFileSync(strategyPath, "utf8");
@@ -234,13 +247,13 @@ function pickFromBacklog(opts: GenerateOptions): ClusterCandidate {
     throw new Error(`No cluster candidates parsed from ${strategyPath}.`);
   }
 
-  const candidate = pickNextCandidate(candidates, opts.shippedSlugs);
-  if (!candidate) {
+  const selection = pickNextCandidateWithRationale(candidates, opts.shippedSlugs);
+  if (!selection) {
     throw new Error(
       "Every candidate in docs/seo-strategy.md is already shipped. Add more cluster topics to the doc.",
     );
   }
-  return candidate;
+  return selection;
 }
 
 function countWords(text: string): number {

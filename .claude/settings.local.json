@@ -93,7 +93,8 @@
       "mcp__claude_ai_beehiiv__list_subscriptions",
       "mcp__claude_ai_beehiiv__get_publication",
       "Bash(xargs -I {} cat {})",
-      "PowerShell(Get-Content *)"
+      "PowerShell(Get-Content *)",
+      "mcp__claude_ai_beehiiv__list_posts"
     ]
   },
   "enableAllProjectMcpServers": true,

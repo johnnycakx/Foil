@@ -58,6 +58,10 @@ jobs:
           # drafts list awaiting human review.
           BEEHIIV_API_KEY: ${{ secrets.BEEHIIV_API_KEY }}
           BEEHIIV_PUBLICATION_ID: ${{ secrets.BEEHIIV_PUBLICATION_ID }}
+          # Manual-paste fallback (ADR-012). Resend ships the paste-ready
+          # draft to john.c.craig24@gmail.com after the .md artifact is
+          # written. Send failure logs a warning but never blocks.
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         # Exit code 2 = quality-gate exhaustion (logged + webhook sent).
         # Treat as "skip this run", not a workflow failure — the next cron will
         # try a different topic.
@@ -85,6 +89,7 @@ jobs:
         id: commit
         if: steps.generate.outputs.exit_code == '0'
         run: |
+          # docs/ covers docs/newsletter-drafts/ (ADR-012 artifact path) too.
           git add app/blog/posts/ docs/
           if git diff --cached --quiet; then
             echo "Nothing to commit — generator may have written to _pending/ (kill-switch active)"

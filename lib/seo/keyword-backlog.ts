@@ -140,3 +140,59 @@ export function pickNextCandidate(
     return a.pillar.slug.localeCompare(b.pillar.slug);
   })[0];
 }
+
+export type CandidateSelection = {
+  candidate: ClusterCandidate;
+  /** Human-readable explanation of WHY this candidate was chosen — surfaced
+   *  in the manual-paste email so John can scan whether the engine picked
+   *  reasonably without re-deriving from the strategy doc. */
+  rationale: string;
+};
+
+/**
+ * Same selection as pickNextCandidate, but returns a human-readable
+ * explanation alongside. Plumbed through the autonomy pipeline so the
+ * fallback email + the docs/newsletter-drafts/{slug}.md artifact carry the
+ * topic-choice context. Pure function — recomputes from the inputs.
+ */
+export function pickNextCandidateWithRationale(
+  candidates: readonly ClusterCandidate[],
+  shippedSlugs: ReadonlySet<string>,
+): CandidateSelection | null {
+  const picked = pickNextCandidate(candidates, shippedSlugs);
+  if (!picked) return null;
+
+  // How many candidates total in the same pillar? How many remain unshipped?
+  const pillarSlug = picked.pillar.slug;
+  const totalInPillar = candidates.filter((c) => c.pillar.slug === pillarSlug).length;
+  const unshippedInPillar = candidates.filter(
+    (c) => c.pillar.slug === pillarSlug && !shippedSlugs.has(c.slug),
+  ).length;
+
+  // Was there a tie at this rank that got broken by pillar slug?
+  const sameRankPillars = new Set(
+    candidates
+      .filter((c) => c.rank === picked.rank && !shippedSlugs.has(c.slug))
+      .map((c) => c.pillar.slug),
+  );
+  const tieBroken = sameRankPillars.size > 1;
+
+  const parts: string[] = [];
+  parts.push(
+    `Selected from the **${picked.pillar.primaryKeyword}** pillar (URL: ${picked.pillar.url}).`,
+  );
+  parts.push(
+    `This was rank #${picked.rank} of ${totalInPillar} cluster posts in that pillar; ${unshippedInPillar} remain unshipped after this one.`,
+  );
+  if (tieBroken) {
+    const otherPillars = [...sameRankPillars].filter((s) => s !== pillarSlug).sort();
+    parts.push(
+      `Tied at rank ${picked.rank} with the **${otherPillars.join(", ")}** pillar(s) — broke ties by alphabetical pillar slug (per pickNextCandidate).`,
+    );
+  }
+  parts.push(
+    `Long-tail keywords from the strategy doc: ${picked.longTail.length ? picked.longTail.join(", ") : "(none specified)"}.`,
+  );
+
+  return { candidate: picked, rationale: parts.join(" ") };
+}

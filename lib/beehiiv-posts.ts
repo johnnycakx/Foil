@@ -73,8 +73,19 @@ export async function createDraftPost(input: CreateDraftInput): Promise<CreateDr
     if (!postId) return { ok: false };
     return { ok: true, postId };
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error("[beehiiv-posts] createDraftPost failed", err);
+    const status = (err as { statusCode?: number }).statusCode;
+    if (status === 403) {
+      // Posts API is gated to Beehiiv's Enterprise tier. Expected on the free
+      // plan we're on today (ADR-012 calls this out). Downgrade from "error"
+      // to "info" so the workflow logs don't read as red — the fallback path
+      // (docs/newsletter-drafts + Resend email) is the supported route.
+      console.log(
+        `[beehiiv-posts] Posts API Enterprise-gated (HTTP 403). Falling back to manual-paste path — draft will be saved to docs/newsletter-drafts/ and emailed to the founder.`,
+      );
+    } else {
+      // eslint-disable-next-line no-console
+      console.warn(`[beehiiv-posts] createDraftPost failed (status=${status ?? "unknown"})`);
+    }
     return { ok: false };
   }
 }

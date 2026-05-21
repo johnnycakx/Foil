@@ -34,6 +34,12 @@ import {
   NewsletterGenerationFailed,
 } from "../lib/newsletter/draft-generator.ts";
 import { createDraftPost } from "../lib/beehiiv-posts.ts";
+import { serializeNewsletterFile } from "../lib/newsletter/file-writer.ts";
+import { sendNewsletterDraftEmail } from "../lib/notifications/resend.ts";
+
+const NEWSLETTER_DRAFTS_DIR = path.join(process.cwd(), "docs", "newsletter-drafts");
+const FOUNDER_EMAIL = "john.c.craig24@gmail.com";
+const SITE_URL = "https://foiltcg.com";
 
 const envPath = path.join(process.cwd(), ".env.local");
 if (fs.existsSync(envPath)) {
@@ -224,6 +230,9 @@ if (SKIP_NEWSLETTER) {
       primaryKeyword: result.draft.frontmatter.primaryKeyword,
     });
 
+    // Try the Beehiiv API first. On Enterprise it lands as a draft directly;
+    // on the free tier it 403s and we fall through to the manual-paste path.
+    // Either way the .md artifact + email below ALWAYS land.
     const draftResult = await createDraftPost({
       title: newsletter.subject,
       subjectLine: newsletter.previewText || newsletter.subject,
@@ -231,27 +240,71 @@ if (SKIP_NEWSLETTER) {
       originalBlogSlug: finalSlug,
     });
 
-    if (draftResult.ok) {
-      console.log(`[newsletter] ✓ draft created: post_id=${draftResult.postId}`);
-      console.log(`[newsletter]   subject       : ${newsletter.subject}`);
-      console.log(`[newsletter]   preview text  : ${newsletter.previewText}`);
-      console.log(`[newsletter]   word count    : ${newsletter.wordCount}`);
-      console.log(`[newsletter]   review URL    : https://app.beehiiv.com (Posts → Drafts)`);
-      await postWebhook({
-        event: "newsletter_draft_created",
-        blogSlug: finalSlug,
-        subject: newsletter.subject,
-        postId: draftResult.postId,
-        wordCount: newsletter.wordCount,
-      });
+    const generatedAt = new Date().toISOString();
+    const beehiivStatus: "auto-drafted" | "deferred-manual-paste" = draftResult.ok
+      ? "auto-drafted"
+      : "deferred-manual-paste";
+
+    // Always send the email so John has the paste-ready copy regardless of
+    // Beehiiv's tier. Resend failure is logged but never blocks.
+    const emailResult = await sendNewsletterDraftEmail({
+      to: FOUNDER_EMAIL,
+      subject: newsletter.subject,
+      previewText: newsletter.previewText,
+      body: newsletter.htmlBody,
+      blogSlug: finalSlug,
+      blogUrl: `${SITE_URL}/blog/${finalSlug}`,
+      topicRationale: result.topicRationale,
+      wordCount: newsletter.wordCount,
+      sourceWordCount: result.draft.wordCount,
+      generatedAt,
+    });
+
+    if (emailResult.ok) {
+      console.log(`[newsletter] ✓ email sent: messageId=${emailResult.messageId}`);
     } else {
-      console.warn("[newsletter] ⚠ Beehiiv rejected createDraftPost — blog publish unaffected");
-      await postWebhook({
-        event: "newsletter_draft_failed",
-        blogSlug: finalSlug,
-        reason: "beehiiv_create_failed",
-      });
+      console.warn(`[newsletter] ⚠ Resend send failed (status=${emailResult.status ?? "n/a"}); .md artifact still landed`);
     }
+
+    // ALWAYS write the canonical artifact, even if email failed. The .md is
+    // the permanent record; the email is the immediate ping.
+    fs.mkdirSync(NEWSLETTER_DRAFTS_DIR, { recursive: true });
+    const draftPath = path.join(NEWSLETTER_DRAFTS_DIR, `${finalSlug}.md`);
+    fs.writeFileSync(
+      draftPath,
+      serializeNewsletterFile({
+        blogSlug: finalSlug,
+        blogTitle: result.draft.frontmatter.title,
+        blogUrl: `${SITE_URL}/blog/${finalSlug}`,
+        sourceWordCount: result.draft.wordCount,
+        generatedAt,
+        topicRationale: result.topicRationale,
+        beehiivStatus,
+        emailMessageId: emailResult.ok ? emailResult.messageId : undefined,
+        draft: newsletter,
+      }),
+    );
+    console.log(`[newsletter] ✓ artifact saved: ${path.relative(process.cwd(), draftPath)}`);
+    console.log(`[newsletter]   subject       : ${newsletter.subject}`);
+    console.log(`[newsletter]   preview text  : ${newsletter.previewText}`);
+    console.log(`[newsletter]   word count    : ${newsletter.wordCount}`);
+    console.log(`[newsletter]   beehiiv       : ${beehiivStatus}`);
+    if (draftResult.ok) {
+      console.log(`[newsletter]   post_id       : ${draftResult.postId}`);
+    }
+
+    await postWebhook({
+      event: draftResult.ok
+        ? "newsletter_draft_created"
+        : "newsletter_draft_deferred_manual",
+      blogSlug: finalSlug,
+      subject: newsletter.subject,
+      wordCount: newsletter.wordCount,
+      beehiivStatus,
+      emailOk: emailResult.ok,
+      ...(draftResult.ok ? { postId: draftResult.postId } : {}),
+      ...(emailResult.ok ? { emailMessageId: emailResult.messageId } : {}),
+    });
   } catch (err) {
     if (err instanceof NewsletterGenerationFailed) {
       console.warn(`[newsletter] ⚠ quality gates exhausted after ${err.attempts} attempts — blog publish unaffected`);
