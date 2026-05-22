@@ -8,11 +8,20 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
-## 2026-05-22 — Session 19: Railway GitHub auto-deploy — diagnosis + UI playbook (API path blocked)
+## 2026-05-22 — Session 19: Railway GitHub auto-deploy — diagnosed, UI step run, auto-deploy live
 
 **Commits:** this commit only
 
-**Summary.** Session 18 surfaced a Railway deploy gap and hypothesized "GitHub auto-deploy broke during Session 14's token rotation." The diagnosis run this session falsified that hypothesis. The real cause is more boring and more durable: **the auto-deploy was never set up at all.** foil-bot has zero `repoTriggers`, `serviceSource.repo` is null, and 100% of the historical deployments came from `creator = john.c.craig24@gmail.com` via manual triggers (Session 11's `railway up`, Session 13's tsconfig redeploy via UI, Session 18's GraphQL `serviceInstanceRedeploy` mutation). There has never been a `github`-triggered deploy on this service. The API fix path (`serviceConnect` + `deploymentTriggerCreate`) is *blocked* by Railway's authorization layer with `"User does not have access to the repo"` and `"Cannot create deployment trigger for johnnycakx/Foil because no one in the project has access to it"` — the Railway GitHub App isn't installed (or isn't authorized) on the `johnnycakx/Foil` repo. That's a 30-second UI step John needs to take; documented inline below.
+**Summary.** Session 18 surfaced a Railway deploy gap and hypothesized "GitHub auto-deploy broke during Session 14's token rotation." The diagnosis run this session falsified that hypothesis. The real cause was more boring and more durable: **the auto-deploy was never set up at all.** foil-bot had zero `repoTriggers`, `serviceSource.repo` was null, and 100% of the historical deployments came from `creator = john.c.craig24@gmail.com` via manual triggers (Session 11's `railway up`, Session 13's tsconfig redeploy via UI, Session 18's GraphQL `serviceInstanceRedeploy` mutation). There had never been a `github`-triggered deploy on this service. The API fix path (`serviceConnect` + `deploymentTriggerCreate`) was *blocked* by Railway's authorization layer (`"User does not have access to the repo"`) — the Railway GitHub App wasn't installed on `johnnycakx/Foil`. John ran the 5-step UI playbook below, and the next push (`7ab0ea7`) deployed automatically. **Auto-deploy is now live.**
+
+**Closure verification.** Post-UI-step query against the same wrapper:
+
+```
+getServiceSource → connected:true, repoTrigger 6c9503c4-… on johnnycakx/Foil/main, provider=github
+getServiceStatus → deployment ff002a0d, SUCCESS, commitSha=7ab0ea74978e77347ce18438d38255231a957442
+```
+
+That `commitSha` is the load-bearing field — it was `null` on every historical deployment (mutation-triggered redeploys leave it empty); now it's the real SHA of the last `git push origin main`. The next time a push lands on main, Railway fetches the source via the trigger, builds, deploys. The Session 18 escape hatch (`scripts/redeploy-railway.ts` calling `serviceInstanceRedeploy`) is retained but no longer the primary path.
 
 **Evidence (criterion 2).** `getServiceSource(2d0552e6-…)` against the live service returned `connected:false` with `repoTriggers: []`. The last 10 deployments (sorted desc), with creator:
 
@@ -34,7 +43,7 @@ Six total deployments — every single one user-triggered, every single one with
 
 This isn't a missing-scope problem we can fix by re-authing. **First-time GitHub App installation is gated on browser-based user consent by GitHub's design** — a CLI can't install an App into a repo on the user's behalf. Once the Railway App is installed via the UI, *then* the Railway GraphQL mutations work and `scripts/wire-railway-source.ts` becomes the autonomous follow-up. Until then, this is an irreducible UI step.
 
-**Fix path: UI (5-step playbook for John).**
+**Fix path: UI (5-step playbook — was pending, now run).**
 
 1. Open https://railway.com/dashboard, click into the `perceptive-communication` project.
 2. Click the `foil-bot` service card, then `Settings` (left-hand panel).
@@ -59,16 +68,15 @@ After that one-time UI step, every push to main auto-deploys foil-bot, and `lib/
 
 **Tests.** Root `npx tsc --noEmit` clean. `node --test lib/__tests__/railway-api.test.ts` → 16/16 pass. Other suites not touched.
 
-**State of the autonomy chain.** Vercel (web app), Beehiiv (newsletter), Supabase (DB), GitHub (CI + secrets), Railway env-var-write — all autonomous. The ONE gap is Railway service ↔ GitHub source binding, blocked on a one-time GitHub App authorization John needs to grant from the UI. Once granted, the chain is end-to-end push-to-deploy for the bot, matching how the main Foil web app already works on Vercel.
+**State of the autonomy chain.** Vercel (web app), Beehiiv (newsletter), Supabase (DB), GitHub (CI + secrets), Railway env-var-write, Railway bot deploys — now all autonomous. Push to main fires both the Vercel build for the web app *and* the Railway build for foil-bot, end-to-end. The chain is closed.
 
 **Key decisions made.** No new ADR. Pure diagnosis + wrapper extension; consistent with [ADR-009](DECISIONS.md#adr-009--local-cli-tooling-for-autonomous-infra-changes)'s Session 15 amendment that says `lib/railway-api.ts` is the single import boundary for Railway's GraphQL. Pattern captured separately in [PATTERNS.md I-003](PATTERNS.md).
 
 **Follow-ups.**
-- John runs the 5-step playbook above. Estimated effort: 30 seconds in the Railway UI + 1 minute waiting for the empty-commit verify.
-- After UI step, re-run `scripts/wire-railway-source.ts` to confirm the API path is now unblocked (defensive — UI flow may already create the trigger).
-- I-003's suggested mitigation (drift cron) is a candidate ROADMAP item once enough integrations exist to make it worth building.
+- I-003's suggested mitigation (drift cron) is a candidate ROADMAP item once enough integrations exist to make it worth building. Now that two of three flagged integrations are autonomous (Vercel + Railway), one more silent-regression incident should trigger the cron build.
+- `scripts/wire-railway-source.ts` is now functionally idempotent (the UI flow already created the trigger that the mutation would have created). Kept as the wire-up script for any *new* Railway service we add in the future — the API path is fully unblocked now that the GitHub App is installed.
 
-**State at session end.** Diagnostic complete. Fix pending one UI step from John. Bot is currently live on deployment `86129838` (Session 18's mutation-triggered build). Next push to main will not auto-deploy until the GitHub App authorization lands.
+**State at session end.** Auto-deploy live. Bot running on deployment `ff002a0d` (github-triggered, commit `7ab0ea7`). Every push to main now rebuilds both Vercel (web app) and Railway (bot). The autonomy chain is closed.
 
 ---
 
