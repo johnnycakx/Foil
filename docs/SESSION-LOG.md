@@ -32,9 +32,11 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 **Key decisions made.** No new ADR. Behavior tweak inside existing modules (conversation handler, splitter, system-prompt builder); same reasoning as Session 15's chunking fix — implicit in [ADR-013](DECISIONS.md#adr-013--foil-hq-discord-ops-bot) (the bot exists to be readable; both truncation *and* a bot-y "1/2"/"2/2" prefix defeat that). Workflow lesson captured separately in [PATTERNS.md I-002](PATTERNS.md).
 
-**Follow-ups.** None. Roadmap unchanged.
+**Follow-ups.** Railway GitHub auto-deploy needs investigation (see Deploy verification note below) — likely affects Sessions 15-18 sitting on main but not actually running in production.
 
-**State at session end.** Bot pushed with COO voice + 4k output cap + cleaner two-chunk path. ROADMAP NOW still has its 4 manual items for John.
+**Deploy verification.** Pushed `42a9f84` to main, then queried `getServiceStatus(2d0552e6-1999-4149-9f77-9973e46e2adc)` via `lib/railway-api.ts`. Latest deployment came back `SUCCESS` — but it's `c6ce6eb2-75ed-4ee8-b6a6-d1c5e90de3c9` from `2026-05-22T02:58:44Z` (Session 13's redeploy), ~15.5 hours before this push. Listed the last 5 deployments to confirm: no new BUILDING entry appeared, and a re-poll a minute later returned the same result. The implication is that Railway's GitHub auto-deploy hasn't picked up *any* push since Session 13 — Sessions 15, 16, 17 (e4a53a8, 6872fc7, f5fff58) and this commit are all sitting on main without a corresponding build. The chunker fix and `/ideas` command shipped to GitHub but not to the running bot process. Per the goal criterion ("do NOT attempt a rollback or retry"), stopping here and surfacing this as a follow-up rather than diagnosing it inline. Most likely cause: the GitHub→Railway webhook was disconnected when the integration changed shape recently (possibly during Session 14's token rotation), or a branch filter changed. Next-session investigation: visit railway.app → perceptive-communication → foil-bot → Settings → Source, confirm the GitHub repo connection is live and watching `main`. If reconnect needed, a fresh push (or a manual `railway up` of the bot directory) brings everything since Session 13's commit live.
+
+**State at session end.** Code on main reflects COO voice + 4k output cap + cleaner two-chunk path. Running bot process still on Session 13's revision until the auto-deploy is repaired. ROADMAP NOW gains "investigate + repair Railway GitHub auto-deploy" as an implicit item (will land in IDEAS.md or ROADMAP NOW on next visit).
 
 ---
 
