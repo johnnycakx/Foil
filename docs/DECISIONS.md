@@ -166,6 +166,25 @@ Future goals MUST prefer `vercel ...` / `gh ...` calls over writing manual UI pl
 
 **Net effect.** Every CLI in the toolkit (vercel, gh, supabase, railway) is now usable without interactive auth. The "ask John to run `railway login` from his terminal" loop from Session 11 is gone. Any goal that touches infrastructure runs end-to-end from Claude Code.
 
+**2026-05-22 amendment (Session 15): 3rd tier — vendor CLIs that *assume* an interactive shell get bypassed via their REST/GraphQL API.** Session 15 surfaced the underlying shape of the problem the Session 14 amendment was patching around. The Railway CLI authenticates fine with a service token (`whoami` returns the right account), but commands that need project/service context (`status`, `list`, `link`, `service`, `logs --service ...`) keep asking the agent for things only a TTY can give them: a workspace pick, a project pick, an environment pick, a directory-linked `.railway` file. Setting `RAILWAY_TOKEN` instead of `RAILWAY_API_TOKEN` re-introduces the gotcha documented in the Session 14 amendment. The CLI assumes a *human* is at the prompt — that's the design intent, not a bug.
+
+This is the third tier in the routing rule:
+
+1. **Action runs on a directory + a credential, no link state required** → use the CLI (`gh secret set`, `vercel env add`, `supabase db push`). These work cleanly headless.
+2. **Action requires "which project are we talking about?" handshake state** → the CLI works for a human but fights an agent. **Use the REST/GraphQL API directly via a thin `lib/<vendor>-api.ts` wrapper.** Bearer token in, JSON out, no link files. Railway is the first example; future Linear/Stripe/etc. integrations should follow the same shape.
+3. **Action is something only a UI can do** (accept a domain-transfer email, click through Stripe Connect onboarding) → manual playbook for John. The set of actions that genuinely require this is small and shrinks over time.
+
+**Decision (Session 15).** `lib/railway-api.ts` is the single import boundary for `backboard.railway.com`. The thin GraphQL wrapper exposes `railwayGraphql` (raw POST + soft-fail) and `getServiceStatus(serviceId)` (returns `{ deploymentId, status, createdAt, commitSha }`). Goals that need to confirm a Railway deploy went green call this — not `railway logs --service foil-bot` and not `railway status`.
+
+Triggering Railway deploys is unchanged: a `git push origin main` fires Railway's GitHub integration. The CLI was never the trigger path; this ADR amendment only changes the *verification* path.
+
+**Consequences (Session 15).**
+- **Pro:** Status checks return a typed JSON shape instead of streamed CLI text the agent has to scrape. Easier to assert in CI and in tests.
+- **Pro:** No more `RAILWAY_TOKEN` vs `RAILWAY_API_TOKEN` gotcha — the wrapper takes a bearer token directly and there's only one accepted name (`RAILWAY_API_TOKEN`).
+- **Pro:** The 3rd-tier pattern is reusable. The next vendor whose CLI fights headless use gets the same `lib/<vendor>-api.ts` treatment instead of another round of "let me try `--non-interactive` flags."
+- **Con:** Adds a wrapper to maintain. Mitigated by keeping it thin (only the fields the project actually needs).
+- **Caveat:** The `railway` CLI is **not** removed from the toolkit. Deploys (`railway up`), env-var pushes (`railway variables --set`), and one-shot bucket operations still work cleanly through it. The carve-out is specifically the read-side / status / logs surface where the link-state handshake is hostile to headless use.
+
 ---
 
 ## ADR-010 — Beehiiv for newsletter list management: official SDK, single-field form, server-side key

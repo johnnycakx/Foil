@@ -8,6 +8,36 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-22 — Session 16: Railway via REST API, not CLI, for autonomous workflows
+
+**Commits:** this commit only
+
+**Summary.** Session 15's verification step ran into the same TTY assumption the `railway` CLI makes for every command past `whoami` — workspace pick, project pick, environment pick, `.railway` link file in the CWD. Service-token auth gets you past the login wall but not past the link-state handshake. The cleanest fix isn't more `--non-interactive` flags; it's stopping the pretense that the CLI was meant for headless use and going direct to Railway's GraphQL endpoint for read-side work.
+
+**What landed.**
+- [`lib/railway-api.ts`](../lib/railway-api.ts) (new) — thin GraphQL wrapper around `https://backboard.railway.com/graphql/v2`. Bearer auth via `RAILWAY_API_TOKEN`. Exports `railwayGraphql<T>(input)` (raw POST, soft-fail) + `getServiceStatus(serviceId)` (returns `{ deploymentId, status, createdAt, commitSha }`) + `isDeploymentLive` / `isDeploymentFailed` convenience predicates. Single import boundary for `backboard.railway.com` (matches the `lib/notifications/discord.ts` + `lib/beehiiv.ts` pattern).
+- [`lib/__tests__/railway-api.test.ts`](../lib/__tests__/railway-api.test.ts) (new) — 10 tests pinning: missing-token → ok:false, POST shape (endpoint URL + Bearer header + JSON body + variables passthrough), GraphQL `errors` array surfaced, non-2xx HTTP, fetch-throw soft-fail, empty serviceId rejected without hitting the network, LatestDeployment parses + extracts commit SHA from `meta.commitHash`, "no deployments yet" distinguished from other failures via `error: "no_deployments"`, `meta=null` handled gracefully, predicate truth tables.
+- [ADR-009 Session 15 amendment](DECISIONS.md#adr-009--local-cli-tooling-for-autonomous-infra-changes) — added the 3rd-tier routing rule. CLIs route by *whether the workflow needs vendor link state*, not by whether the CLI exists. Tier 1 (CLI works headless), Tier 2 (REST/GraphQL wrapper), Tier 3 (manual UI playbook).
+- CLAUDE.md — updated the "Local CLI tooling" entry for Railway to call out that status checks now go through `lib/railway-api.ts`. Updated the routing-rule list for the Railway row to split deploy/env-var-write/status-read into distinct call paths.
+- [`docs/IDEAS.md`](IDEAS.md) (new) — seeded with I-001 "Stop fighting interactive-first CLIs", the cross-cutting pattern Session 15 + 16 made explicit. Will promote to a dedicated ADR once a second vendor fits the same shape (Linear and Stripe `customers list` are the likely candidates).
+
+**Tests.**
+- Root suite: 230/235 pass (was 220/225 in Session 15; +10 new railway-api tests). Same 5 `Anthropic 529 overloaded_error` failures in `vision-prompt.test.ts` + `vision-confirm.test.ts` — confirmed unrelated; no new failures introduced.
+- Bot suite: 62/62 (unchanged).
+- Root typecheck: clean.
+
+**What the CLI still does.** The `railway` CLI is **not** removed from the toolkit. Env-var writes (`railway variables --set`) and bucket ops still flow through the CLI because those don't require the link-state handshake to be useful at scale. The carve-out is specifically status/logs/list — the read side that's worst-served by an interactive CLI.
+
+**Trigger path unchanged.** Pushes to `main` still fire Railway's GitHub auto-deploy. No new mechanism for *triggering* deploys — only for verifying them.
+
+**Key decisions made.** No new ADR — extended [ADR-009](DECISIONS.md#adr-009--local-cli-tooling-for-autonomous-infra-changes) in place with the Session 15 amendment, matching the pattern Session 14 used for its Supabase+Railway addition. Seeded [docs/IDEAS.md](IDEAS.md) for the cross-cutting pattern.
+
+**Follow-ups.** Next vendor that surfaces the same TTY-required shape — likely Linear API or Stripe `customers list` — gets the same `lib/<vendor>-api.ts` wrapper treatment, and at that point I-001 promotes to an ADR.
+
+**State at session end.** Status checks for Railway deploys now run as a typed JSON call, not a CLI scrape. ROADMAP NOW still has its 4 manual items for John (GH secrets, v0 homepage, GSC, auto-post review).
+
+---
+
 ## 2026-05-22 — Session 15: Bot reply chunking — split long responses across messages
 
 **Commits:** this commit only

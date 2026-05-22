@@ -175,7 +175,8 @@ The repo has five CLIs installed and authenticated. Future goals SHOULD use them
 - **Vercel Plugin for Claude Code** — installed during `vercel link`. Surfaces ~30 `vercel:*` skills (full list shows in the session skills sidebar). Prefer the skills over raw `vercel ...` calls when one matches the task — they encode platform-specific guardrails.
 - **`gh` CLI** — v2.92.0, authenticated as `johnnycakx` (keyring, HTTPS protocol, scopes: gist/read:org/repo/workflow). Use for: GitHub repo secrets (`gh secret set`), workflow dispatch (`gh workflow run`), releases, PR creation, PR review/inspection, issue management.
 - **`supabase` CLI** — v2.101.0. Use service-token auth so no interactive login is needed (see "Service tokens" below). Use for: applying migrations (`supabase db push`), listing projects, generating types. Bypasses the read-only Supabase MCP that's installed in this session.
-- **`railway` CLI** — v4.59.0. Use service-token auth so no interactive `railway login` is needed (see "Service tokens" below). Use for: bot service deploys (`railway up`), env vars (`railway variables --set`), logs (`railway logs --service foil-bot`).
+- **`railway` CLI** — v4.59.0. Use service-token auth (see "Service tokens" below) for the *write* surface only: env vars (`railway variables --set`) and bucket ops. **Do not use for status checks, logs, or `list`/`link`/`service` — those flows assume an interactive TTY and will fight a headless agent (see [ADR-009 Session 15 amendment](docs/DECISIONS.md#adr-009--local-cli-tooling-for-autonomous-infra-changes)).** Use `lib/railway-api.ts` for status. Deploys go through `git push` → Railway's GitHub auto-deploy, not the CLI.
+- **`lib/railway-api.ts`** — thin GraphQL wrapper around `backboard.railway.com/graphql/v2` with `RAILWAY_API_TOKEN` bearer auth. Exposes `getServiceStatus(serviceId)` returning `{ deploymentId, status, createdAt, commitSha }`. Use for "did the post-push deploy succeed?" checks.
 
 **Service tokens for headless autonomy.** As of Session 14, two long-lived tokens live in `.env.local` + GH Actions + (where useful) Railway env. Any goal that needs `supabase` or `railway` CLI access should `export` the relevant env var inline before the CLI call — no interactive OAuth required.
 
@@ -186,7 +187,10 @@ The repo has five CLIs installed and authenticated. Future goals SHOULD use them
 - Touches Vercel project settings / env vars / deploy hooks / domains → `vercel ...`
 - Touches GitHub secrets / workflow dispatch / releases / PRs → `gh ...`
 - Touches Supabase migrations / DB schema → `SUPABASE_ACCESS_TOKEN=$... supabase ...`
-- Touches Railway bot service / env vars / deploys → `RAILWAY_API_TOKEN=$... railway ...`
+- Touches Railway bot service:
+  - Deploy → `git push origin main` (Railway's GitHub integration auto-deploys; no CLI step)
+  - Env var write → `RAILWAY_API_TOKEN=$... railway variables --set ...`
+  - Status / logs / "did the deploy go green?" → `import { getServiceStatus } from "@/lib/railway-api"` (NOT `railway status` / `railway logs`)
 - Touches both (e.g. "wire a new env var end-to-end") → run both, no UI clicks
 - Touches neither → ignore this section, code as normal
 
