@@ -110,6 +110,12 @@ Slash commands: `/reset` (clear channel memory), `/recall <query>` (top-5 semant
 
 Bot env vars live in `bot/.env.local` (gitignored) and are mirrored to Railway via `railway variables set` — see `docs/ENV-VARS.md` for the canonical list.
 
+Outbound Discord notifications
+
+Every outbound Discord ping routes through `lib/notifications/discord.ts` (see [ADR-014](docs/DECISIONS.md)). No other module imports a Discord webhook URL or calls `fetch("https://discord.com/api/webhooks/...")`. The GH Actions workflow's `if: failure()` step is the one exception (raw curl + jq, because the Node script is exactly what failed and we can't depend on its libraries). Channel→event mapping: `#deploys` (Vercel native integration), `#content-engine` (blog + newsletter publish), `#subscribers` (Beehiiv subscribe success, masked email), `#errors` (any soft-fail path + workflow failures). Soft-fail at every layer — a Discord outage cannot block a publish or a subscribe.
+
+Email masking on `#subscribers` events lives in `lib/notifications/discord.ts::maskEmail` only. `john.craig@gmail.com` → `j***@gmail.com`.
+
 Newsletter (Beehiiv)
 
 `lib/beehiiv.ts` is the ONLY module allowed to import `@beehiiv/sdk`. Beehiiv blocks browser-origin requests via CORS and the API key must stay server-side — call `subscribeEmail({ email, source })` from a Server Action (`app/actions/subscribe.ts`) or another server module, never from a Client Component. If a new feature needs another Beehiiv endpoint (Posts, segments, custom fields), add it to `lib/beehiiv.ts` and re-export — keep the import boundary intact. See [ADR-010](docs/DECISIONS.md) for the rationale.

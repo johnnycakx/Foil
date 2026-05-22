@@ -1,0 +1,271 @@
+// Shared Discord webhook poster. Every outbound notification (#deploys,
+// #content-engine, #subscribers, #errors) routes through here. See ADR-014.
+//
+// Two architectural rules this module enforces:
+//   1. Soft-fail. Notifications must NEVER block business logic — a Discord
+//      outage cannot undo a blog publish or a subscribe. Every failure path
+//      logs and returns; no throws escape.
+//   2. Single import boundary. Other modules in this repo import postWebhook
+//      / postEmbed from this file, never raw `fetch("https://discord.com/...")`.
+//      Audit grep: if "discord.com/api/webhooks" appears anywhere except
+//      here + .env.local + ENV-VARS.md, that's the regression.
+//
+// Discord rate limits webhook POSTs to ~30 messages / channel / minute.
+// We retry on 429 and 5xx with exponential backoff capped at 3 attempts.
+
+const MAX_RETRIES = 3;
+const RETRY_BASE_MS = 500;
+const DISCORD_USERNAME = "Foil Ops";
+
+export type DiscordEmbed = {
+  title?: string;
+  description?: string;
+  url?: string;
+  color?: number;
+  timestamp?: string;
+  fields?: Array<{ name: string; value: string; inline?: boolean }>;
+  footer?: { text: string };
+};
+
+export type PostWebhookInput = {
+  webhookUrl: string;
+  content?: string;
+  embeds?: DiscordEmbed[];
+  /** Optional override for tests — injects a custom fetch impl. */
+  fetchImpl?: typeof fetch;
+};
+
+export type PostWebhookResult =
+  | { ok: true; status: number }
+  | { ok: false; status?: number; error: string };
+
+/**
+ * POST a payload to a Discord webhook URL. Soft-fail. Always resolves; never
+ * throws. Use postEmbed / postError below for shaped helpers.
+ */
+export async function postWebhook(input: PostWebhookInput): Promise<PostWebhookResult> {
+  if (!input.webhookUrl) {
+    return { ok: false, error: "missing_webhook_url" };
+  }
+  if (!input.content && (!input.embeds || input.embeds.length === 0)) {
+    return { ok: false, error: "empty_payload" };
+  }
+
+  const fetchFn = input.fetchImpl ?? fetch;
+  const body: Record<string, unknown> = { username: DISCORD_USERNAME };
+  if (input.content) body.content = input.content;
+  if (input.embeds && input.embeds.length) body.embeds = input.embeds;
+
+  let lastStatus: number | undefined;
+  let lastError = "unknown";
+
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      const response = await fetchFn(input.webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      lastStatus = response.status;
+      if (response.ok) return { ok: true, status: response.status };
+
+      const shouldRetry = response.status === 429 || response.status >= 500;
+      if (!shouldRetry || attempt === MAX_RETRIES - 1) {
+        const errText = await safeText(response);
+        lastError = `HTTP ${response.status}: ${errText.slice(0, 200)}`;
+        break;
+      }
+
+      // 429: respect Discord's retry_after if present, else exponential.
+      let waitMs = RETRY_BASE_MS * Math.pow(2, attempt);
+      if (response.status === 429) {
+        try {
+          const json = (await response.clone().json()) as { retry_after?: number };
+          if (typeof json.retry_after === "number") {
+            waitMs = Math.max(waitMs, Math.ceil(json.retry_after * 1000));
+          }
+        } catch {
+          // Body didn't parse — fall back to exponential.
+        }
+      }
+      await new Promise((r) => setTimeout(r, waitMs));
+    } catch (err) {
+      lastError = (err as Error).message;
+      if (attempt === MAX_RETRIES - 1) break;
+      await new Promise((r) => setTimeout(r, RETRY_BASE_MS * Math.pow(2, attempt)));
+    }
+  }
+
+  // eslint-disable-next-line no-console
+  console.warn(`[discord] webhook post failed: ${lastError} (status=${lastStatus ?? "n/a"})`);
+  return { ok: false, status: lastStatus, error: lastError };
+}
+
+// ---------------------------------------------------------------------------
+// Shape helpers — encode each channel's "look" so callers stay terse.
+// ---------------------------------------------------------------------------
+
+const COLOR_FOIL_ORANGE = 0xff6b5c;
+const COLOR_GREEN_OK = 0x4ade80;
+const COLOR_RED_ERROR = 0xef4444;
+const COLOR_SLATE = 0x64748b;
+
+/** Mask an email for surfacing in chat. `john.craig@gmail.com` → `j***@gmail.com`. */
+export function maskEmail(email: string): string {
+  const trimmed = (email ?? "").trim().toLowerCase();
+  const at = trimmed.indexOf("@");
+  if (at < 1) return "***";
+  const local = trimmed.slice(0, at);
+  const domain = trimmed.slice(at);
+  if (local.length <= 1) return `${local}${domain}`;
+  return `${local[0]}***${domain}`;
+}
+
+export type SubscriberEvent = {
+  email: string;
+  source: string | null;
+  activeCount: number | null;
+};
+
+export async function postSubscriberJoined(
+  webhookUrl: string,
+  ev: SubscriberEvent,
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<PostWebhookResult> {
+  const fields: DiscordEmbed["fields"] = [
+    { name: "Email", value: maskEmail(ev.email), inline: true },
+    { name: "Source", value: ev.source || "(direct)", inline: true },
+  ];
+  if (ev.activeCount !== null) {
+    fields.push({ name: "Active total", value: String(ev.activeCount), inline: true });
+  }
+  return postWebhook({
+    webhookUrl,
+    embeds: [
+      {
+        title: "✨ New subscriber",
+        color: COLOR_FOIL_ORANGE,
+        timestamp: new Date().toISOString(),
+        fields,
+      },
+    ],
+    fetchImpl: opts.fetchImpl,
+  });
+}
+
+export type ContentEventInput = {
+  blogTitle: string;
+  blogUrl: string;
+  blogWordCount?: number;
+  newsletter?:
+    | { subject: string; previewText: string; wordCount: number; artifactPath: string }
+    | null;
+};
+
+export async function postContentPublished(
+  webhookUrl: string,
+  ev: ContentEventInput,
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<PostWebhookResult> {
+  const fields: DiscordEmbed["fields"] = [
+    { name: "Blog", value: `[${ev.blogTitle}](${ev.blogUrl})`, inline: false },
+  ];
+  if (typeof ev.blogWordCount === "number") {
+    fields.push({ name: "Word count", value: String(ev.blogWordCount), inline: true });
+  }
+  if (ev.newsletter) {
+    fields.push({ name: "Newsletter subject", value: ev.newsletter.subject, inline: false });
+    fields.push({ name: "Preview text", value: ev.newsletter.previewText, inline: false });
+    fields.push({
+      name: "Artifact",
+      value: `[\`${ev.newsletter.artifactPath}\`](https://github.com/johnnycakx/Foil/blob/main/${ev.newsletter.artifactPath.replace(/\\/g, "/")})`,
+      inline: false,
+    });
+  }
+  return postWebhook({
+    webhookUrl,
+    embeds: [
+      {
+        title: "📝 Autonomous post published",
+        color: COLOR_GREEN_OK,
+        timestamp: new Date().toISOString(),
+        fields,
+      },
+    ],
+    fetchImpl: opts.fetchImpl,
+  });
+}
+
+export type ErrorEventInput = {
+  source: string; // e.g. "content-engine", "subscribe-action", "ci-workflow"
+  errorType: string; // e.g. "BeehiivApiError", "GenerationFailedAfterRetries"
+  message: string;
+  context?: Record<string, string | number | undefined>;
+  runUrl?: string; // GH Actions run link if applicable
+};
+
+export async function postError(
+  webhookUrl: string,
+  ev: ErrorEventInput,
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<PostWebhookResult> {
+  const fields: DiscordEmbed["fields"] = [
+    { name: "Source", value: ev.source, inline: true },
+    { name: "Type", value: ev.errorType, inline: true },
+  ];
+  for (const [k, v] of Object.entries(ev.context ?? {})) {
+    if (v === undefined || v === "") continue;
+    fields.push({ name: k, value: String(v).slice(0, 1024), inline: true });
+  }
+  if (ev.runUrl) fields.push({ name: "Run", value: `[GH Actions](${ev.runUrl})`, inline: false });
+  return postWebhook({
+    webhookUrl,
+    embeds: [
+      {
+        title: "⚠️ Error",
+        description: `\`\`\`\n${ev.message.slice(0, 1500)}\n\`\`\``,
+        color: COLOR_RED_ERROR,
+        timestamp: new Date().toISOString(),
+        fields,
+      },
+    ],
+    fetchImpl: opts.fetchImpl,
+  });
+}
+
+export async function postDeploy(
+  webhookUrl: string,
+  ev: { status: "started" | "succeeded" | "failed"; url?: string; commitSha?: string },
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<PostWebhookResult> {
+  // Only used if we ever bypass Vercel's native Discord integration. Today
+  // #deploys is fed by Vercel directly; this helper is a fallback shape.
+  const colors = {
+    started: COLOR_SLATE,
+    succeeded: COLOR_GREEN_OK,
+    failed: COLOR_RED_ERROR,
+  };
+  return postWebhook({
+    webhookUrl,
+    embeds: [
+      {
+        title: `🚀 Deploy ${ev.status}`,
+        color: colors[ev.status],
+        timestamp: new Date().toISOString(),
+        fields: [
+          ...(ev.commitSha ? [{ name: "Commit", value: ev.commitSha.slice(0, 7), inline: true }] : []),
+          ...(ev.url ? [{ name: "URL", value: ev.url, inline: false }] : []),
+        ],
+      },
+    ],
+    fetchImpl: opts.fetchImpl,
+  });
+}
+
+async function safeText(response: Response): Promise<string> {
+  try {
+    return await response.text();
+  } catch {
+    return "(no body)";
+  }
+}

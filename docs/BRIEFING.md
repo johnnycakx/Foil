@@ -123,6 +123,12 @@ Slash commands: `/reset` (clear channel memory), `/recall <query>` (top-5 semant
 
 Bot env vars live in `bot/.env.local` (gitignored) and are mirrored to Railway via `railway variables set` — see `docs/ENV-VARS.md` for the canonical list.
 
+Outbound Discord notifications
+
+Every outbound Discord ping routes through `lib/notifications/discord.ts` (see [ADR-014](docs/DECISIONS.md)). No other module imports a Discord webhook URL or calls `fetch("https://discord.com/api/webhooks/...")`. The GH Actions workflow's `if: failure()` step is the one exception (raw curl + jq, because the Node script is exactly what failed and we can't depend on its libraries). Channel→event mapping: `#deploys` (Vercel native integration), `#content-engine` (blog + newsletter publish), `#subscribers` (Beehiiv subscribe success, masked email), `#errors` (any soft-fail path + workflow failures). Soft-fail at every layer — a Discord outage cannot block a publish or a subscribe.
+
+Email masking on `#subscribers` events lives in `lib/notifications/discord.ts::maskEmail` only. `john.craig@gmail.com` → `j***@gmail.com`.
+
 Newsletter (Beehiiv)
 
 `lib/beehiiv.ts` is the ONLY module allowed to import `@beehiiv/sdk`. Beehiiv blocks browser-origin requests via CORS and the API key must stay server-side — call `subscribeEmail({ email, source })` from a Server Action (`app/actions/subscribe.ts`) or another server module, never from a Client Component. If a new feature needs another Beehiiv endpoint (Posts, segments, custom fields), add it to `lib/beehiiv.ts` and re-export — keep the import boundary intact. See [ADR-010](docs/DECISIONS.md) for the rationale.
@@ -259,35 +265,38 @@ e16c1e4 — feat: detect filter + PokeTrace images + per-card condition picker
 
 ## Most recent session
 
-## 2026-05-21 — Session 11: Foil HQ Discord ops bot (persistent memory, curated tools)
+## 2026-05-22 — Session 12: Real OpenAI embeddings + outbound Discord notifications
 
 **Commits:** this commit only
 
-**Summary.** Shipped a new `bot/` subtree at the repo root — a Discord bot that lives in Foil HQ and answers @mentions with Foil-docs grounding, persistent per-channel memory, and curated tool access. Stack: discord.js v14 + Anthropic SDK + Supabase Postgres + pgvector + Railway deploy. Architecture rationale lives in [ADR-013](DECISIONS.md#adr-013--foil-hq-discord-bot-persistent-memory-ops-chat-with-curated-tools). Closes [ROADMAP NEXT #9.5](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10).
+**Summary.** Two pieces landed in one goal:
 
-**What landed.**
-- `bot/migrations/001_bot_memory.sql` — pgvector extension + `bot_messages` (id, channel_id, user_id, role, content, created_at) + `bot_embeddings` (1:1 sidecar, 1536-dim, HNSW index, cosine) + `bot_semantic_search` RPC + service-role RLS policies. Schema isolated from main Foil app.
-- `bot/src/db.ts` — typed Supabase client + `insertMessage` / `getRecentChannelMessages(50)` / `semanticSearchMessages(topK)` / `resetChannel`. Embeddings use a deterministic SHA-256 → 1536-float placeholder; Voyage/OpenAI swap is Goal B (TODO anchored in `hashEmbedding`).
-- `bot/src/system-prompt.ts` — reads `../docs/BRIEFING.md` + ROADMAP NOW/NEXT + RISKS High/Medium + latest SESSION-LOG, wraps in `<foil_context>`, caps at 15k tokens. Four channel personas (content / subscribers / errors / general).
-- `bot/src/tools/index.ts` — five curated read-only tools: `read_file`, `search_codebase`, `get_recent_subscribers`, `get_publication_stats`, `get_session_log`. All wired into Anthropic's `tools[]` surface.
-- `bot/src/handlers/{mention,conversation,slash-commands}.ts` — @mention listener with progressive Discord edits (1.2s debounce under Discord's 5/5s budget), Anthropic tool-use loop, `/sonnet` prefix routes a single turn to Sonnet 4.6 instead of the default Opus 4.5, slash commands `/reset` `/recall` `/help`.
-- `bot/src/index.ts` — discord.js client boot with Guilds + GuildMessages + MessageContent intents; registers slash commands on ready; routes messageCreate + interactionCreate to handlers.
-- `bot/Dockerfile` + repo-root `railway.json` — Node 22 alpine multi-stage; build context is the repo root so the image can include `docs/` for runtime grounding.
-- Tests: 35 in `bot/src/__tests__/` covering db round-trip, channel-prompt selection (incl. section extractors), @mention parsing (incl. `/sonnet` switch), tools, `/reset`. All green; `tsc --noEmit` clean.
+**1. Real embeddings.** `bot/src/embed.ts` wraps OpenAI's `text-embedding-3-small` (1536 dims, $0.02/M tokens) with an in-memory LRU cache (SHA-256 of content as key, capacity 512). `bot/src/db.ts::embedOrFallback` tries OpenAI first; on missing key, network error, or non-2xx response it falls back to the deterministic hash placeholder from Session 11. Both `insertMessage` and `semanticSearchMessages` use the same path so the write and read embeddings live in the same vector space. Backfill script (`bot/scripts/backfill-embeddings.ts`) walks every `bot_messages` row, embeds the content, and upserts into `bot_embeddings`. Safe to re-run; idempotent.
 
-**Manual prereqs already done by John (pre-goal):** Foil HQ Discord server created with 6 channels; bot user created with Message Content Intent ON; bot invited to server with Administrator permission; Railway empty project + payment method on file. Tokens collected this session and stored in `bot/.env.local` (gitignored) — DISCORD_BOT_TOKEN, DISCORD_APPLICATION_ID=1507171299422765116, RAILWAY_PROJECT_ID=08088ed2-f78d-48de-9559-67a528d1c7cd.
+**2. Outbound Discord notifications ([ADR-014](DECISIONS.md#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary)).** Four channels in Foil HQ — `#deploys`, `#content-engine`, `#subscribers`, `#errors`. Shared library: `lib/notifications/discord.ts` with `postWebhook` (retry on 429 with `retry_after` + exponential backoff on 5xx, soft-fail on every error path) plus shaped helpers `postSubscriberJoined`, `postContentPublished`, `postError`, `postDeploy`. Wiring:
+- **#content-engine** — `scripts/generate-weekly-post.ts` fires a combined blog + newsletter embed after the newsletter step completes; falls back to a blog-only embed when newsletter is skipped (`--skip-newsletter` flag or missing BEEHIIV env vars).
+- **#subscribers** — `app/actions/subscribe.ts` fires `postSubscriberJoined` (with masked email) on every successful Beehiiv subscribe. Fire-and-forget so a slow Discord doesn't add latency to the form.
+- **#errors** — fires from content engine gate exhaustion, content engine newsletter-step failure, subscribe action Beehiiv failure, AND the workflow's `if: failure()` step (raw curl + jq, the one exception to the "all webhook calls go through `lib/notifications/discord.ts`" rule, justified because the Node script is exactly what failed).
+- **#deploys** — Vercel native Discord integration; pending manual UI setup (no Vercel CLI for that flow).
 
-**Pending at this session-end:**
-1. Apply `bot/migrations/001_bot_memory.sql` to Supabase. The Supabase MCP is read-only in this session so the migration needs to be pasted into the Supabase Dashboard → SQL Editor. Estimated time: <1 minute.
-2. Run `railway login` interactively in a terminal John controls (the CLI auth flow is browser-based).
-3. `railway link 08088ed2-f78d-48de-9559-67a528d1c7cd`, push the 7 env vars (Discord/Anthropic/Supabase/Beehiiv), `railway up`.
+**Env mirroring.** `OPENAI_API_KEY` to `.env.local` + Vercel (prod/preview/dev) + GitHub Actions + Railway (foil-bot service). Four `DISCORD_WEBHOOK_*` URLs to `.env.local`; the two needed by the workflow (`CONTENT_ENGINE`, `ERRORS`) to GitHub Actions; the two needed by the Server Action (`SUBSCRIBERS`, `ERRORS`) to Vercel across all environments.
+
+**Tests added.**
+- `lib/__tests__/discord-webhook.test.ts` (13 tests) — empty URL, empty payload, POST shape, Bearer-less header check, 429 retry with `retry_after`, 503 retry then give-up, no-retry on 4xx other than 429, soft-fail on fetch-throw, `maskEmail` happy/edge cases, `postSubscriberJoined` field shape, `postError` code-block + runUrl.
+- `bot/src/__tests__/embed.test.ts` (8 tests) — endpoint URL, Bearer auth, payload shape, cache hit on identical input, cache miss on different input, throws on missing key / empty input / non-2xx / malformed body / wrong-dim.
+
+**Manual prereq for #deploys.** John needs to install the Vercel→Discord integration once via `Vercel dashboard → Project → Integrations → Browse Marketplace → Discord`. The `DISCORD_WEBHOOK_DEPLOYS` URL is already in `.env.local` as the target. After install, Vercel handles the formatting + delivery; the URL just routes to the channel.
+
+**Backfill execution.** Manual run pending — `cd bot && node --experimental-strip-types --no-warnings scripts/backfill-embeddings.ts` will rewrite every existing `bot_messages` embedding from the hash placeholder to OpenAI real semantic. Idempotent + restartable; skip via `--all` flag set differently (default = "missing only", `--all` = re-embed every row).
+
+**End-to-end verification — recorded below after the live smoke.**
 
 **Key decisions made.**
-- [ADR-013](DECISIONS.md#adr-013--foil-hq-discord-bot-persistent-memory-ops-chat-with-curated-tools) — Path 2 (Discord bot over web dashboard or Slack). Postgres+pgvector memory, curated tools (not full MCP), Opus 4.5 default + `/sonnet` opt-in, prompt caching on grounding context, Railway deploy.
+- [ADR-014](DECISIONS.md#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary) — per-channel webhook URLs, soft-fail policy, single import boundary at `lib/notifications/discord.ts`, mask-on-emit for subscriber events.
 
-**Follow-ups.** Goal B (full MCP integration on top of the curated-tools baseline). Goal C (outbound webhook notifications for deploys/content/subscribers/errors → bot posts to channels). Real embeddings (Voyage AI / OpenAI text-embedding-3-small) tracked as a TODO in `bot/src/db.ts::hashEmbedding`.
+**Follow-ups.** Goal C (daily-digest aggregator to batch events per-channel rather than per-event; Beehiiv MCP integration directly into the bot's tool layer).
 
-**State at session end.** All bot code + tests + docs committed. Migration + Railway deploy pending the manual steps above; bot will be online in Foil HQ once those land.
+**State at session end.** All tests + tsc clean. Vercel #deploys integration is the only remaining manual step.
 
 ---
 

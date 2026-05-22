@@ -8,6 +8,41 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-22 — Session 12: Real OpenAI embeddings + outbound Discord notifications
+
+**Commits:** this commit only
+
+**Summary.** Two pieces landed in one goal:
+
+**1. Real embeddings.** `bot/src/embed.ts` wraps OpenAI's `text-embedding-3-small` (1536 dims, $0.02/M tokens) with an in-memory LRU cache (SHA-256 of content as key, capacity 512). `bot/src/db.ts::embedOrFallback` tries OpenAI first; on missing key, network error, or non-2xx response it falls back to the deterministic hash placeholder from Session 11. Both `insertMessage` and `semanticSearchMessages` use the same path so the write and read embeddings live in the same vector space. Backfill script (`bot/scripts/backfill-embeddings.ts`) walks every `bot_messages` row, embeds the content, and upserts into `bot_embeddings`. Safe to re-run; idempotent.
+
+**2. Outbound Discord notifications ([ADR-014](DECISIONS.md#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary)).** Four channels in Foil HQ — `#deploys`, `#content-engine`, `#subscribers`, `#errors`. Shared library: `lib/notifications/discord.ts` with `postWebhook` (retry on 429 with `retry_after` + exponential backoff on 5xx, soft-fail on every error path) plus shaped helpers `postSubscriberJoined`, `postContentPublished`, `postError`, `postDeploy`. Wiring:
+- **#content-engine** — `scripts/generate-weekly-post.ts` fires a combined blog + newsletter embed after the newsletter step completes; falls back to a blog-only embed when newsletter is skipped (`--skip-newsletter` flag or missing BEEHIIV env vars).
+- **#subscribers** — `app/actions/subscribe.ts` fires `postSubscriberJoined` (with masked email) on every successful Beehiiv subscribe. Fire-and-forget so a slow Discord doesn't add latency to the form.
+- **#errors** — fires from content engine gate exhaustion, content engine newsletter-step failure, subscribe action Beehiiv failure, AND the workflow's `if: failure()` step (raw curl + jq, the one exception to the "all webhook calls go through `lib/notifications/discord.ts`" rule, justified because the Node script is exactly what failed).
+- **#deploys** — Vercel native Discord integration; pending manual UI setup (no Vercel CLI for that flow).
+
+**Env mirroring.** `OPENAI_API_KEY` to `.env.local` + Vercel (prod/preview/dev) + GitHub Actions + Railway (foil-bot service). Four `DISCORD_WEBHOOK_*` URLs to `.env.local`; the two needed by the workflow (`CONTENT_ENGINE`, `ERRORS`) to GitHub Actions; the two needed by the Server Action (`SUBSCRIBERS`, `ERRORS`) to Vercel across all environments.
+
+**Tests added.**
+- `lib/__tests__/discord-webhook.test.ts` (13 tests) — empty URL, empty payload, POST shape, Bearer-less header check, 429 retry with `retry_after`, 503 retry then give-up, no-retry on 4xx other than 429, soft-fail on fetch-throw, `maskEmail` happy/edge cases, `postSubscriberJoined` field shape, `postError` code-block + runUrl.
+- `bot/src/__tests__/embed.test.ts` (8 tests) — endpoint URL, Bearer auth, payload shape, cache hit on identical input, cache miss on different input, throws on missing key / empty input / non-2xx / malformed body / wrong-dim.
+
+**Manual prereq for #deploys.** John needs to install the Vercel→Discord integration once via `Vercel dashboard → Project → Integrations → Browse Marketplace → Discord`. The `DISCORD_WEBHOOK_DEPLOYS` URL is already in `.env.local` as the target. After install, Vercel handles the formatting + delivery; the URL just routes to the channel.
+
+**Backfill execution.** Manual run pending — `cd bot && node --experimental-strip-types --no-warnings scripts/backfill-embeddings.ts` will rewrite every existing `bot_messages` embedding from the hash placeholder to OpenAI real semantic. Idempotent + restartable; skip via `--all` flag set differently (default = "missing only", `--all` = re-embed every row).
+
+**End-to-end verification — recorded below after the live smoke.**
+
+**Key decisions made.**
+- [ADR-014](DECISIONS.md#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary) — per-channel webhook URLs, soft-fail policy, single import boundary at `lib/notifications/discord.ts`, mask-on-emit for subscriber events.
+
+**Follow-ups.** Goal C (daily-digest aggregator to batch events per-channel rather than per-event; Beehiiv MCP integration directly into the bot's tool layer).
+
+**State at session end.** All tests + tsc clean. Vercel #deploys integration is the only remaining manual step.
+
+---
+
 ## 2026-05-21 — Session 11: Foil HQ Discord ops bot (persistent memory, curated tools)
 
 **Commits:** this commit only

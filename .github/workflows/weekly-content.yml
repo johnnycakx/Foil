@@ -62,6 +62,13 @@ jobs:
           # draft to john.c.craig24@gmail.com after the .md artifact is
           # written. Send failure logs a warning but never blocks.
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          # Discord notifications (ADR-014). #content-engine fires on every
+          # successful publish; #errors fires on quality-gate exhaustion +
+          # any soft-fail path. Both are optional — missing secrets just
+          # skip the post.
+          DISCORD_WEBHOOK_CONTENT_ENGINE: ${{ secrets.DISCORD_WEBHOOK_CONTENT_ENGINE }}
+          DISCORD_WEBHOOK_ERRORS: ${{ secrets.DISCORD_WEBHOOK_ERRORS }}
+          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         # Exit code 2 = quality-gate exhaustion (logged + webhook sent).
         # Treat as "skip this run", not a workflow failure — the next cron will
         # try a different topic.
@@ -127,3 +134,20 @@ jobs:
           if [ "$response" != "200" ] && [ "$response" != "201" ]; then
             echo "::warning::Deploy hook returned unexpected status $response — trigger a manual deploy from Vercel UI if needed."
           fi
+
+      # On workflow failure (e.g. npm ci, checkout, env-loading failures the
+      # script itself can't catch), ping #errors with the run URL so John
+      # sees it without watching the Actions tab. Soft-fail via `|| true`.
+      - name: Notify Discord on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_ERRORS: ${{ secrets.DISCORD_WEBHOOK_ERRORS }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_ERRORS" ]; then exit 0; fi
+          TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          PAYLOAD=$(jq -n \
+            --arg url "$RUN_URL" \
+            --arg ts "$TS" \
+            '{username: "Foil Ops", embeds: [{title: ":warning: weekly-content workflow failed", description: "A GitHub Actions step failed before the script could send its own notification.", url: $url, color: 15548997, fields: [{name: "Workflow", value: "weekly-content", inline: true}, {name: "Run", value: ("[Open in GitHub](" + $url + ")"), inline: true}], timestamp: $ts}]}')
+          curl -sS -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK_ERRORS" || true

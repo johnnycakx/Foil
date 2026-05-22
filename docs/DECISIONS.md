@@ -299,6 +299,47 @@ The newsletter draft generator deferral noted in ADR-010 ("until ≥50 signups")
 
 **Cross-refs.** [ADR-012](#adr-012--newsletter-manual-paste-fallback-via-email-supersedes-adr-011-api-path) (the email channel this Discord bot will consolidate with via Goal C), [ROADMAP NEXT #9.5](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10) (this ADR closes that item), [ROADMAP LATER → Goal B] (full MCP integration), [ROADMAP LATER → Goal C] (outbound webhook notifications for deploys/content/subscribers/errors).
 
+---
+
+## ADR-014 — Outbound Discord notifications: per-channel webhooks, soft-fail, single import boundary
+
+**Date:** 2026-05-22
+**Status:** Accepted — partial-Goal-C delivery. Closes the "outbound notifications" follow-up flagged in [ADR-013](#adr-013--foil-hq-discord-bot-persistent-memory-ops-chat-with-curated-tools) consequences.
+
+**Context.** [ADR-013](#adr-013--foil-hq-discord-bot-persistent-memory-ops-chat-with-curated-tools) made Foil HQ Discord the in-channel ops surface. The bot itself handles INBOUND chat (John @mentions, bot replies). It doesn't address the symmetric problem: how does the rest of the stack tell the channels what just happened — blog publishes, new subscribers, scan errors, deploy outcomes? Three architectural options:
+
+1. **Bot polls** — content-engine writes to a queue table; the bot polls every 30s and posts. Decouples but adds latency, infrastructure, and a queue surface to maintain.
+2. **Each event source POSTs directly to Discord webhook URLs.** No queue, no polling, no service. Discord webhook URLs are essentially channel-scoped POST endpoints; nothing to host.
+3. **Single notification micro-service** that every event source calls. Adds a hop without offering more capability than option 2 today.
+
+**Decision.** Option 2 with a shared library. One file (`lib/notifications/discord.ts`) is the import boundary; every event source calls its `postWebhook` / `postSubscriberJoined` / `postContentPublished` / `postError` helpers. Channels map to event types:
+
+| Channel | Webhook env var | Event source(s) |
+|---|---|---|
+| `#deploys` | `DISCORD_WEBHOOK_DEPLOYS` | Vercel native Discord integration (set up via Vercel dashboard; not used from code today) |
+| `#content-engine` | `DISCORD_WEBHOOK_CONTENT_ENGINE` | `scripts/generate-weekly-post.ts` on successful blog + newsletter draft |
+| `#subscribers` | `DISCORD_WEBHOOK_SUBSCRIBERS` | `app/actions/subscribe.ts` on successful Beehiiv subscribe |
+| `#errors` | `DISCORD_WEBHOOK_ERRORS` | Content engine on gate-exhaustion / newsletter-step failure; subscribe action on Beehiiv failure; GH Actions workflow on any step failure (covered by an `if: failure()` step with `jq`-shaped payload + `curl`) |
+
+**Three architectural rules the shared library enforces:**
+
+1. **Soft-fail.** `postWebhook` never throws. Every failure path logs and returns `{ok:false,error:...}`. Notifications must NEVER block business logic — a Discord outage cannot undo a blog publish or a subscribe.
+2. **Single import boundary.** `lib/notifications/discord.ts` is the only place that imports the Discord webhook URL or calls `fetch("https://discord.com/api/webhooks/...")`. Audit grep: any other module referencing `discord.com/api/webhooks` is the regression. The GH Actions workflow's `if: failure()` step is the one exception (raw curl + `jq`), justified because the Node script is exactly what failed and we can't depend on its libraries.
+3. **Email-masking on subscriber events.** `postSubscriberJoined` masks the local part of every email (`john.craig@gmail.com` → `j***@gmail.com`) before it lands in the channel. The `maskEmail` helper is the only place this transformation lives; tests pin the masking rule.
+
+**Consequences.**
+
+- **Pro:** Zero infrastructure for ops notifications. Adding a new event source is `import { postX } from "@/lib/notifications/discord"` + one call. Removing one is deleting the call.
+- **Pro:** Channel topology lives in environment variables, not code. Renaming `#content-engine` → `#content-pipeline` is a UI rename + a webhook URL swap; no PR required.
+- **Pro:** Retry-on-429-with-`retry_after` handling matches Discord's documented contract, so we don't trip the rate-limit penalty under bursty traffic (a publish + several subscriber pings in the same minute).
+- **Pro:** The bot's `lib/beehiiv.ts`-style import boundary pattern (from ADR-010) extends cleanly to a fourth boundary (`lib/notifications/discord.ts`). Same architecture, same audit story.
+- **Con:** Per-event flooding is possible. 100 subscribers signing up in a 5-minute promotion would post 100 messages. Mitigation tracked as Goal C (daily-digest aggregator that batches events by channel + time window).
+- **Con:** Discord webhook URLs ARE the credential. Anyone with the URL can post — Discord doesn't gate webhook URLs by source IP or signing key. Mitigation: webhook URLs are stored as secrets across all three surfaces (`.env.local`, Vercel envs, GH Actions secrets, Railway envs). Rotation = generate a new webhook URL in the Discord channel's Integrations panel and `gh secret set` / `vercel env add` / Railway dashboard.
+- **Con:** Vercel deploy notifications still require manual UI setup in `Vercel dashboard → Integrations → Discord` because Vercel has no CLI for that flow. We have the `DISCORD_WEBHOOK_DEPLOYS` URL ready; John installs the Marketplace integration once.
+- **Caveat:** OpenAI text-embedding-3-small was wired alongside this ADR (replaces the hash placeholder from ADR-013). Mentioned here because the same goal landed both pieces, but the embeddings change is a separate concern from notifications — `bot/src/embed.ts` is its own module with its own LRU cache.
+
+**Cross-refs.** [ADR-013](#adr-013--foil-hq-discord-bot-persistent-memory-ops-chat-with-curated-tools) (the inbound side this complements), [ADR-010](#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key) (the import-boundary pattern this borrows from), [ADR-008](#adr-008--vercel-deploy-hook-for-autonomous-content-not-github-integration-auto-deploys) (the Vercel Deploy Hook step that triggers `#deploys` events).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

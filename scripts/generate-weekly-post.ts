@@ -36,6 +36,7 @@ import {
 import { createDraftPost } from "../lib/beehiiv-posts.ts";
 import { serializeNewsletterFile } from "../lib/newsletter/file-writer.ts";
 import { sendNewsletterDraftEmail } from "../lib/notifications/resend.ts";
+import { postContentPublished, postError } from "../lib/notifications/discord.ts";
 
 const NEWSLETTER_DRAFTS_DIR = path.join(process.cwd(), "docs", "newsletter-drafts");
 const FOUNDER_EMAIL = "john.c.craig24@gmail.com";
@@ -160,6 +161,15 @@ try {
       failures: err.lastFailures,
       date: today,
     });
+    if (process.env.DISCORD_WEBHOOK_ERRORS) {
+      await postError(process.env.DISCORD_WEBHOOK_ERRORS, {
+        source: "content-engine",
+        errorType: "GenerationFailedAfterRetries",
+        message: err.lastFailures.slice(0, 3).join(" · "),
+        context: { attempts: err.attempts, date: today },
+        runUrl: process.env.GITHUB_RUN_URL,
+      });
+    }
     process.exit(2); // 2 = quality-gate exhaustion (workflow doesn't commit)
   }
   throw err;
@@ -206,6 +216,12 @@ await postWebhook({
   previewUrl,
   publishedPath: outPath,
 });
+
+// Discord #content-engine notification fires AFTER the newsletter step
+// completes (so the embed includes newsletter subject + preview + artifact).
+// We track whether the combined ping has been sent; if newsletter is
+// skipped, we post a blog-only embed at the bottom of the script.
+let contentEnginePosted = false;
 
 // ---------------------------------------------------------------------------
 // Newsletter draft step (ADR-011). Runs AFTER the blog file has been written.
@@ -305,6 +321,22 @@ if (SKIP_NEWSLETTER) {
       ...(draftResult.ok ? { postId: draftResult.postId } : {}),
       ...(emailResult.ok ? { emailMessageId: emailResult.messageId } : {}),
     });
+
+    // Discord #content-engine: combined blog + newsletter embed (ADR-014).
+    if (process.env.DISCORD_WEBHOOK_CONTENT_ENGINE) {
+      await postContentPublished(process.env.DISCORD_WEBHOOK_CONTENT_ENGINE, {
+        blogTitle: result.draft.frontmatter.title,
+        blogUrl: `${SITE_URL}/blog/${finalSlug}`,
+        blogWordCount: result.draft.wordCount,
+        newsletter: {
+          subject: newsletter.subject,
+          previewText: newsletter.previewText,
+          wordCount: newsletter.wordCount,
+          artifactPath: path.relative(process.cwd(), draftPath).replace(/\\/g, "/"),
+        },
+      });
+      contentEnginePosted = true;
+    }
   } catch (err) {
     if (err instanceof NewsletterGenerationFailed) {
       console.warn(`[newsletter] ⚠ quality gates exhausted after ${err.attempts} attempts — blog publish unaffected`);
@@ -316,6 +348,15 @@ if (SKIP_NEWSLETTER) {
         attempts: err.attempts,
         failures: err.lastFailures,
       });
+      if (process.env.DISCORD_WEBHOOK_ERRORS) {
+        await postError(process.env.DISCORD_WEBHOOK_ERRORS, {
+          source: "content-engine",
+          errorType: "NewsletterGenerationFailed",
+          message: err.message,
+          context: { slug: finalSlug, attempts: err.attempts },
+          runUrl: process.env.GITHUB_RUN_URL,
+        });
+      }
     } else {
       console.warn(`[newsletter] ⚠ unexpected error (blog publish unaffected): ${(err as Error).message}`);
       await postWebhook({
@@ -324,6 +365,25 @@ if (SKIP_NEWSLETTER) {
         reason: "unexpected_error",
         message: (err as Error).message,
       });
+      if (process.env.DISCORD_WEBHOOK_ERRORS) {
+        await postError(process.env.DISCORD_WEBHOOK_ERRORS, {
+          source: "content-engine",
+          errorType: (err as Error).name || "Error",
+          message: (err as Error).message,
+          context: { slug: finalSlug },
+          runUrl: process.env.GITHUB_RUN_URL,
+        });
+      }
     }
   }
+}
+
+// Fallback blog-only #content-engine ping when newsletter step was skipped.
+if (!contentEnginePosted && process.env.DISCORD_WEBHOOK_CONTENT_ENGINE) {
+  await postContentPublished(process.env.DISCORD_WEBHOOK_CONTENT_ENGINE, {
+    blogTitle: result.draft.frontmatter.title,
+    blogUrl: `${SITE_URL}/blog/${finalSlug}`,
+    blogWordCount: result.draft.wordCount,
+    newsletter: null,
+  });
 }

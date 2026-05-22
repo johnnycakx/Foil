@@ -3,14 +3,15 @@
 // Backed by the bot_messages + bot_embeddings tables defined in
 // bot/migrations/001_bot_memory.sql (isolated schema; service_role only).
 //
-// Embedding note: Anthropic does not currently expose an embedding endpoint.
-// We use a deterministic SHA-256 → 1536-float placeholder so the schema +
-// recall code path light up end-to-end. Real semantic recall is deferred to
-// Goal B (wire Voyage AI or OpenAI text-embedding-3-small). The TODO in
-// hashEmbedding() is the migration anchor.
+// Embeddings (Goal B): real OpenAI text-embedding-3-small (1536 dims) when
+// OPENAI_API_KEY is set; falls back to a deterministic SHA-256 hash
+// placeholder when the key is absent OR the OpenAI call fails. The fallback
+// keeps insertMessage usable during outages — recall accuracy degrades to
+// "matches identical content" but writes don't lose data.
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createHash } from "node:crypto";
+import { embedText } from "./embed.ts";
 
 const EMBEDDING_DIM = 1536;
 
@@ -70,9 +71,10 @@ export async function insertMessage(input: {
     return null;
   }
 
-  // Best-effort embedding write. Failure here is silent — recall just won't
-  // find this message, which is acceptable while we're on the hash placeholder.
-  const embedding = hashEmbedding(input.content);
+  // Best-effort embedding write. We try OpenAI first; on failure we fall back
+  // to the deterministic hash placeholder so the row still gets an embedding
+  // (recall accuracy degrades but writes don't lose data).
+  const embedding = await embedOrFallback(input.content);
   const { error: embedError } = await client
     .from("bot_embeddings")
     .insert({ message_id: data.id, embedding });
@@ -81,6 +83,20 @@ export async function insertMessage(input: {
   }
 
   return { id: data.id };
+}
+
+/**
+ * Embed via OpenAI when possible; fall back to the deterministic hash
+ * placeholder otherwise. Always returns a 1536-dim vector. Never throws.
+ * Exported so the backfill script can use the same fallback rule.
+ */
+export async function embedOrFallback(text: string): Promise<number[]> {
+  try {
+    return await embedText(text);
+  } catch (err) {
+    console.warn(`[db] embedText fell back to hash placeholder: ${(err as Error).message}`);
+    return hashEmbedding(text);
+  }
 }
 
 /**
@@ -123,7 +139,10 @@ export async function semanticSearchMessages(
   topK = 5,
 ): Promise<SemanticHit[]> {
   const client = getClient();
-  const queryEmbedding = hashEmbedding(query);
+  // Use the same embedding path as inserts — both must share the same
+  // vector space or cosine similarity is meaningless. embedOrFallback gives
+  // us OpenAI when up + hash when down, mirroring the write side.
+  const queryEmbedding = await embedOrFallback(query);
   const { data, error } = await client.rpc("bot_semantic_search", {
     p_channel_id: channelId,
     p_query_embedding: queryEmbedding,
@@ -154,12 +173,12 @@ export async function resetChannel(channelId: string): Promise<number> {
 }
 
 /**
- * Deterministic SHA-256 → 1536-float placeholder. Same input → same vector,
- * so identical messages cluster, but unrelated messages have effectively
- * random distance. Good enough to exercise the HNSW index + RPC plumbing.
- *
- * TODO (Goal B): replace with Voyage AI's voyage-3 or OpenAI's
- * text-embedding-3-small. Both produce 1536-dim vectors so the schema stays.
+ * Deterministic SHA-256 → 1536-float fallback. Same input → same vector;
+ * identical messages cluster, unrelated messages have effectively random
+ * distance. The primary embedding path is OpenAI's text-embedding-3-small
+ * (see embedOrFallback above); this is the failure mode for outages or
+ * missing keys. NOT a semantic embedding — recall queries against
+ * hash-vectors only match identical-substring content.
  */
 export function hashEmbedding(text: string): number[] {
   // Two hash rounds give 64 bytes = 32 fp32 values; we tile that out to 1536

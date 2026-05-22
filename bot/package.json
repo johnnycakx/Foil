@@ -9,7 +9,7 @@
     "dev": "tsx watch src/index.ts",
     "start": "node --experimental-strip-types --no-warnings src/index.ts",
     "build": "tsc --noEmit",
-    "test": "node --experimental-strip-types --no-warnings --test src/__tests__/db.test.ts src/__tests__/system-prompt.test.ts src/__tests__/mention.test.ts src/__tests__/tools.test.ts src/__tests__/reset-command.test.ts",
+    "test": "node --experimental-strip-types --no-warnings --test src/__tests__/db.test.ts src/__tests__/system-prompt.test.ts src/__tests__/mention.test.ts src/__tests__/tools.test.ts src/__tests__/reset-command.test.ts src/__tests__/embed.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -98,7 +98,21 @@
       "Bash(supabase --version)",
       "Bash(npm root *)",
       "Bash(supabase link *)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(railway --version)",
+      "Bash(railway whoami *)",
+      "Bash(railway link *)",
+      "Bash(railway status *)",
+      "Bash(railway service *)",
+      "Bash(railway add *)",
+      "Bash(awk -F: '/=/ {print \"found \"$2}')",
+      "Bash(railway variables *)",
+      "Bash(railway up *)",
+      "Bash(railway logs *)",
+      "Bash(railway redeploy *)",
+      "Bash(vercel integration *)",
+      "Bash(echo \"ROOT_EXIT=$?\")",
+      "Bash(echo \"BOT_EXIT=$?\")"
     ]
   },
   "enableAllProjectMcpServers": true,
