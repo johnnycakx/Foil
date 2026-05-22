@@ -10,6 +10,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  getServiceSource,
   getServiceStatus,
   isDeploymentFailed,
   isDeploymentLive,
@@ -191,6 +192,109 @@ test("getServiceStatus handles meta=null gracefully (no commit info)", async () 
     assert.equal(out.data.commitSha, null);
     assert.equal(out.data.status, "BUILDING");
   }
+});
+
+test("getServiceSource rejects an empty serviceId without hitting the network", async () => {
+  let called = false;
+  const fetchImpl = (async () => {
+    called = true;
+    return new Response("", { status: 200 });
+  }) as unknown as typeof fetch;
+  const out = await getServiceSource("", { token: "tok", fetchImpl });
+  assert.equal(out.ok, false);
+  if (!out.ok) assert.equal(out.error, "missing_service_id");
+  assert.equal(called, false);
+});
+
+test("getServiceSource POSTs the ServiceSource query with serviceId + Bearer auth", async () => {
+  const { fetch, calls } = fakeFetch([
+    jsonResponse({
+      data: {
+        service: {
+          id: "svc_abc",
+          name: "foil-bot",
+          repoTriggers: {
+            edges: [
+              {
+                node: {
+                  id: "trg_1",
+                  branch: "main",
+                  provider: "github",
+                  repository: "johnnycakx/Foil",
+                  environmentId: "env_1",
+                  serviceId: "svc_abc",
+                  checkSuites: false,
+                },
+              },
+            ],
+          },
+        },
+      },
+    }),
+  ]);
+  const out = await getServiceSource("svc_abc", { token: "tok_test", fetchImpl: fetch });
+  assert.equal(out.ok, true);
+  if (out.ok) {
+    assert.equal(out.data.serviceId, "svc_abc");
+    assert.equal(out.data.serviceName, "foil-bot");
+    assert.equal(out.data.connected, true);
+    assert.equal(out.data.repoTriggers.length, 1);
+    assert.equal(out.data.repoTriggers[0].repository, "johnnycakx/Foil");
+    assert.equal(out.data.repoTriggers[0].branch, "main");
+    assert.equal(out.data.repoTriggers[0].provider, "github");
+  }
+  assert.equal(calls[0].url, "https://backboard.railway.com/graphql/v2");
+  const headers = calls[0].init.headers as Record<string, string>;
+  assert.equal(headers["Authorization"], "Bearer tok_test");
+  const body = JSON.parse(calls[0].init.body as string);
+  assert.deepEqual(body.variables, { serviceId: "svc_abc" });
+  assert.match(body.query, /ServiceSource/);
+  assert.match(body.query, /repoTriggers/);
+});
+
+test("getServiceSource flags an unconnected service (empty repoTriggers) as connected:false", async () => {
+  const { fetch } = fakeFetch([
+    jsonResponse({
+      data: {
+        service: {
+          id: "svc_naked",
+          name: "foil-bot",
+          repoTriggers: { edges: [] },
+        },
+      },
+    }),
+  ]);
+  const out = await getServiceSource("svc_naked", { token: "tok", fetchImpl: fetch });
+  assert.equal(out.ok, true);
+  if (out.ok) {
+    assert.equal(out.data.connected, false);
+    assert.deepEqual(out.data.repoTriggers, []);
+  }
+});
+
+test("getServiceSource returns service_not_found when the API returns null service", async () => {
+  const { fetch } = fakeFetch([jsonResponse({ data: { service: null } })]);
+  const out = await getServiceSource("svc_missing", { token: "tok", fetchImpl: fetch });
+  assert.equal(out.ok, false);
+  if (!out.ok) assert.equal(out.error, "service_not_found");
+});
+
+test("getServiceSource surfaces GraphQL errors as ok:false", async () => {
+  const { fetch } = fakeFetch([
+    jsonResponse({ errors: [{ message: "unauthorized" }] }),
+  ]);
+  const out = await getServiceSource("svc_abc", { token: "tok", fetchImpl: fetch });
+  assert.equal(out.ok, false);
+  if (!out.ok) assert.equal(out.error, "unauthorized");
+});
+
+test("getServiceSource soft-fails when fetch throws", async () => {
+  const fetchImpl = (async () => {
+    throw new Error("ENETDOWN");
+  }) as unknown as typeof fetch;
+  const out = await getServiceSource("svc_abc", { token: "tok", fetchImpl });
+  assert.equal(out.ok, false);
+  if (!out.ok) assert.match(out.error, /fetch_failed: ENETDOWN/);
 });
 
 test("isDeploymentLive / isDeploymentFailed match terminal states", () => {

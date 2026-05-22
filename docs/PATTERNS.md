@@ -6,6 +6,27 @@ Append new entries at the top. When an entry is promoted, leave it here with a `
 
 ---
 
+## I-003 — Silent autonomy-chain regressions: integrations can disconnect because nothing happens
+
+**Spotted:** Session 19, while diagnosing the Railway auto-deploy gap that Session 18 first surfaced.
+
+**Shape.** Vendor integrations (GitHub→Railway, GitHub→Vercel, Beehiiv subscribe → Foil DB, etc.) share an auth-chain pattern: a long-lived OAuth grant or App install on one side, a token/webhook target on the other, and a push-vs-pull boundary in between. When that grant lapses, gets revoked, never gets installed in the first place, or has its branch filter changed, the failure mode is *not* a noisy error — it's *nothing happens*. A push to main returns 0 exit code; the deploy never fires; the next session assumes the running service matches main. The drift can run for days before anyone notices, and the moment of noticing is usually a side-quest while doing something else ("wait, why is the bot still on the old behavior?").
+
+**Two instances in the repo so far.**
+
+1. **Session 13's Vercel `#deploys` proxy** caught five silently-failing Vercel deploys that had been broken since the tsconfig drift. Before the proxy + webhook fired, those failures lived in the "no notification = it must be fine" category.
+2. **Session 18 → 19's Railway auto-deploy gap.** Six historical foil-bot deploys, every one user-triggered, zero github-triggered. Auto-deploy was on the implicit "we'll wire this up later" list — and only got noticed because Session 18 happened to check the deploy timestamp against the push timestamp.
+
+**Suggested mitigation (capture only — don't build in this goal).** A daily cron job that compares `git rev-parse origin/main` against the deployed commit SHA on each integration target (Vercel's API for the web app, Railway's `lib/railway-api.ts::getServiceStatus` for foil-bot, etc.). If they diverge by more than one deploy cycle (~10 min), post a drift alert to `#errors`. That's the inverse of the "nothing happens" failure mode — it turns silence into a daily attestation.
+
+**The shape worth flagging.** Anywhere we have **vendor X auto-acts on event Y from source Z** and the success path is "no notification," there's a latent drift class. Catalogue candidates: GitHub→Railway (Session 19), GitHub→Vercel (Session 13 precedent), Beehiiv ingest→Discord, Stripe webhook→Supabase, the autonomous-content cron→Beehiiv newsletter. Each gets the same drift-cron treatment when worth building.
+
+**Promotion trigger.** Third silent-regression incident OR the day John decides to build the drift cron — at that point the mitigation pattern is concrete enough to ADR.
+
+**Status:** Pattern noted; mitigation captured but deferred.
+
+---
+
 ## I-002 — Cowork as tactical edit surface; Claude Code as autonomous/shipping surface
 
 **Spotted:** Session 18, while iterating on the bot's system prompt + output cap.

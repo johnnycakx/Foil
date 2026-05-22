@@ -157,6 +157,93 @@ export async function getServiceStatus(
   };
 }
 
+const SERVICE_SOURCE_QUERY = `
+  query ServiceSource($serviceId: String!) {
+    service(id: $serviceId) {
+      id
+      name
+      repoTriggers {
+        edges {
+          node {
+            id
+            branch
+            provider
+            repository
+            environmentId
+            serviceId
+            checkSuites
+          }
+        }
+      }
+    }
+  }
+`.trim();
+
+export type RailwayRepoTrigger = {
+  id: string;
+  branch: string;
+  /** "github" | "gitlab" | ... */
+  provider: string;
+  /** "owner/repo" — e.g. "johnnycakx/Foil". */
+  repository: string;
+  environmentId: string;
+  serviceId: string | null;
+  checkSuites: boolean;
+};
+
+export type RailwayServiceSource = {
+  serviceId: string;
+  serviceName: string;
+  /** Empty array means no GitHub integration is wired up — git pushes will NOT auto-deploy. */
+  repoTriggers: RailwayRepoTrigger[];
+  /** True iff there is at least one repo trigger registered for this service. */
+  connected: boolean;
+};
+
+/**
+ * Return the GitHub source-integration state for a Railway service. Use this
+ * to diagnose "did the git push fire a deploy?" — if `connected` is false, the
+ * service has no repo trigger and pushes will never auto-deploy.
+ *
+ * Soft-fails like the rest of this module: missing token / network / GraphQL
+ * errors all return ok:false.
+ */
+export async function getServiceSource(
+  serviceId: string,
+  opts: { token?: string; fetchImpl?: typeof fetch } = {},
+): Promise<RailwayGraphqlResult<RailwayServiceSource>> {
+  if (!serviceId) return { ok: false, error: "missing_service_id" };
+
+  type SourceResponse = {
+    service: {
+      id: string;
+      name: string;
+      repoTriggers: { edges: Array<{ node: RailwayRepoTrigger }> };
+    } | null;
+  };
+
+  const res = await railwayGraphql<SourceResponse>({
+    query: SERVICE_SOURCE_QUERY,
+    variables: { serviceId },
+    token: opts.token,
+    fetchImpl: opts.fetchImpl,
+  });
+  if (!res.ok) return res;
+
+  if (!res.data.service) return { ok: false, error: "service_not_found" };
+
+  const triggers = res.data.service.repoTriggers.edges.map((e) => e.node);
+  return {
+    ok: true,
+    data: {
+      serviceId: res.data.service.id,
+      serviceName: res.data.service.name,
+      repoTriggers: triggers,
+      connected: triggers.length > 0,
+    },
+  };
+}
+
 /** Convenience: true once the latest deployment is in a terminal good state. */
 export function isDeploymentLive(status: RailwayDeploymentStatus): boolean {
   return status === "SUCCESS";
