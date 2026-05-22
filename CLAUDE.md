@@ -100,6 +100,16 @@ priceCard — PokeTrace lookup priority: exact (collectorNumber + setCode) → f
 confirmMatch — visual side-by-side for low-confidence matches AND ambiguous PokeTrace results
 retryIdentify — Opus retry for cards still failing on no_candidates / low_score / regulation_mismatch
 
+Foil HQ Discord ops bot
+
+The `bot/` subtree is a separate Node project (own `package.json`, own deploy target) that runs the Foil HQ Discord ops bot. See [ADR-013](docs/DECISIONS.md). It does NOT share the main app's deploy pipeline — Railway deploys the bot independently from a Docker image with build context at the repo root (so the image can include `docs/` for runtime grounding).
+
+The bot answers @mentions with Foil-docs grounding (`bot/src/system-prompt.ts` reads `../docs/BRIEFING.md` + ROADMAP NOW/NEXT + RISKS High/Medium + the latest SESSION-LOG entry on every turn). Persistent per-channel memory lives in Supabase (`bot_messages` + `bot_embeddings` — isolated from the main app schema; service-role only). Default model is `claude-opus-4-5`; the `/sonnet` prefix on a single turn switches to `claude-sonnet-4-6` for cheap quick replies. Curated tools live in `bot/src/tools/index.ts` — five read-only helpers (read_file, search_codebase, get_recent_subscribers, get_publication_stats, get_session_log). Full MCP integration is Goal B; outbound notifications are Goal C.
+
+Slash commands: `/reset` (clear channel memory), `/recall <query>` (top-5 semantic search over the channel), `/help`.
+
+Bot env vars live in `bot/.env.local` (gitignored) and are mirrored to Railway via `railway variables set` — see `docs/ENV-VARS.md` for the canonical list.
+
 Newsletter (Beehiiv)
 
 `lib/beehiiv.ts` is the ONLY module allowed to import `@beehiiv/sdk`. Beehiiv blocks browser-origin requests via CORS and the API key must stay server-side — call `subscribeEmail({ email, source })` from a Server Action (`app/actions/subscribe.ts`) or another server module, never from a Client Component. If a new feature needs another Beehiiv endpoint (Posts, segments, custom fields), add it to `lib/beehiiv.ts` and re-export — keep the import boundary intact. See [ADR-010](docs/DECISIONS.md) for the rationale.

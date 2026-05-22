@@ -8,6 +8,38 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-21 — Session 11: Foil HQ Discord ops bot (persistent memory, curated tools)
+
+**Commits:** this commit only
+
+**Summary.** Shipped a new `bot/` subtree at the repo root — a Discord bot that lives in Foil HQ and answers @mentions with Foil-docs grounding, persistent per-channel memory, and curated tool access. Stack: discord.js v14 + Anthropic SDK + Supabase Postgres + pgvector + Railway deploy. Architecture rationale lives in [ADR-013](DECISIONS.md#adr-013--foil-hq-discord-bot-persistent-memory-ops-chat-with-curated-tools). Closes [ROADMAP NEXT #9.5](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10).
+
+**What landed.**
+- `bot/migrations/001_bot_memory.sql` — pgvector extension + `bot_messages` (id, channel_id, user_id, role, content, created_at) + `bot_embeddings` (1:1 sidecar, 1536-dim, HNSW index, cosine) + `bot_semantic_search` RPC + service-role RLS policies. Schema isolated from main Foil app.
+- `bot/src/db.ts` — typed Supabase client + `insertMessage` / `getRecentChannelMessages(50)` / `semanticSearchMessages(topK)` / `resetChannel`. Embeddings use a deterministic SHA-256 → 1536-float placeholder; Voyage/OpenAI swap is Goal B (TODO anchored in `hashEmbedding`).
+- `bot/src/system-prompt.ts` — reads `../docs/BRIEFING.md` + ROADMAP NOW/NEXT + RISKS High/Medium + latest SESSION-LOG, wraps in `<foil_context>`, caps at 15k tokens. Four channel personas (content / subscribers / errors / general).
+- `bot/src/tools/index.ts` — five curated read-only tools: `read_file`, `search_codebase`, `get_recent_subscribers`, `get_publication_stats`, `get_session_log`. All wired into Anthropic's `tools[]` surface.
+- `bot/src/handlers/{mention,conversation,slash-commands}.ts` — @mention listener with progressive Discord edits (1.2s debounce under Discord's 5/5s budget), Anthropic tool-use loop, `/sonnet` prefix routes a single turn to Sonnet 4.6 instead of the default Opus 4.5, slash commands `/reset` `/recall` `/help`.
+- `bot/src/index.ts` — discord.js client boot with Guilds + GuildMessages + MessageContent intents; registers slash commands on ready; routes messageCreate + interactionCreate to handlers.
+- `bot/Dockerfile` + repo-root `railway.json` — Node 22 alpine multi-stage; build context is the repo root so the image can include `docs/` for runtime grounding.
+- Tests: 35 in `bot/src/__tests__/` covering db round-trip, channel-prompt selection (incl. section extractors), @mention parsing (incl. `/sonnet` switch), tools, `/reset`. All green; `tsc --noEmit` clean.
+
+**Manual prereqs already done by John (pre-goal):** Foil HQ Discord server created with 6 channels; bot user created with Message Content Intent ON; bot invited to server with Administrator permission; Railway empty project + payment method on file. Tokens collected this session and stored in `bot/.env.local` (gitignored) — DISCORD_BOT_TOKEN, DISCORD_APPLICATION_ID=1507171299422765116, RAILWAY_PROJECT_ID=08088ed2-f78d-48de-9559-67a528d1c7cd.
+
+**Pending at this session-end:**
+1. Apply `bot/migrations/001_bot_memory.sql` to Supabase. The Supabase MCP is read-only in this session so the migration needs to be pasted into the Supabase Dashboard → SQL Editor. Estimated time: <1 minute.
+2. Run `railway login` interactively in a terminal John controls (the CLI auth flow is browser-based).
+3. `railway link 08088ed2-f78d-48de-9559-67a528d1c7cd`, push the 7 env vars (Discord/Anthropic/Supabase/Beehiiv), `railway up`.
+
+**Key decisions made.**
+- [ADR-013](DECISIONS.md#adr-013--foil-hq-discord-bot-persistent-memory-ops-chat-with-curated-tools) — Path 2 (Discord bot over web dashboard or Slack). Postgres+pgvector memory, curated tools (not full MCP), Opus 4.5 default + `/sonnet` opt-in, prompt caching on grounding context, Railway deploy.
+
+**Follow-ups.** Goal B (full MCP integration on top of the curated-tools baseline). Goal C (outbound webhook notifications for deploys/content/subscribers/errors → bot posts to channels). Real embeddings (Voyage AI / OpenAI text-embedding-3-small) tracked as a TODO in `bot/src/db.ts::hashEmbedding`.
+
+**State at session end.** All bot code + tests + docs committed. Migration + Railway deploy pending the manual steps above; bot will be online in Foil HQ once those land.
+
+---
+
 ## 2026-05-21 — Session 10: Newsletter manual-paste fallback via email (supersedes ADR-011 API path)
 
 **Commits:** this commit only

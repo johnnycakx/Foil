@@ -1,4 +1,4 @@
-# Foil — Project Briefing (auto-generated 2026-05-21)
+# Foil — Project Briefing (auto-generated 2026-05-22)
 
 Paste this whole file as the opening message of a fresh Claude.ai chat to
 bring it up to speed on the build before discussing anything new.
@@ -112,6 +112,16 @@ identifyScan — IDENTIFY pass reads each crop's printed fields (returns null ov
 priceCard — PokeTrace lookup priority: exact (collectorNumber + setCode) → fuzzy (name + setCode) → name-only (lowConfidence flag)
 confirmMatch — visual side-by-side for low-confidence matches AND ambiguous PokeTrace results
 retryIdentify — Opus retry for cards still failing on no_candidates / low_score / regulation_mismatch
+
+Foil HQ Discord ops bot
+
+The `bot/` subtree is a separate Node project (own `package.json`, own deploy target) that runs the Foil HQ Discord ops bot. See [ADR-013](docs/DECISIONS.md). It does NOT share the main app's deploy pipeline — Railway deploys the bot independently from a Docker image with build context at the repo root (so the image can include `docs/` for runtime grounding).
+
+The bot answers @mentions with Foil-docs grounding (`bot/src/system-prompt.ts` reads `../docs/BRIEFING.md` + ROADMAP NOW/NEXT + RISKS High/Medium + the latest SESSION-LOG entry on every turn). Persistent per-channel memory lives in Supabase (`bot_messages` + `bot_embeddings` — isolated from the main app schema; service-role only). Default model is `claude-opus-4-5`; the `/sonnet` prefix on a single turn switches to `claude-sonnet-4-6` for cheap quick replies. Curated tools live in `bot/src/tools/index.ts` — five read-only helpers (read_file, search_codebase, get_recent_subscribers, get_publication_stats, get_session_log). Full MCP integration is Goal B; outbound notifications are Goal C.
+
+Slash commands: `/reset` (clear channel memory), `/recall <query>` (top-5 semantic search over the channel), `/help`.
+
+Bot env vars live in `bot/.env.local` (gitignored) and are mirrored to Railway via `railway variables set` — see `docs/ENV-VARS.md` for the canonical list.
 
 Newsletter (Beehiiv)
 
@@ -249,33 +259,35 @@ e16c1e4 — feat: detect filter + PokeTrace images + per-card condition picker
 
 ## Most recent session
 
-## 2026-05-21 — Session 10: Newsletter manual-paste fallback via email (supersedes ADR-011 API path)
+## 2026-05-21 — Session 11: Foil HQ Discord ops bot (persistent memory, curated tools)
 
 **Commits:** this commit only
 
-**Summary.** [Session 9](#2026-05-21--session-9-autonomous-beehiiv-draft-generation-never-auto-send)'s end-to-end verification confirmed Beehiiv's Posts API is Enterprise-gated (HTTP 403 `SEND_API_NOT_ENTERPRISE_PLAN`). Today's goal closed the loop: every gate-passing newsletter draft now lands in `docs/newsletter-drafts/{slug}.md` (the canonical, version-controlled artifact) AND ships to `john.c.craig24@gmail.com` via Resend with paste-ready copy + topic rationale + 5-step publish instructions. John pastes the body into Beehiiv's UI, picks a send time, hits Schedule. The manual paste IS the R-001 review step — same checkpoint ADR-011 envisioned would happen inside Beehiiv's draft UI, just relocated.
+**Summary.** Shipped a new `bot/` subtree at the repo root — a Discord bot that lives in Foil HQ and answers @mentions with Foil-docs grounding, persistent per-channel memory, and curated tool access. Stack: discord.js v14 + Anthropic SDK + Supabase Postgres + pgvector + Railway deploy. Architecture rationale lives in [ADR-013](DECISIONS.md#adr-013--foil-hq-discord-bot-persistent-memory-ops-chat-with-curated-tools). Closes [ROADMAP NEXT #9.5](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10).
 
-`lib/notifications/resend.ts` is the new transactional channel (free tier: 3K emails/month, 100/day — comfortable headroom). Sender is Resend's default `onboarding@resend.dev` so no DNS work was required for self-to-self transactional. Email body has 4 labeled sections per ADR-012: (a) WHY THIS TOPIC, (b) NEWSLETTER PREVIEW (subject + preview text + full HTML body), (c) HOW TO PUBLISH (numbered steps), (d) SOURCE BLOG POST (slug + URL + word counts).
+**What landed.**
+- `bot/migrations/001_bot_memory.sql` — pgvector extension + `bot_messages` (id, channel_id, user_id, role, content, created_at) + `bot_embeddings` (1:1 sidecar, 1536-dim, HNSW index, cosine) + `bot_semantic_search` RPC + service-role RLS policies. Schema isolated from main Foil app.
+- `bot/src/db.ts` — typed Supabase client + `insertMessage` / `getRecentChannelMessages(50)` / `semanticSearchMessages(topK)` / `resetChannel`. Embeddings use a deterministic SHA-256 → 1536-float placeholder; Voyage/OpenAI swap is Goal B (TODO anchored in `hashEmbedding`).
+- `bot/src/system-prompt.ts` — reads `../docs/BRIEFING.md` + ROADMAP NOW/NEXT + RISKS High/Medium + latest SESSION-LOG, wraps in `<foil_context>`, caps at 15k tokens. Four channel personas (content / subscribers / errors / general).
+- `bot/src/tools/index.ts` — five curated read-only tools: `read_file`, `search_codebase`, `get_recent_subscribers`, `get_publication_stats`, `get_session_log`. All wired into Anthropic's `tools[]` surface.
+- `bot/src/handlers/{mention,conversation,slash-commands}.ts` — @mention listener with progressive Discord edits (1.2s debounce under Discord's 5/5s budget), Anthropic tool-use loop, `/sonnet` prefix routes a single turn to Sonnet 4.6 instead of the default Opus 4.5, slash commands `/reset` `/recall` `/help`.
+- `bot/src/index.ts` — discord.js client boot with Guilds + GuildMessages + MessageContent intents; registers slash commands on ready; routes messageCreate + interactionCreate to handlers.
+- `bot/Dockerfile` + repo-root `railway.json` — Node 22 alpine multi-stage; build context is the repo root so the image can include `docs/` for runtime grounding.
+- Tests: 35 in `bot/src/__tests__/` covering db round-trip, channel-prompt selection (incl. section extractors), @mention parsing (incl. `/sonnet` switch), tools, `/reset`. All green; `tsc --noEmit` clean.
 
-Topic rationale is now first-class: `pickNextCandidateWithRationale` in `lib/seo/keyword-backlog.ts` returns the chosen candidate plus a human-readable explanation ("Selected from the **X** pillar (URL: /…). This was rank #N of M cluster posts; K remain unshipped …"). Threaded through `generateWeeklyPost` → script → email payload + .md frontmatter.
+**Manual prereqs already done by John (pre-goal):** Foil HQ Discord server created with 6 channels; bot user created with Message Content Intent ON; bot invited to server with Administrator permission; Railway empty project + payment method on file. Tokens collected this session and stored in `bot/.env.local` (gitignored) — DISCORD_BOT_TOKEN, DISCORD_APPLICATION_ID=1507171299422765116, RAILWAY_PROJECT_ID=08088ed2-f78d-48de-9559-67a528d1c7cd.
 
-Beehiiv 403 is now an info-level log line, not a warning. On our tier it IS the steady-state outcome — the fallback path is the supported route. If/when we upgrade to Enterprise, `createDraftPost` will start succeeding and the artifact's `beehiivStatus` field will flip from `"deferred-manual-paste"` to `"auto-drafted"` automatically (no code change required).
+**Pending at this session-end:**
+1. Apply `bot/migrations/001_bot_memory.sql` to Supabase. The Supabase MCP is read-only in this session so the migration needs to be pasted into the Supabase Dashboard → SQL Editor. Estimated time: <1 minute.
+2. Run `railway login` interactively in a terminal John controls (the CLI auth flow is browser-based).
+3. `railway link 08088ed2-f78d-48de-9559-67a528d1c7cd`, push the 7 env vars (Discord/Anthropic/Supabase/Beehiiv), `railway up`.
 
 **Key decisions made.**
-- [ADR-012](DECISIONS.md#adr-012--newsletter-manual-paste-fallback-via-email-supersedes-adr-011-api-path) — manual-paste fallback. Supersedes ADR-011's API write path. ADR-011's R-001 reasoning + the 6 newsletter quality gates remain in force.
-- [ADR-011 status flipped](DECISIONS.md#adr-011--newsletter-drafts-auto-generated-never-auto-sent) to "Superseded by ADR-012 for the write path".
+- [ADR-013](DECISIONS.md#adr-013--foil-hq-discord-bot-persistent-memory-ops-chat-with-curated-tools) — Path 2 (Discord bot over web dashboard or Slack). Postgres+pgvector memory, curated tools (not full MCP), Opus 4.5 default + `/sonnet` opt-in, prompt caching on grounding context, Railway deploy.
 
-**ROADMAP update.** Added NEXT item #9.5 — Slack/Discord ops workspace. Rationale: as we wire more ops pings (Stripe events, scan errors, autonomy failures, deploy outcomes, AI ask-back), Gmail becomes the lowest-density surface for any of them. Threaded channel per concern would be cleaner.
+**Follow-ups.** Goal B (full MCP integration on top of the curated-tools baseline). Goal C (outbound webhook notifications for deploys/content/subscribers/errors → bot posts to channels). Real embeddings (Voyage AI / OpenAI text-embedding-3-small) tracked as a TODO in `bot/src/db.ts::hashEmbedding`.
 
-**R-001 update.** Channel-amplification subsection rewritten to reflect the new architecture: now four baked-in mitigations including "manual paste IS the review step" and the soft-fail-at-every-stage property.
-
-**Tests added.**
-- `lib/__tests__/newsletter-file-writer.test.ts` (5 tests) — frontmatter shape, separator literal, YAML quote-escaping, omits `emailMessageId` when undefined, includes all 3 subject candidates.
-- `lib/__tests__/resend.test.ts` (8 tests) — endpoint URL, Bearer auth header, subject prefix, 4-section HTML body, XSS escaping, all 3 failure paths return `ok:false` without throwing, missing API key never touches the network.
-
-**End-to-end verification — captured below after the script runs against a recent blog post.**
-
-**State at session end.** Tests + typecheck green. Resend key added to `.env.local` + mirrored to GH Actions secrets. The Mon 2026-05-25 cron will be the first scheduled exercise.
+**State at session end.** All bot code + tests + docs committed. Migration + Railway deploy pending the manual steps above; bot will be online in Foil HQ once those land.
 
 ---
 

@@ -94,7 +94,11 @@
       "mcp__claude_ai_beehiiv__get_publication",
       "Bash(xargs -I {} cat {})",
       "PowerShell(Get-Content *)",
-      "mcp__claude_ai_beehiiv__list_posts"
+      "mcp__claude_ai_beehiiv__list_posts",
+      "Bash(supabase --version)",
+      "Bash(npm root *)",
+      "Bash(supabase link *)",
+      "Bash(git *)"
     ]
   },
   "enableAllProjectMcpServers": true,

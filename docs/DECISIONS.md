@@ -261,6 +261,44 @@ The newsletter draft generator deferral noted in ADR-010 ("until ≥50 signups")
 
 **Cross-refs.** [ADR-011](#adr-011--newsletter-drafts-auto-generated-never-auto-sent) (the architectural contract this supersedes for the write path; R-001 reasoning + gates still in force), [R-001](RISKS.md#r-001--content-engine-fabrication) (the human-review checkpoint is now manual paste, not Beehiiv-UI review of an API-created draft), [ROADMAP](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10) (Slack/Discord ops workspace would let us consolidate this email channel with deploy, subscriber, and error pings).
 
+---
+
+## ADR-013 — Foil HQ Discord bot: persistent-memory ops chat with curated tools
+
+**Date:** 2026-05-21
+**Status:** Accepted
+
+**Context.** [ROADMAP NEXT #9.5](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10) flagged the ops-channel sprawl problem: newsletter drafts in Gmail (ADR-012), workflow failures buried in GitHub Actions tab, Beehiiv stats in a separate UI, Stripe events in Stripe's own dashboard. Each surface is fine in isolation; the union is hard to scan, and there's no first-class place for me (Claude) to ask John questions or share progress. Three architectural options:
+
+1. **Path 1 — Web ops dashboard inside the Foil Next.js app.** Lowest infra cost (no new service); same domain, same auth. But everything that ships there gets baked into the main app and shares its deploy cadence; private surfaces still need auth wiring; chat-with-an-agent is awkward inside a web view that isn't a chat-first UI.
+2. **Path 2 — Discord bot + persistent memory + curated tools.** Discord is a real-time chat-first UI optimized for threaded ops channels. Channels naturally split into content / subscribers / errors / general. Bots can stream replies, react to messages, drop into voice (future). Persistent memory in Supabase + Foil-docs grounding means the bot can answer "what's on the roadmap?" or "what did we ship last session?" without a web round-trip.
+3. **Path 3 — Slack workspace.** Same shape as Discord but Slack's free tier caps DMs/message history at 90 days and the bot API is more bureaucratic. Discord's free tier is more generous and the audience (developer-aligned founder) prefers it.
+
+**Decision.** Path 2. Discord bot lives in a new `bot/` subtree at the Foil repo root; deploys to Railway. Architecture:
+
+- **Memory** — Supabase Postgres + pgvector. New `bot_messages` table (channel_id, user_id, role, content, created_at) + `bot_embeddings` sidecar (1536-dim vector + HNSW index). Isolated schema, service-role-only, no FK to main app tables. Migration in `bot/migrations/001_bot_memory.sql`.
+- **Embeddings** — deterministic SHA-256 → 1536-float placeholder for now. Anthropic doesn't expose embeddings; Voyage AI or OpenAI's `text-embedding-3-small` is the right substitute, deferred to Goal B. `bot_embeddings.embedding` shape is already 1536-dim so the swap is config-only.
+- **Grounding** — `bot/src/system-prompt.ts` reads `../docs/BRIEFING.md` + ROADMAP NOW/NEXT + RISKS High/Medium + the latest SESSION-LOG entry at startup. Wrapped in `<foil_context>`. Cached via `cache_control: { type: "ephemeral" }` on every Anthropic call so multi-turn conversations within ~5 minutes pay the discounted rate.
+- **Channel personas** — four shipped: content lead (#content-engine), growth (#subscribers), on-call eng (#errors), default helper (#general). Each persona biases tone + focus area; all share the underlying tools.
+- **Tools (curated, not full MCP)** — `read_file`, `search_codebase`, `get_recent_subscribers`, `get_publication_stats`, `get_session_log`. Read-only; no writes to repo, Postgres, or external services. Full MCP integration is Goal B.
+- **Model selection** — `claude-opus-4-5` by default (long-context reasoning on Foil docs). Prefix `/sonnet` switches to `claude-sonnet-4-6` for a single turn (~5× cheaper, 2× faster — good for "ping"-shaped questions).
+- **Slash commands** — `/reset` (wipe channel memory), `/recall <query>` (top-5 semantic search), `/help` (list tools + commands). Guild-scoped registration on startup.
+- **Deploy** — Railway, Docker. Build context is the repo root (not `bot/`) so the image can include `docs/` for runtime grounding. `railway.json` at repo root, `bot/Dockerfile` at the subdirectory.
+
+**Consequences.**
+
+- **Pro:** Ops channel sprawl collapses to one chat UI. The bot itself becomes the first place to forward subscriber pings, deploy notifications, error alerts (Goal C wires the outbound notifications).
+- **Pro:** Persistent memory across restarts + channel-scoped recall means John can ask "what did we decide about X last week?" and get a grounded answer, not a re-derived guess.
+- **Pro:** Foil docs are the source of truth for the bot's worldview, so improvements to the second-brain (ROADMAP, SESSION-LOG, RISKS, DECISIONS) automatically improve the bot's accuracy. No prompt-engineering loop required.
+- **Pro:** The `/sonnet` opt-in caps cost on quick questions while keeping Opus 4.5 as the default for hard reasoning. Empirically, "ping" and "what time is X" are the most common turns — Sonnet handles them fine.
+- **Pro:** Curated tools (5) are auditable in one file (`bot/src/tools/index.ts`). MCP would expose hundreds of capabilities; we don't need that surface area pre-launch and the narrower interface is easier to reason about.
+- **Con:** Two CLIs now in the ops toolkit (Railway joins Vercel + GH). Each token is a credential surface. Kill-switch: `railway logout` or revoke the project token from Railway's dashboard.
+- **Con:** Hash-placeholder embeddings give lexical-ish recall, not true semantic. `/recall` will work for exact-ish substrings but miss synonyms. Goal B fix.
+- **Con:** Discord rate-limits message.edit to ~5/5s per channel, so progressive-edit streaming debounces hard (1.2s). Long replies feel choppy at the start.
+- **Caveat:** The bot has the Administrator permission inside Foil HQ (per John's setup). That's fine for a private server; not for any future public-server invite. If we ever invite this bot to a community server, scope the permission to `Send Messages + Read Messages + Use Slash Commands` only.
+
+**Cross-refs.** [ADR-012](#adr-012--newsletter-manual-paste-fallback-via-email-supersedes-adr-011-api-path) (the email channel this Discord bot will consolidate with via Goal C), [ROADMAP NEXT #9.5](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10) (this ADR closes that item), [ROADMAP LATER → Goal B] (full MCP integration), [ROADMAP LATER → Goal C] (outbound webhook notifications for deploys/content/subscribers/errors).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).
