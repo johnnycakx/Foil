@@ -72,7 +72,18 @@ test("withChunkPrefixes is a no-op for a single chunk", () => {
   assert.deepEqual(withChunkPrefixes(["only one"]), ["only one"]);
 });
 
-test("withChunkPrefixes adds N/M to multi-chunk", () => {
+test("withChunkPrefixes is a no-op for two chunks (reads naturally as continued thought)", () => {
+  // Threshold bumped from 1 → 2 in the COO-voice pass. A "1/2 ... 2/2" prefix
+  // on a two-message overflow made the bot sound mechanical; the reader can
+  // see there's a second message right below. Prefixes only earn their keep
+  // at 3+, where the reader genuinely benefits from a count.
+  assert.deepEqual(
+    withChunkPrefixes(["first message", "second message"]),
+    ["first message", "second message"],
+  );
+});
+
+test("withChunkPrefixes adds N/M to 3+ chunks", () => {
   const out = withChunkPrefixes(["alpha", "beta", "gamma"]);
   assert.deepEqual(out, ["1/3 alpha", "2/3 beta", "3/3 gamma"]);
 });

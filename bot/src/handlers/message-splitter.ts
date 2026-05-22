@@ -34,11 +34,13 @@ export function splitForDiscord(text: string, limit = DISCORD_CHUNK_LIMIT): stri
 }
 
 /**
- * Prefix each chunk with `N/M ` when there's more than one. A single chunk
- * is returned unchanged — no need to clutter short replies with "1/1".
+ * Prefix each chunk with `N/M ` when there are 3+. 1 chunk is obviously
+ * unprefixed; 2 chunks read naturally as a continued thought in Discord
+ * and the "1/2" prefix made the bot sound mechanical. Prefixes only kick in
+ * at 3+ when the reader genuinely benefits from knowing how much is coming.
  */
 export function withChunkPrefixes(chunks: string[]): string[] {
-  if (chunks.length <= 1) return chunks;
+  if (chunks.length <= 2) return chunks;
   return chunks.map((c, i) => `${i + 1}/${chunks.length} ${c}`);
 }
 

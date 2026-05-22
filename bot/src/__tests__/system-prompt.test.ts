@@ -122,7 +122,8 @@ test("buildSystemPrompt assembles base + persona + <foil_context> + sections", (
     const prompt = buildSystemPrompt({ channelName: "content-engine", docsDir: dir });
 
     assert.ok(prompt.includes("You are the Foil ops bot"));
-    assert.ok(prompt.includes("Channel: #content-engine"));
+    assert.ok(prompt.includes("strategic peer"));
+    assert.ok(prompt.includes("#content-engine"));
     assert.ok(prompt.includes("<foil_context>"));
     assert.ok(prompt.includes("BRIEFING_TOKEN"));
     assert.ok(prompt.includes("## NOW"));
@@ -138,12 +139,15 @@ test("buildSystemPrompt assembles base + persona + <foil_context> + sections", (
 
 test("buildSystemPrompt picks the on-call eng persona for #errors", () => {
   const prompt = buildSystemPrompt({ channelName: "errors", docsDir: "/nonexistent" });
-  assert.ok(prompt.includes("on-call engineer"));
+  assert.ok(prompt.includes("On-call posture"));
+  assert.ok(prompt.includes("#errors"));
 });
 
 test("buildSystemPrompt falls back to general persona on unknown channel", () => {
   const prompt = buildSystemPrompt({ channelName: "lounge", docsDir: "/nonexistent" });
-  assert.ok(prompt.includes("helpful pair to John"));
+  // General persona greets as Foil HQ's catch-all and frames the COO posture.
+  assert.ok(prompt.includes("Foil HQ's catch-all"));
+  assert.ok(prompt.includes("strategic peer"));
 });
 
 test("parseIdeasFile extracts entries from per-entry frontmatter format", () => {

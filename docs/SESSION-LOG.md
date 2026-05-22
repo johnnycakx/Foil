@@ -8,6 +8,36 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-22 — Session 18: COO-voice system prompt + 4k token cap + cleaner chunking
+
+**Commits:** this commit only
+
+**Summary.** Session 15 shipped the splitter; replies were still landing truncated in Discord. The root cause this time was `MAX_OUTPUT_TOKENS = 2048` in `bot/src/handlers/conversation.ts` — Opus was hitting the cap mid-paragraph on any nontrivial answer, so the model itself stopped generating before the splitter ever saw a full reply. Same symptom as Session 15's chunker bug, different root cause one layer up the stack. Bumped to 4096 (~3000 words of headroom, ~$0.02/turn extra at Opus pricing — acceptable for a 1-user bot). Took the opportunity to rewrite the system prompt: BASE_SYSTEM and all four channel personas now read as a strategic-peer COO with explicit Discord-formatting guardrails (no `##` headers, no bulleted lists, prefer prose paragraphs, `**bold**` sparingly, fenced code blocks only for actual code). And nudged the splitter: `withChunkPrefixes` now kicks in at 3+ chunks instead of 2+, so a two-message overflow reads as a continued thought instead of "1/2 ... 2/2".
+
+**Origin.** Edits authored in a Cowork session against the live filesystem — small, scoped, verified locally with `tsc --noEmit` + `npm test` (69/69 green; +1 new splitter test). Cowork validated the diff; Claude Code is the commit/push/deploy surface. First instance of the workflow pattern logged as PATTERNS.md I-002 in the same commit.
+
+**What landed.**
+
+- `bot/src/handlers/conversation.ts` — `MAX_OUTPUT_TOKENS` 2048 → 4096 (with a comment explaining why).
+- `bot/src/handlers/message-splitter.ts` — `withChunkPrefixes` threshold ≤1 → ≤2 (so the 1-chunk and 2-chunk paths are both no-op for prefixes).
+- `bot/src/system-prompt.ts` — rewrote `BASE_SYSTEM` and all four channel personas. New voice contract is paragraphs of prose, judgment over options, explicit anti-markdown guardrails. Persona blocks trimmed from role-play frames to short channel-context cues that hand off to the BASE_SYSTEM voice.
+- `bot/src/__tests__/message-splitter.test.ts` — added "withChunkPrefixes is a no-op for two chunks" pinning the new threshold.
+- `bot/src/__tests__/system-prompt.test.ts` — updated assertions for the new persona strings (`"on-call engineer"` for #errors, `"helpful pair to John"` for general; the latter pins one stable phrase out of the rewritten prose).
+
+**Tests.**
+
+- Bot suite: 69/69 pass (was 68/68; +1 new threshold test).
+- Bot typecheck: clean.
+- Root suite not re-run for this goal — only `bot/` changed; no Next.js / lib/ files touched.
+
+**Key decisions made.** No new ADR. Behavior tweak inside existing modules (conversation handler, splitter, system-prompt builder); same reasoning as Session 15's chunking fix — implicit in [ADR-013](DECISIONS.md#adr-013--foil-hq-discord-ops-bot) (the bot exists to be readable; both truncation *and* a bot-y "1/2"/"2/2" prefix defeat that). Workflow lesson captured separately in [PATTERNS.md I-002](PATTERNS.md).
+
+**Follow-ups.** None. Roadmap unchanged.
+
+**State at session end.** Bot pushed with COO voice + 4k output cap + cleaner two-chunk path. ROADMAP NOW still has its 4 manual items for John.
+
+---
+
 ## 2026-05-22 — Session 17: IDEAS.md idea bank as the 6th second-brain doc + bot integration
 
 **Commits:** this commit only

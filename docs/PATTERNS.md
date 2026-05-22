@@ -6,6 +6,22 @@ Append new entries at the top. When an entry is promoted, leave it here with a `
 
 ---
 
+## I-002 — Cowork as tactical edit surface; Claude Code as autonomous/shipping surface
+
+**Spotted:** Session 18, while iterating on the bot's system prompt + output cap.
+
+**Shape.** Small, scoped edits with deterministic local verification (file change + `tsc --noEmit` + `npm test`) are faster done directly in a Cowork session than authored as a Claude Code goal — Cowork has no Stop-hook overhead, no goal-criterion framing tax, and the feedback loop is the same `npm test` you'd run by hand. Claude Code earns its keep when the work needs **git/deploy authority** (commit + push + Railway/Vercel deploy verification), **second-brain doc discipline** (SESSION-LOG entry, ADR, ENV-VARS, IDEAS capture — the hard-contract rules in CLAUDE.md), or **a multi-hour autonomous loop** (multi-file refactor, full pipeline build, anything that benefits from the Agent tool spawning subagents). Below that bar, Cowork is the lighter path.
+
+**The compose.** Cowork validates and hands off the commit step to Claude Code via a goal exactly like this one — diff already in the working tree, criteria reduced to "stage these N paths, run the contract steps, push, verify deploy." That's the seam: edit-and-test in Cowork, ship + log in Claude Code.
+
+**First instance.** Session 18 (this commit). System-prompt rewrite + token-cap bump + chunker threshold — five files, <60 lines net, validated in Cowork with 69/69 green and a clean typecheck; goal-authored only to take the diff through commit + push + SESSION-LOG + PATTERNS update + Railway deploy verification.
+
+**Promotion trigger.** Third or fourth instance of this exact handoff shape (Cowork edits → Claude Code goal that just commits + logs). At that point the workflow is real enough to warrant an ADR codifying when to start in Cowork vs. when to start in Claude Code.
+
+**Status:** Pattern noted; will promote to a dedicated ADR after the third instance lands.
+
+---
+
 ## I-001 — Stop fighting interactive-first CLIs
 
 **Spotted:** Session 15, while trying to verify a Railway redeploy.

@@ -19,7 +19,12 @@ const DEFAULT_MODEL = "claude-opus-4-5";
 const SONNET_MODEL = "claude-sonnet-4-6";
 const SONNET_PREFIX = "/sonnet";
 const MAX_TOOL_ROUNDS = 6;
-const MAX_OUTPUT_TOKENS = 2048;
+// Bumped from 2048 → 4096 in the COO-voice pass. Opus was hitting the cap
+// mid-paragraph on any nontrivial answer, which surfaced as "truncated"
+// replies in Discord even though the splitter was working correctly. 4096
+// gives enough headroom for ~3000 words of prose; cost delta is ~$0.02/turn
+// at Opus pricing, acceptable for a 1-user bot.
+const MAX_OUTPUT_TOKENS = 4096;
 
 let anthropicClient: Anthropic | null = null;
 
