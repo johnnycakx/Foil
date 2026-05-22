@@ -8,6 +8,37 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-22 — Session 14: Service tokens for autonomous Supabase + Railway CLI access
+
+**Commits:** this commit only
+
+**Summary.** Closed the last two human-OAuth loops in the autonomy chain. Sessions 11–13 each hit a moment where I had to ask John to either paste SQL into the Supabase Dashboard SQL Editor (because Supabase MCP is read-only) or run `railway login` interactively. Both are gone now: long-lived service tokens for Supabase + Railway live in `.env.local` + GitHub Actions secrets, and `supabase db push` / `railway up` / `railway variables --set` run end-to-end from any Claude Code goal with no human in the loop.
+
+**What landed.**
+- `SUPABASE_ACCESS_TOKEN` (personal access token, `sbp_…`) mirrored to `.env.local` + GH Actions + Railway (`foil-bot` service).
+- `RAILWAY_API_TOKEN` (account API token, UUID format) mirrored to `.env.local` + GH Actions.
+- CLAUDE.md "Local CLI tooling" section now lists 5 CLIs (was 3), with explicit invocation patterns (`SUPABASE_ACCESS_TOKEN=$... supabase db push`, `RAILWAY_API_TOKEN=$... railway up`).
+- ADR-009 (CLI tooling) amended with a "Session 14" section documenting both new CLIs + the gotcha that surfaced during verification.
+- ENV-VARS rows for both tokens, including rotation paths.
+
+**Gotcha surfaced.** Railway has two distinct token env vars — `RAILWAY_TOKEN` (project-scoped, single-environment) and `RAILWAY_API_TOKEN` (account-scoped, multi-project). An account token under `RAILWAY_TOKEN` fails with `Invalid RAILWAY_TOKEN`. Documented in both CLAUDE.md and the ADR-009 amendment so future goals don't lose time on it.
+
+**Token verification.**
+- `SUPABASE_ACCESS_TOKEN=sbp_… supabase projects list` → returned the Foil project (`cayzmikutgcwsqvagvzv`, West US). ✓
+- `RAILWAY_API_TOKEN=… railway whoami` → returned `Logged in as john.c.craig24@gmail.com`. ✓
+
+**First token was DOA.** John's initial Railway token rejected with `Invalid RAILWAY_TOKEN` under both env var names. Regenerating from railway.app/account/tokens produced a working token on the second try — root cause unclear (revoked between paste + verify? wrong token-type selected?), not worth diagnosing further since the workaround was 30 seconds.
+
+**Net effect.** Every CLI in the autonomy chain (vercel, gh, supabase, railway) is now headless. The "ask John to do this manually" pattern that gated Sessions 11–13 should be effectively extinct for infra-touching goals. Manual playbooks are now reserved strictly for actions the CLIs can't do (e.g. accepting a domain-transfer email).
+
+**Key decisions made.** No new ADR — extended [ADR-009](DECISIONS.md#adr-009--local-cli-tooling-for-autonomous-infra-changes) consequences in-place rather than create ADR-019 for a continuation.
+
+**Follow-ups.** None — this goal was strictly tooling.
+
+**State at session end.** All four CLIs (vercel, gh, supabase, railway) usable without interactive auth. Bot still online as `Chat#7787` from Session 11.
+
+---
+
 ## 2026-05-22 — Session 13: Vercel webhook proxy + Beehiiv REST tools + daily-digest queue
 
 **Commits:** this commit only

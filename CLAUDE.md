@@ -169,21 +169,30 @@ The contract is pinned in lib/__tests__/proxy.test.ts. If you add or remove a pu
 
 Local CLI tooling for autonomous infra changes
 
-The repo has three CLIs installed and authenticated. Future goals SHOULD use them directly instead of writing manual rollout playbooks for John. Reserve manual playbooks for actions the CLIs genuinely can't do (e.g. accepting a domain-transfer email, clicking through a Stripe Connect onboarding).
+The repo has five CLIs installed and authenticated. Future goals SHOULD use them directly instead of writing manual rollout playbooks for John. Reserve manual playbooks for actions the CLIs genuinely can't do (e.g. accepting a domain-transfer email, clicking through a Stripe Connect onboarding).
 
 - **`vercel` CLI** — v54.3.0, authenticated as `johnnycakx`. Project linked to `team_MYkF82HXU8It3L9TjpJia1zB / prj_0FH8NcWH3AIRUI6FnF719QaEC4ug` (foil). Use for: project settings, env vars, deploy hooks, domains, deploys, log inspection. See `vercel:*` plugin skills (also installed) for guided flows — `vercel:env`, `vercel:deploy`, `vercel:env-vars`, `vercel:deployments-cicd`, `vercel:vercel-cli`.
 - **Vercel Plugin for Claude Code** — installed during `vercel link`. Surfaces ~30 `vercel:*` skills (full list shows in the session skills sidebar). Prefer the skills over raw `vercel ...` calls when one matches the task — they encode platform-specific guardrails.
 - **`gh` CLI** — v2.92.0, authenticated as `johnnycakx` (keyring, HTTPS protocol, scopes: gist/read:org/repo/workflow). Use for: GitHub repo secrets (`gh secret set`), workflow dispatch (`gh workflow run`), releases, PR creation, PR review/inspection, issue management.
+- **`supabase` CLI** — v2.101.0. Use service-token auth so no interactive login is needed (see "Service tokens" below). Use for: applying migrations (`supabase db push`), listing projects, generating types. Bypasses the read-only Supabase MCP that's installed in this session.
+- **`railway` CLI** — v4.59.0. Use service-token auth so no interactive `railway login` is needed (see "Service tokens" below). Use for: bot service deploys (`railway up`), env vars (`railway variables --set`), logs (`railway logs --service foil-bot`).
+
+**Service tokens for headless autonomy.** As of Session 14, two long-lived tokens live in `.env.local` + GH Actions + (where useful) Railway env. Any goal that needs `supabase` or `railway` CLI access should `export` the relevant env var inline before the CLI call — no interactive OAuth required.
+
+- `SUPABASE_ACCESS_TOKEN` — personal access token. The `supabase` CLI reads it automatically when set. Invocation pattern: `SUPABASE_ACCESS_TOKEN=$SUPABASE_ACCESS_TOKEN supabase db push` (or just `supabase db push` if the env var is already exported). Mirrored: `.env.local` · GitHub Actions · Railway (`foil-bot` service).
+- `RAILWAY_API_TOKEN` — Railway account/team token. **Note: use `RAILWAY_API_TOKEN`, NOT `RAILWAY_TOKEN`.** The latter is reserved for project-scoped tokens and rejects account tokens with "Invalid RAILWAY_TOKEN". Invocation pattern: `RAILWAY_API_TOKEN=$RAILWAY_API_TOKEN railway up --service foil-bot --detach`. Mirrored: `.env.local` · GitHub Actions.
 
 **Routing rule for new goals:**
 - Touches Vercel project settings / env vars / deploy hooks / domains → `vercel ...`
 - Touches GitHub secrets / workflow dispatch / releases / PRs → `gh ...`
+- Touches Supabase migrations / DB schema → `SUPABASE_ACCESS_TOKEN=$... supabase ...`
+- Touches Railway bot service / env vars / deploys → `RAILWAY_API_TOKEN=$... railway ...`
 - Touches both (e.g. "wire a new env var end-to-end") → run both, no UI clicks
 - Touches neither → ignore this section, code as normal
 
 **Path caveat (transient):** If `gh` isn't on the shell PATH (`which gh` returns nothing in a Bash tool call), the binary still exists at `C:\Program Files\GitHub CLI\gh.exe`. Invoke as `& "C:\Program Files\GitHub CLI\gh.exe" <args>` from PowerShell, or restart Claude Code to pick up the updated PATH. This caveat goes away on the next session start.
 
-**Kill-switch** (revoke autonomous infra access): `gh auth logout` + Vercel UI → Account Settings → Tokens → Revoke. Both are session-bound credentials with no machine-wide effect beyond their respective CLI scopes.
+**Kill-switch** (revoke autonomous infra access): `gh auth logout` revokes GitHub; Vercel UI → Account Settings → Tokens → Revoke kills Vercel; supabase.com/dashboard/account/tokens → revoke kills Supabase; railway.app/account/tokens → revoke kills Railway. Each token is independent; revoking one doesn't cascade.
 
 Common commands
 

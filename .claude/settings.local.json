@@ -113,7 +113,17 @@
       "Bash(vercel integration *)",
       "Bash(echo \"ROOT_EXIT=$?\")",
       "Bash(echo \"BOT_EXIT=$?\")",
-      "Bash(vercel webhooks *)"
+      "Bash(vercel webhooks *)",
+      "Bash(vercel ls *)",
+      "Bash(vercel inspect *)",
+      "Bash(vercel domains *)",
+      "Bash(vercel redeploy *)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_7b44473eddac42cf137c83cf4bbcb442a7409f41 supabase projects list)",
+      "Bash(RAILWAY_TOKEN=202e0b20-9988-4af7-b02c-6ba9c7a0a4db railway whoami)",
+      "Bash(RAILWAY_API_TOKEN=202e0b20-9988-4af7-b02c-6ba9c7a0a4db railway whoami)",
+      "Bash(RAILWAY_API_TOKEN=202e0b20-9988-4af7-b02c-6ba9c7a0a4db railway whoami --json)",
+      "Bash(RAILWAY_TOKEN=202e0b20-9988-4af7-b02c-6ba9c7a0a4db railway variables --service foil-bot)",
+      "Bash(RAILWAY_API_TOKEN=c08dcc62-1e40-4728-8170-f742e9869a70 railway whoami)"
     ]
   },
   "enableAllProjectMcpServers": true,

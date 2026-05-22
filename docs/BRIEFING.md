@@ -182,21 +182,30 @@ The contract is pinned in lib/__tests__/proxy.test.ts. If you add or remove a pu
 
 Local CLI tooling for autonomous infra changes
 
-The repo has three CLIs installed and authenticated. Future goals SHOULD use them directly instead of writing manual rollout playbooks for John. Reserve manual playbooks for actions the CLIs genuinely can't do (e.g. accepting a domain-transfer email, clicking through a Stripe Connect onboarding).
+The repo has five CLIs installed and authenticated. Future goals SHOULD use them directly instead of writing manual rollout playbooks for John. Reserve manual playbooks for actions the CLIs genuinely can't do (e.g. accepting a domain-transfer email, clicking through a Stripe Connect onboarding).
 
 - **`vercel` CLI** — v54.3.0, authenticated as `johnnycakx`. Project linked to `team_MYkF82HXU8It3L9TjpJia1zB / prj_0FH8NcWH3AIRUI6FnF719QaEC4ug` (foil). Use for: project settings, env vars, deploy hooks, domains, deploys, log inspection. See `vercel:*` plugin skills (also installed) for guided flows — `vercel:env`, `vercel:deploy`, `vercel:env-vars`, `vercel:deployments-cicd`, `vercel:vercel-cli`.
 - **Vercel Plugin for Claude Code** — installed during `vercel link`. Surfaces ~30 `vercel:*` skills (full list shows in the session skills sidebar). Prefer the skills over raw `vercel ...` calls when one matches the task — they encode platform-specific guardrails.
 - **`gh` CLI** — v2.92.0, authenticated as `johnnycakx` (keyring, HTTPS protocol, scopes: gist/read:org/repo/workflow). Use for: GitHub repo secrets (`gh secret set`), workflow dispatch (`gh workflow run`), releases, PR creation, PR review/inspection, issue management.
+- **`supabase` CLI** — v2.101.0. Use service-token auth so no interactive login is needed (see "Service tokens" below). Use for: applying migrations (`supabase db push`), listing projects, generating types. Bypasses the read-only Supabase MCP that's installed in this session.
+- **`railway` CLI** — v4.59.0. Use service-token auth so no interactive `railway login` is needed (see "Service tokens" below). Use for: bot service deploys (`railway up`), env vars (`railway variables --set`), logs (`railway logs --service foil-bot`).
+
+**Service tokens for headless autonomy.** As of Session 14, two long-lived tokens live in `.env.local` + GH Actions + (where useful) Railway env. Any goal that needs `supabase` or `railway` CLI access should `export` the relevant env var inline before the CLI call — no interactive OAuth required.
+
+- `SUPABASE_ACCESS_TOKEN` — personal access token. The `supabase` CLI reads it automatically when set. Invocation pattern: `SUPABASE_ACCESS_TOKEN=$SUPABASE_ACCESS_TOKEN supabase db push` (or just `supabase db push` if the env var is already exported). Mirrored: `.env.local` · GitHub Actions · Railway (`foil-bot` service).
+- `RAILWAY_API_TOKEN` — Railway account/team token. **Note: use `RAILWAY_API_TOKEN`, NOT `RAILWAY_TOKEN`.** The latter is reserved for project-scoped tokens and rejects account tokens with "Invalid RAILWAY_TOKEN". Invocation pattern: `RAILWAY_API_TOKEN=$RAILWAY_API_TOKEN railway up --service foil-bot --detach`. Mirrored: `.env.local` · GitHub Actions.
 
 **Routing rule for new goals:**
 - Touches Vercel project settings / env vars / deploy hooks / domains → `vercel ...`
 - Touches GitHub secrets / workflow dispatch / releases / PRs → `gh ...`
+- Touches Supabase migrations / DB schema → `SUPABASE_ACCESS_TOKEN=$... supabase ...`
+- Touches Railway bot service / env vars / deploys → `RAILWAY_API_TOKEN=$... railway ...`
 - Touches both (e.g. "wire a new env var end-to-end") → run both, no UI clicks
 - Touches neither → ignore this section, code as normal
 
 **Path caveat (transient):** If `gh` isn't on the shell PATH (`which gh` returns nothing in a Bash tool call), the binary still exists at `C:\Program Files\GitHub CLI\gh.exe`. Invoke as `& "C:\Program Files\GitHub CLI\gh.exe" <args>` from PowerShell, or restart Claude Code to pick up the updated PATH. This caveat goes away on the next session start.
 
-**Kill-switch** (revoke autonomous infra access): `gh auth logout` + Vercel UI → Account Settings → Tokens → Revoke. Both are session-bound credentials with no machine-wide effect beyond their respective CLI scopes.
+**Kill-switch** (revoke autonomous infra access): `gh auth logout` revokes GitHub; Vercel UI → Account Settings → Tokens → Revoke kills Vercel; supabase.com/dashboard/account/tokens → revoke kills Supabase; railway.app/account/tokens → revoke kills Railway. Each token is independent; revoking one doesn't cascade.
 
 Common commands
 
@@ -281,32 +290,34 @@ e16c1e4 — feat: detect filter + PokeTrace images + per-card condition picker
 
 ## Most recent session
 
-## 2026-05-22 — Session 13: Vercel webhook proxy + Beehiiv REST tools + daily-digest queue
+## 2026-05-22 — Session 14: Service tokens for autonomous Supabase + Railway CLI access
 
 **Commits:** this commit only
 
-**Summary.** Goal C landed three pieces:
+**Summary.** Closed the last two human-OAuth loops in the autonomy chain. Sessions 11–13 each hit a moment where I had to ask John to either paste SQL into the Supabase Dashboard SQL Editor (because Supabase MCP is read-only) or run `railway login` interactively. Both are gone now: long-lived service tokens for Supabase + Railway live in `.env.local` + GitHub Actions secrets, and `supabase db push` / `railway up` / `railway variables --set` run end-to-end from any Claude Code goal with no human in the loop.
 
-**1. Vercel deploys webhook proxy ([ADR-016](DECISIONS.md#adr-016--vercel-deploys--discord-via-code-controlled-webhook-proxy-not-marketplace-install)).** New route `app/api/webhooks/vercel-deploys/route.ts` validates `X-Vercel-Signature` (HMAC-SHA1 with `timingSafeEqual`), filters to succeeded/error/canceled (skips the noisy created/ready events that fire on every push), maps the payload → Discord embed with green/red/yellow color, commit SHA, branch, first-line of commit message, and posts via `lib/notifications/discord.ts`. Always returns 200 to Vercel so it doesn't retry uselessly into a Discord outage. Registered via `vercel webhooks create`; secret `iZckbY7kLMtuABN7UGc2xPKk` mirrored to all 3 surfaces. Closes the "manual Marketplace install" footnote from ADR-014.
+**What landed.**
+- `SUPABASE_ACCESS_TOKEN` (personal access token, `sbp_…`) mirrored to `.env.local` + GH Actions + Railway (`foil-bot` service).
+- `RAILWAY_API_TOKEN` (account API token, UUID format) mirrored to `.env.local` + GH Actions.
+- CLAUDE.md "Local CLI tooling" section now lists 5 CLIs (was 3), with explicit invocation patterns (`SUPABASE_ACCESS_TOKEN=$... supabase db push`, `RAILWAY_API_TOKEN=$... railway up`).
+- ADR-009 (CLI tooling) amended with a "Session 14" section documenting both new CLIs + the gotcha that surfaced during verification.
+- ENV-VARS rows for both tokens, including rotation paths.
 
-**2. Beehiiv REST tools in the bot ([ADR-017](DECISIONS.md#adr-017--beehiiv-tools-via-rest-not-oauth-based-mcp)).** New file `bot/src/tools/beehiiv.ts` with three tool defs: `beehiiv_list_subscriptions(status?, limit?)`, `beehiiv_get_publication_stats()`, `beehiiv_list_posts(status?, limit?)`. All use the existing `BEEHIIV_API_KEY` (which the Railway bot already has — Session 11). Email masking is centralized in the tool handler so the bot never sees raw subscriber addresses. The legacy `get_recent_subscribers` / `get_publication_stats` tools stay registered as aliases so existing system-prompt language keeps working. The system prompt now lists the new tools first.
+**Gotcha surfaced.** Railway has two distinct token env vars — `RAILWAY_TOKEN` (project-scoped, single-environment) and `RAILWAY_API_TOKEN` (account-scoped, multi-project). An account token under `RAILWAY_TOKEN` fails with `Invalid RAILWAY_TOKEN`. Documented in both CLAUDE.md and the ADR-009 amendment so future goals don't lose time on it.
 
-**3. Daily-digest queue ([ADR-018](DECISIONS.md#adr-018--daily-digest-queue-opt-in-noise-control-via-digest_mode)).** Supabase table `digest_events` + `lib/notifications/digest.ts` (`queueEvent` + `flushDigest`) + cron at 09:00 UTC daily (`.github/workflows/daily-digest.yml`) + `DIGEST_MODE` env var routing on the subscribe action. Default `realtime` keeps current behavior; `daily` queues to Postgres and the cron posts ONE summary embed per channel grouped by event_type. Failed Discord posts leave rows undigested for retry next run.
+**Token verification.**
+- `SUPABASE_ACCESS_TOKEN=sbp_… supabase projects list` → returned the Foil project (`cayzmikutgcwsqvagvzv`, West US). ✓
+- `RAILWAY_API_TOKEN=… railway whoami` → returned `Logged in as john.c.craig24@gmail.com`. ✓
 
-**Tests added.** 9 for the Vercel webhook (signature happy/forge/mutate/length/non-hex cases + embed shape per event type + truncation), 8 for the digest queue (queueEvent shape, flush with grouped fields, no-mark-when-post-fails, embed shape, pluralization), 9 for the Beehiiv REST tools (endpoint URL + Bearer header + email masking + status default + limit cap + missing-creds). 26 new tests; full root + bot suites green.
+**First token was DOA.** John's initial Railway token rejected with `Invalid RAILWAY_TOKEN` under both env var names. Regenerating from railway.app/account/tokens produced a working token on the second try — root cause unclear (revoked between paste + verify? wrong token-type selected?), not worth diagnosing further since the workaround was 30 seconds.
 
-**Migration pending.** Supabase MCP is read-only in this session, so `supabase/migrations/20260522020000_digest_events.sql` needs manual paste in the Supabase Dashboard SQL Editor. Without it the digest queue path no-ops at runtime — both modes (realtime + daily) handle a missing table gracefully; only the daily mode loses functionality until the table exists.
+**Net effect.** Every CLI in the autonomy chain (vercel, gh, supabase, railway) is now headless. The "ask John to do this manually" pattern that gated Sessions 11–13 should be effectively extinct for infra-touching goals. Manual playbooks are now reserved strictly for actions the CLIs can't do (e.g. accepting a domain-transfer email).
 
-**End-to-end verification — recorded below after the live smoke.**
+**Key decisions made.** No new ADR — extended [ADR-009](DECISIONS.md#adr-009--local-cli-tooling-for-autonomous-infra-changes) consequences in-place rather than create ADR-019 for a continuation.
 
-**Key decisions made.**
-- [ADR-016](DECISIONS.md#adr-016--vercel-deploys--discord-via-code-controlled-webhook-proxy-not-marketplace-install) — proxy over Marketplace.
-- [ADR-017](DECISIONS.md#adr-017--beehiiv-tools-via-rest-not-oauth-based-mcp) — REST over OAuth-based MCP for the headless bot.
-- [ADR-018](DECISIONS.md#adr-018--daily-digest-queue-opt-in-noise-control-via-digest_mode) — daily-digest queue, opt-in via DIGEST_MODE.
+**Follow-ups.** None — this goal was strictly tooling.
 
-**Follow-ups.** Subscriber-count threshold alerts (50/100/500). Cross-channel slash commands (`/sub-count`, `/posts`). Vercel/GitHub MCPs in the bot when a headless-OAuth strategy exists.
-
-**State at session end.** All tests + tsc green. Vercel webhook live + tested via HMAC unit tests; live smoke pending a real deploy. Digest migration needs the paste step.
+**State at session end.** All four CLIs (vercel, gh, supabase, railway) usable without interactive auth. Bot still online as `Chat#7787` from Session 11.
 
 ---
 

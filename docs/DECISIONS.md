@@ -157,6 +157,15 @@ Future goals MUST prefer `vercel ...` / `gh ...` calls over writing manual UI pl
 
 **Kill-switch.** `gh auth logout` revokes GitHub access. Vercel UI → Account Settings → Tokens → Revoke kills Vercel access. Both are session-scoped credentials with no machine-wide effect beyond their respective CLI scopes.
 
+**2026-05-22 amendment (Session 14): Supabase + Railway service tokens added.** Per the original ADR's "Future goals MUST prefer CLI calls over manual UI playbooks" rule, two more CLIs joined the tooling chain:
+
+- `supabase` CLI v2.101.0, authenticated via long-lived **personal access token** (`SUPABASE_ACCESS_TOKEN` env var). Replaces the manual "paste this SQL into the dashboard" step that's been the bottleneck in Sessions 11–13 (Supabase MCP is read-only by design). Migrations now apply via `SUPABASE_ACCESS_TOKEN=$... supabase db push` from any Claude Code goal.
+- `railway` CLI v4.59.0, authenticated via long-lived **account API token** (`RAILWAY_API_TOKEN` env var — **NOT** `RAILWAY_TOKEN`, which is reserved for project-scoped tokens that fail account-level calls). Replaces the interactive `railway login` step that gated Session 11's first deploy. Bot deploys + env-var pushes now run headless.
+
+**Gotcha surfaced.** Railway has two token env vars — `RAILWAY_TOKEN` (project-scope, single-environment) and `RAILWAY_API_TOKEN` (account-scope, multi-project). The CLI rejects an account token under `RAILWAY_TOKEN` with `Invalid RAILWAY_TOKEN`. Documented in CLAUDE.md's CLI section so future goals don't lose 5 minutes diagnosing it.
+
+**Net effect.** Every CLI in the toolkit (vercel, gh, supabase, railway) is now usable without interactive auth. The "ask John to run `railway login` from his terminal" loop from Session 11 is gone. Any goal that touches infrastructure runs end-to-end from Claude Code.
+
 ---
 
 ## ADR-010 — Beehiiv for newsletter list management: official SDK, single-field form, server-side key
