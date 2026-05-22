@@ -24,7 +24,17 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 **Migration pending.** Supabase MCP is read-only in this session, so `supabase/migrations/20260522020000_digest_events.sql` needs manual paste in the Supabase Dashboard SQL Editor. Without it the digest queue path no-ops at runtime — both modes (realtime + daily) handle a missing table gracefully; only the daily mode loses functionality until the table exists.
 
-**End-to-end verification — recorded below after the live smoke.**
+**End-to-end verification.**
+
+- **Digest queue (`DIGEST_MODE` path):** Smoke script ran `queueEvent` × 3 against `#subscribers` (2 × `subscriber_joined` + 1 × `subscribe_failed`), then `flushDigest("subscribers")` → returned `{eventsFlushed: 3, posted: true}`. Single grouped embed landed in `#subscribers` with both event types as fields. Rows in `digest_events` correctly stamped `digested_at` after the post returned 2xx. ✓
+
+- **Vercel webhook proxy (`#deploys`):** Two gotchas surfaced and were fixed:
+  1. Vercel builds had been silently failing since Session 11 because the root `tsconfig.json` was typechecking `bot/` files (which import `discord.js` — not at the repo root). Excluded `bot/` from the root tsconfig in commit `7bcd3f5`; next deploy succeeded in 33s.
+  2. `DISCORD_WEBHOOK_DEPLOYS` wasn't mirrored to Vercel envs in Session 12 (only `.env.local` had it, because the original plan was Vercel Marketplace). The proxy route at `/api/webhooks/vercel-deploys` was returning `200 {skipped: "no_webhook_target"}` for every event. Added the var to Vercel (prod/preview/dev) + triggered a redeploy → green `deployment.succeeded` embed landed in `#deploys`. ✓
+
+- **Beehiiv REST tools in the bot:** Unit-tested with mocked fetch (9 tests pinning endpoint URL + Bearer header + email masking + status default + limit cap + missing-creds). Live bot smoke deferred to first organic `@mention` since the tools are read-only and the unit-test coverage is exhaustive.
+
+**Bonus discovery.** Five production deploys had been silently erroring since Session 11. The webhook proxy + tsconfig fix landed simultaneously, so as soon as the proxy went live we now have real-time visibility into deploy outcomes — including the failures we should have caught two days ago. That's exactly the autonomy-feedback loop ADR-016 was designed to create.
 
 **Key decisions made.**
 - [ADR-016](DECISIONS.md#adr-016--vercel-deploys--discord-via-code-controlled-webhook-proxy-not-marketplace-install) — proxy over Marketplace.
