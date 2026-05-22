@@ -26,17 +26,25 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 **Manual prereqs already done by John (pre-goal):** Foil HQ Discord server created with 6 channels; bot user created with Message Content Intent ON; bot invited to server with Administrator permission; Railway empty project + payment method on file. Tokens collected this session and stored in `bot/.env.local` (gitignored) — DISCORD_BOT_TOKEN, DISCORD_APPLICATION_ID=1507171299422765116, RAILWAY_PROJECT_ID=08088ed2-f78d-48de-9559-67a528d1c7cd.
 
-**Pending at this session-end:**
-1. Apply `bot/migrations/001_bot_memory.sql` to Supabase. The Supabase MCP is read-only in this session so the migration needs to be pasted into the Supabase Dashboard → SQL Editor. Estimated time: <1 minute.
-2. Run `railway login` interactively in a terminal John controls (the CLI auth flow is browser-based).
-3. `railway link 08088ed2-f78d-48de-9559-67a528d1c7cd`, push the 7 env vars (Discord/Anthropic/Supabase/Beehiiv), `railway up`.
+**Live verification (end-to-end).** Migration applied by John via Supabase Dashboard SQL Editor. Railway CLI installed (`@railway/cli` v4.59.0), John ran `railway login`, then linked to project `perceptive-communication` (id `08088ed2-…`). Service `foil-bot` created via `railway add` with all 7 env vars pushed inline. `railway up` from the repo root uploaded the Docker context and Railway built + deployed.
+
+First deploy crashed with `Used disallowed intents` — the Message Content privileged intent was OFF in the Discord Developer Portal. After John toggled it ON, `railway redeploy` brought the bot up cleanly:
+
+```
+[boot] online as Chat#7787 (id=1507171299422765116)
+[slash] registered 3 command(s) globally
+```
+
+Smoke-tested in #general by John: (a) `@Chat what's on the roadmap?` correctly cited ROADMAP NOW items; (b) `/recall Beehiiv` returned semantic hits; (c) `@Chat /sonnet ping` routed to Sonnet 4.6. All three paths green.
 
 **Key decisions made.**
 - [ADR-013](DECISIONS.md#adr-013--foil-hq-discord-bot-persistent-memory-ops-chat-with-curated-tools) — Path 2 (Discord bot over web dashboard or Slack). Postgres+pgvector memory, curated tools (not full MCP), Opus 4.5 default + `/sonnet` opt-in, prompt caching on grounding context, Railway deploy.
 
 **Follow-ups.** Goal B (full MCP integration on top of the curated-tools baseline). Goal C (outbound webhook notifications for deploys/content/subscribers/errors → bot posts to channels). Real embeddings (Voyage AI / OpenAI text-embedding-3-small) tracked as a TODO in `bot/src/db.ts::hashEmbedding`.
 
-**State at session end.** All bot code + tests + docs committed. Migration + Railway deploy pending the manual steps above; bot will be online in Foil HQ once those land.
+**Deploy note for next session.** First-deploy intent crash is a documented gotcha: the Discord Developer Portal's "Privileged Gateway Intents → Message Content Intent" toggle is independent of the OAuth invite scope. If a future bot version (or a re-created bot) crashes on `Used disallowed intents`, that's the toggle to check first.
+
+**State at session end.** Bot is online in Foil HQ as **Chat#7787**. Service is `foil-bot` in Railway project `perceptive-communication` (`08088ed2-…`). 7 env vars set on the service. Slash commands registered globally (1-hour propagation for new commands; set `DISCORD_GUILD_ID` env var to make them instant).
 
 ---
 
