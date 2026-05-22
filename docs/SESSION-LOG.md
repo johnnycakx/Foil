@@ -32,7 +32,13 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 **Backfill execution.** Manual run pending — `cd bot && node --experimental-strip-types --no-warnings scripts/backfill-embeddings.ts` will rewrite every existing `bot_messages` embedding from the hash placeholder to OpenAI real semantic. Idempotent + restartable; skip via `--all` flag set differently (default = "missing only", `--all` = re-embed every row).
 
-**End-to-end verification — recorded below after the live smoke.**
+**End-to-end verification.**
+- **#subscribers + #errors:** `subscribeEmail` against `goal-b-verification+{ts}@foiltcg.com` returned `{ok:true,status:"subscribed"}`; `postSubscriberJoined` and `postError` both returned HTTP 204 from Discord. ✓
+- **#content-engine:** `postContentPublished` with the most-recent autonomous post + newsletter shape returned HTTP 204. ✓
+- **#errors:** Synthetic verification ping landed alongside the subscribe smoke. ✓
+- **#deploys:** Pending manual Marketplace install (Vercel → Project → Integrations → Discord). DISCORD_WEBHOOK_DEPLOYS URL is in `.env.local` as the target.
+- **Real embeddings:** Backfill re-embedded all 4 existing `bot_messages` rows with `text-embedding-3-small`. `semanticSearchMessages` against the same channel ranked the roadmap discussion at `sim=0.613` for "roadmap NOW items" vs `sim=0.185` for the irrelevant "how are you" message — semantic ranking confirmed working. "the newsletter platform we picked" returned low-similarity hits because the bot's current memory doesn't contain Beehiiv-related conversation yet (which is the correct behavior — recall can only find what's in memory).
+- **Bot redeploy:** `railway up` against the new code succeeded; service is `Online` with `OPENAI_API_KEY` env present.
 
 **Key decisions made.**
 - [ADR-014](DECISIONS.md#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary) — per-channel webhook URLs, soft-fail policy, single import boundary at `lib/notifications/discord.ts`, mask-on-emit for subscriber events.
