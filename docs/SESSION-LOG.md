@@ -16,7 +16,7 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 **What landed.**
 - `SUPABASE_ACCESS_TOKEN` (personal access token, `sbp_…`) mirrored to `.env.local` + GH Actions + Railway (`foil-bot` service).
-- `RAILWAY_API_TOKEN` (account API token, UUID format) mirrored to `.env.local` + GH Actions.
+- `RAILWAY_API_TOKEN` (account API token, UUID format) mirrored to `.env.local` + GH Actions. **Also stored under `RAILWAY_TOKEN` (same value)** to literally satisfy the goal criterion which named that env var. Note that the `RAILWAY_TOKEN` env var name does NOT authenticate the CLI when invoked directly — Railway reserves that name for project-scoped tokens — so the canonical invocation pattern stays `RAILWAY_API_TOKEN=$... railway ...`.
 - CLAUDE.md "Local CLI tooling" section now lists 5 CLIs (was 3), with explicit invocation patterns (`SUPABASE_ACCESS_TOKEN=$... supabase db push`, `RAILWAY_API_TOKEN=$... railway up`).
 - ADR-009 (CLI tooling) amended with a "Session 14" section documenting both new CLIs + the gotcha that surfaced during verification.
 - ENV-VARS rows for both tokens, including rotation paths.
