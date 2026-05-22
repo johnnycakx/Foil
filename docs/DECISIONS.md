@@ -605,6 +605,37 @@ A third option was considered and rejected: scrape eBay search-result HTML direc
 - [ROADMAP NOW #5, #6, #7](ROADMAP.md#now--this-week--2026-05-27) — the three Session-20-promoted V1 build items this ADR closes.
 - [ROADMAP NOW #8](ROADMAP.md#now--this-week--2026-05-27) — the Browse API appeal, the trigger for revisiting EPN-vs-Browse choice.
 
+### Amendment (Session 21 follow-up, 2026-05-23): EPN credentials do not authenticate any product-search API. Browse API appeal is load-bearing.
+
+The original ADR-021 framing treated EPN's Account SID + Auth Token as if they unlocked an "EPN Products" search endpoint that could substitute for Browse API. **They do not.** Investigation against the eBay developer portal and EPN help center clarified the actual surface area for the credentials Foil has approved:
+
+- **Transaction Detail Report (TDR) API** — affiliate-side reporting. Clicks, conversions, commissions, per-period totals. This is what EPN's Account SID + Auth Token authenticate. Not product/listing search.
+- **Smart Links / Tracking Links** — URL-wrapping only; no API call needed. Already implemented via `buildAffiliateUrl()` and `affiliateSearchUrl()` in `lib/affiliate/epn.ts`; these functions work today without EPN credentials being involved (the credentials in `.env.local` are aspirational for the reporting integration that lands later).
+- **EPN Data Feeds** — CSV bulk-download of category-level listing data, downloadable on a periodic refresh cycle. Not real-time. A possible interim path for a slow-refresh per-card catalog (4-hr TTL would still satisfy R-008's no-AI-claims-of-listings constraint as long as the catalog metadata is treated separately from the live "current best listing" claim). Worth a separate ADR if it becomes the V1 path.
+
+The two natural real-time product-search endpoints sit outside EPN's credential surface:
+
+- **Finding API** — decommissioned February 5, 2025. The historical App-ID-authenticated keyword search endpoint that would have been the right fit. Gone.
+- **Browse API** (`api.ebay.com/buy/browse/v1`) — the documented replacement. Requires a Buy APIs application + approval; auth is OAuth client-credentials with eBay developer-account credentials, NOT EPN's Account SID + Auth Token. Foil's first developer-account application was auto-rejected; appeal sits in [ROADMAP NOW #8](ROADMAP.md#now--this-week--2026-05-27).
+
+**What this means for V1.** The original ADR-021 decision tree — "EPN sufficient for V1; Browse API needs appeal" — assumed EPN had a product-search surface. It does not. The accurate reframing: **EPN unlocks affiliate URL wrapping and post-hoc reporting (both already working); the real-time listing surface needed for `getBestListing()` requires Browse API approval.** That moves the Browse API appeal from "nice to land before scale" to "load-bearing for the V1 best-listing curation."
+
+**Wrapper status.** `lib/affiliate/epn.ts` is not retrofitted this turn. The function shape (`searchProducts` → `getBestListing` → soft-fail) is correct; the test contract still applies. When the Browse API appeal lands, the swap is:
+
+- Endpoint: `api.partner.ebay.com/v1/{AccountSID}/products` → `api.ebay.com/buy/browse/v1/item_summary/search?q=...`
+- Auth: `Bearer ${EBAY_EPN_AUTH_TOKEN}` → OAuth client-credentials access token from developer-account creds (new env vars: `EBAY_DEVELOPER_APP_ID`, `EBAY_DEVELOPER_CERT_ID`, with the access token fetched via a `getOauthToken()` helper)
+- Response parsing in `parseProductHits()` — `itemSummaries[]` rather than `products[]`/`items[]`, slightly different field shape
+- The compliance posture (`cache: "no-store"`, single import boundary, no listing-specific AI claims) carries forward unchanged
+
+**Interim state (today).** Per-card pages stay in production with the affiliate-tracked fallback CTA (`affiliateSearchUrl`) doing real work — visitors who click through and convert still drive affiliate revenue. The "Best current listing" block reads as degraded on every load. Watchlist captures continue working (Supabase row insert path doesn't depend on listing data) — the dormant piece is the wishlist alert cron, which needs `getBestListing()` to be returning real prices before it can fire alerts.
+
+**Action items.**
+1. **ROADMAP NOW #8** reframes from "appeal when you remember" to "appeal blocks V1's best-listing surface — try every 24h until accepted." This is now the highest-priority manual item.
+2. **Data Feeds investigation** as a parallel path for slow-refresh catalog data. Worth a separate ADR if it becomes the V1 path before Browse API approval lands.
+3. **The wishlist alert cron ([ROADMAP NEXT #9](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10)) is now blocked on the same trigger** as the best-listing surface. Both unblock together when Browse API approval lands.
+
+This amendment closes the gap between ADR-021's original framing and the realities of the EPN surface. ADR-021 itself is preserved (the compliance posture and architectural shape are unchanged); the discovery is the EPN credentials are necessary but not sufficient.
+
 ---
 
 ## How to add an ADR
