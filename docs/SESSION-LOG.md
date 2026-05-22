@@ -8,6 +8,34 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-23 — Session 20: Strategy pivot to deal-finder propagated through second-brain docs
+
+**Commits:** this commit only
+
+**Summary.** John drafted `docs/STRATEGY-PIVOT-DEAL-FINDER.md` in Cowork — the canonical source-of-truth document for the new product direction. Foil ships V1 as a buyer-side Pokemon TCG deal-finder (per-card landing pages, eBay-aggregated best-listing recommendations, wishlist email alerts, affiliate-primary revenue) rather than a seller-side card-valuation scanner. This session reconciled the rest of the second-brain against that strategy doc: ADR-020 formalizes the pivot as an architectural decision, ROADMAP NOW + NEXT rewrite around deal-finder priorities, CLAUDE.md project description reframes around buyer intent, IDEAS gains a promoted entry as a permanent record. **No code changes** — docs only. The next goal implements V1 surface area (eBay Browse API integration, per-card landing page MVP at `/cards/[slug]` with Charizard Base Set as the first concrete proof, Supabase watchlist schema).
+
+**What landed.**
+
+- [ADR-020](DECISIONS.md#adr-020--pivot-to-buyer-side-deal-finder-positioning) — formal architectural record of the pivot. Three alternatives considered (full pivot, parallel valuation+deals surfaces, reframe wrapper only); decision = full pivot. Documents preserved scope (scanner code stays in-tree as V2 surface), reframed scope (content engine + newsletter content topics), and explicitly preserved infrastructure (Beehiiv, Discord ops bot, autonomy pipeline, Railway deploy chain — all product-direction-agnostic). Risk concentration on eBay's 1-day affiliate term clause flagged.
+- [ROADMAP.md](ROADMAP.md) NOW + NEXT rewritten. NOW retains the 4 manual items John already had (GH Actions secrets, v0 homepage [scope reframed to deal-finder hero], GSC verification, 2-post review) and gains 3 build items (per-card landing page MVP at `/cards/[slug]`, eBay Browse API integration in `lib/affiliate/ebay-api.ts`, Supabase watchlist table schema). NEXT pulls in the 200-card landing page generation pipeline, wishlist alert cron, and content engine reframe to "Best [card] deals this week" framing. LATER gains explicit V2 scanner-relaunch row (#17) + lifetime founding-member tier (#25) + TCGplayer V1.5 plumbing (#26). PARKED's "Programmatic per-card landing pages" row updated to reflect that top-1 + top-200 are now active scope; large-catalog (1K+) stays parked behind Scrydex migration. Every shifted row carries an HTML comment marking the pivot date for future archaeology.
+- [CLAUDE.md](../CLAUDE.md) project description rewritten — tagline shifts from "valuates Pokemon TCG card collections from a photo in <10 seconds" to "Pokemon TCG deal-finder — buyer-side, eBay-aggregated, per-card landing pages, wishlist email alerts." Stack section now lists eBay Browse API as the V1 sole listing source, Pokemon TCG SDK as the catalog source, Resend as the wishlist-alert path. Tiers section reframes: V1 is mostly free (affiliate-primary), $59 lifetime founding-member tier as the active Stripe surface, the original $14.99/mo Pro tier sits in-tree for V2. **Hard-contract sections** (Project Second Brain rules, Local CLI tooling, Vision pipeline rules, Foil HQ bot integration, Newsletter import boundary, Auth gate) all left intact — only project-description prose changed.
+- [IDEAS.md](IDEAS.md) gains a new entry at top: "Pivot to deal-finder product positioning" (category: product, status: promoted). First non-Sunday-review IDEAS promotion since ADR-019 introduced the bank — pivot decisions are inherently mid-cycle, not weekly-triage-shaped.
+
+**Tests.** Docs-only change. No `npm test` / `tsc --noEmit` runs needed; nothing TypeScript touched.
+
+**Key decisions made.** [ADR-020](DECISIONS.md#adr-020--pivot-to-buyer-side-deal-finder-positioning) — the pivot itself. Single ADR rather than splitting into "pivot decision" + "V1 scope decision" because they're inseparable; the unit economics that justify the pivot also dictate the V1 scope (eBay-only, top 200-500 cards, wishlist alerts as the retention loop).
+
+**Follow-ups.**
+
+- **Session 21:** Build V1 surface area — eBay Browse API client in `lib/affiliate/ebay-api.ts`, per-card landing page MVP at `/cards/[slug]` (Charizard Base Set as the concrete proof), Supabase watchlist table migration. These three are mutually-dependent enough that they probably land in one bundled goal.
+- **Session 22 or 23:** Founder-voice work via the `brand-voice:guideline-generation` skill. Strategy doc calls this out — the content engine and newsletter need a defined voice that matches John's natural writing. The 2 auto-generated posts currently in ROADMAP NOW #4 double as the calibration corpus.
+- **R-NEW (capture in next RISKS update):** eBay 1-day affiliate term change concentration risk. Surfaced in ADR-020 but not yet a RISKS.md row. Add on next session.
+- Bot grounds on these docs at process start — the new framing reaches the Foil HQ bot on the next Railway redeploy, which fires automatically on this commit per Session 19's GitHub→Railway integration repair.
+
+**State at session end.** Strategic pivot is propagated cleanly across all five committed second-brain docs (DECISIONS, ROADMAP, CLAUDE.md, IDEAS, SESSION-LOG). The strategy doc is the canonical source; ADRs and ROADMAP point to it; bot grounding picks it up at next deploy. No code changes — the next goal carries that. Autonomy chain (Vercel + Railway + GitHub Actions content cron + Beehiiv + Discord ops bot) remains fully intact and product-direction-agnostic.
+
+---
+
 ## 2026-05-22 — Session 19: Railway GitHub auto-deploy — diagnosed, UI step run, auto-deploy live
 
 **Commits:** this commit only

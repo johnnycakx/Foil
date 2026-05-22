@@ -19,6 +19,19 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-05-23
+category: product
+status: promoted
+---
+## Pivot to deal-finder product positioning
+
+Foil ships V1 as a buyer-side Pokemon TCG deal-finder rather than a seller-side scan-and-valuate tool — per-card landing pages, eBay-aggregated best-listing recommendations, wishlist email alerts, affiliate-primary revenue. The scanner work is preserved in-tree as a V2 surface; the content engine, newsletter, ops bot, and full autonomy stack remain intact and re-frame topic content from market analysis to buyer-intent.
+
+**Context:** Promoted from Cowork strategy conversation 2026-05-23; [ADR-020](DECISIONS.md#adr-020--pivot-to-buyer-side-deal-finder-positioning) formalizes; [STRATEGY-PIVOT-DEAL-FINDER.md](STRATEGY-PIVOT-DEAL-FINDER.md) is canonical.
+
+---
+
+---
 date: 2026-05-22
 category: product
 status: captured

@@ -1,19 +1,23 @@
 @AGENTS.md
-Foil
-Consumer AI app that valuates Pokemon TCG card collections from a photo in <10 seconds. Target user: someone scrolling Facebook Marketplace seeing a Pokemon card listing who wants to know if it's worth buying before another buyer commits.
+Foil — Pokemon TCG Deal Finder
+Foil is a Pokemon TCG deal-finder — buyer-side, eBay-aggregated, per-card landing pages, wishlist email alerts. Tell us a card you want; we find you the best live deal across the major marketplaces, with affiliate-tracked CTAs and an email form to alert you when a watched card hits your target price. Target user: an active Pokemon TCG collector who wants a specific card and doesn't want to scrub eBay for the best listing themselves. Pivot date: 2026-05-23 — see [docs/STRATEGY-PIVOT-DEAL-FINDER.md](docs/STRATEGY-PIVOT-DEAL-FINDER.md) (canonical) and [ADR-020](docs/DECISIONS.md#adr-020--pivot-to-buyer-side-deal-finder-positioning) (formal record). Pre-pivot framing of Foil as a card-valuation scanner is superseded; the scanner code remains in-tree as a V2 surface.
 Stack
 
 Next.js 16 (App Router, TypeScript, Tailwind 4, Turbopack, no src/ directory)
 Supabase auth (Email magic link, no email confirmation in dev) + Postgres + Storage
-Stripe subscription ($14.99/mo Pro tier)
-Anthropic Claude Vision for card identification (Sonnet 4.6 for identify + visual confirm, Opus 4.5 for retry pass)
-PokeTrace API for multi-source pricing (TCGplayer + eBay + Cardmarket + graded)
-Vercel hosting
+Stripe (shipped; primary V1 surface is the $59 lifetime founding-member payment link, deferred — per ADR-020. The original $14.99/mo Pro tier paywall code stays in-tree for V2.)
+eBay Browse API (V1 sole live-listing source; TCGplayer affiliate plumbing planned for V1.5 once approval lands)
+Pokemon TCG SDK (pokemontcg.io) — canonical catalog of every Pokemon card with images + set codes + metadata; pricing reference via PokeTrace and PriceCharting
+Anthropic Claude (Sonnet 4.6 + Opus 4.5) — used by the autonomous content engine; also powers the scanner's vision pipeline preserved in-tree for V2
+Resend — wishlist-alert email send path
+Beehiiv — newsletter platform (best-deals digest, wishlist-personalized sections)
+Vercel hosting; Railway for the Discord ops bot
 
-Tiers
+Tiers (V1 deal-finder)
 
-Free: 1 scan/day, confidence score, shareable image with watermark, server-enforced rate limit
-Pro ($14.99/mo): unlimited scans, full per-card breakdown, 90-day history, no watermark
+Free: per-card landing pages, best-listing recommendations, wishlist email alerts, weekly best-deals newsletter, content blog. Affiliate is primary revenue; product surface is mostly free.
+Lifetime founding-member ($59 one-time, Stripe payment link): marketed via newsletter launch send. Captures highest-intent prospects at fixed upfront price. Deferred until newsletter list crosses ~100 active subscribers.
+Pro power-buyer tier (V2 at earliest, ~$5-10/mo): instant alerts vs hourly batch, multi-marketplace coverage, condition-grade filtering.
 
 Env Vars (all in .env.local)
 POKETRACE_API_KEY=

@@ -1,10 +1,12 @@
 # Foil Roadmap
 
-**Last updated:** 2026-05-20
+**Last updated:** 2026-05-23 (pivoted to deal-finder per [ADR-020](DECISIONS.md#adr-020--pivot-to-buyer-side-deal-finder-positioning) and [STRATEGY-PIVOT-DEAL-FINDER.md](STRATEGY-PIVOT-DEAL-FINDER.md))
 **Owner:** John Craig (solo)
 **Cadence:** Updated at the end of every goal. See [Project Second Brain](../CLAUDE.md#project-second-brain) for the auto-maintenance contract.
 
 The roadmap has four buckets. NOW is what's actively blocking the next ship. NEXT is the queue I'll pull from once NOW clears. LATER is committed direction but not yet scheduled. PARKED is explicitly deferred — re-check at launch + 30d.
+
+**Strategic context (2026-05-23 onward).** Foil ships V1 as a buyer-side Pokemon TCG deal-finder — per-card landing pages, eBay-aggregated best-listing recommendation, wishlist email alerts. Scanner functionality is preserved in-tree but deferred from V1 launch scope (V2 candidate). Content engine + newsletter + autonomy stack remain intact and reframe content topics to buyer-intent shape. Source: [STRATEGY-PIVOT-DEAL-FINDER.md](STRATEGY-PIVOT-DEAL-FINDER.md), formalized in [ADR-020](DECISIONS.md#adr-020--pivot-to-buyer-side-deal-finder-positioning).
 
 ---
 
@@ -13,9 +15,12 @@ The roadmap has four buckets. NOW is what's actively blocking the next ship. NEX
 | # | Item | Why it's NOW | Owner | Status |
 |---|------|--------------|-------|--------|
 | 1 | **GitHub Actions secrets:** set `ANTHROPIC_API_KEY`, `BRAVE_SEARCH_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | The Monday + Thursday autonomous workflow can't run without these. First scheduled fire is Mon 2026-05-25 14:03 UTC. | John (manual GitHub settings) | Pending |
-| 2 | **v0.dev homepage redesign** | Current `app/page.tsx` hero is functional but plain. v0 generates a stronger hero + social-proof block for the launch surface. | John (paste output) | Pending |
-| 3 | **Google Search Console:** add `foiltcg.com` property, TXT-verify, submit `/sitemap.xml` | Indexing latency is 1-4 weeks. The earlier we submit, the earlier the three pillars + blog start appearing in search. | John (Cloudflare DNS + GSC UI) | Pending |
-| 4 | **Decision: keep or kill the 2 auto-generated posts** | `how-to-read-a-japanese-pokemon-card` + `near-mint-vs-lightly-played-…` shipped via the new autonomy pipeline on 2026-05-20. Both passed gates on first attempt. Read them in the live preview and decide: leave up, edit, or delete. | John (manual review) | Pending |
+| 2 | **v0.dev homepage redesign — deal-finder hero** <!-- reframed via pivot 2026-05-23 --> | Current `app/page.tsx` hero is functional but plain AND now framed for the old valuation product. v0 generates a stronger hero + social-proof block for the launch surface, oriented around "Find the best Pokemon TCG deals across eBay, instantly" rather than "Snap a card, get a valuation." | John (paste output) | Pending |
+| 3 | **Google Search Console:** add `foiltcg.com` property, TXT-verify, submit `/sitemap.xml` | Indexing latency is 1-4 weeks. The earlier we submit, the earlier the three pillars + blog + (soon) per-card landing pages start appearing in search. | John (Cloudflare DNS + GSC UI) | Pending |
+| 4 | **Decision: keep or kill the 2 auto-generated posts** | `how-to-read-a-japanese-pokemon-card` + `near-mint-vs-lightly-played-…` shipped via the new autonomy pipeline on 2026-05-20. Both passed gates on first attempt. Read them in the live preview and decide: leave up, edit, or delete. Doubles as the calibration corpus for the founder-voice work coming in Session 22-23. | John (manual review) | Pending |
+| 5 | **Per-card landing page MVP at `/cards/[slug]`** <!-- promoted via pivot 2026-05-23 --> | First concrete proof of the deal-finder direction. Charizard Base Set is the launch card — highest-value/highest-recognition single SKU, exercises every part of the stack (image, eBay listing, condition picker, schema.org Product, wishlist form). One real page beats 200 templated ones for de-risking the design. | Claude Code (next goal) | Pending |
+| 6 | **eBay Browse API integration in `lib/affiliate/ebay-api.ts`** <!-- promoted via pivot 2026-05-23 --> | The data dependency for #5. Need: search by card name + set filter, parse listing nodes (price/condition/seller/shipping), wrap output URL with affiliate Campaign ID. Soft-fail per the lib/ pattern — eBay outage shouldn't 500 a landing page. Open question per strategy doc: actual quota at 500 cards × hourly refresh. Start with 1-card hourly to characterize. | Claude Code (next goal) | Pending |
+| 7 | **Watchlist table schema in Supabase** <!-- promoted via pivot 2026-05-23 --> | The data dependency for the wishlist alerts cron in NEXT. Schema: `watchlists(id, email, card_slug, target_price_cents, created_at, last_notified_at)`. Email-anchored (no auth in V1 per ADR-020). Migration in `supabase/migrations/`. | Claude Code (next goal) | Pending |
 
 ---
 
@@ -23,12 +28,15 @@ The roadmap has four buckets. NOW is what's actively blocking the next ship. NEX
 
 | # | Item | Trigger | Notes |
 |---|------|---------|-------|
-| 5 | **9th quality gate: "Citable claim density"** — 8+ standalone factual statements per post | AI Overview optimization. Google's SGE pulls atomic sentences that read as standalone facts; current gates reward presence of $/dates/Foil-cites but not the citable-sentence shape. | `lib/seo/quality-gates.ts` + positive/negative test in `lib/__tests__/seo-quality-gates.test.ts`. Heuristic: count sentences ≤ 25 words that contain a named entity + a verb + a specific noun. |
-| 6 | **Content engine prompt: AI Overview citation discipline** | Same trigger as gate 9. Prompt needs to bias toward short declarative sentences with named entities. | Edit `SYSTEM_PROMPT` in `lib/seo/content-engine.ts`. Add a "Citable claim" rule. |
-| 7 | **Run `searchfit-seo:ai-visibility` baseline** | Once domain is GSC-verified. Establishes the "before" snapshot we'll re-measure monthly. | Document the report location in `docs/SESSION-LOG.md`. |
-| 8 | **Expand `seo-strategy.md` before week-10 topic exhaustion** | Backlog currently has ~35 cluster topics. At 2/week we run out around 2026-08-19. Need to add another 10-15 cluster topics OR introduce a new pillar. | Either ask the engine to propose new topics from competitive-gap reports, or hand-curate from PokeScope's blog. |
-| 9 | **Scrydex API migration** | Triggered by waitlist hitting ~50 signups OR PokeTrace rate limits biting. Scrydex has per-card endpoints we'd need for programmatic per-card landing pages. | Tracked separately in [DECISIONS.md](DECISIONS.md). |
-| 9.5 | **Slack (or Discord) ops workspace** | [ADR-012](DECISIONS.md#adr-012--newsletter-manual-paste-fallback-via-email-supersedes-adr-011-api-path) added a Gmail channel for newsletter drafts. As we wire more ops pings (Stripe events, scan errors, autonomy run failures, deploy outcomes, AI ask-back questions when the agent gets stuck), the inbox becomes the lowest-density surface for any of them. Slack/Discord gives one threaded channel per concern, faster scanning, and the agent can ping-back via slash command. | Tracking: pick the right tier (Slack free vs Discord). Wire `lib/notifications/slack.ts` mirroring `lib/notifications/resend.ts` shape. First migration: newsletter drafts. Second: workflow-failure pings (currently silent unless John watches the Actions tab). |
+| 8 | **200-card landing page generation pipeline** <!-- promoted via pivot 2026-05-23 --> | Once #5 (one-card MVP) proves the design end-to-end. | Generate `/cards/[slug]` for the top 200 most-searched cards. Build offline (one-shot script that writes MDX or DB rows), regenerate on demand. Catalog source: Pokemon TCG SDK (pokemontcg.io, free) per the strategy doc Q3. Schema.org Product on every page; programmatic internal links to same-set siblings. |
+| 9 | **Wishlist alert cron** <!-- promoted via pivot 2026-05-23 --> | Once #7 (watchlist schema) ships AND #6 (eBay API) is running. | Hourly cron walks `watchlists` rows; for each, query eBay best listing for `card_slug`; if `current_best_price ≤ target_price`, send a Resend email and stamp `last_notified_at`. Reuse `lib/notifications/resend.ts` (ADR-011 plumbing). 24-hr cool-off per row to avoid alert fatigue. |
+| 10 | **Content engine reframe → "Best [card] deals this week"** <!-- promoted via pivot 2026-05-23 --> | Once #5 + #6 land — the content posts will link into the per-card pages. | Update `SYSTEM_PROMPT` in `lib/seo/content-engine.ts` from market-analysis framing to buyer-intent framing. Topic backlog in `docs/seo-strategy.md` reshuffles toward "[card] price under $X" / "Best [set] deals" topics. Mon/Thu cron + gates pipeline stays exactly as-is per ADR-020. |
+| 11 | **9th quality gate: "Citable claim density"** — 8+ standalone factual statements per post | AI Overview optimization. Google's SGE pulls atomic sentences that read as standalone facts; current gates reward presence of $/dates/Foil-cites but not the citable-sentence shape. | `lib/seo/quality-gates.ts` + positive/negative test in `lib/__tests__/seo-quality-gates.test.ts`. Heuristic: count sentences ≤ 25 words that contain a named entity + a verb + a specific noun. |
+| 12 | **Content engine prompt: AI Overview citation discipline** | Same trigger as gate 11. Prompt needs to bias toward short declarative sentences with named entities. | Edit `SYSTEM_PROMPT` in `lib/seo/content-engine.ts`. Add a "Citable claim" rule. Lands alongside #10's reframe. |
+| 13 | **Run `searchfit-seo:ai-visibility` baseline** | Once domain is GSC-verified. Establishes the "before" snapshot we'll re-measure monthly. | Document the report location in `docs/SESSION-LOG.md`. |
+| 14 | **Expand `seo-strategy.md` cluster topics for deal-finder framing** | Backlog currently has ~35 cluster topics from the valuation framing. Need to recompose around buyer-intent queries — "[card] for sale," "cheap [card] for sale," "[set] booster value," etc. | Hand-curate from competitive-gap reports + the [card] for sale long-tail. |
+| 15 | **Scrydex API migration evaluation** <!-- reframed via pivot 2026-05-23 --> | Triggered by Pokemon TCG SDK gaps in #8 OR PokeTrace rate limits. Scrydex has per-card endpoints we'd use for richer per-card landing pages (price history, sold-comps). | Tracked in [DECISIONS.md](DECISIONS.md). Now downstream of the deal-finder direction rather than scanner-driven. |
+| 16 | **Slack (or Discord) ops workspace expansion** | [ADR-014](DECISIONS.md#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary) wired the four Foil HQ channels. Next: wire Stripe events, ebay-affiliate clicks (sampled), wishlist alert send-volume per cron. | Mostly already plumbed via `lib/notifications/discord.ts`; this is "wire one more producer per concern." |
 
 ---
 
@@ -36,13 +44,16 @@ The roadmap has four buckets. NOW is what's actively blocking the next ship. NEX
 
 | # | Item | Why later |
 |---|------|-----------|
-| 10 | **Content syndication: Reddit r/PokemonTCG, Medium, Substack republish** | Owned channels first; syndication adds reach but only matters once we have ≥10 posts worth republishing. |
-| 11 | **A/B test Gemini 3.1 Pro on the visual-confirm pass** | Sonnet 4.6 confirms work well; Gemini 3.1 Pro is ~8× cheaper at similar quality on side-by-side image tasks. Worth measuring once we have ≥1K confirm-pass calls of baseline data. |
-| 12 | **HowTo + Product + Review schema rollout** | Pillars and posts currently emit Article + FAQPage only. Adding HowTo (for guides), Product (for the scanner), Review (for graded comps) widens SERP feature eligibility. |
-| 13 | **Monthly AI Visibility tracking cadence** | Manual snapshot every month-end via searchfit-seo. Compare deltas. |
-| 14 | **`scan_cards` per-card persistence table** | Currently `scans` only stores image metadata; per-card identification results live in transient `scanResults`. Persisting them unlocks accuracy diagnostics, "your scan history", and the `mostScannedCards` data-injection helper. Schema TBD. |
-| 15 | **Manual spot-check OR 24-hr noindex window before autonomous posts are search-visible** | Risk mitigation for [content engine fabrication](RISKS.md#r1). Trigger: first time the gates pass something embarrassing OR sustained organic traffic begins. |
-| 16 | **Vercel Pro Trial decision** | Trial expires 14 days from activation date. If we're on it, log expiry to ROADMAP NOW the day it falls within 7d. |
+| 17 | **V2 — Scanner relaunch as a deal-finder companion surface** <!-- moved via pivot 2026-05-23 --> | Per [ADR-020](DECISIONS.md#adr-020--pivot-to-buyer-side-deal-finder-positioning), the scanner code stays in-tree (`app/upload/`, `lib/vision*.ts`, `lib/poketrace.ts`, detect→identify→confirm pipeline). V2 surface is "snap a card → land directly on its `/cards/[slug]` deal page" — completes the loop between the scanner and the deal-finder product. Triggers V2 once V1 deal-finder is producing affiliate revenue. |
+| 18 | **Content syndication: Reddit r/PokemonTCG, Medium, Substack republish** | Owned channels first; syndication adds reach but only matters once we have ≥10 posts worth republishing. |
+| 19 | **A/B test Gemini 3.1 Pro on the visual-confirm pass** | Sonnet 4.6 confirms work well; Gemini 3.1 Pro is ~8× cheaper at similar quality on side-by-side image tasks. Worth measuring once we have ≥1K confirm-pass calls of baseline data. Re-prioritizes once #17 (scanner V2) approaches launch. |
+| 20 | **HowTo + Product + Review schema rollout** | Pillars and posts currently emit Article + FAQPage only. Adding HowTo (for guides), Product (extra on per-card landing pages — beyond the basic Product markup in #5), Review (for graded comps) widens SERP feature eligibility. |
+| 21 | **Monthly AI Visibility tracking cadence** | Manual snapshot every month-end via searchfit-seo. Compare deltas. |
+| 22 | **`scan_cards` per-card persistence table** <!-- scanner stack, deferred to V2 -->  | Currently `scans` only stores image metadata; per-card identification results live in transient `scanResults`. Persisting unlocks accuracy diagnostics, "your scan history," and the `mostScannedCards` data-injection helper. Schema TBD. Lands with #17 scanner relaunch. |
+| 23 | **Manual spot-check OR 24-hr noindex window before autonomous posts are search-visible** | Risk mitigation for [content engine fabrication](RISKS.md#r1). Trigger: first time the gates pass something embarrassing OR sustained organic traffic begins. |
+| 24 | **Vercel Pro Trial decision** | Trial expires 14 days from activation date. If we're on it, log expiry to ROADMAP NOW the day it falls within 7d. |
+| 25 | **Lifetime founding-member tier ($59 Stripe payment link)** <!-- promoted via pivot 2026-05-23 --> | Per [ADR-020](DECISIONS.md#adr-020--pivot-to-buyer-side-deal-finder-positioning) secondary revenue path. Marketed via newsletter launch send to capture highest-intent prospects at fixed upfront price. Triggers once newsletter list crosses ~100 active subscribers. |
+| 26 | **TCGplayer affiliate plumbing** <!-- promoted via pivot 2026-05-23 --> | V1.5 — eBay-only is V1, TCGplayer is the planned second affiliate source per ADR-020. Plumbed through `lib/affiliate/links.ts` (designed in #6 to accommodate). Triggers once TCGplayer affiliate approval lands. |
 
 ---
 
@@ -55,7 +66,7 @@ The roadmap has four buckets. NOW is what's actively blocking the next ship. NEX
 | Multi-TCG (MTG, Yu-Gi-Oh) | Distracts from Pokémon wedge | $5K MRR |
 | WebSocket price streams | PokeTrace Scale tier feature | Pro waitlist > 100 |
 | Sold-listings endpoint | PokeTrace Scale tier feature | Pro waitlist > 100 |
-| Programmatic per-card landing pages | Blocked on Scrydex per-card API | Scrydex migration (item #9) |
+| Programmatic per-card landing pages (large catalog beyond top-200) | Promoted to NOW (#5) for top-1 / NEXT (#8) for top-200 via [pivot 2026-05-23](DECISIONS.md#adr-020--pivot-to-buyer-side-deal-finder-positioning). Large-catalog (1K+ cards) remains parked behind Scrydex migration. | Scrydex migration (item #15) |
 | Anomaly detection beyond PokeTrace flags | Insufficient scan volume to ground heuristics | 10K scans |
 
 ---

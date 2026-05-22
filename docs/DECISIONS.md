@@ -527,6 +527,41 @@ Hard-contract update in CLAUDE.md: every goal (or the conversation that triggere
 
 ---
 
+## ADR-020 — Pivot to buyer-side deal-finder positioning
+
+**Date:** 2026-05-23
+**Status:** Accepted — supersedes the product framing implicit in pre-2026-05-23 CLAUDE.md and ROADMAP NOW. See [STRATEGY-PIVOT-DEAL-FINDER.md](STRATEGY-PIVOT-DEAL-FINDER.md) as the canonical source-of-truth document for the new direction; this ADR is the formal architectural record.
+
+**Context.** The pre-pivot product framing positioned Foil as a seller-side card valuation tool: "scan a card, get a multi-source valuation in <10 seconds." That framing accumulated 14 sessions of build (Sessions 1–19) — scanner pipeline, PokeTrace integration, autonomous content engine, Beehiiv newsletter, Discord ops bot, Vercel + Railway deploy chain. The strategy review on 2026-05-23 (captured in `docs/STRATEGY-PIVOT-DEAL-FINDER.md`) reframes the unit economics: a valuation user comes 3-4 times to value cards they already own, then leaves; a buyer-side deal-finder user returns weekly with direct purchase intent on every visit, and every click is monetizable through eBay affiliate. The conversion math is the load-bearing reason — search-page affiliate URLs convert at 2-3%; algorithmically-selected best-listing recommendations convert at 8-15%, and wishlist-anchored alerts convert at 15-25%. Three structural advantages compound the shift: the Pokemon TCG deal-aggregator niche is genuinely empty (Eyevo + PokeTrace are valuation tools, PokeCenter is sealed-product drop alerts); the Level-4 TCGplayer Verified Seller credibility wedge holds and arguably strengthens for buyer-side authority; and 25K cards × one indexable per-card landing page = a long-tail SEO surface that compounds defensibly over 6-18 months.
+
+**Alternatives considered.**
+
+1. **Full pivot to deal-finder.** V1 ships as buyer-side, eBay-only, per-card landing pages, wishlist email alerts. Scanner functionality stays in the codebase as "coming soon" but isn't launch-load-bearing.
+2. **Parallel valuation + deals surfaces.** Keep the scanner as primary, add deal-finder pages as a secondary surface. Trades focus for hedging.
+3. **Reframe wrapper only.** Keep the scanner-first product but re-skin the home page and content to buyer-intent language. Cheapest but defeats the unit-economics thesis — the affiliate revenue still has nowhere to land without per-card pages.
+
+**Decision.** Option (1) — full pivot. The strategy doc's argument is that the unit-economics gap between valuation and deal-finder is so large (3-4 lifetime visits vs. weekly recurring visits with purchase intent on every visit) that hedging the framing is materially worse than committing. The scanner work is preserved, not deleted — it ships as a V2 product surface once the deal-finder funnel is producing affiliate revenue. eBay is the sole live-listing source for V1 (the "one source done well beats two sources done halfway" principle); TCGplayer affiliate approval lands as a V1.5 upgrade rather than a launch blocker, plumbed through the existing `lib/affiliate/links.ts` boundary when it arrives.
+
+**Consequences.**
+
+- **Scanner code remains in tree but is no longer V1 surface.** `app/upload/`, `lib/vision*.ts`, `lib/poketrace.ts`, the detect/identify/confirm pipeline, the per-card crop tooling — all preserved. Documented as "V2 — scanner" in the LATER bucket of [ROADMAP.md](ROADMAP.md). The vision pipeline rules in CLAUDE.md ("return null over guess," 3-letter set codes atomic, etc.) remain authoritative — they'll re-load when scanner becomes V2 launch scope.
+- **Content engine reframes, not rebuilds.** The autonomous content pipeline (ADR-005, ADR-006, ADR-007, ADR-011, ADR-012) stays intact end-to-end — gates, retry loop, Beehiiv draft step, Mon/Thu cron, full-autonomy commit-to-main. What changes is the topic backlog in `docs/seo-strategy.md` and the SYSTEM_PROMPT framing in `lib/seo/content-engine.ts` — from "Pokemon TCG market analysis" to "Best [card name] deals this week" auto-regenerating posts that pull current pricing on each Mon/Thu fire. The newsletter (ADR-010, ADR-011, ADR-012) follows the same reframing — market-commentary digests become weekly best-deals digests with wishlist-personalized sections.
+- **The autonomy + ops stack is fully preserved.** Beehiiv subscribe path (ADR-010), Discord ops bot (ADR-013), the four outbound notification channels (ADR-014), Vercel webhook proxy (ADR-016), Beehiiv REST tools in the bot (ADR-017), daily-digest queue (ADR-018), idea bank (ADR-019), Railway GitHub auto-deploy (Session 19 closure) — none of this is renegotiated. They were built to be product-direction-agnostic and continue to serve the deal-finder framing without modification. The Discord ops bot grounds on these docs and will pick up the new framing on its next Railway redeploy (next push to main triggers it).
+- **V1 scope is explicit.** Top 200-500 most-searched cards → one `/cards/[card-slug]` page each → above-the-fold: image, name, set, current best eBay listing (price + condition + seller + shipping + affiliate-wrapped CTA) + wishlist-alert email form. Below: condition breakdown, related cards, programmatic internal links, schema.org Product markup. V1 *defers*: TCGplayer aggregation (Scrydex dependency; affiliate-only fallback works), Mercari/COMC/Cardmarket, price history charts, Pro subscription tier, login-gated wishlist dashboard, cross-listing condition matching.
+- **Revenue model shifts to affiliate-primary.** eBay affiliate commissions on Foil-attributed clicks become the primary monetization. Secondary paths: lifetime founding-member tier ($59 Stripe payment link, marketed via newsletter launch send), newsletter sponsorships (deferred until ~1K subscribers), premium tier for power buyers (V2). The pre-pivot `$14.99/mo Pro tier` referenced in CLAUDE.md no longer maps to V1 — Stripe wiring stays (it's already shipped) but the active product surface for it shifts to the founding-member lifetime tier.
+- **Risk concentration: eBay 1-day affiliate term clause.** eBay can drop commission rate or change attribution with one day's notice. Mitigation is to diversify affiliate sources as soon as V1 stabilizes — TCGplayer when approved, then Mercari, then COMC. During the eBay-only launch window this is a real concentration risk; flagged in [RISKS.md](RISKS.md) as a follow-up to capture.
+- **Founder-voice work becomes near-term.** The content engine and newsletter need a defined voice that matches the founder's natural writing style — captured for a near-term goal (likely Session 22 or 23) via the `brand-voice:guideline-generation` skill. Two-paragraph implication: the auto-generated post review currently sitting in ROADMAP NOW item #4 carries extra weight now, because those posts are the calibration corpus for the voice work that follows.
+
+**Cross-refs.**
+
+- [STRATEGY-PIVOT-DEAL-FINDER.md](STRATEGY-PIVOT-DEAL-FINDER.md) — canonical strategy doc; this ADR is the formal record but defers all reasoning to that file.
+- [ADR-005](#adr-005--autonomous-content-engine--no-human-review-step) through [ADR-007](#adr-007--gates-as-the-safety-net) — content engine architecture, preserved.
+- [ADR-010](#adr-010--beehiiv-as-the-single-newsletter-import-boundary) through [ADR-012](#adr-012--newsletter-manual-paste-fallback-via-email-supersedes-adr-011-api-path) — newsletter stack, reframes content but pipeline preserved.
+- [ADR-013](#adr-013--foil-hq-discord-bot-persistent-memory-ops-chat-with-curated-tools) — Discord ops bot, will re-ground on these docs at next Railway deploy.
+- [ADR-019](#adr-019--idea-bank-as-the-6th-second-brain-doc) — the IDEAS row promoting this pivot is the first non-Sunday-review promotion since the bank was introduced.
+
+---
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).
