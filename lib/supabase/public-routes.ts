@@ -33,6 +33,16 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // Blog index + every post under it
   { kind: "prefix", path: "/blog" },
 
+  // V1 deal-finder per-card landing pages (ADR-020 + ADR-021). Buyer-side,
+  // anonymous-friendly — no auth gate before someone can see a deal or join a
+  // watchlist. Every /cards/<slug> URL must stay crawlable for SEO.
+  { kind: "prefix", path: "/cards" },
+
+  // Watchlist email-capture endpoint posted to from /cards/<slug> pages.
+  // Same anonymous-friendly contract as /api/subscribe; Zod gates the body
+  // and the service-role client gates the insert.
+  { kind: "exact", path: "/api/watchlist" },
+
   // Auth surface — login form (exact) + magic-link callback tree. /auth/*
   // MUST be public or the magic-link redirect loops back through the auth
   // gate and consumes the OTP token before /auth/callback can exchange it

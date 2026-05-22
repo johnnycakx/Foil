@@ -8,6 +8,51 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-23 — Session 21: First V1 surface — EPN + per-card landing page MVP + watchlist
+
+**Commits:** this commit only
+
+**Summary.** First concrete proof of the deal-finder direction. `/cards/charizard-base-set-4` ships live, backed by EPN's Products endpoint for the "best current listing" block and a Supabase `watchlists` table for email-anchored price-drop alerts. eBay Browse API was denied; EPN is V1's sole live-listing source per [ADR-021](DECISIONS.md#adr-021--epn-as-v1-live-listing-source-browse-api-deferred). The 2025 eBay License Agreement update is encoded directly into the architecture — `cache: "no-store"` on every EPN fetch, `force-dynamic` on the page, no AI-generated copy that pre-bakes listing claims, affiliate URLs always carry `EBAY_CAMPAIGN_ID` + `customid=foil-card-page`. Closes [ROADMAP NOW #5, #6, #7](ROADMAP.md#now--this-week--2026-05-27).
+
+**What landed.**
+
+- [`lib/affiliate/epn.ts`](../lib/affiliate/epn.ts) — single import boundary for EPN. Exports `searchProducts({query, limit?})` (GETs `api.partner.ebay.com/v1/{AccountSID}/products` with Bearer auth, soft-fails on every error path, `cache: "no-store"`), `buildAffiliateUrl(itemUrl, customId)` (pure — wraps an eBay URL with `mkevt`/`mkcid`/`mkrid`/`toolid`/`campid`/`customid`; soft-fails to unwrapped if `EBAY_CAMPAIGN_ID` missing), `affiliateSearchUrl(query, customId)` (fallback for when there's no best-listing data), and `getBestListing({cardName, setName?, customId?})` (picks lowest price, returns shaped `{title, image, price, currency, affiliateUrl}` or `null`).
+- [`lib/__tests__/epn.test.ts`](../lib/__tests__/epn.test.ts) — 12 tests pin the contract: missing creds / empty query / 401 / 429 / fetch-throw all soft-fail; Bearer auth + AccountSID in path + `cache: "no-store"` are baked in; affiliate URL contains every required param; `getBestListing` picks the lowest hit and never throws into the Server Component render.
+- [`supabase/migrations/20260522223417_watchlists.sql`](../supabase/migrations/20260522223417_watchlists.sql) — `watchlists` table (`id, email, card_slug, target_price_cents, created_at, last_notified_at`), composite index `(card_slug, target_price_cents)` for the cron's scan shape, RLS `service_role` only. Applied to remote via `supabase db push` after linking the project ref.
+- [`app/api/watchlist/route.ts`](../app/api/watchlist/route.ts) — POST handler, Zod-validates `{email, card_slug, target_price_cents}`, inserts via the service-role client. Error responses never leak Supabase internals — surface is `{ok:true}` or `{ok:false, error:<short_tag>}`.
+- [`app/cards/[slug]/page.tsx`](../app/cards/[slug]/page.tsx) — Server Component, hardcoded for `charizard-base-set-4` (200-card programmatic pipeline = Session 22). Renders card image (`https://images.pokemontcg.io/base1/4.png`), "Best current listing" block from `getBestListing`, watchlist form (inline `<script>` POSTs JSON to `/api/watchlist` while keeping the page a Server Component), editorial copy below the fold that makes NO listing-specific claims (R-008 compliance), schema.org `Product` markup with `offers[]` populated only when a live best-listing exists. Soft-fail design: EPN unavailable → fallback "Browse on eBay" CTA via `affiliateSearchUrl`; page still 200.
+- [`lib/supabase/public-routes.ts`](../lib/supabase/public-routes.ts) + [`lib/__tests__/proxy.test.ts`](../lib/__tests__/proxy.test.ts) — added `/cards` (prefix) and `/api/watchlist` (exact) to PUBLIC_ROUTES; updated contract test to pin both (and to pin that `/cardsomething` doesn't bleed through the prefix).
+- [`lib/supabase/types.ts`](../lib/supabase/types.ts) — added `watchlists` table types so the service-role insert is typed end-to-end.
+- [ADR-021](DECISIONS.md#adr-021--epn-as-v1-live-listing-source-browse-api-deferred) — V1 EPN-only decision, four alternatives considered, compliance posture documented as encoded-in-code (not wiki).
+- [R-007](RISKS.md#r-007--ebay-affiliate-term-change-concentration) — eBay 1-day term-change concentration risk (Medium, `accepted` for V1) — promoted from ADR-020's "follow-up" line.
+- [R-008](RISKS.md#r-008--ebay-2025-license-agreement-ai-output--no-cache-compliance) — 2025 License Agreement compliance risk (Medium, `mitigating` — the architecture IS the mitigation).
+- [`docs/ROADMAP.md`](ROADMAP.md) — includes John's Cowork edit promoting NOW #8 (eBay developer-account appeal); committed in the same goal.
+
+**Env vars wired.** `EBAY_CAMPAIGN_ID = 5339154326`, `EBAY_EPN_ACCOUNT_SID`, `EBAY_EPN_AUTH_TOKEN` — mirrored to: `.env.local`, Vercel production, Vercel development, GitHub Actions secrets. Vercel preview env failed silently via the CLI (the env CLI exits with a "next[] commands" hint on the preview scope — to investigate next session); preview deploys aren't on the critical path for V1 since production is the live site.
+
+**Tests.** Root suite: 243/243 pass (was 230/235 in Session 16; +12 EPN tests, +4 proxy tests, vision 5 previously-flaky 529s now all pass). Bot suite untouched. Root typecheck: clean.
+
+**Compliance baked into the architecture.**
+- `cache: "no-store"` on every `searchProducts` call. Function signature has no cache parameter — there's no path to accidentally cache.
+- `export const dynamic = "force-dynamic"` on `app/cards/[slug]/page.tsx`. Every page load re-fetches.
+- No caching layer between EPN and the page. There's no `cached_listings` table and there won't be one (R-008).
+- Editorial copy below the fold is category-level (the card itself), never listing-level. The live block self-describes.
+- `lib/affiliate/epn.ts` is the single import boundary for EPN. Audit grep: `api.partner.ebay.com` / `mkevt=` / `campid=` outside that module + `.env.local` + `docs/ENV-VARS.md` is the regression.
+
+**Key decisions made.**
+- [ADR-021](DECISIONS.md#adr-021--epn-as-v1-live-listing-source-browse-api-deferred) — EPN as V1 sole live-listing source.
+- No new ADR for the watchlist data shape; the schema is documented inline in the migration + the [ADR-020](DECISIONS.md#adr-020--pivot-to-buyer-side-deal-finder-positioning) "V1 explicitly defers" list already covers the email-anchored (no-auth) posture.
+
+**Follow-ups.**
+- Live verification (criterion 10) — see "State at session end" below.
+- The wishlist alert cron lands in Session 23 ([ROADMAP NEXT #9](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10)) — reads `watchlists` hourly, queries EPN per `card_slug`, sends Resend email when `current_best_price ≤ target_price_cents`, 24-hr cool-off per row via `last_notified_at`.
+- Vercel preview env-var CLI failure investigation — silent error with "next[] commands" hint; production and development worked clean, preview did not. Probably a CLI flag mismatch.
+- The EPN Products endpoint shape is my best inference of the API (auth model + AccountSID-in-path + JSON response). If the live endpoint shape differs, `getBestListing()` will soft-fail to `null` and the page renders the fallback CTA — graceful degradation by design. First live test reveals the truth.
+
+**State at session end.** Verification + state notes below. The architecture is done; the page rendering correctly depends on EPN endpoint shape matching the wrapper.
+
+---
+
 ## 2026-05-23 — Session 20: Strategy pivot to deal-finder propagated through second-brain docs
 
 **Commits:** this commit only

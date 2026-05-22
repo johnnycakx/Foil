@@ -56,6 +56,16 @@ test("newsletter subscribe endpoint is public — unauth visitors can opt in", (
   assert.equal(isPublicRoute("/api/subscribe"), true);
 });
 
+test("per-card landing pages /cards/<slug> are public — buyer-side anonymous-friendly (ADR-020 + ADR-021)", () => {
+  assert.equal(isPublicRoute("/cards"), true);
+  assert.equal(isPublicRoute("/cards/charizard-base-set-4"), true);
+  assert.equal(isPublicRoute("/cards/some-future-slug"), true);
+});
+
+test("watchlist email-capture endpoint is public — same contract as /api/subscribe", () => {
+  assert.equal(isPublicRoute("/api/watchlist"), true);
+});
+
 test("metadata routes are public so crawlers can fetch them", () => {
   assert.equal(isPublicRoute("/robots.txt"), true);
   assert.equal(isPublicRoute("/sitemap.xml"), true);
@@ -92,6 +102,10 @@ test("prefix entries don't accidentally match adjacent path stems", () => {
   assert.equal(isPublicRoute("/blog-archive"), false);
   // Likewise "/auth/" shouldn't match "/authentication" if we ever add one.
   assert.equal(isPublicRoute("/authentication"), false);
+  // "/cards" prefix shouldn't bleed into a future "/api/cards" (which the
+  // user-data test pins as gated) or "/card-condition-guide" (the existing
+  // pillar, registered as exact).
+  assert.equal(isPublicRoute("/cardsomething"), false);
 });
 
 test("PUBLIC_ROUTES is exported and non-empty so the doc has a single source of truth", () => {

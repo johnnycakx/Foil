@@ -197,6 +197,33 @@ export type Database = {
         }>;
         Relationships: [];
       };
+      watchlists: {
+        Row: {
+          id: string;
+          email: string;
+          card_slug: string;
+          target_price_cents: number;
+          created_at: string;
+          last_notified_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          card_slug: string;
+          target_price_cents: number;
+          created_at?: string;
+          last_notified_at?: string | null;
+        };
+        Update: Partial<{
+          id: string;
+          email: string;
+          card_slug: string;
+          target_price_cents: number;
+          created_at: string;
+          last_notified_at: string | null;
+        }>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

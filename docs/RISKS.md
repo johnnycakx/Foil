@@ -87,6 +87,49 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 ---
 
+## R-006 — placeholder (skipped to align with ADR-006-style numbering — kept this gap noted because the next number in sequence is R-007 for traceability)
+
+---
+
+## R-007 — eBay affiliate term change concentration
+
+**Severity:** Medium
+**Status:** `accepted` for V1 launch (see [ADR-020](DECISIONS.md#adr-020--pivot-to-buyer-side-deal-finder-positioning) + [ADR-021](DECISIONS.md#adr-021--epn-as-v1-live-listing-source-browse-api-deferred))
+
+**The risk.** eBay's Partner Network terms include a 1-day notice clause: eBay can drop the commission rate or change the attribution window with a single day's warning, and Foil has effectively no recourse. V1's "eBay-only" posture (ADR-021) means 100% of Foil's affiliate revenue concentration sits in this single vendor. A rate cut from 50% of eBay's take to e.g. 25% would halve revenue overnight; an attribution-window change from 24h to 1h could shrink conversion-tracked clicks by 60%+.
+
+**Why accepted.** The unit-economics gap between eBay-aggregated deal-finder (8-15% click-through conversion at V1) and the alternative of waiting for TCGplayer affiliate approval (timeline unknowable) is large enough that the concentration risk is the right trade for now. The mitigation is to diversify affiliate sources *fast*, not to hedge by waiting for two-source coverage at launch.
+
+**Trigger to mitigate.** First whichever-comes-first: (a) eBay communicates any term change (rate or attribution window), (b) Foil's monthly affiliate revenue crosses $500 (concentration risk becomes financially material at that point), (c) TCGplayer affiliate approval lands (start V1.5 plumbing immediately to reduce eBay share).
+
+**Mitigation playbook.**
+1. TCGplayer affiliate plumbing via `lib/affiliate/tcgplayer.ts` mirroring `lib/affiliate/epn.ts` ([ROADMAP LATER #26](ROADMAP.md#later--1-3-months-2026-06-11--2026-08-20)). A thin `lib/affiliate/index.ts` selects best across providers — page code doesn't change.
+2. Mercari affiliate (post-TCGplayer) — different buyer demographic, useful for newer card releases where eBay's vintage skew matters less.
+3. COMC affiliate (post-Mercari) — graded slabs surface, completes the major-marketplace coverage.
+4. Owned-audience hedge: newsletter and wishlist email list (`watchlists` table per [ADR-021](DECISIONS.md#adr-021--epn-as-v1-live-listing-source-browse-api-deferred)) are the deepest moat against any vendor change — direct subscriber relationship doesn't depend on affiliate terms staying favorable.
+
+---
+
+## R-008 — eBay 2025 License Agreement: AI-output + no-cache compliance
+
+**Severity:** Medium
+**Status:** `mitigating` — compliance posture encoded directly into `lib/affiliate/epn.ts` and `app/cards/[slug]/page.tsx` per [ADR-021](DECISIONS.md#adr-021--epn-as-v1-live-listing-source-browse-api-deferred)
+
+**The risk.** eBay's 2025 License Agreement update added stricter language around (a) storing or caching listing data ("re-distribution vector" treatment — any persistence of raw listing payloads is a violation), and (b) AI-generated content that pre-bakes claims about specific listings, prices, or sellers. Both surfaces are easy to violate by accident — a "let's cache the listing for 5 minutes to save API calls" optimization or a "have Claude write a daily best-deals blurb that quotes the lowest price" content pipeline both trip the agreement.
+
+**Why mitigating.** Compliance is encoded into the architecture, not just the wiki:
+
+1. `lib/affiliate/epn.ts::searchProducts` passes `cache: "no-store"` on every EPN fetch; the function signature has no caching parameter, and the codebase has no `cached_listings` table.
+2. `app/cards/[slug]/page.tsx` is `export const dynamic = "force-dynamic"` — every page load re-fetches from EPN at render time.
+3. The editorial paragraphs below the fold on per-card pages describe the *card* (set, print run, history), not the live listing. The live block self-describes from the EPN response on every load.
+4. The autonomous content engine's reframed "Best [card] deals this week" template ([ROADMAP NEXT #10](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10)) generates copy at *category* level ("Charizard prices have moved up X% this quarter"), not listing-specific claims, and pulls fresh listing data at render time of the resulting blog post.
+
+**Trigger to escalate.** First whichever: (a) any code review or audit finds an `await ... ebay ...` call without `cache: "no-store"`, (b) any AI-generated copy in `app/blog/posts/` references specific eBay listing IDs / prices / sellers verbatim, (c) eBay sends Foil a notice about the affiliate account citing the License Agreement.
+
+**Mitigation when triggered.** The `lib/affiliate/epn.ts` single-import-boundary makes audit grep trivial: any occurrence of `api.partner.ebay.com` / `mkevt=` / `campid=` outside that module + `.env.local` + `docs/ENV-VARS.md` is the regression. Fix is to route the offending call through the lib. If an AI-generated post is the violator, the post is removed from the live site immediately (the autonomy pipeline supports the kill-switch via `AUTO_PUBLISH_WEEKLY_POSTS=false` to revert to `_pending/` drafts; per-post manual delete via `git rm app/blog/posts/<slug>.mdx`).
+
+---
+
 ## How to log a new risk
 
 1. Next available ID (`R-NNN`, monotonically increasing).

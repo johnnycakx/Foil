@@ -562,6 +562,51 @@ Hard-contract update in CLAUDE.md: every goal (or the conversation that triggere
 
 ---
 
+## ADR-021 — EPN as V1 live-listing source (Browse API deferred)
+
+**Date:** 2026-05-23
+**Status:** Accepted — first V1 surface (Session 21). Browse API deferred pending appeal in [ROADMAP NOW #8](ROADMAP.md#now--this-week--2026-05-27).
+
+**Context.** [ADR-020](#adr-020--pivot-to-buyer-side-deal-finder-positioning) committed Foil to a buyer-side deal-finder framing with V1 shipping per-card landing pages backed by live eBay listing data. The natural API choice was eBay's **Browse API** — it has rich listing fields (seller feedback %, item condition NM/LP/MP, shipping cost breakdown, return policy, ships-from) and a clean OAuth shape. Foil's developer-account application for Browse API access was auto-rejected on the first submission, and eBay's appeal site was down at the time of [the resubmission attempt captured 2026-05-23](ROADMAP.md#now--this-week--2026-05-27). The V1 launch can't wait on the appeal turnaround.
+
+The alternative is **eBay Partner Network (EPN)** — Foil's affiliate-program account, already approved, with its own API surface (Products search + Tracking Links). EPN's data is shallower than Browse — typically title + image + price + URL, without the seller-rating / condition-grade fields — but it's *enough* to render a credible "best current listing" block on a per-card page when paired with text-pattern parsing of the listing title.
+
+A third option was considered and rejected: scrape eBay search-result HTML directly. eBay's 2025 License Agreement update explicitly treats automated scraping as a violation; even if technically feasible, it's an existential risk to the affiliate account.
+
+**Alternatives considered.**
+
+1. **Wait on Browse API appeal.** Cleanest data, but ships V1 weeks late. The unit-economics case in ADR-020 doesn't justify the delay; "one source done well beats two sources done halfway" applies to time-to-first-revenue too.
+2. **EPN Products API + manual affiliate-URL builder.** Shallower data than Browse but unblocks V1 today.
+3. **Scrape eBay search HTML.** Rejected for License Agreement risk.
+4. **PokeTrace `byCondition` listings.** Already wired in the codebase but those are reference *prices*, not live *listings* — no item URL to wrap with affiliate, no real-time inventory shape.
+
+**Decision.** Option 2 — EPN Products + manual affiliate URL builder for V1. The Browse API moves into ROADMAP NEXT once the appeal lands; the existing `lib/affiliate/epn.ts` import boundary will accommodate a second provider through the same `getBestListing` contract.
+
+**Compliance posture (encoded directly into the architecture).** The 2025 eBay License Agreement update places hard constraints on how Foil can hold and present listing data. These are encoded into `lib/affiliate/epn.ts` and `app/cards/[slug]/page.tsx`, not just documented in a wiki:
+
+- **Server-side fetch only, render-time, `cache: "no-store"`.** `searchProducts()` passes `cache: "no-store"` on every fetch; the per-card page is `export const dynamic = "force-dynamic"`. We never persist a raw listing payload — there's no `cached_listings` table and there won't be one.
+- **No AI-generated copy that pre-bakes claims about specific listings or prices.** The editorial paragraphs below the fold on `/cards/[slug]` describe the card itself (set, print run, why it matters), not the live listing. The live block self-describes from the EPN response on every load.
+- **Affiliate URLs always include `EBAY_CAMPAIGN_ID` + `customid=foil-card-page`.** `buildAffiliateUrl()` enforces this; if `EBAY_CAMPAIGN_ID` is missing it returns the URL UNWRAPPED rather than break navigation (soft-fail preserves UX at the cost of attribution — the failure mode is "we miss a commission," not "user sees a broken link").
+- **Single import boundary.** Only `lib/affiliate/epn.ts` constructs raw affiliate URLs (`mkevt`/`campid`/`customid` param assembly) or hits `api.partner.ebay.com`. Audit grep: if those strings appear elsewhere in the repo, that's the regression.
+
+**Consequences.**
+
+- **V1 ships behind a thinner data surface.** Until the Browse API appeal lands, the "best listing" picker can only sort by price; no seller-feedback floor (≥98%) and no condition-grade filter (NM/LP/MP). Mitigation: the editorial-content copy on `/cards/[slug]` is explicit about pricing-only sort, and the daily best-deals newsletter copy adapts the same caveat. Once Browse API lands, the same `getBestListing()` contract enriches with the additional fields.
+- **Soft-fail is structural.** If EPN is down or misconfigured, `getBestListing()` returns `null`, and the per-card page renders a fallback "Browse {Card} listings on eBay" CTA via `affiliateSearchUrl()`. The page is robust to EPN downtime by construction; we never 500 a public landing page.
+- **R-008 (License Agreement compliance) added to RISKS.** Tracks the no-cache + no-AI-claims + affiliate-URL contracts as a Medium risk so a future refactor can't silently violate them.
+- **R-007 (eBay affiliate term concentration) added to RISKS.** Tracks the surface ADR-020 flagged: eBay can change commission rate / attribution with one day's notice. V1's eBay-only posture is the concentration; mitigations are TCGplayer affiliate (V1.5) and other affiliate sources downstream.
+- **Single-source boundary keeps the diversification path cheap.** When TCGplayer affiliate approval lands, `lib/affiliate/tcgplayer.ts` mirrors the EPN shape and a thin `lib/affiliate/index.ts` selects the best across both. The page code doesn't change.
+
+**Cross-refs.**
+
+- [STRATEGY-PIVOT-DEAL-FINDER.md](STRATEGY-PIVOT-DEAL-FINDER.md) — canonical strategy doc; this ADR is the V1 implementation record.
+- [ADR-020](#adr-020--pivot-to-buyer-side-deal-finder-positioning) — the parent pivot decision; ADR-021 is the first concrete implementation of it.
+- [R-007](RISKS.md#r-007--ebay-affiliate-term-change-concentration) + [R-008](RISKS.md#r-008--license-agreement-aiowindowed--no-cache-of-listing-data) — both added in the same commit; ADR-021 is the architectural surface, RISKS rows are the monitoring posture.
+- [ROADMAP NOW #5, #6, #7](ROADMAP.md#now--this-week--2026-05-27) — the three Session-20-promoted V1 build items this ADR closes.
+- [ROADMAP NOW #8](ROADMAP.md#now--this-week--2026-05-27) — the Browse API appeal, the trigger for revisiting EPN-vs-Browse choice.
+
+---
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).
