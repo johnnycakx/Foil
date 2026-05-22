@@ -257,12 +257,15 @@ async function getSessionLogHandler(input: Record<string, unknown>): Promise<str
 // Registry
 // ---------------------------------------------------------------------------
 
+import { BEEHIIV_TOOL_DEFINITIONS, BEEHIIV_TOOL_HANDLERS } from "./beehiiv.ts";
+
 export const TOOL_DEFINITIONS: ToolDefinition[] = [
   readFileDef,
   searchCodebaseDef,
   getRecentSubscribersDef,
   getPublicationStatsDef,
   getSessionLogDef,
+  ...BEEHIIV_TOOL_DEFINITIONS,
 ];
 
 export const TOOL_HANDLERS: Record<string, ToolHandler> = {
@@ -271,6 +274,7 @@ export const TOOL_HANDLERS: Record<string, ToolHandler> = {
   get_recent_subscribers: getRecentSubscribersHandler,
   get_publication_stats: getPublicationStatsHandler,
   get_session_log: getSessionLogHandler,
+  ...BEEHIIV_TOOL_HANDLERS,
 };
 
 export async function executeTool(name: string, input: Record<string, unknown>): Promise<string> {

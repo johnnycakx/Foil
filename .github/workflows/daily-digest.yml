@@ -1,0 +1,36 @@
+# Daily-digest flush — runs once a day at 09:00 UTC (~02:00 PT / 05:00 ET).
+# Reads any undigested rows from the digest_events Supabase table, posts one
+# summary embed per channel target via lib/notifications/digest.ts.
+#
+# Activated only when DIGEST_MODE=daily is set on Vercel (the producer side
+# decides to queue; the consumer side here just batches whatever's queued).
+# If the queue is empty, this is a no-op — see scripts/flush-digest.ts.
+
+name: daily-digest
+on:
+  schedule:
+    - cron: "0 9 * * *" # 09:00 UTC daily
+  workflow_dispatch: {}
+
+jobs:
+  flush:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Flush digest
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DISCORD_WEBHOOK_SUBSCRIBERS: ${{ secrets.DISCORD_WEBHOOK_SUBSCRIBERS }}
+          DISCORD_WEBHOOK_CONTENT_ENGINE: ${{ secrets.DISCORD_WEBHOOK_CONTENT_ENGINE }}
+          DISCORD_WEBHOOK_ERRORS: ${{ secrets.DISCORD_WEBHOOK_ERRORS }}
+          DISCORD_WEBHOOK_DEPLOYS: ${{ secrets.DISCORD_WEBHOOK_DEPLOYS }}
+        run: node --experimental-strip-types scripts/flush-digest.ts

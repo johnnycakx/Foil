@@ -8,6 +8,35 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-22 — Session 13: Vercel webhook proxy + Beehiiv REST tools + daily-digest queue
+
+**Commits:** this commit only
+
+**Summary.** Goal C landed three pieces:
+
+**1. Vercel deploys webhook proxy ([ADR-016](DECISIONS.md#adr-016--vercel-deploys--discord-via-code-controlled-webhook-proxy-not-marketplace-install)).** New route `app/api/webhooks/vercel-deploys/route.ts` validates `X-Vercel-Signature` (HMAC-SHA1 with `timingSafeEqual`), filters to succeeded/error/canceled (skips the noisy created/ready events that fire on every push), maps the payload → Discord embed with green/red/yellow color, commit SHA, branch, first-line of commit message, and posts via `lib/notifications/discord.ts`. Always returns 200 to Vercel so it doesn't retry uselessly into a Discord outage. Registered via `vercel webhooks create`; secret `iZckbY7kLMtuABN7UGc2xPKk` mirrored to all 3 surfaces. Closes the "manual Marketplace install" footnote from ADR-014.
+
+**2. Beehiiv REST tools in the bot ([ADR-017](DECISIONS.md#adr-017--beehiiv-tools-via-rest-not-oauth-based-mcp)).** New file `bot/src/tools/beehiiv.ts` with three tool defs: `beehiiv_list_subscriptions(status?, limit?)`, `beehiiv_get_publication_stats()`, `beehiiv_list_posts(status?, limit?)`. All use the existing `BEEHIIV_API_KEY` (which the Railway bot already has — Session 11). Email masking is centralized in the tool handler so the bot never sees raw subscriber addresses. The legacy `get_recent_subscribers` / `get_publication_stats` tools stay registered as aliases so existing system-prompt language keeps working. The system prompt now lists the new tools first.
+
+**3. Daily-digest queue ([ADR-018](DECISIONS.md#adr-018--daily-digest-queue-opt-in-noise-control-via-digest_mode)).** Supabase table `digest_events` + `lib/notifications/digest.ts` (`queueEvent` + `flushDigest`) + cron at 09:00 UTC daily (`.github/workflows/daily-digest.yml`) + `DIGEST_MODE` env var routing on the subscribe action. Default `realtime` keeps current behavior; `daily` queues to Postgres and the cron posts ONE summary embed per channel grouped by event_type. Failed Discord posts leave rows undigested for retry next run.
+
+**Tests added.** 9 for the Vercel webhook (signature happy/forge/mutate/length/non-hex cases + embed shape per event type + truncation), 8 for the digest queue (queueEvent shape, flush with grouped fields, no-mark-when-post-fails, embed shape, pluralization), 9 for the Beehiiv REST tools (endpoint URL + Bearer header + email masking + status default + limit cap + missing-creds). 26 new tests; full root + bot suites green.
+
+**Migration pending.** Supabase MCP is read-only in this session, so `supabase/migrations/20260522020000_digest_events.sql` needs manual paste in the Supabase Dashboard SQL Editor. Without it the digest queue path no-ops at runtime — both modes (realtime + daily) handle a missing table gracefully; only the daily mode loses functionality until the table exists.
+
+**End-to-end verification — recorded below after the live smoke.**
+
+**Key decisions made.**
+- [ADR-016](DECISIONS.md#adr-016--vercel-deploys--discord-via-code-controlled-webhook-proxy-not-marketplace-install) — proxy over Marketplace.
+- [ADR-017](DECISIONS.md#adr-017--beehiiv-tools-via-rest-not-oauth-based-mcp) — REST over OAuth-based MCP for the headless bot.
+- [ADR-018](DECISIONS.md#adr-018--daily-digest-queue-opt-in-noise-control-via-digest_mode) — daily-digest queue, opt-in via DIGEST_MODE.
+
+**Follow-ups.** Subscriber-count threshold alerts (50/100/500). Cross-channel slash commands (`/sub-count`, `/posts`). Vercel/GitHub MCPs in the bot when a headless-OAuth strategy exists.
+
+**State at session end.** All tests + tsc green. Vercel webhook live + tested via HMAC unit tests; live smoke pending a real deploy. Digest migration needs the paste step.
+
+---
+
 ## 2026-05-22 — Session 12: Real OpenAI embeddings + outbound Discord notifications
 
 **Commits:** this commit only

@@ -125,9 +125,25 @@ Bot env vars live in `bot/.env.local` (gitignored) and are mirrored to Railway v
 
 Outbound Discord notifications
 
-Every outbound Discord ping routes through `lib/notifications/discord.ts` (see [ADR-014](docs/DECISIONS.md)). No other module imports a Discord webhook URL or calls `fetch("https://discord.com/api/webhooks/...")`. The GH Actions workflow's `if: failure()` step is the one exception (raw curl + jq, because the Node script is exactly what failed and we can't depend on its libraries). Channel→event mapping: `#deploys` (Vercel native integration), `#content-engine` (blog + newsletter publish), `#subscribers` (Beehiiv subscribe success, masked email), `#errors` (any soft-fail path + workflow failures). Soft-fail at every layer — a Discord outage cannot block a publish or a subscribe.
+All four channels (`#deploys`, `#content-engine`, `#subscribers`, `#errors`) are wired in code now — no more Marketplace integrations. Every outbound Discord ping routes through `lib/notifications/discord.ts` (see [ADR-014](docs/DECISIONS.md)). No other module imports a Discord webhook URL or calls `fetch("https://discord.com/api/webhooks/...")`. The GH Actions workflow's `if: failure()` step is the one exception (raw curl + jq, because the Node script is exactly what failed and we can't depend on its libraries). Channel→event mapping: `#deploys` (Vercel native integration), `#content-engine` (blog + newsletter publish), `#subscribers` (Beehiiv subscribe success, masked email), `#errors` (any soft-fail path + workflow failures). Soft-fail at every layer — a Discord outage cannot block a publish or a subscribe.
 
 Email masking on `#subscribers` events lives in `lib/notifications/discord.ts::maskEmail` only. `john.craig@gmail.com` → `j***@gmail.com`.
+
+`#deploys` is fed by `app/api/webhooks/vercel-deploys/route.ts` ([ADR-016](docs/DECISIONS.md)) — Vercel POSTs deployment events, we HMAC-verify with `VERCEL_WEBHOOK_SECRET`, filter to succeeded/error/canceled, and POST a shaped embed via the same `lib/notifications/discord.ts` lib.
+
+`DIGEST_MODE` env var ([ADR-018](docs/DECISIONS.md)) toggles the producer side between `realtime` (default; immediate Discord post) and `daily` (queue to `digest_events`, flushed by `.github/workflows/daily-digest.yml` at 09:00 UTC). Wired for subscriber events today; extends to other event sources when volume justifies it.
+
+Bot tools
+
+The bot ([ADR-013](docs/DECISIONS.md)) ships with these tools, registered in `bot/src/tools/index.ts`. New `beehiiv_*` tools land in `bot/src/tools/beehiiv.ts` ([ADR-017](docs/DECISIONS.md) — REST over MCP because OAuth is ill-suited for a headless bot):
+
+- **Repo / docs:** `read_file`, `search_codebase`, `get_session_log`
+- **Beehiiv REST:** `beehiiv_list_subscriptions`, `beehiiv_get_publication_stats`, `beehiiv_list_posts`
+- **Legacy aliases (still registered):** `get_recent_subscribers`, `get_publication_stats`
+
+When adding a new bot tool, follow the existing pattern: tool def with `name` + `description` + `input_schema`, async handler returning a string (`Error: ...` on failure), register in `bot/src/tools/index.ts`. Update the system prompt in `bot/src/system-prompt.ts` to mention the new tool name so the model knows to call it.
+
+
 
 Newsletter (Beehiiv)
 
@@ -265,38 +281,32 @@ e16c1e4 — feat: detect filter + PokeTrace images + per-card condition picker
 
 ## Most recent session
 
-## 2026-05-22 — Session 12: Real OpenAI embeddings + outbound Discord notifications
+## 2026-05-22 — Session 13: Vercel webhook proxy + Beehiiv REST tools + daily-digest queue
 
 **Commits:** this commit only
 
-**Summary.** Two pieces landed in one goal:
+**Summary.** Goal C landed three pieces:
 
-**1. Real embeddings.** `bot/src/embed.ts` wraps OpenAI's `text-embedding-3-small` (1536 dims, $0.02/M tokens) with an in-memory LRU cache (SHA-256 of content as key, capacity 512). `bot/src/db.ts::embedOrFallback` tries OpenAI first; on missing key, network error, or non-2xx response it falls back to the deterministic hash placeholder from Session 11. Both `insertMessage` and `semanticSearchMessages` use the same path so the write and read embeddings live in the same vector space. Backfill script (`bot/scripts/backfill-embeddings.ts`) walks every `bot_messages` row, embeds the content, and upserts into `bot_embeddings`. Safe to re-run; idempotent.
+**1. Vercel deploys webhook proxy ([ADR-016](DECISIONS.md#adr-016--vercel-deploys--discord-via-code-controlled-webhook-proxy-not-marketplace-install)).** New route `app/api/webhooks/vercel-deploys/route.ts` validates `X-Vercel-Signature` (HMAC-SHA1 with `timingSafeEqual`), filters to succeeded/error/canceled (skips the noisy created/ready events that fire on every push), maps the payload → Discord embed with green/red/yellow color, commit SHA, branch, first-line of commit message, and posts via `lib/notifications/discord.ts`. Always returns 200 to Vercel so it doesn't retry uselessly into a Discord outage. Registered via `vercel webhooks create`; secret `iZckbY7kLMtuABN7UGc2xPKk` mirrored to all 3 surfaces. Closes the "manual Marketplace install" footnote from ADR-014.
 
-**2. Outbound Discord notifications ([ADR-014](DECISIONS.md#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary)).** Four channels in Foil HQ — `#deploys`, `#content-engine`, `#subscribers`, `#errors`. Shared library: `lib/notifications/discord.ts` with `postWebhook` (retry on 429 with `retry_after` + exponential backoff on 5xx, soft-fail on every error path) plus shaped helpers `postSubscriberJoined`, `postContentPublished`, `postError`, `postDeploy`. Wiring:
-- **#content-engine** — `scripts/generate-weekly-post.ts` fires a combined blog + newsletter embed after the newsletter step completes; falls back to a blog-only embed when newsletter is skipped (`--skip-newsletter` flag or missing BEEHIIV env vars).
-- **#subscribers** — `app/actions/subscribe.ts` fires `postSubscriberJoined` (with masked email) on every successful Beehiiv subscribe. Fire-and-forget so a slow Discord doesn't add latency to the form.
-- **#errors** — fires from content engine gate exhaustion, content engine newsletter-step failure, subscribe action Beehiiv failure, AND the workflow's `if: failure()` step (raw curl + jq, the one exception to the "all webhook calls go through `lib/notifications/discord.ts`" rule, justified because the Node script is exactly what failed).
-- **#deploys** — Vercel native Discord integration; pending manual UI setup (no Vercel CLI for that flow).
+**2. Beehiiv REST tools in the bot ([ADR-017](DECISIONS.md#adr-017--beehiiv-tools-via-rest-not-oauth-based-mcp)).** New file `bot/src/tools/beehiiv.ts` with three tool defs: `beehiiv_list_subscriptions(status?, limit?)`, `beehiiv_get_publication_stats()`, `beehiiv_list_posts(status?, limit?)`. All use the existing `BEEHIIV_API_KEY` (which the Railway bot already has — Session 11). Email masking is centralized in the tool handler so the bot never sees raw subscriber addresses. The legacy `get_recent_subscribers` / `get_publication_stats` tools stay registered as aliases so existing system-prompt language keeps working. The system prompt now lists the new tools first.
 
-**Env mirroring.** `OPENAI_API_KEY` to `.env.local` + Vercel (prod/preview/dev) + GitHub Actions + Railway (foil-bot service). Four `DISCORD_WEBHOOK_*` URLs to `.env.local`; the two needed by the workflow (`CONTENT_ENGINE`, `ERRORS`) to GitHub Actions; the two needed by the Server Action (`SUBSCRIBERS`, `ERRORS`) to Vercel across all environments.
+**3. Daily-digest queue ([ADR-018](DECISIONS.md#adr-018--daily-digest-queue-opt-in-noise-control-via-digest_mode)).** Supabase table `digest_events` + `lib/notifications/digest.ts` (`queueEvent` + `flushDigest`) + cron at 09:00 UTC daily (`.github/workflows/daily-digest.yml`) + `DIGEST_MODE` env var routing on the subscribe action. Default `realtime` keeps current behavior; `daily` queues to Postgres and the cron posts ONE summary embed per channel grouped by event_type. Failed Discord posts leave rows undigested for retry next run.
 
-**Tests added.**
-- `lib/__tests__/discord-webhook.test.ts` (13 tests) — empty URL, empty payload, POST shape, Bearer-less header check, 429 retry with `retry_after`, 503 retry then give-up, no-retry on 4xx other than 429, soft-fail on fetch-throw, `maskEmail` happy/edge cases, `postSubscriberJoined` field shape, `postError` code-block + runUrl.
-- `bot/src/__tests__/embed.test.ts` (8 tests) — endpoint URL, Bearer auth, payload shape, cache hit on identical input, cache miss on different input, throws on missing key / empty input / non-2xx / malformed body / wrong-dim.
+**Tests added.** 9 for the Vercel webhook (signature happy/forge/mutate/length/non-hex cases + embed shape per event type + truncation), 8 for the digest queue (queueEvent shape, flush with grouped fields, no-mark-when-post-fails, embed shape, pluralization), 9 for the Beehiiv REST tools (endpoint URL + Bearer header + email masking + status default + limit cap + missing-creds). 26 new tests; full root + bot suites green.
 
-**Manual prereq for #deploys.** John needs to install the Vercel→Discord integration once via `Vercel dashboard → Project → Integrations → Browse Marketplace → Discord`. The `DISCORD_WEBHOOK_DEPLOYS` URL is already in `.env.local` as the target. After install, Vercel handles the formatting + delivery; the URL just routes to the channel.
-
-**Backfill execution.** Manual run pending — `cd bot && node --experimental-strip-types --no-warnings scripts/backfill-embeddings.ts` will rewrite every existing `bot_messages` embedding from the hash placeholder to OpenAI real semantic. Idempotent + restartable; skip via `--all` flag set differently (default = "missing only", `--all` = re-embed every row).
+**Migration pending.** Supabase MCP is read-only in this session, so `supabase/migrations/20260522020000_digest_events.sql` needs manual paste in the Supabase Dashboard SQL Editor. Without it the digest queue path no-ops at runtime — both modes (realtime + daily) handle a missing table gracefully; only the daily mode loses functionality until the table exists.
 
 **End-to-end verification — recorded below after the live smoke.**
 
 **Key decisions made.**
-- [ADR-014](DECISIONS.md#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary) — per-channel webhook URLs, soft-fail policy, single import boundary at `lib/notifications/discord.ts`, mask-on-emit for subscriber events.
+- [ADR-016](DECISIONS.md#adr-016--vercel-deploys--discord-via-code-controlled-webhook-proxy-not-marketplace-install) — proxy over Marketplace.
+- [ADR-017](DECISIONS.md#adr-017--beehiiv-tools-via-rest-not-oauth-based-mcp) — REST over OAuth-based MCP for the headless bot.
+- [ADR-018](DECISIONS.md#adr-018--daily-digest-queue-opt-in-noise-control-via-digest_mode) — daily-digest queue, opt-in via DIGEST_MODE.
 
-**Follow-ups.** Goal C (daily-digest aggregator to batch events per-channel rather than per-event; Beehiiv MCP integration directly into the bot's tool layer).
+**Follow-ups.** Subscriber-count threshold alerts (50/100/500). Cross-channel slash commands (`/sub-count`, `/posts`). Vercel/GitHub MCPs in the bot when a headless-OAuth strategy exists.
 
-**State at session end.** All tests + tsc clean. Vercel #deploys integration is the only remaining manual step.
+**State at session end.** All tests + tsc green. Vercel webhook live + tested via HMAC unit tests; live smoke pending a real deploy. Digest migration needs the paste step.
 
 ---
 

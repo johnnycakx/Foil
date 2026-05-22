@@ -47,9 +47,12 @@ test("executeTool returns a clear error for unknown tool names", async () => {
   assert.equal(out, 'Error: unknown tool "nope"');
 });
 
-test("TOOL_DEFINITIONS exports exactly the 5 documented tools", () => {
+test("TOOL_DEFINITIONS exports the legacy 5 + 3 new beehiiv_* tools (ADR-017)", () => {
   const names = TOOL_DEFINITIONS.map((t) => t.name).sort();
   assert.deepEqual(names, [
+    "beehiiv_get_publication_stats",
+    "beehiiv_list_posts",
+    "beehiiv_list_subscriptions",
     "get_publication_stats",
     "get_recent_subscribers",
     "get_session_log",

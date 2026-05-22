@@ -112,7 +112,8 @@
       "Bash(railway redeploy *)",
       "Bash(vercel integration *)",
       "Bash(echo \"ROOT_EXIT=$?\")",
-      "Bash(echo \"BOT_EXIT=$?\")"
+      "Bash(echo \"BOT_EXIT=$?\")",
+      "Bash(vercel webhooks *)"
     ]
   },
   "enableAllProjectMcpServers": true,

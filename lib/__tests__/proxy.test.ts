@@ -41,6 +41,13 @@ test("3rd-party webhooks are public — Stripe POSTs with its own signature", ()
   assert.equal(isPublicRoute("/api/webhooks/stripe"), true);
 });
 
+test("Vercel deploy webhook is public — Vercel signs requests with its own HMAC", () => {
+  // Covered by the /api/webhooks prefix already. Pin the contract so a future
+  // refactor that swaps the prefix for individual exact rules can't silently
+  // gate this route.
+  assert.equal(isPublicRoute("/api/webhooks/vercel-deploys"), true);
+});
+
 test("newsletter subscribe endpoint is public — unauth visitors can opt in", () => {
   // The EmailCapture component currently calls a Server Action colocated with
   // the blog page (POSTs to /blog/<slug>, which is already public). Pin

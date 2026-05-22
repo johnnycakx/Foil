@@ -112,9 +112,25 @@ Bot env vars live in `bot/.env.local` (gitignored) and are mirrored to Railway v
 
 Outbound Discord notifications
 
-Every outbound Discord ping routes through `lib/notifications/discord.ts` (see [ADR-014](docs/DECISIONS.md)). No other module imports a Discord webhook URL or calls `fetch("https://discord.com/api/webhooks/...")`. The GH Actions workflow's `if: failure()` step is the one exception (raw curl + jq, because the Node script is exactly what failed and we can't depend on its libraries). Channel→event mapping: `#deploys` (Vercel native integration), `#content-engine` (blog + newsletter publish), `#subscribers` (Beehiiv subscribe success, masked email), `#errors` (any soft-fail path + workflow failures). Soft-fail at every layer — a Discord outage cannot block a publish or a subscribe.
+All four channels (`#deploys`, `#content-engine`, `#subscribers`, `#errors`) are wired in code now — no more Marketplace integrations. Every outbound Discord ping routes through `lib/notifications/discord.ts` (see [ADR-014](docs/DECISIONS.md)). No other module imports a Discord webhook URL or calls `fetch("https://discord.com/api/webhooks/...")`. The GH Actions workflow's `if: failure()` step is the one exception (raw curl + jq, because the Node script is exactly what failed and we can't depend on its libraries). Channel→event mapping: `#deploys` (Vercel native integration), `#content-engine` (blog + newsletter publish), `#subscribers` (Beehiiv subscribe success, masked email), `#errors` (any soft-fail path + workflow failures). Soft-fail at every layer — a Discord outage cannot block a publish or a subscribe.
 
 Email masking on `#subscribers` events lives in `lib/notifications/discord.ts::maskEmail` only. `john.craig@gmail.com` → `j***@gmail.com`.
+
+`#deploys` is fed by `app/api/webhooks/vercel-deploys/route.ts` ([ADR-016](docs/DECISIONS.md)) — Vercel POSTs deployment events, we HMAC-verify with `VERCEL_WEBHOOK_SECRET`, filter to succeeded/error/canceled, and POST a shaped embed via the same `lib/notifications/discord.ts` lib.
+
+`DIGEST_MODE` env var ([ADR-018](docs/DECISIONS.md)) toggles the producer side between `realtime` (default; immediate Discord post) and `daily` (queue to `digest_events`, flushed by `.github/workflows/daily-digest.yml` at 09:00 UTC). Wired for subscriber events today; extends to other event sources when volume justifies it.
+
+Bot tools
+
+The bot ([ADR-013](docs/DECISIONS.md)) ships with these tools, registered in `bot/src/tools/index.ts`. New `beehiiv_*` tools land in `bot/src/tools/beehiiv.ts` ([ADR-017](docs/DECISIONS.md) — REST over MCP because OAuth is ill-suited for a headless bot):
+
+- **Repo / docs:** `read_file`, `search_codebase`, `get_session_log`
+- **Beehiiv REST:** `beehiiv_list_subscriptions`, `beehiiv_get_publication_stats`, `beehiiv_list_posts`
+- **Legacy aliases (still registered):** `get_recent_subscribers`, `get_publication_stats`
+
+When adding a new bot tool, follow the existing pattern: tool def with `name` + `description` + `input_schema`, async handler returning a string (`Error: ...` on failure), register in `bot/src/tools/index.ts`. Update the system prompt in `bot/src/system-prompt.ts` to mention the new tool name so the model knows to call it.
+
+
 
 Newsletter (Beehiiv)
 

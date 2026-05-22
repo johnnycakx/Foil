@@ -340,6 +340,121 @@ The newsletter draft generator deferral noted in ADR-010 ("until ≥50 signups")
 
 **Cross-refs.** [ADR-013](#adr-013--foil-hq-discord-bot-persistent-memory-ops-chat-with-curated-tools) (the inbound side this complements), [ADR-010](#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key) (the import-boundary pattern this borrows from), [ADR-008](#adr-008--vercel-deploy-hook-for-autonomous-content-not-github-integration-auto-deploys) (the Vercel Deploy Hook step that triggers `#deploys` events).
 
+---
+
+## ADR-016 — Vercel deploys → Discord via code-controlled webhook proxy (not Marketplace install)
+
+**Date:** 2026-05-22
+**Status:** Accepted — supersedes the "manual Vercel Marketplace install" caveat in [ADR-014](#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary).
+
+**Context.** ADR-014 mapped four Discord channels to event sources but left `#deploys` as a "John installs the Vercel→Discord Marketplace integration once" footnote. Two problems with that posture:
+
+1. **Opaque + not version-controlled.** The Marketplace integration's filtering, formatting, and target URL all live in Vercel's UI. We can't diff it, can't re-create it from CI, can't tune it without clicking through dashboards.
+2. **Autonomy-first principle.** Every other notification on Foil is wired in code through `lib/notifications/discord.ts`. The `#deploys` exception was a wart — the one channel where "what gets shown" wasn't readable in the repo.
+
+Three options to close the gap:
+
+1. **Install the Marketplace integration.** Done in 2 minutes; never touched again; opaque.
+2. **Use a generic webhook-routing service** (e.g. n8n on the existing self-hosted setup). Another moving part; introduces a hop with its own credentials.
+3. **Code-controlled proxy endpoint** — Vercel posts deploy events to a route we own, we validate the signature, filter, format, and forward to Discord ourselves.
+
+**Decision.** Option 3. `app/api/webhooks/vercel-deploys/route.ts`:
+
+- Validates `X-Vercel-Signature` against the raw request body (HMAC-SHA1 with `VERCEL_WEBHOOK_SECRET`). The signature header IS the auth — the route is on `PUBLIC_ROUTES` via the existing `/api/webhooks` prefix.
+- Filters to `deployment.succeeded`, `deployment.error`, `deployment.canceled`. Skips the noisy `deployment.created` + `deployment.ready` events that fire on every push.
+- Maps the payload → Discord embed with green/red/yellow color, commit SHA, branch, author, first-line of commit message. Posts via `lib/notifications/discord.ts::postWebhook` — same shared lib every other notification uses.
+- Always returns 200 to Vercel (even if Discord is down) so Vercel doesn't retry. A Discord outage doesn't help by being retried; the same outage will reject the retry.
+
+Registered via the Vercel CLI:
+```
+vercel webhooks create https://foiltcg.com/api/webhooks/vercel-deploys --event deployment.succeeded --event deployment.error --event deployment.canceled
+```
+The CLI returns a signing secret — we mirror it to `.env.local` + Vercel envs + GH Actions secrets (the workflow doesn't use it, but future scripts that simulate webhooks for testing might).
+
+**Consequences.**
+
+- **Pro:** Every notification on Foil — content engine, subscribers, errors, deploys — is now in code. Diff, review, version-control, test.
+- **Pro:** Adding a new deploy-event filter (say, only ping when `target === "production"`) is a one-line change in `buildEmbed` + a test, not a UI hunt.
+- **Pro:** Signature verification with `timingSafeEqual` defeats timing attacks. Bad-secret + bad-length + non-hex header all fail closed.
+- **Pro:** Tests pin the embed shape per event type. Future Vercel payload changes will break the contract tests; a Marketplace integration would silently change format.
+- **Con:** We own the failure mode. If our deploy of the proxy itself fails, no deploy notifications. Acceptable: the proxy is a thin pure-function route — if it breaks, the rest of the site is more broken anyway.
+- **Con:** The Vercel webhook secret is now a credential. Stored as secret across `.env.local` + Vercel + GH Actions. Rotation = `vercel webhooks remove` + `vercel webhooks create` again; mirror the new secret.
+
+**Cross-refs.** [ADR-014](#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary) (the shared notification lib this builds on), [ADR-008](#adr-008--vercel-deploy-hook-for-autonomous-content-not-github-integration-auto-deploys) (the existing Deploy-Hook integration that triggers production builds — separate flow; this ADR is about observability, ADR-008 is about triggering).
+
+---
+
+## ADR-017 — Beehiiv tools via REST, not OAuth-based MCP
+
+**Date:** 2026-05-22
+**Status:** Accepted
+
+**Context.** The Foil HQ bot ([ADR-013](#adr-013--foil-hq-discord-bot-persistent-memory-ops-chat-with-curated-tools)) shipped 5 curated tools, two of which (`get_recent_subscribers`, `get_publication_stats`) talk to Beehiiv. With Goal C we wanted to expand the bot's Beehiiv surface (list_posts, status-filtered subscribers) and the obvious-looking move was to install Beehiiv's official MCP server in the bot's tool layer. Three options reviewed:
+
+1. **Beehiiv MCP server.** Maintained by Beehiiv. Uses OAuth — first call prompts an interactive consent flow. Designed for human-in-the-loop agents (Claude.ai web, Cursor).
+2. **Direct REST API via `BEEHIIV_API_KEY` (the same key we already use for subscribe + draft writes).** Stable, key-auth only, no consent flow.
+3. **Wrap the Beehiiv MCP server in a server-side adapter** that handles the OAuth handshake out-of-band. High effort for a feature surface (read-only list/get) we don't need MCP's "full discovery" for.
+
+**Decision.** Option 2. Three new tool defs live in `bot/src/tools/beehiiv.ts` (mirrored audit boundary to `lib/beehiiv.ts` + `lib/beehiiv-posts.ts` from ADR-010 and ADR-011):
+
+- `beehiiv_list_subscriptions(status?, limit?)` — Beehiiv `/v2/publications/:id/subscriptions`. Masks emails before returning to the bot.
+- `beehiiv_get_publication_stats()` — Beehiiv `/v2/publications/:id?expand=stats`. Returns active/total counts.
+- `beehiiv_list_posts(status?, limit?)` — Beehiiv `/v2/publications/:id/posts`. Lets the bot answer "what drafts are queued?".
+
+The legacy `get_recent_subscribers` + `get_publication_stats` tools from Session 11 stay registered as aliases — they overlap with the new tools but breaking them would force a system-prompt rewrite. The system prompt now lists the new `beehiiv_*` names first; the model gravitates to those.
+
+**Consequences.**
+
+- **Pro:** Zero OAuth complexity. The bot runs headless on Railway; an OAuth consent flow would require either a web callback URL the bot doesn't serve or a manual one-time token mint per restart.
+- **Pro:** Single auth credential (`BEEHIIV_API_KEY`) covers subscribe writes (`lib/beehiiv.ts`), draft writes (`lib/beehiiv-posts.ts`), AND read queries (`bot/src/tools/beehiiv.ts`). One rotation point.
+- **Pro:** Tests pin the REST endpoint + auth header shape. If Beehiiv changes their URL structure we break loudly with a test diff, not silently with an MCP discovery mismatch.
+- **Pro:** Email masking centralized to the tool layer. The bot never sees raw subscriber emails; what gets piped into Claude's context is `j***@example.com`. Reduces the surface area for accidental PII surfacing in transcripts.
+- **Con:** We have to hand-write each tool def. Beehiiv MCP would auto-discover a dozen endpoints; we ship three because that's what John would actually use. If we ever need a fourth tool (`beehiiv_get_post_content`, say), it's another hand-roll.
+- **Con:** We don't get Beehiiv's tool-naming evolution for free. If Beehiiv ships a new "smarter" subscriber-segmentation endpoint, we have to notice and wrap it.
+- **Caveat:** If a future Anthropic SDK adds a hosted MCP client with a manageable headless-OAuth path, revisit this ADR. We're 12 months ahead of that today.
+
+**Cross-refs.** [ADR-013](#adr-013--foil-hq-discord-bot-persistent-memory-ops-chat-with-curated-tools) (bot's tool architecture), [ADR-010](#adr-010--beehiiv-for-newsletter-list-management-official-sdk-single-field-form-server-side-key) (Beehiiv import boundary — this ADR adds `bot/src/tools/beehiiv.ts` to the same boundary).
+
+---
+
+## ADR-018 — Daily-digest queue: opt-in noise control via DIGEST_MODE
+
+**Date:** 2026-05-22
+**Status:** Accepted — sets the default to `realtime` for now; pivot to `daily` is a one-env-var flip.
+
+**Context.** Per-event Discord pings work fine when subscriber and content velocity are low (today: 0-2 events per week). They will not scale. Two failure modes anticipated:
+
+1. **Subscriber bursts.** A blog post going viral could trigger 100+ signups in an hour. Per-event pings = 100+ embeds = inbox-tab DDoS.
+2. **Error storms.** A Beehiiv outage triggering N subscribe failures all firing `postError` simultaneously. Same problem.
+
+Options considered:
+
+1. **Hard rate-limit the channel via Discord's per-channel cap** (5 msgs / 5 sec). Cheap but loses the messages that overflow.
+2. **Daily-digest table + batch summary embed per channel.** One row per event in `digest_events`; once a day a cron walks each `channel_target`, collapses N rows into one summary embed, marks them digested.
+3. **External queue (BullMQ / Redis).** Way more infrastructure than the volume needs.
+
+**Decision.** Option 2 with an opt-in switch. `DIGEST_MODE=realtime` (default) → existing per-event ping path. `DIGEST_MODE=daily` → call `queueEvent` instead. The producer side decides; the consumer cron runs unconditionally and is a no-op when the queue is empty.
+
+Layout:
+
+- `supabase/migrations/20260522020000_digest_events.sql` — `digest_events` table (id, event_type, payload jsonb, channel_target, created_at, digested_at). Partial index on `(channel_target, created_at) where digested_at is null` keeps the working set small.
+- `lib/notifications/digest.ts` — `queueEvent` + `flushDigest(channelTarget)`. The latter posts ONE embed grouped by event_type, marks the rows digested AFTER the Discord post returns 2xx (an outage leaves them queued for retry next run).
+- `scripts/flush-digest.ts` — walks every channel target; idempotent.
+- `.github/workflows/daily-digest.yml` — cron at 09:00 UTC daily + manual `workflow_dispatch` for ops.
+- `app/actions/subscribe.ts` is the first wired producer: reads `DIGEST_MODE`, branches between queueEvent and `postSubscriberJoined`.
+
+**Consequences.**
+
+- **Pro:** No infrastructure burden today. Queue is a single Postgres table; flush is a 10-line script. If queue depth ever becomes a real problem, the cron can run more frequently (`*/30 * * * *`) without code changes.
+- **Pro:** Mode flip is one env var on Vercel. `vercel env add DIGEST_MODE daily production --yes` is the entire toggle.
+- **Pro:** Digest embed groups by event_type, so a "9 subscriber_joined + 1 subscribe_failed" hour reads as two fields, not ten messages.
+- **Pro:** Failed Discord post leaves rows undigested → next run retries naturally. We don't need a separate retry queue.
+- **Con:** When DIGEST_MODE=daily, John doesn't see new subscribers in real time — he sees them tomorrow morning. Acceptable when signup volume is high enough that "right this second" loses meaning; not acceptable at <10/day. Default kept at `realtime` to match the current state of the world.
+- **Con:** Only the subscribe action is wired so far. Content engine + errors + deploys still post in real time even when `DIGEST_MODE=daily`. Wiring the others is a small follow-up when the volume justifies it.
+- **Caveat:** Subscriber threshold alerts (50/100/500) are a separate goal — the digest doesn't address "ping me on milestones", only "summarize firehose".
+
+**Cross-refs.** [ADR-014](#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary) (the per-event notification surface this batches), [ADR-008](#adr-008--vercel-deploy-hook-for-autonomous-content-not-github-integration-auto-deploys) (the GH Actions cron pattern — same infra).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

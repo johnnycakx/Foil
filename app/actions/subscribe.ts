@@ -2,6 +2,7 @@
 
 import { subscribeEmail } from "@/lib/beehiiv";
 import { postError, postSubscriberJoined } from "@/lib/notifications/discord";
+import { queueEvent } from "@/lib/notifications/digest";
 
 export type SubscribeActionResult =
   | { ok: true }
@@ -30,19 +31,27 @@ export async function subscribeAction(formData: FormData): Promise<SubscribeActi
     return { ok: false, error: GENERIC_ERROR };
   }
 
-  // Fire-and-forget #subscribers ping. Always soft-fail (postSubscriberJoined
-  // itself never throws). We don't await it so a slow Discord doesn't add
-  // latency to the form submit.
-  const subWebhook = process.env.DISCORD_WEBHOOK_SUBSCRIBERS;
-  if (subWebhook) {
-    void postSubscriberJoined(subWebhook, {
-      email: rawEmail,
-      source,
-      // Active-count lookup deferred to the bot's /recall + get_publication_stats
-      // tool — keeping the form action lean. Future enhancement: pre-fetch
-      // the count here once Beehiiv adds a low-cost counter endpoint.
-      activeCount: null,
+  // Route to either real-time Discord post OR daily-digest queue (ADR-018).
+  // DIGEST_MODE=daily → queue (one summary embed once a day). Default
+  // ("realtime" or unset) → fire the per-event ping immediately.
+  const digestMode = (process.env.DIGEST_MODE ?? "realtime").toLowerCase();
+  if (digestMode === "daily") {
+    void queueEvent({
+      eventType: "subscriber_joined",
+      channelTarget: "subscribers",
+      payload: { email_masked: maskInline(rawEmail), source },
     });
+  } else {
+    const subWebhook = process.env.DISCORD_WEBHOOK_SUBSCRIBERS;
+    if (subWebhook) {
+      // Fire-and-forget; soft-fail. We don't await it so a slow Discord
+      // doesn't add latency to the form submit.
+      void postSubscriberJoined(subWebhook, {
+        email: rawEmail,
+        source,
+        activeCount: null,
+      });
+    }
   }
 
   return { ok: true };
