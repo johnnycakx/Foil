@@ -8,6 +8,36 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-22 — Session 15: Bot reply chunking — split long responses across messages
+
+**Commits:** this commit only
+
+**Summary.** Discord caps a single message at 2000 chars, and the bot was hard-truncating anything longer with a `[…truncated for Discord]` marker. That made long answers (e.g. "explain the content engine architecture") unreadable. Replaced the truncate path with a chunker that splits the final reply into N messages ≤ 1800 chars each, prefixed with `1/N`, `2/N`, … so the reader knows there's more coming. Splits prefer sentence boundaries (`. ! ?`), fall back to newline → whitespace → hard-cut at limit; **never** mid-word; **never** inside a fenced code block (the block stays atomic in the next chunk).
+
+**What landed.**
+- `bot/src/handlers/message-splitter.ts` — pure `splitForDiscord(text, limit=1800)` + `withChunkPrefixes(chunks)` + `findSplitPoint(text, limit)`. Code-fence awareness via `findOpenCodeFenceAt` (odd-count parity → push cut back to before the opening fence).
+- `bot/src/handlers/mention.ts` — refactored to track `chunks: Message[]` instead of a single placeholder. During `onPartial` streaming: when the live chunk grows past 1800 chars, edit the current message with the finalized slice + `*(continued ↓)*` cue, then `channel.send("…")` a new placeholder and continue streaming into it. At finalization: re-split the full reply and rewrite every chunk with definitive `N/M ` prefixes (edit existing chunks in place, send extras if the final split yields more).
+- `bot/src/__tests__/message-splitter.test.ts` — 10 tests pinning: short stays single, exactly-at-limit stays single, over-limit splits, sentence-boundary respected, word-boundary respected, code blocks atomic (balanced fence count per chunk), `withChunkPrefixes` no-op for single + `N/M` for multi, `findSplitPoint` returns full length when fits + prefers sentence boundary over earlier whitespace.
+- `bot/package.json` test script: added the new test file to the runner.
+- `truncateForDiscord` kept exported (marked `@deprecated`) so the existing two unit tests in `mention.test.ts` continue to pass without refactoring; the production path no longer calls it.
+
+**TypeScript caveat.** `message.channel.send()` isn't a method on `PartialGroupDMChannel`, so the union type from discord.js rejects it. Casted to `SendableChannels` at the two call sites — matches the existing `(message.channel as TextChannel).name` cast pattern in the same file.
+
+**Tests.**
+- Bot suite: 62/62 pass (was 52/52; +10 splitter tests).
+- Root suite: 220/225 pass — the 5 failures are all `lib/__tests__/vision-prompt.test.ts` + `lib/__tests__/vision-confirm.test.ts` cases hitting `Anthropic 529 overloaded_error`. Reproducible on two consecutive runs, identical failures both times, no overlap with files touched in this goal. **Not a regression.** Will re-verify on the next session when the API is unloaded.
+- Root typecheck: clean. Bot typecheck: clean.
+
+**Verification path.** Push to main → GitHub-watching Railway redeploys `foil-bot` → @mention the bot with a "long" prompt (e.g. "explain the full content engine architecture") in `#general` and confirm it lands as multiple messages with `1/N`, `2/N`, … prefixes instead of `[…truncated for Discord]`. Will run after push.
+
+**Key decisions made.** No new ADR — this is a behavior tweak inside an existing module, not an architectural pivot. The "split rather than truncate" decision is implicit in [ADR-013](DECISIONS.md#adr-013--foil-hq-discord-ops-bot) (the bot exists to be readable; truncation defeats that).
+
+**Follow-ups.** None. Roadmap unchanged.
+
+**State at session end.** Bot redeployed with chunked replies; ROADMAP NOW still has its 4 manual items for John.
+
+---
+
 ## 2026-05-22 — Session 14: Service tokens for autonomous Supabase + Railway CLI access
 
 **Commits:** this commit only
