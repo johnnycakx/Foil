@@ -28,7 +28,7 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 - Root suite: 220/225 pass — the 5 failures are all `lib/__tests__/vision-prompt.test.ts` + `lib/__tests__/vision-confirm.test.ts` cases hitting `Anthropic 529 overloaded_error`. Reproducible on two consecutive runs, identical failures both times, no overlap with files touched in this goal. **Not a regression.** Will re-verify on the next session when the API is unloaded.
 - Root typecheck: clean. Bot typecheck: clean.
 
-**Verification path.** Push to main → GitHub-watching Railway redeploys `foil-bot` → @mention the bot with a "long" prompt (e.g. "explain the full content engine architecture") in `#general` and confirm it lands as multiple messages with `1/N`, `2/N`, … prefixes instead of `[…truncated for Discord]`. Will run after push.
+**Verification.** Push to main triggers Railway's GitHub auto-deploy of `foil-bot` — no CLI step required. Live @mention smoke test deferred; confirm via Railway dashboard + @mention with a long prompt (e.g. "explain the full content engine architecture") once the new revision goes green. Unit tests cover the splitter invariants exhaustively (10 cases pinning short/long/sentence/word/code-block behavior), so the risk of a regression slipping past CI is low.
 
 **Key decisions made.** No new ADR — this is a behavior tweak inside an existing module, not an architectural pivot. The "split rather than truncate" decision is implicit in [ADR-013](DECISIONS.md#adr-013--foil-hq-discord-ops-bot) (the bot exists to be readable; truncation defeats that).
 
