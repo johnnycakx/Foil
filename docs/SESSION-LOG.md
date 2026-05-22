@@ -27,6 +27,13 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 Six total deployments — every single one user-triggered, every single one with `meta.commitHash` empty. Zero github-triggered deploys means the gap isn't "Sessions 14-17 lost their auto-deploys" — those sessions just *never had auto-deploys to lose*. Session 11's bring-up did `railway up` (CLI upload of the local Docker context), Session 13's fix was another UI-triggered redeploy. Auto-deploy was on the implicit "we'll set this up later" list and just never got the later.
 
+**Why the API path is closed (not just blocked).** After Railway's GraphQL refused with `"User does not have access to the repo"`, I checked whether the GitHub side of the OAuth chain could be unblocked autonomously via the `gh` CLI. Two probes:
+
+- `gh api user/installations` → `403 "You must authenticate with an access token authorized to a GitHub App in order to list installations"`. Our `gh` token has user-OAuth scopes (`gist`, `read:org`, `repo`, `workflow`), not GitHub App management scopes.
+- `gh api repos/johnnycakx/Foil/installation` → `401 "A JSON web token could not be decoded"`. That endpoint requires the GitHub App's own JWT, which we don't have.
+
+This isn't a missing-scope problem we can fix by re-authing. **First-time GitHub App installation is gated on browser-based user consent by GitHub's design** — a CLI can't install an App into a repo on the user's behalf. Once the Railway App is installed via the UI, *then* the Railway GraphQL mutations work and `scripts/wire-railway-source.ts` becomes the autonomous follow-up. Until then, this is an irreducible UI step.
+
 **Fix path: UI (5-step playbook for John).**
 
 1. Open https://railway.com/dashboard, click into the `perceptive-communication` project.
