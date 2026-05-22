@@ -8,6 +8,8 @@
 // registration to 200/day; we register guild-scoped instead to make new
 // commands appear instantly during dev.
 
+import { readFileSync, existsSync } from "node:fs";
+import path from "node:path";
 import {
   REST,
   Routes,
@@ -17,6 +19,7 @@ import {
 } from "discord.js";
 import { resetChannel, semanticSearchMessages } from "../db.ts";
 import { TOOL_DEFINITIONS } from "../tools/index.ts";
+import { IDEA_CATEGORIES, parseIdeasFile, type IdeaCategory } from "../system-prompt.ts";
 
 export const COMMAND_DEFS = [
   new SlashCommandBuilder()
@@ -27,6 +30,16 @@ export const COMMAND_DEFS = [
     .setDescription("Semantic recall over my channel history. Returns the top 5 hits.")
     .addStringOption((opt) =>
       opt.setName("query").setDescription("What to look up across past messages").setRequired(true),
+    ),
+  new SlashCommandBuilder()
+    .setName("ideas")
+    .setDescription("Show the 10 most-recent captured ideas from docs/IDEAS.md.")
+    .addStringOption((opt) =>
+      opt
+        .setName("category")
+        .setDescription("Filter to a single category")
+        .setRequired(false)
+        .addChoices(...IDEA_CATEGORIES.map((c) => ({ name: c, value: c }))),
     ),
   new SlashCommandBuilder()
     .setName("help")
@@ -66,6 +79,8 @@ export async function handleSlashCommand(interaction: ChatInputCommandInteractio
       return resetHandler(interaction);
     case "recall":
       return recallHandler(interaction);
+    case "ideas":
+      return ideasHandler(interaction);
     case "help":
       return helpHandler(interaction);
     default:
@@ -97,6 +112,37 @@ async function recallHandler(interaction: ChatInputCommandInteraction): Promise<
   await interaction.editReply(out);
 }
 
+async function ideasHandler(interaction: ChatInputCommandInteraction): Promise<void> {
+  const category = interaction.options.getString("category") as IdeaCategory | null;
+  const ideasPath = process.env.IDEAS_PATH ?? path.resolve(process.cwd(), "..", "docs", "IDEAS.md");
+  let raw = "";
+  try {
+    if (existsSync(ideasPath)) raw = readFileSync(ideasPath, "utf8");
+  } catch {
+    // ignore — fall through to empty handling
+  }
+  const parsed = parseIdeasFile(raw);
+  const filtered = parsed.filter(
+    (e) => e.status === "captured" && (!category || e.category === category),
+  );
+  const top = filtered.slice(0, 10);
+  if (top.length === 0) {
+    await interaction.reply({
+      content: category
+        ? `No captured ideas in category \`${category}\`. Try \`/ideas\` for the full backlog.`
+        : `No captured ideas yet. Add one to \`docs/IDEAS.md\`.`,
+      ephemeral: true,
+    });
+    return;
+  }
+  const heading = category
+    ? `**Top ${top.length} captured ideas — \`[${category}]\`**`
+    : `**Top ${top.length} captured ideas** (across all categories)`;
+  const lines = top.map((e, i) => `**${i + 1}.** \`[${e.category}]\` ${e.title} _(${e.date})_`);
+  const text = [heading, "", ...lines].join("\n").slice(0, 1900);
+  await interaction.reply({ content: text, ephemeral: true });
+}
+
 async function helpHandler(interaction: ChatInputCommandInteraction): Promise<void> {
   const toolList = TOOL_DEFINITIONS.map(
     (t) => `• \`${t.name}\` — ${(t.description ?? "").split(". ")[0]}.`,
@@ -109,6 +155,7 @@ async function helpHandler(interaction: ChatInputCommandInteraction): Promise<vo
     `**Slash commands**`,
     `• \`/reset\` — wipe my memory for this channel.`,
     `• \`/recall <query>\` — top-5 semantic recall over my channel history.`,
+    `• \`/ideas [category]\` — top-10 captured ideas from docs/IDEAS.md (optionally filtered).`,
     `• \`/help\` — this list.`,
     ``,
     `**Tools available to me**`,

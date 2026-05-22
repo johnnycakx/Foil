@@ -88,6 +88,9 @@ export function buildSystemPrompt(input: SystemPromptInput): string {
   const session = extractLatestSession(safeRead(path.join(docsDir, "SESSION-LOG.md")));
   if (session) sections.push(`### SESSION-LOG.md (latest entry)\n${session}`);
 
+  const ideas = extractRecentIdeas(safeRead(path.join(docsDir, "IDEAS.md")));
+  if (ideas) sections.push(`### IDEAS.md (recent backlog — upstream of ROADMAP)\n${ideas}`);
+
   sections.push(`\n## </foil_context>`);
 
   return capToTokens(sections.join("\n"), cap);
@@ -184,6 +187,125 @@ export function extractLatestSession(sessionLog: string): string {
   if (!sessionLog) return "";
   const match = sessionLog.match(/## \d{4}-\d{2}-\d{2}[\s\S]*?(?=\n## \d{4}-\d{2}-\d{2}|\n## How to log a session)/);
   return match ? match[0].trim() : "";
+}
+
+/**
+ * Parse `docs/IDEAS.md` entries. Each entry is a YAML frontmatter block
+ * (`---` fence ... `---` fence) immediately followed by a `## <title>` line
+ * and a body paragraph. Returns the most-recent N entries (top of file =
+ * newest by the file's own convention), capped to `maxChars` total.
+ */
+export type IdeaEntry = {
+  date: string;
+  category: IdeaCategory;
+  status: IdeaStatus;
+  title: string;
+  body: string;
+  /** Raw markdown of this entry (frontmatter + heading + body), unmodified. */
+  raw: string;
+};
+
+export const IDEA_CATEGORIES = [
+  "product",
+  "marketing",
+  "content",
+  "infra",
+  "monetization",
+  "ux",
+  "growth",
+] as const;
+export type IdeaCategory = (typeof IDEA_CATEGORIES)[number];
+
+export const IDEA_STATUSES = [
+  "captured",
+  "triaged",
+  "promoted",
+  "rejected",
+  "shipped",
+] as const;
+export type IdeaStatus = (typeof IDEA_STATUSES)[number];
+
+const IDEAS_MAX_ENTRIES = 30;
+// 5k tokens × ~4 chars/token ≈ 20k chars upper bound for the IDEAS section.
+const IDEAS_MAX_CHARS = 5000 * CHARS_PER_TOKEN;
+
+/**
+ * Walk the file, find every `---\n...\n---\n## ...` block, parse the
+ * frontmatter, and return entries in source order (newest-first by file
+ * convention). Lenient — malformed entries are skipped silently rather than
+ * throwing, so a typo in one row can't take the whole grounding offline.
+ */
+export function parseIdeasFile(ideas: string): IdeaEntry[] {
+  if (!ideas) return [];
+  const entries: IdeaEntry[] = [];
+  // Match: opening "---\n", body up to closing "\n---\n", then "## title" then
+  // body up to the next entry boundary (next "---\n" frontmatter open or EOF
+  // or "## Review cadence" sentinel).
+  const re = /^---\n([\s\S]*?)\n---\n##\s+(.+?)\n([\s\S]*?)(?=\n---\n|\n## (?:Review cadence|Format)\b|$)/gm;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(ideas)) !== null) {
+    const [raw, frontmatter, title, body] = m;
+    const fields = parseFrontmatter(frontmatter);
+    const date = fields.date ?? "";
+    const category = fields.category as IdeaCategory | undefined;
+    const status = (fields.status as IdeaStatus | undefined) ?? "captured";
+    if (!date || !category) continue;
+    if (!IDEA_CATEGORIES.includes(category)) continue;
+    if (!IDEA_STATUSES.includes(status)) continue;
+    entries.push({
+      date,
+      category,
+      status,
+      title: title.trim(),
+      body: body.trim(),
+      raw: raw.trim(),
+    });
+  }
+  return entries;
+}
+
+function parseFrontmatter(block: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const line of block.split(/\r?\n/)) {
+    const idx = line.indexOf(":");
+    if (idx === -1) continue;
+    const key = line.slice(0, idx).trim();
+    const value = line.slice(idx + 1).trim();
+    if (key) out[key] = value;
+  }
+  return out;
+}
+
+/**
+ * Render the IDEAS section for the bot's <foil_context>. Returns the
+ * concatenated raw entries (in source order — newest first) up to the
+ * smaller of `IDEAS_MAX_ENTRIES` and `IDEAS_MAX_CHARS`. Empty string when
+ * the file is missing or has no parseable entries.
+ */
+export function extractRecentIdeas(
+  ideas: string,
+  opts: { maxEntries?: number; maxChars?: number } = {},
+): string {
+  const maxEntries = opts.maxEntries ?? IDEAS_MAX_ENTRIES;
+  const maxChars = opts.maxChars ?? IDEAS_MAX_CHARS;
+  const parsed = parseIdeasFile(ideas).slice(0, maxEntries);
+  if (parsed.length === 0) return "";
+  const out: string[] = [];
+  let total = 0;
+  for (const entry of parsed) {
+    const block = renderIdeaEntry(entry);
+    if (total + block.length > maxChars && out.length > 0) break;
+    out.push(block);
+    total += block.length;
+  }
+  return out.join("\n\n");
+}
+
+function renderIdeaEntry(entry: IdeaEntry): string {
+  return [
+    `**[${entry.category}] ${entry.title}** _(${entry.status}, ${entry.date})_`,
+    entry.body,
+  ].join("\n");
 }
 
 function capToTokens(text: string, tokenCap: number): string {

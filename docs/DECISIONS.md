@@ -483,6 +483,50 @@ Layout:
 
 **Cross-refs.** [ADR-014](#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary) (the per-event notification surface this batches), [ADR-008](#adr-008--vercel-deploy-hook-for-autonomous-content-not-github-integration-auto-deploys) (the GH Actions cron pattern — same infra).
 
+---
+
+## ADR-019 — Idea bank as the 6th second-brain doc
+
+**Date:** 2026-05-22
+**Status:** Accepted
+
+**Context.** The five existing second-brain docs (ROADMAP, DECISIONS, SESSION-LOG, ENV-VARS, RISKS) cover *committed* state — work the project has decided to do, has done, or has classified. They don't have a home for **noticed-but-not-yet-decided** state. In practice, the typical Cowork or Discord conversation surfaces 3-5 ideas per hour — feature gaps, competitor observations, monetization levers, content angles — and those ideas live entirely in chat history until they (a) get manually copied into ROADMAP (which forces a triage decision before the queue is even built), (b) get re-derived from memory weeks later, or (c) get forgotten.
+
+This is the same shape as the gap that motivated SESSION-LOG: undocumented context decays fast across sessions. ROADMAP was the wrong place to fix it because ROADMAP is a *commitment* surface — adding an item there implicitly says "we've decided we want this." Most surfaced ideas haven't met that bar yet; they just want to be remembered.
+
+Three options considered:
+
+1. **Stuff ideas into ROADMAP LATER.** Free of new infra, but conflates "we've committed to this eventually" with "we noticed this and want to think about it." Within a month LATER becomes a mixed grab-bag, ROADMAP credibility erodes, and the "this is what's committed" property is gone.
+2. **Append ideas to SESSION-LOG entries.** Cheap to land but discoverability dies — a great idea raised on 2026-05-22 is invisible by session 30 unless someone re-reads every session entry.
+3. **Standalone IDEAS.md upstream of ROADMAP, with a Sunday review cadence to promote/reject/keep.** Adds one doc + one ritual but cleanly separates "noticed" from "committed" and gives the bot a queryable backlog.
+
+**Decision.** Option 3. New canonical surface at `docs/IDEAS.md`, per-entry YAML frontmatter (`date`, `category`, `status`), 1-3 sentence body + 1-line **Context** trigger. Status starts at `captured`; weekly Sunday review session triages each row — `promoted` (now on ROADMAP), `triaged` (looked at, undecided), `rejected` (with one-line reason), or unchanged (still `captured`). Once a promoted ROADMAP item ships, the source IDEAS row flips to `shipped` so the historical chain is preserved.
+
+Categories are bounded: `product · marketing · content · infra · monetization · ux · growth`. Bounding the set keeps the list groupable in the bot's `/ideas` output and forces clarification when a new category seems necessary.
+
+Bot integration:
+
+- `bot/src/system-prompt.ts::extractRecentIdeas` parses the frontmatter blocks and renders the most-recent 30 entries (capped at 5k tokens of body) into `<foil_context>`. The bot sees the backlog at every turn — so a casual "what should I work on?" question implicitly considers everything in the bank, not just ROADMAP NOW.
+- New `/ideas [category]` slash command lists the top-10 captured entries with category badges. Optional category filter narrows to one of the seven values via Discord's `addChoices` option, so the UI auto-validates.
+
+Hard-contract update in CLAUDE.md: every goal (or the conversation that triggered it) that surfaces a non-trivial idea adds an entry to IDEAS.md before session end. Same discipline as SESSION-LOG.
+
+**Cross-refs.**
+- [ADR-006](#adr-006--full-autonomy-no-human-review-step-gates-as-the-safety-net) — the autonomy-first stance that makes the bot the highest-leverage integration point for the idea bank. The bot doesn't *consume* the bank passively; it surfaces ideas proactively when a question maps onto an entry.
+- [ADR-013](#adr-013--foil-hq-discord-bot-persistent-memory-ops-chat-with-curated-tools) — the bot grounding pattern this extends. Same `<foil_context>` injection mechanism, one more section.
+- `docs/PATTERNS.md` (separate file) — cross-cutting engineering patterns. Distinct from IDEAS: PATTERNS holds "how to build" observations promoted from second instances; IDEAS holds "what to build" surfaces awaiting triage.
+
+**Consequences.**
+- **Pro:** The idea bank survives across sessions. A great idea raised in week 3 doesn't have to compete with whatever fired the Stop hook in week 12.
+- **Pro:** ROADMAP stays credibly *committed*. Triage happens at the IDEAS → ROADMAP boundary, not inside ROADMAP itself.
+- **Pro:** Bot grounding gets a strategically-loaded slice of the backlog at every turn. "What's the most underrated idea on the list?" becomes a real query, not a fishing expedition.
+- **Pro:** The format is explicit enough (frontmatter) that future tooling (e.g. a static-site idea-board) can consume it without re-parsing free text.
+- **Con:** Adds a doc to maintain. Mitigated by the lightweight format — three frontmatter lines + one sentence + Context line per idea.
+- **Con:** Adds the Sunday review ritual. If it slips, the backlog grows but doesn't rot — every entry is still discoverable.
+- **Caveat:** The bot reads IDEAS.md at *process start*, same as the other grounding docs. New ideas added mid-session require a bot restart to land in `<foil_context>` (the `/ideas` slash command reads on-demand and is unaffected).
+
+---
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

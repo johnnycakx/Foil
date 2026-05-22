@@ -243,13 +243,16 @@ Adjusting cadence: edit the `on.schedule` entries in .github/workflows/weekly-co
 
 Project Second Brain
 
-The repo carries five docs under docs/ that persist context across Claude Code sessions. Ideas, decisions, and risks discussed in chat get lost between sessions; these docs are how we stop that.
+The repo carries six docs under docs/ that persist context across Claude Code sessions. Ideas, decisions, and risks discussed in chat get lost between sessions; these docs are how we stop that.
 
-- docs/ROADMAP.md — NOW / NEXT / LATER / PARKED. The "what's next" backlog.
+- docs/ROADMAP.md — NOW / NEXT / LATER / PARKED. The "what's next" backlog (committed work).
+- docs/IDEAS.md — idea bank upstream of ROADMAP. Captures every non-trivial idea from Cowork / Discord / threads before it's been triaged. See [ADR-019](docs/DECISIONS.md#adr-019--idea-bank-as-the-6th-second-brain-doc) for the format + Sunday review cadence.
 - docs/DECISIONS.md — one ADR per major architectural choice with Context + Decision + Consequences. "Why did we pick X?" lives here.
 - docs/SESSION-LOG.md — reverse-chronological per-session log. Each entry: date, commits, summary paragraph, key decisions, follow-ups added to ROADMAP, state at session end.
 - docs/ENV-VARS.md — registry of every env var, where it's configured, and whether it's public or secret.
 - docs/RISKS.md — known risks with severity + status + trigger-to-escalate + mitigation plan.
+
+Separately, docs/PATTERNS.md tracks cross-cutting *engineering* patterns spotted during build (not product ideas) — promote a pattern entry to a dedicated ADR after the second instance lands.
 
 **Hard contract for every goal:**
 
@@ -258,6 +261,7 @@ The repo carries five docs under docs/ that persist context across Claude Code s
 3. **If the goal addresses a RISKS.md entry,** update its Status field (e.g. `monitoring` → `mitigating` → `resolved`) and add a sentence on what changed. Don't delete resolved rows — the history is the point.
 4. **If the goal introduces a non-obvious architectural choice,** add an ADR to docs/DECISIONS.md in the same commit.
 5. **If the goal adds or removes any env var,** update docs/ENV-VARS.md in the same commit.
+6. **If the goal (or the conversation that triggered it) surfaces a non-trivial idea** — a feature, marketing play, competitive observation, monetization lever, etc. — add an entry to docs/IDEAS.md before session end. Same discipline as SESSION-LOG. The idea is the unit of work; capturing it is the contract. The idea bank is what lets a future Sunday review session triage what made it through the week.
 
 This contract is non-negotiable. Skipping it loses context across sessions and the build drifts. If a goal claims to be too small to log — log it anyway in one sentence. Future-you will thank you.
 

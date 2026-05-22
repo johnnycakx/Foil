@@ -8,6 +8,36 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-22 — Session 17: IDEAS.md idea bank as the 6th second-brain doc + bot integration
+
+**Commits:** this commit only
+
+**Summary.** The five existing second-brain docs (ROADMAP, DECISIONS, SESSION-LOG, ENV-VARS, RISKS) cover *committed* state. There was no home for "noticed but not yet decided" — the typical Cowork or Discord conversation surfaces a few ideas per hour, and those ideas were living in chat history until they got manually copied or forgotten. Added `docs/IDEAS.md` as the 6th canonical doc, seeded with 12 entries from this morning's competitive scan, and wired it into the bot at two integration points (always-on grounding + `/ideas` slash command).
+
+**Filename collision (resolved up front).** Session 16 had landed `docs/IDEAS.md` as a cross-cutting *engineering pattern* surface (seeded with I-001 "Stop fighting interactive-first CLIs"). This session repurposes that filename for the *product idea bank*. Renamed Session 16's file to `docs/PATTERNS.md` via `git mv` (history preserved). Updated Session 16's SESSION-LOG paragraph in-place with a "originally created as docs/IDEAS.md and renamed in Session 17" note. ADR-009's Session 15 amendment doesn't reference the file by name, so no edit needed there.
+
+**What landed.**
+
+- [`docs/IDEAS.md`](IDEAS.md) (new — product idea bank). Per-entry YAML frontmatter (`date`, `category`, `status`) → `## <title>` → 1-3 sentence idea → `**Context:**` line. Categories bounded to `product · marketing · content · infra · monetization · ux · growth`. Statuses: `captured` (default) → `triaged` / `promoted` / `rejected` / `shipped`. Seeded with 12 ideas from 2026-05-22 Cowork (Japanese cards, sleeved-card fixture [promoted], Android MVP, lifetime tier, programmatic SEO, grading matrix, Scrydex benchmark, binder bulk scan, pricing-methodology page, community moat, newsletter affiliate links, Cowork→bot sync).
+- [`docs/PATTERNS.md`](PATTERNS.md) (renamed from the Session-16 IDEAS.md; content unchanged). I-001 stays put.
+- [ADR-019](DECISIONS.md#adr-019--idea-bank-as-the-6th-second-brain-doc) — Context (chat-history rot), three options (stuff ROADMAP LATER / append to SESSION-LOG / standalone), decision, bot integration plan, consequences, caveats. Cross-refs ADR-006 (autonomy-first) and ADR-013 (bot grounding mechanism).
+- CLAUDE.md — added IDEAS.md as 6th doc under "Project Second Brain", new hard-contract rule (6th item) requiring goal-time idea capture, PATTERNS.md mentioned as a distinct file.
+- `bot/src/system-prompt.ts` — added `parseIdeasFile` + `extractRecentIdeas` + `IdeaEntry` type + `IDEA_CATEGORIES` / `IDEA_STATUSES` exports. `buildSystemPrompt` now appends an "IDEAS.md (recent backlog — upstream of ROADMAP)" section to `<foil_context>` after SESSION-LOG. Cap: 30 entries / 5k tokens, whichever bites first.
+- `bot/src/handlers/slash-commands.ts` — new `/ideas [category]` command. No-arg form returns top-10 captured ideas across all categories; `category` uses Discord's `addChoices(...)` so the picker is auto-validated against the 7 valid values. Output format: `**N.** \`[category]\` Title _(YYYY-MM-DD)_`, ≤1900 chars total, ephemeral reply. `/help` updated to list the new command.
+- `bot/src/__tests__/system-prompt.test.ts` — 6 new tests pin: parser shape, unknown-category/status skipped silently (one bad row can't take grounding offline), empty input → `[]`, `extractRecentIdeas` `maxEntries` cap, rendered block surfaces category+status+date, `buildSystemPrompt` actually injects IDEAS content into the prompt. Bot suite now 68/68 (was 62/62; +6).
+
+**Validation.** `parseIdeasFile(readFileSync("docs/IDEAS.md"))` returns 12 entries with the right shape (1 `promoted`, 11 `captured` across product/monetization/content/infra/growth). Root typecheck clean. Bot typecheck clean. Bot suite 68/68. Root suite continues to show the same 5 Anthropic-529 vision failures from Session 15/16 — externally caused, no relation to this goal.
+
+**Bot deploy note.** New entries added to IDEAS.md during a running session don't appear in `<foil_context>` until the next bot restart (the grounding is read at process boot, by design — same as the other 5 docs). The `/ideas` slash command reads IDEAS.md fresh on every invocation, so it's not affected. Railway redeploys on push to main, so this commit will load the new file into a fresh process within a minute or two.
+
+**Key decisions made.** [ADR-019](DECISIONS.md#adr-019--idea-bank-as-the-6th-second-brain-doc) — Idea bank as 6th doc.
+
+**Follow-ups.** First Sunday review session — 2026-05-24 — should triage the 11 captured entries. ROADMAP rows promoted from IDEAS should carry a `<!-- promoted from IDEAS YYYY-MM-DD -->` comment so the lineage is visible.
+
+**State at session end.** Idea bank live + bot grounded against it + `/ideas` queryable from Discord. ROADMAP NOW unchanged (4 manual items still pending).
+
+---
+
 ## 2026-05-22 — Session 16: Railway via REST API, not CLI, for autonomous workflows
 
 **Commits:** this commit only
@@ -19,7 +49,7 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 - [`lib/__tests__/railway-api.test.ts`](../lib/__tests__/railway-api.test.ts) (new) — 10 tests pinning: missing-token → ok:false, POST shape (endpoint URL + Bearer header + JSON body + variables passthrough), GraphQL `errors` array surfaced, non-2xx HTTP, fetch-throw soft-fail, empty serviceId rejected without hitting the network, LatestDeployment parses + extracts commit SHA from `meta.commitHash`, "no deployments yet" distinguished from other failures via `error: "no_deployments"`, `meta=null` handled gracefully, predicate truth tables.
 - [ADR-009 Session 15 amendment](DECISIONS.md#adr-009--local-cli-tooling-for-autonomous-infra-changes) — added the 3rd-tier routing rule. CLIs route by *whether the workflow needs vendor link state*, not by whether the CLI exists. Tier 1 (CLI works headless), Tier 2 (REST/GraphQL wrapper), Tier 3 (manual UI playbook).
 - CLAUDE.md — updated the "Local CLI tooling" entry for Railway to call out that status checks now go through `lib/railway-api.ts`. Updated the routing-rule list for the Railway row to split deploy/env-var-write/status-read into distinct call paths.
-- [`docs/IDEAS.md`](IDEAS.md) (new) — seeded with I-001 "Stop fighting interactive-first CLIs", the cross-cutting pattern Session 15 + 16 made explicit. Will promote to a dedicated ADR once a second vendor fits the same shape (Linear and Stripe `customers list` are the likely candidates).
+- [`docs/PATTERNS.md`](PATTERNS.md) (new — originally created as `docs/IDEAS.md` and renamed in Session 17 when IDEAS.md was repurposed as the product-idea bank) — seeded with I-001 "Stop fighting interactive-first CLIs", the cross-cutting pattern Session 15 + 16 made explicit. Will promote to a dedicated ADR once a second vendor fits the same shape (Linear and Stripe `customers list` are the likely candidates).
 
 **Tests.**
 - Root suite: 230/235 pass (was 220/225 in Session 15; +10 new railway-api tests). Same 5 `Anthropic 529 overloaded_error` failures in `vision-prompt.test.ts` + `vision-confirm.test.ts` — confirmed unrelated; no new failures introduced.
@@ -30,7 +60,7 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 **Trigger path unchanged.** Pushes to `main` still fire Railway's GitHub auto-deploy. No new mechanism for *triggering* deploys — only for verifying them.
 
-**Key decisions made.** No new ADR — extended [ADR-009](DECISIONS.md#adr-009--local-cli-tooling-for-autonomous-infra-changes) in place with the Session 15 amendment, matching the pattern Session 14 used for its Supabase+Railway addition. Seeded [docs/IDEAS.md](IDEAS.md) for the cross-cutting pattern.
+**Key decisions made.** No new ADR — extended [ADR-009](DECISIONS.md#adr-009--local-cli-tooling-for-autonomous-infra-changes) in place with the Session 15 amendment, matching the pattern Session 14 used for its Supabase+Railway addition. Seeded `docs/PATTERNS.md` (originally `docs/IDEAS.md`; renamed in Session 17) for the cross-cutting pattern.
 
 **Follow-ups.** Next vendor that surfaces the same TTY-required shape — likely Linear API or Stripe `customers list` — gets the same `lib/<vendor>-api.ts` wrapper treatment, and at that point I-001 promotes to an ADR.
 

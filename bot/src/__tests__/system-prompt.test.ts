@@ -9,8 +9,10 @@ import path from "node:path";
 import {
   buildSystemPrompt,
   extractLatestSession,
+  extractRecentIdeas,
   extractRisksHighMedium,
   extractRoadmapNowNext,
+  parseIdeasFile,
   personaForChannel,
 } from "../system-prompt.ts";
 
@@ -142,6 +144,145 @@ test("buildSystemPrompt picks the on-call eng persona for #errors", () => {
 test("buildSystemPrompt falls back to general persona on unknown channel", () => {
   const prompt = buildSystemPrompt({ channelName: "lounge", docsDir: "/nonexistent" });
   assert.ok(prompt.includes("helpful pair to John"));
+});
+
+test("parseIdeasFile extracts entries from per-entry frontmatter format", () => {
+  const md = `# Ideas
+
+Some prose.
+
+---
+
+---
+date: 2026-05-22
+category: product
+status: captured
+---
+## Japanese-card support
+
+Body sentence A. Body sentence B.
+
+**Context:** trigger A.
+
+---
+
+---
+date: 2026-05-22
+category: monetization
+status: promoted
+---
+## Lifetime tier
+
+Body of lifetime.
+
+**Context:** trigger B.
+
+---
+
+## Review cadence
+
+footer
+`;
+  const out = parseIdeasFile(md);
+  assert.equal(out.length, 2);
+  assert.equal(out[0].title, "Japanese-card support");
+  assert.equal(out[0].category, "product");
+  assert.equal(out[0].status, "captured");
+  assert.equal(out[1].title, "Lifetime tier");
+  assert.equal(out[1].status, "promoted");
+});
+
+test("parseIdeasFile skips entries with unknown category or status", () => {
+  const md = `---
+date: 2026-05-22
+category: bogus
+status: captured
+---
+## Skip me
+
+bad category.
+
+---
+
+---
+date: 2026-05-22
+category: product
+status: captured
+---
+## Keep me
+
+good.
+`;
+  const out = parseIdeasFile(md);
+  assert.equal(out.length, 1);
+  assert.equal(out[0].title, "Keep me");
+});
+
+test("parseIdeasFile returns [] for missing/empty content", () => {
+  assert.deepEqual(parseIdeasFile(""), []);
+  assert.deepEqual(parseIdeasFile("# Ideas\n\nNo entries yet.\n"), []);
+});
+
+test("extractRecentIdeas caps to maxEntries and produces a single rendered block", () => {
+  const blocks = Array.from({ length: 5 }, (_, i) =>
+    [
+      "---",
+      "date: 2026-05-22",
+      "category: product",
+      "status: captured",
+      "---",
+      `## Idea ${i + 1}`,
+      `Body ${i + 1}.`,
+    ].join("\n"),
+  ).join("\n\n");
+  const out = extractRecentIdeas(blocks, { maxEntries: 3, maxChars: 1_000_000 });
+  assert.ok(out.includes("Idea 1"));
+  assert.ok(out.includes("Idea 2"));
+  assert.ok(out.includes("Idea 3"));
+  assert.ok(!out.includes("Idea 4"));
+});
+
+test("extractRecentIdeas surfaces category + status + date in the rendered block", () => {
+  const md = `---
+date: 2026-05-22
+category: growth
+status: captured
+---
+## Community moat
+
+Body text here.
+`;
+  const out = extractRecentIdeas(md);
+  assert.match(out, /\[growth\] Community moat/);
+  assert.match(out, /captured, 2026-05-22/);
+});
+
+test("buildSystemPrompt includes IDEAS.md content in <foil_context>", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "foil-prompt-ideas-"));
+  try {
+    writeFileSync(path.join(dir, "BRIEFING.md"), "# Briefing");
+    writeFileSync(path.join(dir, "ROADMAP.md"), "# Roadmap\n\n## NOW\n\n## NEXT\n\n## LATER\n");
+    writeFileSync(path.join(dir, "RISKS.md"), "");
+    writeFileSync(path.join(dir, "SESSION-LOG.md"), "");
+    writeFileSync(
+      path.join(dir, "IDEAS.md"),
+      `---
+date: 2026-05-22
+category: product
+status: captured
+---
+## IDEAS_PROBE
+
+Body of idea.
+`,
+    );
+
+    const out = buildSystemPrompt({ channelName: "general", docsDir: dir });
+    assert.ok(out.includes("IDEAS.md"));
+    assert.ok(out.includes("IDEAS_PROBE"));
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
 });
 
 test("buildSystemPrompt enforces token cap by truncating from the end", () => {
