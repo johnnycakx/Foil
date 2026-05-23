@@ -51,7 +51,18 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 - The `frontend-design:frontend-design` skill is a guidance-only skill (no tools/codegen). Documented above so a future session reaches for it deliberately when designing a new surface, not as a magic codegen lever.
 - The era list (`ERA_RANK`) covers WotC through SV. Future eras (when Pokémon Co prints a new series) need an entry added; unknown eras fall to rank 500 ("Other" gets 999).
 
-**State at session end.** Verification + observations below.
+**Live verification (criterion 10).**
+
+- Vercel auto-deploy fired github-triggered on commit `2f6212d` → deployment `foil-4tcxba3v9-foilapp.vercel.app` Ready in 2 minutes (longer than usual because SSG pre-rendered 18 new `/cards/sets/<id>` routes + the era-grouped `/cards` index fetched the full pokemontcg.io sets list at build time).
+- All 5 surfaces from criterion 10 return HTTP 200: `/`, `/cards`, `/cards/sets/base1`, `/cards/base1-4-charizard`, `/blog`.
+- `/cards` renders **7 era sections** (Base, Gym, Neo, Sun & Moon, Sword & Shield, Scarlet & Violet, Other) containing **18 set-tile links** — every catalog set is reachable from the era index.
+- `/cards/sets/base1` renders **16 card links** with title `Base — Best Pokémon TCG card deals | Foil`; the set-logo header, year, and `16 cards tracked` count all render.
+- `/cards/base1-4-charizard` now exposes the new `See all in Base →` link pointing at `/cards/sets/base1` next to the related-cards header.
+- Homepage hero confirmed live: chip reads `Live · tracking 200 cards across 18 sets` with the pulsing-dot animation, plus the new `Browse the catalog →` primary CTA button visible above the newsletter form.
+
+**One non-obvious observation (not a regression, logged per criterion 10).** Legendary Collection (`base6`) lands under the "Other" era heading rather than under "Base." Reason: the Pokemon TCG SDK assigns this set `series: "Other"` directly (verified by curling `api.pokemontcg.io/v2/sets/base6`); my `ERA_RANK` table doesn't override that, so it falls to rank 500. Cosmetic only — the set is still listed and accessible; its 19 tracked cards still work. Two paths if you want to clean this up later: (a) add a `SET_TO_ERA_OVERRIDE` map in `app/(site)/cards/page.tsx` that re-classifies SDK-misfiled sets into our era hierarchy, or (b) rename "Other era" to something more flattering like "Special sets" so the bucket reads less like a fallback. Neither is urgent.
+
+**State at session end.** Three-tier browse live in production: `/cards` (era → set tiles) → `/cards/sets/<id>` (catalog grid for one set) → `/cards/<slug>` (deal page). 200 cards × 18 sets × 7 eras all reachable via static-generated routes; sitemap still lists the 200 individual deal pages (per-set pages aren't in the sitemap yet — separate question, can be added later if SEO ranking signals suggest it). Frontend-design plugin principles applied to the era-set grid (logo tiles, hover-lift, era-heading hierarchy), the homepage hero (live-pulse chip + radial-gradient atmosphere + explicit primary CTA), and the per-card deal block (live-pulse motif consistency). No fonts or palette changes — brand fully preserved per goal constraints.
 
 ---
 
