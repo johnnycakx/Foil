@@ -1,20 +1,17 @@
-// /cards/[slug] — V1 per-card landing page (deal-finder MVP).
+// /cards/[slug] — V1 per-card landing pages (deal-finder MVP).
 //
-// Per ADR-020 + ADR-021, this is the first concrete proof of the deal-finder
-// product direction. Hardcoded to Charizard (Base Set #4) for V1; the
-// 200-card programmatic pipeline (ROADMAP NEXT #8) lands in a follow-on goal.
+// As of Session 22 the route is parameterized over the 200-card catalog in
+// `lib/cards/catalog.ts`. Each slug maps to a Pokemon TCG SDK id; metadata
+// (name, set, image, rarity) is fetched from pokemontcg.io with a 24h
+// revalidate; the EPN call for the best current listing remains
+// render-time + `cache: "no-store"` per ADR-021 / R-008.
 //
-// Compliance posture (R-008 in docs/RISKS.md):
-//   - Server-side EPN fetch only, render-time, `cache: "no-store"` (in epn.ts).
-//   - We render the listing inline and DON'T persist it anywhere.
-//   - Editorial copy below the fold makes NO listing-specific claims about
-//     price, condition, or seller — the live listing block self-describes.
-//   - Affiliate URLs always include EBAY_CAMPAIGN_ID + customid=foil-card-page.
-//
-// Soft-fail design: if EPN returns no usable best-listing (network down, no
-// matches, misconfigured creds), the page still renders 200 with a fallback
-// "Browse Charizard listings on eBay" CTA via `affiliateSearchUrl`. The page
-// is robust to EPN downtime by construction.
+// SSG: `generateStaticParams` returns every catalog slug so the build
+// pre-renders all 200 routes. Pokemon TCG SDK fetches at build time are
+// cached for 24h, so subsequent builds re-use the snapshot. EPN fetches
+// still run at request time — `dynamicParams = false` + `dynamic =
+// "force-dynamic"` together: only known slugs render, but each render
+// re-fetches EPN.
 
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -24,32 +21,17 @@ import {
   getBestListing,
   type EpnBestListing,
 } from "@/lib/affiliate/epn";
+import { CARD_CATALOG, getCatalogEntry, relatedCardsForSlug } from "@/lib/cards/catalog";
+import { getCardMetadata, type CardMetadata } from "@/lib/cards/sdk";
 import { schemaGraph, serializeJsonLd } from "@/lib/seo/schema-helpers";
 
 export const dynamic = "force-dynamic";
+export const dynamicParams = false;
 export const runtime = "nodejs";
 
-// V1 single-card catalog. The 200-card pipeline (NEXT #8) will replace this
-// with a generated source backed by Pokemon TCG SDK.
-type CardEntry = {
-  slug: string;
-  name: string;
-  setName: string;
-  setSlug: string;
-  collectorNumber: string;
-  image: string;
-};
-
-const CARDS: Record<string, CardEntry> = {
-  "charizard-base-set-4": {
-    slug: "charizard-base-set-4",
-    name: "Charizard",
-    setName: "Base Set",
-    setSlug: "base1",
-    collectorNumber: "4",
-    image: "https://images.pokemontcg.io/base1/4.png",
-  },
-};
+export function generateStaticParams() {
+  return CARD_CATALOG.map((entry) => ({ slug: entry.slug }));
+}
 
 function siteUrl(): string {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.foiltcg.com";
@@ -67,29 +49,40 @@ function formatPrice(price: number, currency: string): string {
   }
 }
 
+function titleFor(card: CardMetadata): string {
+  return `${card.name} (${card.setName}) — Best deals on eBay | Foil`;
+}
+
+function descriptionFor(card: CardMetadata): string {
+  return `Live ${card.name} (${card.setName}) listings on eBay, sorted to surface the best current deal. Watchlist alerts when prices drop to your target.`;
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const card = CARDS[slug];
-  if (!card) return {};
+  const entry = getCatalogEntry(slug);
+  if (!entry) return {};
+  const card = await getCardMetadata({ id: entry.pokemonTcgId });
   return {
-    title: `${card.name} (${card.setName}) — Best deals on eBay | Foil`,
-    description: `Live ${card.name} (${card.setName}) listings on eBay, sorted to surface the best current deal. Watchlist alerts when prices drop to your target.`,
-    alternates: { canonical: `/cards/${card.slug}` },
+    title: titleFor(card),
+    description: descriptionFor(card),
+    alternates: { canonical: `/cards/${slug}` },
     openGraph: {
       type: "website",
-      title: `${card.name} (${card.setName}) — Best deals on eBay | Foil`,
+      title: titleFor(card),
       description: `Live ${card.name} listings sorted by price. Set a target and we'll email you when one drops.`,
       siteName: "Foil",
-      url: `/cards/${card.slug}`,
+      url: `/cards/${slug}`,
+      images: card.image ? [{ url: card.image }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title: `${card.name} (${card.setName}) — Best deals on eBay`,
       description: `Live ${card.name} listings sorted by price.`,
+      images: card.image ? [card.image] : undefined,
     },
   };
 }
@@ -100,10 +93,12 @@ export default async function CardPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const card = CARDS[slug];
-  if (!card) notFound();
+  const entry = getCatalogEntry(slug);
+  if (!entry) notFound();
 
-  // Render-time fetch — no caching. Soft-fails to null on any EPN error.
+  const card = await getCardMetadata({ id: entry.pokemonTcgId });
+
+  // Render-time EPN fetch — no caching. Soft-fails to null on any EPN error.
   const best: EpnBestListing | null = await getBestListing({
     cardName: card.name,
     setName: card.setName,
@@ -112,15 +107,13 @@ export default async function CardPage({
 
   const fallbackUrl = affiliateSearchUrl(`${card.name} ${card.setName}`, "foil-card-page");
 
-  // schema.org/Product. `offers` array populated only when a live best
-  // listing is available — keeps the markup honest under degraded conditions.
-  const canonical = `${siteUrl()}/cards/${card.slug}`;
+  const canonical = `${siteUrl()}/cards/${slug}`;
   const productSchema: Record<string, unknown> = {
     "@type": "Product",
     name: `${card.name} (${card.setName})`,
     description: `Live ${card.name} (${card.setName}) listings on eBay, sorted to surface the best current deal.`,
-    image: card.image,
-    sku: card.slug,
+    image: card.image || undefined,
+    sku: slug,
     mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
   };
   if (best) {
@@ -136,6 +129,8 @@ export default async function CardPage({
     ];
   }
   const jsonLd = schemaGraph(productSchema);
+
+  const related = relatedCardsForSlug(slug, 6);
 
   return (
     <div className="flex min-h-dvh flex-1 flex-col bg-[#0B1428] text-white antialiased">
@@ -165,17 +160,26 @@ export default async function CardPage({
 
         <article>
           <div className="flex flex-col gap-8 sm:flex-row sm:items-start">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={card.image}
-              alt={`${card.name} (${card.setName}) #${card.collectorNumber} card art`}
-              className="w-48 self-center rounded-xl border border-white/10 shadow-2xl sm:self-start"
-              width={245}
-              height={342}
-            />
+            {card.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={card.image}
+                alt={`${card.name} (${card.setName}) #${card.number} card art`}
+                className="w-48 self-center rounded-xl border border-white/10 shadow-2xl sm:self-start"
+                width={245}
+                height={342}
+              />
+            ) : (
+              <div
+                aria-hidden
+                className="w-48 self-center rounded-xl border border-white/10 bg-[#101D38] sm:self-start"
+                style={{ aspectRatio: "245 / 342" }}
+              />
+            )}
             <div className="flex-1">
               <p className="font-mono text-xs uppercase tracking-wider text-zinc-400">
-                {card.setName} · #{card.collectorNumber}
+                {card.setName} · #{card.number}
+                {card.rarity ? <> · {card.rarity}</> : null}
               </p>
               <h1 className="mt-2 text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
                 {card.name}
@@ -241,7 +245,7 @@ export default async function CardPage({
               Set a target price; we&apos;ll email you the moment a {card.name}{" "}
               listing meets it. No account required.
             </p>
-            <WatchlistForm cardSlug={card.slug} />
+            <WatchlistForm cardSlug={slug} cardName={card.name} />
           </section>
 
           <section className="mt-12 border-t border-white/5 pt-8 text-sm text-zinc-300">
@@ -250,11 +254,13 @@ export default async function CardPage({
             </h2>
             <div className="mt-3 space-y-4 leading-relaxed">
               <p>
-                {card.name} from {card.setName} is one of the most recognized
-                Pokemon TCG singles. Card #{card.collectorNumber} in the set,
-                printed as a Holo Rare in the original {card.setName} run.
-                Pricing varies widely by condition, print run (1st Edition,
-                Shadowless, Unlimited), and grading authority.
+                {card.name} from {card.setName}
+                {card.releaseDate ? <> ({formatReleaseYear(card.releaseDate)})</> : null}
+                {" "}is a Pokemon TCG single tracked on Foil. Card #{card.number}
+                {card.rarity ? <> in the set, printed as {card.rarity}</> : null}.
+                Pricing varies widely by condition, print run, and grading
+                authority — the Best Current Listing block above shows the
+                lowest live eBay listing across raw and graded variants.
               </p>
               <p>
                 Foil surfaces the lowest current eBay listing on every page
@@ -264,6 +270,33 @@ export default async function CardPage({
               </p>
             </div>
           </section>
+
+          {related.length > 0 && (
+            <aside className="mt-12 border-t border-white/5 pt-8" aria-labelledby="related-heading">
+              <h2 id="related-heading" className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+                More from {card.setName}
+              </h2>
+              <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+                {related.map((r) => {
+                  const display = r.slug.split("-").slice(2).join(" ").replace(/\b\w/g, (c) => c.toUpperCase());
+                  const number = r.pokemonTcgId.split("-").slice(1).join("-");
+                  return (
+                    <li key={r.slug}>
+                      <Link
+                        href={`/cards/${r.slug}`}
+                        className="block rounded-xl border border-white/5 bg-[#101D38] p-4 transition hover:border-[#FF6B5C]/30"
+                      >
+                        <p className="font-mono text-[11px] uppercase tracking-wider text-zinc-500">
+                          #{number}
+                        </p>
+                        <p className="mt-1 font-semibold text-white">{display}</p>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </aside>
+          )}
         </article>
       </main>
 
@@ -279,19 +312,22 @@ export default async function CardPage({
   );
 }
 
-// Client component: small inline form that POSTs to /api/watchlist. Inline
-// rather than a shared component because (a) it's currently the only caller
-// and (b) the form shape may change as we learn how subscribers actually use
-// it. Promote to components/ on the second instance.
-function WatchlistForm({ cardSlug }: { cardSlug: string }) {
+function formatReleaseYear(release: string): string {
+  // Pokemon TCG SDK uses "YYYY/MM/DD" — pull the year for a casual mention.
+  const m = release.match(/^(\d{4})/);
+  return m ? m[1] : release;
+}
+
+function WatchlistForm({ cardSlug, cardName }: { cardSlug: string; cardName: string }) {
+  // Inline POST-as-JSON via a tiny script — keeps the page a Server Component
+  // while still hitting /api/watchlist with the right shape.
   return (
     <form
       className="mt-4 flex flex-col gap-3 sm:flex-row"
       data-card-slug={cardSlug}
+      data-card-name={cardName}
       action={`/api/watchlist`}
       method="post"
-      // The actual POST is handled by an inline script below — see notes there.
-      onSubmit={undefined}
     >
       <input
         type="email"
@@ -315,9 +351,6 @@ function WatchlistForm({ cardSlug }: { cardSlug: string }) {
       >
         Notify me
       </button>
-      {/* Tiny inline script: shapes the form payload into the JSON the
-          /api/watchlist route expects, then submits via fetch. Keeps the
-          page a Server Component while still posting JSON. */}
       <script
         dangerouslySetInnerHTML={{
           __html: `
@@ -341,7 +374,7 @@ function WatchlistForm({ cardSlug }: { cardSlug: string }) {
                   .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
                   .then(function (res) {
                     if (res.ok && res.body && res.body.ok) {
-                      form.innerHTML = '<p class="text-sm text-zinc-300">Got it — we\\'ll email you when ' + form.dataset.cardSlug.split('-').slice(0, -2).join(' ') + ' hits your target.</p>';
+                      form.innerHTML = '<p class="text-sm text-zinc-300">Got it — we\\'ll email you when ' + (form.dataset.cardName || 'this card') + ' hits your target.</p>';
                     } else if (btn) {
                       btn.disabled = false;
                       btn.textContent = 'Try again';

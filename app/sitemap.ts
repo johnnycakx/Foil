@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getAllPosts } from "./blog/posts-meta";
+import { CARD_CATALOG } from "@/lib/cards/catalog";
 
 function siteUrl(): string {
   return (
@@ -35,5 +36,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...landings, ...posts];
+  // V1 deal-finder per-card landing pages — the programmatic SEO surface
+  // (ADR-020 + ADR-021). One URL per catalog entry; changefreq daily because
+  // the EPN-driven "best listing" block updates on every page load, even
+  // though the catalog metadata itself is stable.
+  const cards: MetadataRoute.Sitemap = CARD_CATALOG.map((entry) => ({
+    url: `${base}/cards/${entry.slug}`,
+    lastModified: now,
+    changeFrequency: "daily",
+    priority: 0.8,
+  }));
+
+  return [...landings, ...posts, ...cards];
 }

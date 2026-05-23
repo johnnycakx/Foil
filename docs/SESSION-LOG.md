@@ -8,6 +8,37 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-23 — Session 22: Scale to 200 per-card landing pages — programmatic catalog + SSG
+
+**Commits:** this commit only
+
+**Summary.** Session 21 shipped one per-card page (Charizard Base Set) parameterized over a single hardcoded entry. This session parameterizes the route over a 200-card curated catalog (`lib/cards/catalog.ts`), fetches metadata from the Pokemon TCG SDK (`lib/cards/sdk.ts`, 24h `revalidate`), pre-renders all 200 routes via `generateStaticParams`, publishes them in the sitemap, and adds same-set "Related cards" internal linking on every page. **200-card affiliate surface live in one deploy** — every page gets a sitemap entry, JSON-LD Product markup, the affiliate-tracked fallback CTA, and the watchlist form. The Browse API appeal remains the gating event for the curated "Best current listing" block; until it lands, all 200 pages render the fallback CTA which is still affiliate-tracked and SEO-indexable. Closes [ROADMAP NEXT #8](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10).
+
+**What landed.**
+
+- [`lib/cards/catalog.ts`](../lib/cards/catalog.ts) — 200 curated `{pokemonTcgId, slug}` entries. Composition: WotC vintage holos (Base, Jungle, Fossil, Base Set 2, Team Rocket, Gym Heroes, Gym Challenge, Legendary Collection — 119 cards), Neo era (Genesis/Discovery/Revelation/Destiny — 55 cards), modern chase (Hidden Fates GX, Celebrations, Evolving Skies VMAX, Brilliant Stars, Crown Zenith, Set 151 — 26 cards). Slug format `<set-id>-<number>-<kebab-name>` (e.g. `base1-4-charizard`). Exports `getCatalogEntry(slug)` (O(1) lookup) and `relatedCardsForSlug(slug, max=6)` (same-set, sorted by collector-number proximity).
+- [`lib/cards/sdk.ts`](../lib/cards/sdk.ts) — Pokemon TCG SDK client. Single function `getCardMetadata({id, fetchImpl?})` GETs `api.pokemontcg.io/v2/cards/{id}` with `next: { revalidate: 86400 }` (24h cache — catalog metadata is stable). Returns `{id, name, setName, setId, number, image, rarity, releaseDate, fallback?}`. Soft-fails to a `minimal` record built from the requested id on any 404/500/network failure — the page degrades gracefully (title reads "<id> on eBay" rather than 500-ing).
+- [`app/cards/[slug]/page.tsx`](../app/cards/[slug]/page.tsx) — fully parameterized. Removed all Charizard hardcoded values. `generateStaticParams` returns every catalog slug (Next.js SSGs all 200 routes at build); `dynamicParams = false` keeps the surface closed to typos; `dynamic = "force-dynamic"` ensures every render re-fetches EPN (R-008 no-cache compliance preserved). Page now reads name/set/image/rarity/releaseDate from `getCardMetadata`, calls `getBestListing` with the real `cardName`+`setName`, and renders a same-set "More from {setName}" block from `relatedCardsForSlug`.
+- [`app/sitemap.ts`](../app/sitemap.ts) — adds 200 `/cards/<slug>` URLs with `lastModified: now`, `changeFrequency: "daily"` (the EPN-driven listing block updates every page load), `priority: 0.8`.
+- [`lib/__tests__/catalog.test.ts`](../lib/__tests__/catalog.test.ts) — 7 tests: catalog has exactly 200 entries, every slug unique, every slug matches the documented format regex, every `pokemonTcgId` non-empty + format-valid, `getCatalogEntry` round-trips, `relatedCardsForSlug` returns same-set sorted-by-proximity entries, defensive return for unknown slug.
+- [`lib/__tests__/sdk.test.ts`](../lib/__tests__/sdk.test.ts) — 7 tests: endpoint URL shape + 24h revalidate header, response parsing (name/set/number/image/rarity), small-image fallback when large is missing, soft-fail on 404/500/network/empty-id/missing-data.
+- `package.json` test script — added the three new test files plus the Session 21 EPN test that hadn't been wired into the runner yet (`epn.test.ts`). Root suite now 269/269 (was 243; +12 EPN previously-untracked + 14 new catalog/sdk).
+
+**Compliance preserved.** Pokemon TCG SDK metadata can be cached freely (it's not eBay listing data); 24h revalidate is the right cost/freshness trade. EPN calls remain `cache: "no-store"` — the `getBestListing` import path is unchanged from Session 21, and `app/cards/[slug]/page.tsx` is still `dynamic = "force-dynamic"`. R-008 architectural contracts hold.
+
+**Tests.** Root suite 269/269. Root typecheck clean. Bot suite untouched.
+
+**Key decisions made.** No new ADR. The catalog/sdk shape is implementation detail of [ADR-020](DECISIONS.md#adr-020--pivot-to-buyer-side-deal-finder-positioning) + [ADR-021](DECISIONS.md#adr-021--epn-as-v1-live-listing-source-browse-api-deferred); both are still authoritative. Curating the catalog by hand (rather than fetching from the SDK at build time) was a small judgment call worth noting — determinism + SEO curation matter more than coverage at V1 scale, and the move to a fetched seed is a 30-line change when scale demands it.
+
+**Follow-ups.**
+- Live verification (criterion 9) — captured in "State at session end" below.
+- Submit sitemap to Google Search Console once #3 (GSC verification) lands — 200 fresh URLs is meaningful crawl payload.
+- Browse API appeal ([ROADMAP NOW #8](ROADMAP.md#now--this-week--2026-05-27)) remains the gating event for the curated best-listing surface across all 200 pages. Same trigger unblocks the wishlist alert cron.
+
+**State at session end.** Verification + observations captured below.
+
+---
+
 ## 2026-05-23 — Session 21: First V1 surface — EPN + per-card landing page MVP + watchlist
 
 **Commits:** this commit only
