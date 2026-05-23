@@ -50,17 +50,34 @@ export default async function Home() {
 function Header() {
   return (
     <header className="sticky top-0 z-20 border-b border-white/5 bg-[#0B1428]/90 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
-        <span className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
+        <Link
+          href="/"
+          className="flex items-center gap-2 text-lg font-semibold tracking-tight text-white transition hover:text-zinc-200"
+        >
           <span className="inline-block h-2 w-2 rounded-full bg-[#FF6B5C]" />
           Foil
-        </span>
-        <Link
-          href="/login"
-          className="text-sm text-zinc-300 transition hover:text-white"
-        >
-          Sign in
         </Link>
+        <nav className="flex items-center gap-5 text-sm">
+          <Link
+            href="/cards/base1-4-charizard"
+            className="text-zinc-300 transition hover:text-white"
+          >
+            Browse cards
+          </Link>
+          <Link
+            href="/blog"
+            className="text-zinc-300 transition hover:text-white"
+          >
+            Blog
+          </Link>
+          <Link
+            href="/login"
+            className="text-zinc-300 transition hover:text-white"
+          >
+            Sign in
+          </Link>
+        </nav>
       </div>
     </header>
   );
