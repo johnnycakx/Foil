@@ -3,9 +3,9 @@ import Link from "next/link";
 import { getAllPosts } from "./posts-meta";
 import { EmailCapture } from "@/components/email-capture";
 
-const TITLE = "Foil Blog — Pokémon card valuation, scanning, and grading";
+const TITLE = "Foil Blog — Pokémon TCG deals, pricing, and market reads";
 const DESCRIPTION =
-  "Field notes on Pokémon card prices, scanning workflows, condition grading, and Japanese-set deep dives from the team building Foil.";
+  "Field notes on Pokémon card deals, market pricing, condition grading, and what's worth buying right now — from the team building Foil.";
 const URL_PATH = "/blog";
 
 export const metadata: Metadata = {
@@ -70,8 +70,8 @@ export default function BlogIndexPage() {
           Foil Blog
         </h1>
         <p className="mt-4 max-w-2xl text-lg text-zinc-300">
-          Posts on Pokémon card valuation, scanning workflows, condition grading,
-          and Japanese-set deep dives — from the team building Foil.
+          Posts on Pokémon card deals, market pricing, condition grading, and
+          what&apos;s actually worth buying right now — from the team building Foil.
         </p>
 
         {posts.length === 0 ? (
@@ -121,7 +121,7 @@ export default function BlogIndexPage() {
         <div className="mx-auto w-full max-w-4xl px-5 py-10 sm:px-8">
           <EmailCapture source="site-footer" variant="footer" />
           <p className="mt-8 text-sm text-zinc-500">
-            © {new Date().getFullYear()} Foil. Pokémon TCG card valuation, in seconds.
+            © {new Date().getFullYear()} Foil. The best price on any Pokémon card.
           </p>
         </div>
       </footer>

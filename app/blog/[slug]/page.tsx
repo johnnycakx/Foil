@@ -191,7 +191,7 @@ export default async function BlogPostPage({
         <div className="mx-auto w-full max-w-3xl px-5 py-10 sm:px-8">
           <EmailCapture source="site-footer" variant="footer" />
           <p className="mt-8 text-sm text-zinc-500">
-            © {new Date().getFullYear()} Foil. Pokémon TCG card valuation, in seconds.
+            © {new Date().getFullYear()} Foil. The best price on any Pokémon card.
           </p>
         </div>
       </footer>
