@@ -35,7 +35,18 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 - Submit sitemap to Google Search Console once #3 (GSC verification) lands — 200 fresh URLs is meaningful crawl payload.
 - Browse API appeal ([ROADMAP NOW #8](ROADMAP.md#now--this-week--2026-05-27)) remains the gating event for the curated best-listing surface across all 200 pages. Same trigger unblocks the wishlist alert cron.
 
-**State at session end.** Verification + observations captured below.
+**Live verification (criterion 9).**
+
+- Vercel auto-deploy fired github-triggered on commit `038d219` → deployment `foil-814o712gn-foilapp.vercel.app` Ready in 28s with all 200 routes pre-rendered via `generateStaticParams`.
+- Three random card URLs spot-checked, all HTTP 200 with correctly-fetched SDK metadata:
+  - `/cards/base1-4-charizard` → `<title>Charizard (Base) — Best deals on eBay | Foil</title>` (note: Session 21's hardcoded "Base Set" is now "Base" matching the SDK source — minor cosmetic shift caused by trusting the data source)
+  - `/cards/gym2-2-blaines-charizard` → `<title>Blaine's Charizard (Gym Challenge) — Best deals on eBay | Foil</title>`
+  - `/cards/sv3pt5-199-charizard-ex` → `<title>Charizard ex (151) — Best deals on eBay | Foil</title>`
+- Sitemap at `https://foiltcg.com/sitemap.xml` contains all 200 `/cards/<slug>` URLs (counted via `grep -oE "/cards/[a-z0-9-]+" | sort -u | wc -l` → 200). First entry `base1-1-alakazam`, last `sv3pt5-205-mew-ex` — full coverage end-to-end.
+- Related-card internal linking verified: `/cards/base1-4-charizard` renders 6 same-set links in proximity-sorted order: base1-3 (chansey), base1-5 (clefairy), base1-2 (blastoise), base1-6 (gyarados), base1-1 (alakazam), base1-7 (hitmonchan). Distances are 1,1,2,2,3,3 — exactly as the `relatedCardsForSlug` sort intends.
+- Spot-checked that target related-card link is itself live: `/cards/base1-3-chansey` → 200; plus two more arbitrary slugs (`/cards/neo1-9-lugia`, `/cards/swsh7-8-leafeon-vmax`) → both 200.
+
+**State at session end.** 200 indexable per-card landing pages live in production. Sitemap published; Google Search Console submission unblocks once [ROADMAP NOW #3](ROADMAP.md#now--this-week--2026-05-27) lands. Affiliate-tracked surface multiplied 200x while the Browse API appeal pends — every page renders the fallback CTA wrapped with `campid=5339154326` + `customid=foil-card-page` and accepts watchlist captures. Once the Browse API appeal lands, the single endpoint swap in `lib/affiliate/epn.ts` (per the ADR-021 amendment) lights up the curated "Best current listing" block across all 200 pages without any per-page change.
 
 ---
 
