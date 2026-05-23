@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { WaitlistForm } from "./landing/waitlist-form";
+import { EmailCapture } from "@/components/email-capture";
 
 const SITE_TITLE = "Foil — The best price on any Pokémon card";
 const SITE_DESCRIPTION =
@@ -35,51 +34,13 @@ export default async function Home() {
   if (user) redirect("/upload");
 
   return (
-    <div className="flex min-h-dvh flex-1 flex-col bg-[#0B1428] text-white antialiased">
-      <Header />
+    <>
       <Hero />
       <HowItWorks />
       <ExampleResult />
       <FoundingMember />
       <FinalCTA />
-      <Footer />
-    </div>
-  );
-}
-
-function Header() {
-  return (
-    <header className="sticky top-0 z-20 border-b border-white/5 bg-[#0B1428]/90 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-lg font-semibold tracking-tight text-white transition hover:text-zinc-200"
-        >
-          <span className="inline-block h-2 w-2 rounded-full bg-[#FF6B5C]" />
-          Foil
-        </Link>
-        <nav className="flex items-center gap-5 text-sm">
-          <Link
-            href="/cards/base1-4-charizard"
-            className="text-zinc-300 transition hover:text-white"
-          >
-            Browse cards
-          </Link>
-          <Link
-            href="/blog"
-            className="text-zinc-300 transition hover:text-white"
-          >
-            Blog
-          </Link>
-          <Link
-            href="/login"
-            className="text-zinc-300 transition hover:text-white"
-          >
-            Sign in
-          </Link>
-        </nav>
-      </div>
-    </header>
+    </>
   );
 }
 
@@ -105,7 +66,7 @@ function Hero() {
       </p>
 
       <div className="mt-8 max-w-xl">
-        <WaitlistForm source="homepage_hero" variant="hero" />
+        <EmailCapture source="homepage_hero" variant="inline" headline="Get the weekly best-deals newsletter." />
         <p className="mt-3 text-xs text-zinc-500">
           Free at launch. No spam — we email when your wishlisted cards drop in price.{" "}
           <a
@@ -436,25 +397,10 @@ function FinalCTA() {
           and the first 100 signups get Founding Member at $39 instead of $59.
         </p>
         <div className="mt-6 max-w-xl">
-          <WaitlistForm source="homepage_final_cta" variant="hero" />
+          <EmailCapture source="homepage_final_cta" variant="inline" headline="Get the weekly best-deals newsletter." />
         </div>
       </div>
     </section>
   );
 }
 
-function Footer() {
-  return (
-    <footer className="border-t border-white/5 bg-[#0B1428]">
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-3 px-5 py-8 text-sm text-zinc-500 sm:flex-row sm:items-center sm:px-8">
-        <p>© {new Date().getFullYear()} Foil. The best price on any Pokémon card.</p>
-        <p>
-          Already have access?{" "}
-          <Link href="/login" className="text-zinc-300 underline decoration-zinc-700 underline-offset-4 transition hover:text-white hover:decoration-zinc-400">
-            Sign in
-          </Link>
-        </p>
-      </div>
-    </footer>
-  );
-}

@@ -8,6 +8,59 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-23 — Session 23: V1 design coherence — shared layout, /cards index, per-card polish, blog typography fix
+
+**Commits:** this commit only
+
+**Summary.** Design pass across the entire public surface. Four problems user-flagged at once: (1) inconsistent chrome — homepage, /blog, /blog/[slug], /cards/[slug], and the three pillar pages each re-implemented their own header/footer, so a nav change was a five-file edit; (2) per-card pages were functional but flat — small image, unstyled watchlist form, no visual hierarchy on the "Best deal" block; (3) blog markdown wasn't actually rendering as prose — `@tailwindcss/typography` was never installed, so every `prose-*` class on `app/blog/[slug]` was a no-op and posts shipped with browser-default styling; (4) the "Browse cards" nav link pointed at a single hard-coded card (`/cards/base1-4-charizard`) instead of a real index. All four resolved in one commit.
+
+**What landed.**
+
+- **Shared layout via route group.** New `app/(site)/layout.tsx` owns the sticky header + footer once. Pages migrated into the group via `git mv`: `app/page.tsx` → `app/(site)/page.tsx`, plus `blog/*`, `cards/*`, and the three pillar pages. Routes outside the group (`/login`, `/upload`, `/account`, `/auth/*`, `/api/*`) keep their own minimal layouts — the parens-based route-group syntax is the right tool: the URL paths don't change (`/blog` still resolves), only the layout boundary moves. Inline `Header()` / `Footer()` functions deleted from all five page files.
+
+- **`/cards` index page.** New `app/(site)/cards/page.tsx`. Server-rendered grouped catalog: 18 sets, each with a 2/3/4-column responsive grid of card thumbnails (Next.js `<Image>` against `images.pokemontcg.io` — added to `remotePatterns`), card name + collector number, hovering tints the border `#FF6B5C`. Set ordering follows the catalog's source order (Base → Jungle → Fossil → ... → Set 151), and within each set entries are sorted by collector number. Live search via `app/(site)/cards/cards-search.tsx` (client component) — toggles `hidden` on the SSR-rendered `<li data-card-slug>` nodes by substring-matching name OR set name; whole-section visibility collapses when zero cards match. SEO-friendly because the initial HTML still lists every card. `force-static` + `revalidate: 86400` — Pokemon TCG SDK metadata is fetched once per day at the index level.
+
+- **Per-card page polish.** `app/(site)/cards/[slug]/page.tsx` overhauled:
+  - Card image switched from raw `<img>` to `next/image` for optimization, bumped from `w-48` to `w-56` mobile / `w-64` desktop with a 2xl rounded border + shadow.
+  - "Best current listing" block now reads as a hero: gradient backdrop, `text-4xl`/`text-5xl` price, line-clamped listing title (so verbose eBay listings don't wreck the grid), a condition badge inferred from the title (PSA/BGS/CGC graded shows emerald; "NM/LP/MP" raw shows neutral pill). Affiliate-tracked microcopy moved into one cohesive footer-row of the card.
+  - Watchlist form moved into its own rounded card container alongside helper microcopy ("One-shot email · No spam · Unsubscribe..."). The inline-JS success state now replaces the entire form with a confirmation card (rounded `#FF6B5C/40` border, two-line message including the card name).
+  - Layout shifted to a `grid-cols-[16rem_1fr]` on desktop so the card art has its own column rather than the small floated-thumbnail look it had before.
+
+- **Blog typography fixed.** Installed `@tailwindcss/typography` and loaded it via `@plugin "@tailwindcss/typography";` in `app/globals.css` (Tailwind v4 plugin syntax — replaces the old `tailwind.config.js` plugins array). Extended the prose className in `app/(site)/blog/[slug]/page.tsx` with explicit overrides for `prose-h4`, `prose-a` (no-underline default + hover underline so external links don't look spammy), `prose-blockquote` (not-italic), inline `prose-code` (rounded `bg-white/10`, `before/after:content-none` to kill the smart-quote backticks), block `prose-pre` (rounded card on `#101D38`), `prose-hr`, `prose-table`/`th`/`td` for GFM tables, and `prose-img` (rounded with border). The plugin defaults handle every other element fine; these overrides are the dark-mode polish on top.
+
+- **EmailCapture vs WaitlistForm vs WatchlistForm — reconciled.** Kept `WatchlistForm` (inline in `app/(site)/cards/[slug]/page.tsx`, per-card with `target_price`). Kept `EmailCapture` (Beehiiv subscribe, newsletter signup). Deleted `WaitlistForm` + its Server Action (`app/landing/waitlist-action.ts`) + the pure validator (`app/landing/waitlist-validate.ts`) + the contract test (`lib/__tests__/waitlist-attribution.test.ts`). All call-sites (homepage hero + final CTA, three pillar pages) swapped to `<EmailCapture variant="inline" headline="Get the weekly best-deals newsletter." />`. The `waitlist` Supabase table itself stays (13 legacy rows; not actively written to from anywhere anymore).
+
+- **`next/image` config.** Added `images.pokemontcg.io` to `next.config.ts` `remotePatterns` so the catalog thumbnails render through Vercel's image optimizer.
+
+**Blog typography audit findings.** Walked every markdown element across the existing posts:
+  - `h1` — outside `prose` block (renders via custom `<h1>` in the page), unchanged. ✓
+  - `h2` / `h3` / `h4` — plugin default + `prose-h2:mt-12 prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg` overrides. ✓ (was previously unstyled because the plugin wasn't loaded — that was the silent bug.)
+  - `p` — `prose-p:text-zinc-300`. ✓
+  - `ul` / `ol` / `li` — plugin defaults with `prose-li:text-zinc-300 prose-ol:text-zinc-300 prose-ul:text-zinc-300` color overrides. ✓
+  - `blockquote` — `border-l-[#FF6B5C]/40 prose-blockquote:not-italic` (the plugin's default italic blockquote felt heavy against the dark theme). ✓
+  - Inline `code` — `before:content-none after:content-none` removes the plugin's default backtick wrappers; `bg-white/10` + `text-[#FFC7BA]` matches the brand. ✓
+  - Block `pre` — `bg-[#101D38] border border-white/10 rounded-xl`. (The existing rehype-pretty-code path also styles syntax-highlighted blocks via inline classes — those wrap in their own `<pre class="not-prose">`-ish structure that's preserved.) ✓
+  - GFM tables — `prose-th:text-white prose-th:border-white/15 prose-td:border-white/10 prose-td:text-zinc-300`. ✓
+  - `hr` — `prose-hr:border-white/10`. ✓
+  - `em` / `strong` — `prose-strong:text-white` override; em uses plugin default italic. ✓
+  - Markdown images — `prose-img:rounded-xl prose-img:border prose-img:border-white/10`. ✓
+  - Links — `prose-a:text-[#FF6B5C] prose-a:no-underline hover:prose-a:underline` (was already underlined; flipping to hover-only feels cleaner for dense paragraphs).
+
+  The root cause for all of this: `@tailwindcss/typography` was simply never installed. In Tailwind v4 the plugin loads via `@plugin "..."` in CSS (no `tailwind.config.js`); the install + one-line `globals.css` edit fixes it.
+
+**Tests.** Root suite: 263/263 (was 269; -6 waitlist tests removed alongside the deleted components). Typecheck: clean across `npx tsc --noEmit`.
+
+**Key decisions made.** No new ADR. UX polish is implementation detail of [ADR-020](DECISIONS.md#adr-020--pivot-to-buyer-side-deal-finder-positioning) (the deal-finder framing). Route-group reorg is a Next.js feature, not an architectural choice. The component-reconciliation call (delete `WaitlistForm`, keep `EmailCapture`) is the natural consequence of the pivot — the product is shipped, "waitlist for early access" framing no longer applies; ongoing newsletter is the durable email-capture surface.
+
+**Follow-ups.**
+- Live verification (criterion 7) — captured in "State at session end" below.
+- The /cards index uses `force-static` + 24h revalidate. If the Pokemon TCG SDK returns drift in card metadata (rarity reclassification, image-host URL change), the index lags 24h before catching up. Acceptable for V1.
+- The blog typography overrides cover the GFM elements I know about. New post styles that need richer rendering (callouts, custom Card components in MDX) keep using the existing `not-prose` pattern from `mdx-components.tsx`.
+
+**State at session end.** Verification + observations captured below.
+
+---
+
 ## 2026-05-23 — Session 22: Scale to 200 per-card landing pages — programmatic catalog + SSG
 
 **Commits:** this commit only

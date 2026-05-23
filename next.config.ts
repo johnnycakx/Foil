@@ -20,6 +20,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "cdn.poketrace.com" },
       { protocol: "https", hostname: "images.poketrace.com" },
+      { protocol: "https", hostname: "images.pokemontcg.io" },
       {
         protocol: "https",
         hostname: supabaseStorageHost(),

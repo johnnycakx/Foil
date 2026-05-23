@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getAllPosts } from "./blog/posts-meta";
+import { getAllPosts } from "./(site)/blog/posts-meta";
 import { CARD_CATALOG } from "@/lib/cards/catalog";
 
 function siteUrl(): string {

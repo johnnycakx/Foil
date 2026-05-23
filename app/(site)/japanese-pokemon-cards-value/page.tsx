@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { WaitlistForm } from "../landing/waitlist-form";
+import { EmailCapture } from "@/components/email-capture";
 
 const TITLE = "Japanese Pokémon Cards Value: 2026 Guide | Foil";
 const DESCRIPTION =
@@ -82,12 +82,11 @@ export default function JapanesePokemonCardsValuePage() {
   };
 
   return (
-    <div className="flex min-h-dvh flex-1 flex-col bg-[#0B1428] text-white antialiased">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }}
       />
-      <Header />
       <article className="mx-auto w-full max-w-3xl px-5 py-12 sm:px-8 sm:py-20">
         <p className="text-xs font-medium uppercase tracking-wider text-[#FF6B5C]">
           Guide · Updated May 2026
@@ -276,12 +275,11 @@ export default function JapanesePokemonCardsValuePage() {
             once you&apos;re in.
           </p>
           <div className="mt-6 max-w-xl">
-            <WaitlistForm source="japanese_guide" variant="hero" />
+            <EmailCapture source="japanese_guide" variant="inline" headline="Get the weekly best-deals newsletter." />
           </div>
         </div>
       </article>
-      <Footer />
-    </div>
+    </>
   );
 }
 
@@ -293,31 +291,3 @@ function Prose({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Header() {
-  return (
-    <header className="sticky top-0 z-20 border-b border-white/5 bg-[#0B1428]/90 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
-        <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-          <span className="inline-block h-2 w-2 rounded-full bg-[#FF6B5C]" />
-          Foil
-        </Link>
-        <Link href="/login" className="text-sm text-zinc-300 transition hover:text-white">
-          Sign in
-        </Link>
-      </div>
-    </header>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="border-t border-white/5 bg-[#0B1428]">
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-3 px-5 py-8 text-sm text-zinc-500 sm:flex-row sm:items-center sm:px-8">
-        <p>© {new Date().getFullYear()} Foil. Pokémon TCG card valuation, in seconds.</p>
-        <Link href="/" className="text-zinc-300 underline decoration-zinc-700 underline-offset-4 transition hover:text-white hover:decoration-zinc-400">
-          ← Back to home
-        </Link>
-      </div>
-    </footer>
-  );
-}

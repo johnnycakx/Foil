@@ -103,25 +103,7 @@ export default async function BlogPostPage({
   );
 
   return (
-    <div className="flex min-h-dvh flex-1 flex-col bg-[#0B1428] text-white antialiased">
-      <header className="border-b border-white/5 bg-[#0B1428]/90 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-5 py-4 sm:px-8">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-lg font-semibold tracking-tight"
-          >
-            <span className="inline-block h-2 w-2 rounded-full bg-[#FF6B5C]" />
-            Foil
-          </Link>
-          <Link
-            href="/blog"
-            className="text-sm text-zinc-300 transition hover:text-white"
-          >
-            All posts
-          </Link>
-        </div>
-      </header>
-
+    <>
       <main className="mx-auto w-full max-w-3xl flex-1 px-5 pt-10 pb-20 sm:px-8 sm:pt-16">
         <script
           type="application/ld+json"
@@ -151,7 +133,7 @@ export default async function BlogPostPage({
           </h1>
           <p className="mt-4 text-lg text-zinc-300">{post.description}</p>
 
-          <div className="mt-10 prose prose-invert max-w-none prose-headings:tracking-tight prose-headings:text-white prose-h2:mt-12 prose-h2:text-2xl prose-h3:text-xl prose-p:text-zinc-300 prose-a:text-[#FF6B5C] prose-strong:text-white prose-li:text-zinc-300 prose-blockquote:border-l-[#FF6B5C]/40 prose-blockquote:text-zinc-300">
+          <div className="mt-10 prose prose-invert max-w-none prose-headings:tracking-tight prose-headings:text-white prose-h2:mt-12 prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg prose-p:text-zinc-300 prose-a:text-[#FF6B5C] prose-a:no-underline hover:prose-a:underline prose-strong:text-white prose-li:text-zinc-300 prose-ol:text-zinc-300 prose-ul:text-zinc-300 prose-blockquote:border-l-[#FF6B5C]/40 prose-blockquote:text-zinc-300 prose-blockquote:not-italic prose-code:rounded prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[#FFC7BA] prose-code:before:content-none prose-code:after:content-none prose-pre:rounded-xl prose-pre:border prose-pre:border-white/10 prose-pre:bg-[#101D38] prose-pre:text-zinc-200 prose-hr:border-white/10 prose-table:text-sm prose-th:text-white prose-th:border-white/15 prose-td:border-white/10 prose-td:text-zinc-300 prose-img:rounded-xl prose-img:border prose-img:border-white/10">
             <PostBody />
           </div>
 
@@ -186,15 +168,6 @@ export default async function BlogPostPage({
           </aside>
         )}
       </main>
-
-      <footer className="border-t border-white/5 bg-[#0B1428]">
-        <div className="mx-auto w-full max-w-3xl px-5 py-10 sm:px-8">
-          <EmailCapture source="site-footer" variant="footer" />
-          <p className="mt-8 text-sm text-zinc-500">
-            © {new Date().getFullYear()} Foil. The best price on any Pokémon card.
-          </p>
-        </div>
-      </footer>
-    </div>
+    </>
   );
 }

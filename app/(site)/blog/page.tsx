@@ -43,25 +43,7 @@ export default function BlogIndexPage() {
   const posts = getAllPosts();
 
   return (
-    <div className="flex min-h-dvh flex-1 flex-col bg-[#0B1428] text-white antialiased">
-      <header className="border-b border-white/5 bg-[#0B1428]/90 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-5 py-4 sm:px-8">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-lg font-semibold tracking-tight"
-          >
-            <span className="inline-block h-2 w-2 rounded-full bg-[#FF6B5C]" />
-            Foil
-          </Link>
-          <Link
-            href="/login"
-            className="text-sm text-zinc-300 transition hover:text-white"
-          >
-            Sign in
-          </Link>
-        </div>
-      </header>
-
+    <>
       <main className="mx-auto w-full max-w-4xl flex-1 px-5 pt-12 pb-20 sm:px-8 sm:pt-20">
         <p className="text-xs font-medium uppercase tracking-wider text-[#FF6B5C]">
           Field notes
@@ -117,14 +99,9 @@ export default function BlogIndexPage() {
         )}
       </main>
 
-      <footer className="border-t border-white/5 bg-[#0B1428]">
-        <div className="mx-auto w-full max-w-4xl px-5 py-10 sm:px-8">
-          <EmailCapture source="site-footer" variant="footer" />
-          <p className="mt-8 text-sm text-zinc-500">
-            © {new Date().getFullYear()} Foil. The best price on any Pokémon card.
-          </p>
-        </div>
-      </footer>
-    </div>
+      <section className="mx-auto w-full max-w-4xl px-5 pb-12 sm:px-8">
+        <EmailCapture source="blog-index-footer" variant="footer" />
+      </section>
+    </>
   );
 }
