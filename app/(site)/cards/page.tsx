@@ -190,7 +190,7 @@ export default async function CardsIndexPage() {
                 id={`era-${slugifyEra(group.era)}`}
                 className="text-xl font-bold tracking-tight text-white sm:text-2xl"
               >
-                {group.era} era
+                {group.era === "Other" ? "Special sets" : `${group.era} era`}
               </h2>
               <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-zinc-300">
                 {group.sets.length} set{group.sets.length === 1 ? "" : "s"}
