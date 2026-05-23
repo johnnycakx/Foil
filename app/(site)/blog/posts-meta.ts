@@ -18,7 +18,9 @@ export type PostFrontmatter = {
   faq?: { question: string; answer: string }[];
 };
 
-const POSTS_DIR = path.join(process.cwd(), "app", "blog", "posts");
+// Posts live under the (site) route group — the parens-wrapped folder is
+// part of the actual filesystem path even though it's elided from the URL.
+const POSTS_DIR = path.join(process.cwd(), "app", "(site)", "blog", "posts");
 
 function isPostFile(name: string): boolean {
   return name.endsWith(".mdx") && !name.startsWith("_");
