@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { WaitlistForm } from "./landing/waitlist-form";
 
-const SITE_TITLE = "Foil — Scan any Pokémon card in 10 seconds (including Japanese)";
+const SITE_TITLE = "Foil — The best price on any Pokémon card";
 const SITE_DESCRIPTION =
-  "Snap one card, get a real market valuation in 10 seconds. eBay sold averages, TCGplayer market, PriceCharting graded comps — across English, Japanese, and modern Mega ex printings. Binder-page mode for power users.";
+  "Search any Pokémon card and instantly see the best live deal on eBay — curated by price, condition, and seller quality. Free wishlist alerts when your cards drop. Built by a Level-4 TCGplayer Verified Seller. TCGplayer coming soon.";
 
 export const metadata: Metadata = {
   title: SITE_TITLE,
@@ -40,7 +40,7 @@ export default async function Home() {
       <Hero />
       <HowItWorks />
       <ExampleResult />
-      <PricingCompare />
+      <FoundingMember />
       <FinalCTA />
       <Footer />
     </div>
@@ -74,26 +74,28 @@ function Hero() {
         Pre-launch · early access opening Oct 7
       </p>
       <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
-        Scan any Pokémon card —{" "}
-        <span className="text-[#FF6B5C]">including Japanese</span> —
-        in 10 seconds.
+        The best price on any Pokémon card.{" "}
+        <span className="text-[#FF6B5C]">Right now.</span>
       </h1>
       <p className="mt-5 max-w-2xl text-lg text-zinc-300 sm:text-xl">
-        Snap one card. Foil reads the printed name, set code, and collector number,
-        cross-references eBay sold averages, TCGplayer market, and graded comps from
-        PSA to BGS 10, and tells you what the card is actually worth. Got a binder page?{" "}
-        <span className="text-zinc-400">Advanced mode prices the whole stack at once.</span>
+        Foil searches eBay&apos;s live listings the moment you ask and surfaces the
+        single highest-value deal for the exact card you want — judged by price,
+        shipping, condition, and seller reputation.{" "}
+        <span className="text-zinc-400">
+          Built by a Level-4 TCGplayer Verified Seller who got tired of comparing
+          20 listings to find one good one.
+        </span>
       </p>
 
       <div className="mt-8 max-w-xl">
         <WaitlistForm source="homepage_hero" variant="hero" />
         <p className="mt-3 text-xs text-zinc-500">
-          No spam, one email when early access opens.{" "}
+          Free at launch. No spam — we email when your wishlisted cards drop in price.{" "}
           <a
             href="#example"
             className="underline decoration-zinc-600 underline-offset-4 transition hover:text-zinc-300 hover:decoration-zinc-400"
           >
-            Watch demo ↓
+            See an example ↓
           </a>
         </p>
       </div>
@@ -105,18 +107,18 @@ function HowItWorks() {
   const steps = [
     {
       num: "1",
-      title: "Snap a single card",
-      body: "Hold the card flat, fill the frame. One card per photo is the default — fastest and most accurate. Binder pages are an advanced toggle for power users.",
+      title: "Search any Pokémon card",
+      body: "Type the name, set, or just 'Charizard Base Set.' Foil handles set codes, foreign printings, Japanese sets, and graded slabs — autocomplete keeps it fast.",
     },
     {
       num: "2",
-      title: "AI reads the printed text",
-      body: "Claude Vision parses the name, set code, collector number, and regulation mark — English, Japanese, modern Mega ex, all of it. No artwork guessing — only what's actually printed.",
+      title: "Foil finds the best live deal",
+      body: "We check eBay's marketplace in real time and surface the most credible best-value listing. Price + shipping + condition + seller rating, weighted into one recommendation — not a wall of 200 search results.",
     },
     {
       num: "3",
-      title: "Real comps across 4 sources",
-      body: "Ungraded NM from eBay, TCGplayer, Cardmarket. Graded ladder (PSA 7/8/9/9.5/10, BGS 10, CGC 10, SGC 10) from PriceCharting. Best-of pick on the headline; full breakdown one tap away.",
+      title: "Buy now or set a price alert",
+      body: "Click through to buy on eBay — you support Foil at no extra cost. Or tell us your target price and we'll email you the second a matching listing appears, sometimes within minutes.",
     },
   ];
 
@@ -125,7 +127,8 @@ function HowItWorks() {
       <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
         <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">How it works</h2>
         <p className="mt-3 max-w-2xl text-zinc-400">
-          Three steps, under 10 seconds end-to-end. No typing card names, no scrolling TCGplayer tabs.
+          Three steps. No comparing tabs, no scrolling endless listings, no
+          wondering whether a seller is legit.
         </p>
         <ol className="mt-10 grid gap-6 sm:grid-cols-3">
           {steps.map((s) => (
@@ -155,42 +158,45 @@ function ExampleResult() {
             What you actually see
           </p>
           <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-            That one card buried in a binder?{" "}
-            <span className="text-[#FF6B5C]">$30,100.</span>
+            That Charizard you want?{" "}
+            <span className="text-[#FF6B5C]">Currently $313 on eBay.</span>
           </h2>
           <p className="mt-4 text-zinc-300">
-            Foil doesn&apos;t just show you a single price. It pulls eBay sold averages
-            <em className="not-italic font-medium text-white"> and</em> the best graded comp
-            — so you know whether to walk away, lowball, or sprint to PayPal.
+            Foil doesn&apos;t just dump you on a search page. It picks the single
+            best live listing, shows you what each condition and grade is currently
+            worth, and tells you whether to buy now, lowball, or wait for a drop.
           </p>
           <ul className="mt-6 space-y-3 text-sm text-zinc-400">
             <li className="flex items-start gap-3">
               <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
               <span>
-                <span className="font-medium text-white">One card, ten seconds.</span> Single-card scans
-                skip the detect pass and go straight to identify + pricing. Sub-8s end-to-end.
+                <span className="font-medium text-white">One best deal, not 200 listings.</span>{" "}
+                We score every active listing on price + shipping + condition + seller
+                rating and show you the winner.
               </span>
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
               <span>
-                <span className="font-medium text-white">Japanese + Mega ex covered.</span> Reads the
-                printed text, not the artwork — Japanese sets and brand-new Mega Evolution cards work
-                from day one.
+                <span className="font-medium text-white">Wishlist alerts that actually fire.</span>{" "}
+                Tell Foil your target price; we email you the second a matching
+                listing appears. Hourly checks on free, sub-minute on Founding.
               </span>
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
               <span>
-                <span className="font-medium text-white">Binder mode for power users.</span> Advanced
-                toggle scans up to 50 cards in one photo. Slower, but no per-card retyping.
+                <span className="font-medium text-white">Graded vs raw, side by side.</span>{" "}
+                Foil shows the full grade ladder — raw NM, PSA 7 through 10, BGS,
+                CGC — so you can decide whether the raw is a steal or the slab is.
               </span>
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
               <span>
-                <span className="font-medium text-white">Honest about misses.</span> If a card&apos;s
-                set can&apos;t be confirmed, we say so — no inflated totals.
+                <span className="font-medium text-white">Japanese and modern covered.</span>{" "}
+                Vintage WOTC, modern Mega ex, Japanese-exclusive sets — if there&apos;s
+                a listing, Foil finds it.
               </span>
             </li>
           </ul>
@@ -200,12 +206,16 @@ function ExampleResult() {
           <div className="rounded-[14px] bg-[#0B1428] p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-wide text-zinc-500">Estimated value</p>
+                <p className="text-xs uppercase tracking-wide text-zinc-500">
+                  Best current deal
+                </p>
                 <p className="mt-1 text-4xl font-bold tabular-nums text-white">$313.51</p>
-                <p className="mt-1 text-xs text-zinc-500">1 of 1 priced · 6.6s vision · 0.5s prices</p>
+                <p className="mt-1 text-xs text-zinc-500">
+                  9% below 30-day avg · top-rated seller · free ship
+                </p>
               </div>
               <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300">
-                99% confident
+                Good deal
               </span>
             </div>
 
@@ -214,29 +224,29 @@ function ExampleResult() {
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-white">Charizard</p>
                   <p className="truncate text-sm text-zinc-400">
-                    Base Set · #4/102 · Holo Rare (1st Edition)
+                    Base Set · #4/102 · Holo Rare (Unlimited)
                   </p>
-                  <p className="mt-0.5 text-xs text-zinc-500">Lightly Played</p>
+                  <p className="mt-0.5 text-xs text-zinc-500">Lightly Played · NM verified by seller</p>
                   <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     <span className="text-lg font-semibold tabular-nums text-white">$313.51</span>
-                    <span className="text-xs text-zinc-400">eBay sold (NM)</span>
+                    <span className="text-xs text-zinc-400">+ free shipping</span>
                     <span className="text-xs text-zinc-500">·</span>
                     <span className="text-xs text-[#FFB6A8]">
-                      graded PSA 10:{" "}
+                      PSA 10 currently:{" "}
                       <span className="font-semibold text-[#FF6B5C]">$30,100</span>
                     </span>
                   </div>
                 </div>
                 <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300">
-                  99%
+                  Buy →
                 </span>
               </div>
             </div>
 
             <p className="mt-5 rounded-lg bg-[#FF6B5C]/10 px-3 py-2 text-xs text-[#FFC7BA]">
-              Heads up: the raw card is $313 — but a PSA 10 version of this card sold for{" "}
-              <span className="font-semibold text-white">$30,100</span> recently. If the corners
-              look mint, get it graded.
+              Heads up: the raw is $313, but a PSA 10 of the same card recently sold
+              for <span className="font-semibold text-white">$30,100</span>. If the
+              corners look mint, get it graded before reselling.
             </p>
           </div>
         </div>
@@ -245,24 +255,39 @@ function ExampleResult() {
   );
 }
 
-function PricingCompare() {
-  const features: { label: string; free: string | boolean; pro: string | boolean }[] = [
-    { label: "Scans per day", free: "1", pro: "Unlimited" },
-    { label: "Real market prices (eBay + TCGplayer)", free: true, pro: true },
-    { label: "Full per-card breakdown", free: "Top card only", pro: "All cards" },
-    { label: "Graded comp values (PSA / BGS / CGC)", free: false, pro: true },
-    { label: "Scan history", free: "—", pro: "90 days" },
-    { label: "Shareable image", free: "With watermark", pro: "Clean" },
+function FoundingMember() {
+  const freeFeatures = [
+    { label: "Search any Pokémon card", value: true as const },
+    { label: "Best live deal across eBay", value: true as const },
+    { label: "Wishlist + price alerts", value: "Hourly checks" },
+    { label: "Weekly best-deals newsletter", value: true as const },
+    { label: "Advanced filters (grade, seller rating)", value: false as const },
+    { label: "Multi-marketplace (TCGplayer, Mercari)", value: false as const },
+    { label: "Ad-free experience", value: false as const },
+  ];
+
+  const foundingFeatures = [
+    { label: "Everything in Free", value: true as const },
+    { label: "Instant alerts (sub-minute push)", value: true as const },
+    { label: "Advanced filters (grade, seller rating)", value: true as const },
+    { label: "Multi-marketplace (TCGplayer, Mercari)", value: "As they ship" },
+    { label: "Ad-free experience", value: "Permanent" },
+    { label: "Priority on new card additions", value: true as const },
+    { label: "Founding Member badge", value: true as const },
   ];
 
   return (
     <section className="border-y border-white/5 bg-[#101D38]">
       <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
         <div className="max-w-2xl">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Free to try, $14.99 to live in it.</h2>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            Free forever. Or $59 once to lock in everything.
+          </h2>
           <p className="mt-3 text-zinc-400">
-            One free scan a day is plenty if you check Marketplace once in a while. If you&apos;re
-            sourcing daily, Pro pays for itself the first time you catch an underpriced Charizard.
+            Foil&apos;s deal-finder is free for everyone. Founding Member is for
+            early supporters who want every premium feature we&apos;ll ever ship —
+            locked in at launch price, one charge, no recurring. We&apos;d build
+            those features anyway; this just gets you in on day one.
           </p>
         </div>
 
@@ -274,21 +299,22 @@ function PricingCompare() {
             pricePer=""
             tag="Forever"
             cta={{ label: "Get early access", href: "#waitlist" }}
-            features={features.map((f) => ({ label: f.label, value: f.free }))}
+            features={freeFeatures}
           />
           <PlanCard
             tone="pro"
-            name="Pro"
-            price="$14.99"
-            pricePer="/ month"
-            tag="Most popular"
-            cta={{ label: "Get early access", href: "#waitlist" }}
-            features={features.map((f) => ({ label: f.label, value: f.pro }))}
+            name="Founding Member"
+            price="$59"
+            pricePer="once"
+            tag="First 100 signups: $39"
+            cta={{ label: "Lock in lifetime", href: "#waitlist" }}
+            features={foundingFeatures}
           />
         </div>
 
         <p className="mt-6 text-xs text-zinc-500">
-          Cancel anytime in one click. Pricing locks in at $14.99/mo if you join the waitlist now.
+          Founding Member is a one-time charge — no subscription, no auto-renewal.
+          Price climbs to $79 at public launch.
         </p>
       </div>
     </section>
@@ -386,11 +412,11 @@ function FinalCTA() {
     <section id="waitlist" className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
       <div className="rounded-3xl border border-[#FF6B5C]/30 bg-gradient-to-br from-[#101D38] via-[#0B1428] to-[#101D38] p-8 sm:p-12">
         <h2 className="max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">
-          Stop second-guessing Marketplace listings.
+          Never overpay for a Pokémon card again.
         </h2>
         <p className="mt-3 max-w-2xl text-zinc-300">
-          Get on the waitlist. We&apos;ll email you the moment early access opens — and the first
-          1,000 signups get an extended free trial of Pro.
+          Get on the waitlist. We&apos;ll email you the moment early access opens —
+          and the first 100 signups get Founding Member at $39 instead of $59.
         </p>
         <div className="mt-6 max-w-xl">
           <WaitlistForm source="homepage_final_cta" variant="hero" />
@@ -404,7 +430,7 @@ function Footer() {
   return (
     <footer className="border-t border-white/5 bg-[#0B1428]">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-3 px-5 py-8 text-sm text-zinc-500 sm:flex-row sm:items-center sm:px-8">
-        <p>© {new Date().getFullYear()} Foil. Pokémon TCG card valuation, in seconds.</p>
+        <p>© {new Date().getFullYear()} Foil. The best price on any Pokémon card.</p>
         <p>
           Already have access?{" "}
           <Link href="/login" className="text-zinc-300 underline decoration-zinc-700 underline-offset-4 transition hover:text-white hover:decoration-zinc-400">
