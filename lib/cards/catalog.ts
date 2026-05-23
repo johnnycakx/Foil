@@ -282,6 +282,36 @@ export function getCatalogEntry(slug: string): CatalogEntry | undefined {
 }
 
 /**
+ * Return the distinct set ids that appear in the catalog, preserving the
+ * source order of CARD_CATALOG (the curated order — Base first, then
+ * Jungle, Fossil, etc.). The deal-finder's set-index routes its
+ * generateStaticParams off this list.
+ */
+export function setIdsInCatalog(): string[] {
+  const seen = new Set<string>();
+  const order: string[] = [];
+  for (const entry of CARD_CATALOG) {
+    const id = entry.pokemonTcgId.split("-")[0];
+    if (seen.has(id)) continue;
+    seen.add(id);
+    order.push(id);
+  }
+  return order;
+}
+
+/** All entries whose pokemonTcgId starts with `${setId}-`. Ordered by collector number. */
+export function entriesForSet(setId: string): CatalogEntry[] {
+  const out = CARD_CATALOG.filter((e) => e.pokemonTcgId.split("-")[0] === setId);
+  out.sort((a, b) => {
+    const an = parseInt(a.pokemonTcgId.split("-").slice(1).join("-"), 10);
+    const bn = parseInt(b.pokemonTcgId.split("-").slice(1).join("-"), 10);
+    const safe = (n: number) => (Number.isFinite(n) ? n : 999_999);
+    return safe(an) - safe(bn);
+  });
+  return out;
+}
+
+/**
  * Return up to N other entries from the same set, prioritizing entries with
  * nearby collector numbers. Used to populate the "Related cards" block at
  * the bottom of each `/cards/[slug]` page.

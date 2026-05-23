@@ -196,7 +196,14 @@ export default async function CardPage({
           aria-labelledby="best-deal-heading"
         >
           <div className="flex items-start justify-between gap-3">
-            <h2 id="best-deal-heading" className="text-xs font-semibold uppercase tracking-wider text-[#FFC7BA]">
+            <h2
+              id="best-deal-heading"
+              className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#FFC7BA]"
+            >
+              <span className="relative inline-flex h-1.5 w-1.5" aria-hidden>
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FF6B5C] opacity-60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
+              </span>
               Best current listing
             </h2>
             {condition ? (
@@ -299,9 +306,17 @@ export default async function CardPage({
 
         {related.length > 0 && (
           <aside className="mt-12 border-t border-white/5 pt-8" aria-labelledby="related-heading">
-            <h2 id="related-heading" className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
-              More from {card.setName}
-            </h2>
+            <div className="flex items-baseline justify-between gap-4">
+              <h2 id="related-heading" className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+                More from {card.setName}
+              </h2>
+              <Link
+                href={`/cards/sets/${card.setId}`}
+                className="text-xs font-medium text-[#FF6B5C] underline decoration-[#FF6B5C]/30 underline-offset-4 transition hover:decoration-[#FF6B5C]"
+              >
+                See all in {card.setName} →
+              </Link>
+            </div>
             <ul className="mt-4 grid gap-3 sm:grid-cols-2">
               {related.map((r) => {
                 const display = r.slug.split("-").slice(2).join(" ").replace(/\b\w/g, (c) => c.toUpperCase());

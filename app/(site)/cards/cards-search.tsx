@@ -31,16 +31,20 @@ export function CardsSearch({ index }: { index: SearchEntry[] }) {
       }
     }
 
-    // Toggle each card <li>'s hidden state.
-    const cards = document.querySelectorAll<HTMLElement>("li[data-card-slug]");
-    cards.forEach((el) => {
+    // Toggle each set-tile <li>'s hidden state.
+    const tiles = document.querySelectorAll<HTMLElement>("li[data-card-slug]");
+    tiles.forEach((el) => {
       const slug = el.getAttribute("data-card-slug") ?? "";
       el.hidden = !matches.has(slug);
     });
 
-    // Hide whole group sections whose visible-card count is 0.
-    const groups = document.querySelectorAll<HTMLElement>("section[aria-labelledby^=group-]");
-    groups.forEach((section) => {
+    // Hide whole era sections (or legacy group sections) whose visible-tile
+    // count is 0 — keeps the page from rendering hollow era headers under
+    // a tight query.
+    const sections = document.querySelectorAll<HTMLElement>(
+      "section[data-era], section[aria-labelledby^=group-]",
+    );
+    sections.forEach((section) => {
       const visible = section.querySelectorAll<HTMLElement>("li[data-card-slug]:not([hidden])").length;
       section.hidden = visible === 0;
     });

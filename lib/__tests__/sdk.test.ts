@@ -6,7 +6,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { getCardMetadata } from "../cards/sdk.ts";
+import { getAllSets, getCardMetadata, getSetMetadata } from "../cards/sdk.ts";
 
 type CapturedRequest = { url: string; init: RequestInit };
 
@@ -121,4 +121,72 @@ test("getCardMetadata soft-fails when the response is missing data.{} payload", 
   const { fetch } = fakeFetch([jsonResponse({ data: null })]);
   const out = await getCardMetadata({ id: "base1-4", fetchImpl: fetch });
   assert.equal(out.fallback, true);
+});
+
+test("getSetMetadata GETs api.pokemontcg.io/v2/sets/{id} with 24h revalidate and parses every field", async () => {
+  const { fetch, calls } = fakeFetch([
+    jsonResponse({
+      data: {
+        id: "base1",
+        name: "Base",
+        series: "Base",
+        printedTotal: 102,
+        total: 102,
+        releaseDate: "1999/01/09",
+        images: {
+          symbol: "https://images.pokemontcg.io/base1/symbol.png",
+          logo: "https://images.pokemontcg.io/base1/logo.png",
+        },
+      },
+    }),
+  ]);
+  const out = await getSetMetadata({ id: "base1", fetchImpl: fetch });
+  assert.equal(out.id, "base1");
+  assert.equal(out.name, "Base");
+  assert.equal(out.series, "Base");
+  assert.equal(out.total, 102);
+  assert.equal(out.releaseDate, "1999/01/09");
+  assert.equal(out.logoUrl, "https://images.pokemontcg.io/base1/logo.png");
+  assert.equal(calls[0].url, "https://api.pokemontcg.io/v2/sets/base1");
+  const init = calls[0].init as RequestInit & { next?: { revalidate?: number } };
+  assert.equal(init.next?.revalidate, 86_400);
+});
+
+test("getSetMetadata soft-fails to minimal record on 404 — logo URL still derivable from id", async () => {
+  const { fetch } = fakeFetch([new Response("nope", { status: 404 })]);
+  const out = await getSetMetadata({ id: "unknown-set", fetchImpl: fetch });
+  assert.equal(out.name, "unknown-set");
+  assert.equal(out.total, 0);
+  assert.equal(out.logoUrl, "https://images.pokemontcg.io/unknown-set/logo.png");
+});
+
+test("getAllSets fetches the full set list with pageSize=250 and parses every entry", async () => {
+  const { fetch, calls } = fakeFetch([
+    jsonResponse({
+      data: [
+        { id: "base1", name: "Base", series: "Base", total: 102, releaseDate: "1999/01/09", images: { logo: "https://images.pokemontcg.io/base1/logo.png" } },
+        { id: "neo1", name: "Neo Genesis", series: "Neo", total: 111, releaseDate: "2000/12/16", images: { logo: "https://images.pokemontcg.io/neo1/logo.png" } },
+        { id: "sv3pt5", name: "151", series: "Scarlet & Violet", total: 207, releaseDate: "2023/09/22", images: { logo: "https://images.pokemontcg.io/sv3pt5/logo.png" } },
+      ],
+    }),
+  ]);
+  const out = await getAllSets({ fetchImpl: fetch });
+  assert.equal(out.length, 3);
+  assert.equal(out[0].id, "base1");
+  assert.equal(out[2].series, "Scarlet & Violet");
+  assert.match(calls[0].url, /pageSize=250/);
+});
+
+test("getAllSets soft-fails to [] when the API errors", async () => {
+  const { fetch } = fakeFetch([new Response("boom", { status: 500 })]);
+  const out = await getAllSets({ fetchImpl: fetch });
+  assert.deepEqual(out, []);
+});
+
+test("getAllSets soft-fails to [] when fetch throws", async () => {
+  const fetchImpl = (async () => {
+    throw new Error("ENETDOWN");
+  }) as unknown as typeof fetch;
+  const out = await getAllSets({ fetchImpl });
+  assert.deepEqual(out, []);
 });

@@ -1,26 +1,40 @@
-// /cards — browsable index of every per-card landing page Foil tracks.
+// /cards — era → set browse. Replaces the Session 23 flat-grouped index.
 //
-// Server component for the grouped catalog render (SEO-friendly: every
-// card link is in the initial HTML). The search input on top is the only
-// client-interactive piece — extracted into a small client component that
-// filters the rendered grid in-place via DOM `hidden` toggles. That keeps
-// the SSR tree complete while still giving live autocomplete-style filter.
+// The structural shift (Session 24): cards no longer live directly on the
+// /cards root. /cards lists Pokemon TCG eras (Base, Neo, Sword & Shield,
+// Scarlet & Violet, ...); inside each era are set tiles; a set tile links
+// to /cards/sets/<set-id> which lists the actual cards. Three taps to a
+// listing instead of one long scroll. Matches the pokescope.app browse
+// pattern users coming from that surface expect.
 //
-// The catalog is grouped by set; sets are ordered by their earliest
-// catalog entry so vintage WotC (Base/Jungle/Fossil) lands first.
+// Design notes (frontend-design plugin guidance applied within brand):
+//   - Era headings carry a small uppercase tracking-wide era marker + a
+//     pill chip with the set-count. Hierarchy lets a scanning reader
+//     navigate by era without reading every set name.
+//   - Set tiles render the official set logo on a near-black inset
+//     surface (logos are designed for white-or-black backdrops), with
+//     name + release year + card count below. Hover lift via
+//     `translate-y` + accent border halo conveys interactivity without a
+//     pointer-tracking effect.
+//   - Grid rhythm is 1/2/3-4 columns at sm/md/lg/xl with gap-4 → gap-5
+//     scaling so dense vintage eras don't visually compete with sparse
+//     modern ones.
+//   - Search input filters across BOTH set names and the catalog's card
+//     names, then hides era sections whose remaining set tiles are zero —
+//     keeps the page coherent under a query.
 
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { CARD_CATALOG, type CatalogEntry } from "@/lib/cards/catalog";
-import { getCardMetadata, type CardMetadata } from "@/lib/cards/sdk";
-import { CardsSearch } from "./cards-search";
+import { CARD_CATALOG, setIdsInCatalog } from "@/lib/cards/catalog";
+import { getAllSets, type SetMetadata } from "@/lib/cards/sdk";
+import { CardsSearch, type SearchEntry } from "./cards-search";
 
 export const dynamic = "force-static";
 export const revalidate = 86_400;
 
-const TITLE = "Browse Pokémon TCG cards — Foil";
-const DESCRIPTION = `Find the best live eBay deal on any of the ${CARD_CATALOG.length} most-collected Pokémon TCG cards. Vintage WotC holos, Neo era chase, modern V/VSTAR/ex — all in one searchable index.`;
+const TITLE = "Browse Pokémon TCG cards by set — Foil";
+const DESCRIPTION = `Find the best live eBay deal on any of ${CARD_CATALOG.length} curated Pokémon TCG cards. Browse vintage WotC holos, Neo era chase, modern V/VSTAR/ex — grouped by era and set.`;
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -40,158 +54,193 @@ export const metadata: Metadata = {
   },
 };
 
-// Display names for the set ids in the catalog. Pulled from the Pokemon TCG
-// SDK conventions; anything not listed here falls back to the set id raw,
-// which is acceptable but uglier ("base1" instead of "Base Set").
-const SET_DISPLAY_NAMES: Record<string, string> = {
-  base1: "Base Set",
-  base2: "Jungle",
-  base3: "Fossil",
-  base4: "Base Set 2",
-  base5: "Team Rocket",
-  base6: "Legendary Collection",
-  gym1: "Gym Heroes",
-  gym2: "Gym Challenge",
-  neo1: "Neo Genesis",
-  neo2: "Neo Discovery",
-  neo3: "Neo Revelation",
-  neo4: "Neo Destiny",
-  sm115: "Hidden Fates",
-  cel25: "Celebrations",
-  swsh7: "Evolving Skies",
-  swsh9: "Brilliant Stars",
-  swsh12pt5: "Crown Zenith",
-  sv3pt5: "Scarlet & Violet 151",
+// Era heading display + ordering. The Pokemon TCG SDK's `series` field is
+// already era-shaped ("Base", "Neo", "Sword & Shield"); we add an explicit
+// rank so historically-ordered eras render in 1996→present order rather
+// than alphabetical.
+const ERA_RANK: Record<string, number> = {
+  Base: 10,
+  Gym: 20,
+  Neo: 30,
+  "E-Card": 40,
+  "EX": 50,
+  "Diamond & Pearl": 60,
+  Platinum: 70,
+  "HeartGold & SoulSilver": 80,
+  "Call of Legends": 85,
+  "Black & White": 90,
+  "XY": 100,
+  "Sun & Moon": 110,
+  "Sword & Shield": 120,
+  "Scarlet & Violet": 130,
+  Other: 999,
 };
 
-type Group = {
-  setId: string;
-  setName: string;
-  entries: Array<CatalogEntry & { meta: CardMetadata }>;
+function eraRank(series: string): number {
+  return ERA_RANK[series] ?? 500;
+}
+
+type EraGroup = {
+  era: string;
+  sets: SetMetadata[];
 };
 
-function groupCatalog(entriesWithMeta: Array<CatalogEntry & { meta: CardMetadata }>): Group[] {
-  const order: string[] = [];
-  const buckets = new Map<string, Group>();
-  for (const entry of entriesWithMeta) {
-    const setId = entry.pokemonTcgId.split("-")[0];
-    if (!buckets.has(setId)) {
-      order.push(setId);
-      buckets.set(setId, {
-        setId,
-        setName: SET_DISPLAY_NAMES[setId] ?? entry.meta.setName ?? setId,
-        entries: [],
-      });
-    }
-    buckets.get(setId)!.entries.push(entry);
+function groupByEra(sets: SetMetadata[]): EraGroup[] {
+  const byEra = new Map<string, SetMetadata[]>();
+  for (const s of sets) {
+    const era = s.series || "Other";
+    if (!byEra.has(era)) byEra.set(era, []);
+    byEra.get(era)!.push(s);
   }
-  // Sort entries within a set by collector number.
-  for (const g of buckets.values()) {
-    g.entries.sort((a, b) => {
-      const an = parseInt(a.pokemonTcgId.split("-").slice(1).join("-"), 10);
-      const bn = parseInt(b.pokemonTcgId.split("-").slice(1).join("-"), 10);
-      const safe = (n: number) => (Number.isFinite(n) ? n : 999_999);
-      return safe(an) - safe(bn);
+  // Sort sets within each era by release date ascending.
+  for (const list of byEra.values()) {
+    list.sort((a, b) => {
+      const ad = a.releaseDate ?? "";
+      const bd = b.releaseDate ?? "";
+      return ad < bd ? -1 : ad > bd ? 1 : 0;
     });
   }
-  return order.map((id) => buckets.get(id)!);
+  // Eras sorted by ERA_RANK so vintage comes first.
+  return Array.from(byEra.entries())
+    .map(([era, sets]) => ({ era, sets }))
+    .sort((a, b) => eraRank(a.era) - eraRank(b.era));
+}
+
+function countsForSet(setId: string): number {
+  let n = 0;
+  for (const e of CARD_CATALOG) {
+    if (e.pokemonTcgId.split("-")[0] === setId) n++;
+  }
+  return n;
+}
+
+function yearOf(set: SetMetadata): string | null {
+  return set.releaseDate?.match(/^(\d{4})/)?.[1] ?? null;
 }
 
 export default async function CardsIndexPage() {
-  // Build-time fetch of all 200 metadata records. Pokemon TCG SDK caches at
-  // 24h revalidate per call (see lib/cards/sdk.ts); plus this page itself
-  // is `dynamic = "force-static"` + `revalidate = 86400`, so the network
-  // cost is amortized across a day of traffic.
-  const entriesWithMeta = await Promise.all(
-    CARD_CATALOG.map(async (entry) => ({
-      ...entry,
-      meta: await getCardMetadata({ id: entry.pokemonTcgId }),
-    })),
-  );
+  // Pokemon TCG SDK has ~150 sets; we render only the ones present in our
+  // catalog. The SDK fetch is cached 24h.
+  const allSets = await getAllSets();
+  const catalogSetIds = new Set(setIdsInCatalog());
+  const setsInCatalog = allSets.filter((s) => catalogSetIds.has(s.id));
+  // Defensive: if the SDK omits a set we expect, synthesize a minimal
+  // placeholder so the tile still renders (the per-set page will fill in
+  // the gaps at render time).
+  for (const id of catalogSetIds) {
+    if (!setsInCatalog.some((s) => s.id === id)) {
+      setsInCatalog.push({
+        id,
+        name: id,
+        series: "Other",
+        releaseDate: null,
+        total: 0,
+        logoUrl: `https://images.pokemontcg.io/${id}/logo.png`,
+      });
+    }
+  }
+  const eraGroups = groupByEra(setsInCatalog);
 
-  const groups = groupCatalog(entriesWithMeta);
-
-  // Flat searchable list — passed to the client filter component as JSON.
-  const searchIndex = entriesWithMeta.map((e) => ({
-    slug: e.slug,
-    name: e.meta.name,
-    setName: SET_DISPLAY_NAMES[e.pokemonTcgId.split("-")[0]] ?? e.meta.setName ?? "",
-  }));
+  // Search index spans both card names and set names — a query for
+  // "Charizard" matches every set containing a tracked Charizard, and a
+  // query for "Base" matches the Base-era sets directly.
+  const searchIndex: SearchEntry[] = [];
+  for (const set of setsInCatalog) {
+    searchIndex.push({ slug: set.id, name: set.name, setName: set.name });
+  }
+  for (const entry of CARD_CATALOG) {
+    const setId = entry.pokemonTcgId.split("-")[0];
+    const set = setsInCatalog.find((s) => s.id === setId);
+    // Card-name hits route through the set tile that contains them — keep
+    // the index entry's `slug` pointing at the set id so the client filter
+    // can toggle the right tile.
+    searchIndex.push({
+      slug: setId,
+      name: kebabToTitle(entry.slug.split("-").slice(2).join("-")),
+      setName: set?.name ?? setId,
+    });
+  }
 
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 px-5 pt-12 pb-20 sm:px-8 sm:pt-16">
-      <header>
+      <header className="max-w-2xl">
         <p className="text-xs font-medium uppercase tracking-wider text-[#FF6B5C]">
-          Catalog
+          Catalog · {CARD_CATALOG.length} cards
         </p>
         <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-          Browse Pokémon cards
+          Browse Pokémon cards by set
         </h1>
-        <p className="mt-4 max-w-2xl text-lg text-zinc-300">
-          {CARD_CATALOG.length} cards Foil tracks live across eBay. Vintage
-          WotC holos, Neo era chase, modern V/VSTAR/ex. Pick one, see the best
-          current listing.
+        <p className="mt-4 text-lg text-zinc-300">
+          Pick an era, then a set. Each set lists the cards Foil tracks
+          live across eBay — best current deal, watchlist alerts, real prices.
         </p>
       </header>
 
       <CardsSearch index={searchIndex} />
 
-      <div className="mt-10 space-y-14">
-        {groups.map((group) => (
-          <section key={group.setId} aria-labelledby={`group-${group.setId}`}>
+      <div className="mt-12 space-y-16">
+        {eraGroups.map((group) => (
+          <section
+            key={group.era}
+            aria-labelledby={`era-${slugifyEra(group.era)}`}
+            data-era
+          >
             <div className="flex items-baseline justify-between gap-4">
               <h2
-                id={`group-${group.setId}`}
+                id={`era-${slugifyEra(group.era)}`}
                 className="text-xl font-bold tracking-tight text-white sm:text-2xl"
               >
-                {group.setName}
+                {group.era} era
               </h2>
-              <p className="font-mono text-[11px] uppercase tracking-wider text-zinc-500">
-                {group.entries.length} cards
-              </p>
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-zinc-300">
+                {group.sets.length} set{group.sets.length === 1 ? "" : "s"}
+              </span>
             </div>
-            <ul
-              className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
-              data-set-group
-            >
-              {group.entries.map((entry) => {
-                const number = entry.pokemonTcgId.split("-").slice(1).join("-");
+
+            <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-5">
+              {group.sets.map((set) => {
+                const count = countsForSet(set.id);
+                const year = yearOf(set);
                 return (
                   <li
-                    key={entry.slug}
-                    data-card-slug={entry.slug}
-                    data-card-name={entry.meta.name.toLowerCase()}
+                    key={set.id}
+                    data-card-slug={set.id}
+                    data-card-name={set.name.toLowerCase()}
                   >
                     <Link
-                      href={`/cards/${entry.slug}`}
-                      className="group block rounded-2xl border border-white/5 bg-[#101D38] p-3 transition hover:border-[#FF6B5C]/30 hover:bg-[#152549]"
+                      href={`/cards/sets/${set.id}`}
+                      className="group block h-full rounded-2xl border border-white/8 bg-[#101D38] p-5 transition duration-200 hover:-translate-y-0.5 hover:border-[#FF6B5C]/40 hover:bg-[#152549] hover:shadow-xl hover:shadow-[#FF6B5C]/5"
                     >
-                      <div className="overflow-hidden rounded-xl bg-[#0B1428]">
-                        {entry.meta.image ? (
+                      <div className="flex h-24 items-center justify-center rounded-xl bg-[#0B1428] px-3 py-2">
+                        {set.logoUrl ? (
                           <Image
-                            src={entry.meta.image}
-                            alt={`${entry.meta.name} (${group.setName}) #${number}`}
-                            width={245}
-                            height={342}
-                            sizes="(min-width: 1024px) 14rem, (min-width: 640px) 18vw, 40vw"
-                            className="aspect-[245/342] w-full transition group-hover:scale-[1.02]"
+                            src={set.logoUrl}
+                            alt={`${set.name} set logo`}
+                            width={320}
+                            height={120}
+                            sizes="(min-width: 1280px) 14rem, (min-width: 1024px) 20vw, (min-width: 640px) 35vw, 80vw"
+                            className="max-h-20 w-auto opacity-90 transition group-hover:opacity-100"
                           />
                         ) : (
-                          <div
-                            aria-hidden
-                            className="w-full bg-[#0B1428]"
-                            style={{ aspectRatio: "245 / 342" }}
-                          />
+                          <span className="text-xs uppercase tracking-wider text-zinc-500">
+                            {set.id}
+                          </span>
                         )}
                       </div>
-                      <div className="mt-3 px-1 pb-1">
-                        <p className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">
-                          #{number}
+                      <div className="mt-4 flex items-baseline justify-between gap-3">
+                        <p className="truncate text-base font-semibold text-white group-hover:text-[#FF8775]">
+                          {set.name}
                         </p>
-                        <p className="mt-1 truncate text-sm font-semibold text-white group-hover:text-[#FF8775]">
-                          {entry.meta.name}
-                        </p>
+                        {year ? (
+                          <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">
+                            {year}
+                          </span>
+                        ) : null}
                       </div>
+                      <p className="mt-1 text-xs text-zinc-400">
+                        {count} card{count === 1 ? "" : "s"} tracked
+                        {set.total > 0 && set.total !== count ? <> · of {set.total} in set</> : null}
+                      </p>
                     </Link>
                   </li>
                 );
@@ -202,4 +251,12 @@ export default async function CardsIndexPage() {
       </div>
     </main>
   );
+}
+
+function slugifyEra(era: string): string {
+  return era.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+function kebabToTitle(kebab: string): string {
+  return kebab.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }

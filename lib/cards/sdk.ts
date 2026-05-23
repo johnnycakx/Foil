@@ -147,3 +147,137 @@ function derivedNumberFromId(id: string): string {
 function derivedNameFromId(id: string): string {
   return id || "Pokemon card";
 }
+
+// --- Set-level metadata --------------------------------------------------
+
+export type SetMetadata = {
+  /** Pokemon TCG SDK set id, e.g. "base1". */
+  id: string;
+  /** Display name — e.g. "Base", "Crown Zenith". */
+  name: string;
+  /** Series / era — e.g. "Base", "Sword & Shield", "Scarlet & Violet". */
+  series: string;
+  /** Set release date as ISO-ish "YYYY/MM/DD", or null if absent. */
+  releaseDate: string | null;
+  /** Card count printed in the set. */
+  total: number;
+  /** Set-logo URL (preferred), or symbol URL as fallback. Empty when absent. */
+  logoUrl: string;
+};
+
+export type GetSetMetadataInput = {
+  id: string;
+  fetchImpl?: typeof fetch;
+};
+
+const POKEMON_TCG_SETS_BASE = "https://api.pokemontcg.io/v2/sets";
+
+/**
+ * Fetch a single set's metadata. Soft-fails to a minimal record on any
+ * failure, matching the card-level `getCardMetadata` shape.
+ */
+export async function getSetMetadata(input: GetSetMetadataInput): Promise<SetMetadata> {
+  const { id } = input;
+  if (!id) return minimalSetRecord("");
+
+  const fetchFn = input.fetchImpl ?? fetch;
+  let response: Response;
+  try {
+    response = await fetchFn(`${POKEMON_TCG_SETS_BASE}/${encodeURIComponent(id)}`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      next: { revalidate: CACHE_TTL_SECONDS },
+    } as RequestInit);
+  } catch {
+    return minimalSetRecord(id);
+  }
+  if (!response.ok) return minimalSetRecord(id);
+  let body: { data?: RawSet } | null;
+  try {
+    body = (await response.json()) as { data?: RawSet };
+  } catch {
+    return minimalSetRecord(id);
+  }
+  const raw = body?.data;
+  if (!raw) return minimalSetRecord(id);
+  return parseSet(raw, id);
+}
+
+/**
+ * Fetch every set the Pokemon TCG SDK knows about (~150 entries). Caller
+ * typically filters to the subset of ids present in the catalog. 24h cache,
+ * soft-fail to empty list on error.
+ *
+ * The SDK paginates at `pageSize=250`; one request covers the whole
+ * universe today and well into the future (Pokémon prints ~6 sets per
+ * year).
+ */
+export async function getAllSets(opts: { fetchImpl?: typeof fetch } = {}): Promise<SetMetadata[]> {
+  const fetchFn = opts.fetchImpl ?? fetch;
+  let response: Response;
+  try {
+    response = await fetchFn(`${POKEMON_TCG_SETS_BASE}?pageSize=250`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      next: { revalidate: CACHE_TTL_SECONDS },
+    } as RequestInit);
+  } catch {
+    return [];
+  }
+  if (!response.ok) return [];
+
+  let body: { data?: RawSet[] } | null;
+  try {
+    body = (await response.json()) as { data?: RawSet[] };
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(body?.data)) return [];
+  const out: SetMetadata[] = [];
+  for (const raw of body.data) {
+    if (!raw || typeof raw !== "object") continue;
+    const id = typeof raw.id === "string" ? raw.id : "";
+    if (!id) continue;
+    out.push(parseSet(raw, id));
+  }
+  return out;
+}
+
+type RawSet = {
+  id?: string;
+  name?: string;
+  series?: string;
+  printedTotal?: number;
+  total?: number;
+  releaseDate?: string | null;
+  images?: { symbol?: string; logo?: string };
+};
+
+function parseSet(raw: RawSet, requestedId: string): SetMetadata {
+  const id = (typeof raw.id === "string" && raw.id) || requestedId;
+  return {
+    id,
+    name: typeof raw.name === "string" ? raw.name : id,
+    series: typeof raw.series === "string" ? raw.series : "",
+    releaseDate: typeof raw.releaseDate === "string" ? raw.releaseDate : null,
+    total: typeof raw.total === "number"
+      ? raw.total
+      : typeof raw.printedTotal === "number"
+        ? raw.printedTotal
+        : 0,
+    logoUrl: (typeof raw.images?.logo === "string" && raw.images.logo)
+      || (typeof raw.images?.symbol === "string" && raw.images.symbol)
+      || "",
+  };
+}
+
+function minimalSetRecord(id: string): SetMetadata {
+  return {
+    id,
+    name: id || "Set",
+    series: "",
+    releaseDate: null,
+    total: 0,
+    logoUrl: id ? `https://images.pokemontcg.io/${id}/logo.png` : "",
+  };
+}

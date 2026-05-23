@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { EmailCapture } from "@/components/email-capture";
+import { CARD_CATALOG, setIdsInCatalog } from "@/lib/cards/catalog";
 
 const SITE_TITLE = "Foil — The best price on any Pokémon card";
 const SITE_DESCRIPTION =
@@ -45,11 +47,26 @@ export default async function Home() {
 }
 
 function Hero() {
+  const cardCount = CARD_CATALOG.length;
+  const setCount = setIdsInCatalog().length;
   return (
-    <section className="mx-auto w-full max-w-6xl px-5 pt-12 pb-16 sm:px-8 sm:pt-20 sm:pb-24">
+    <section className="relative mx-auto w-full max-w-6xl overflow-hidden px-5 pt-12 pb-16 sm:px-8 sm:pt-20 sm:pb-24">
+      {/* Subtle radial glow behind the headline — adds atmosphere without
+          slowing the LCP. Pointer-events-none + decorative-only. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 opacity-60"
+        style={{
+          background:
+            "radial-gradient(ellipse at 25% 0%, rgba(255, 107, 92, 0.18) 0%, rgba(11, 20, 40, 0) 55%)",
+        }}
+      />
       <p className="inline-flex items-center gap-2 rounded-full border border-[#FF6B5C]/30 bg-[#FF6B5C]/10 px-3 py-1 text-xs font-medium text-[#FFC7BA]">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
-        Pre-launch · early access opening Oct 7
+        <span className="relative inline-flex h-1.5 w-1.5">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FF6B5C] opacity-60" />
+          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
+        </span>
+        Live · tracking {cardCount} cards across {setCount} sets
       </p>
       <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
         The best price on any Pokémon card.{" "}
@@ -65,16 +82,25 @@ function Hero() {
         </span>
       </p>
 
-      <div className="mt-8 max-w-xl">
+      <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
+        <Link
+          href="/cards"
+          className="inline-flex items-center justify-center rounded-xl bg-[#FF6B5C] px-6 py-3.5 text-base font-semibold text-[#0B1428] transition hover:bg-[#FF8775]"
+        >
+          Browse the catalog →
+        </Link>
+        <a
+          href="#example"
+          className="text-sm text-zinc-400 underline decoration-zinc-700 underline-offset-4 transition hover:text-zinc-200 hover:decoration-zinc-400"
+        >
+          See an example ↓
+        </a>
+      </div>
+
+      <div className="mt-10 max-w-xl">
         <EmailCapture source="homepage_hero" variant="inline" headline="Get the weekly best-deals newsletter." />
         <p className="mt-3 text-xs text-zinc-500">
-          Free at launch. No spam — we email when your wishlisted cards drop in price.{" "}
-          <a
-            href="#example"
-            className="underline decoration-zinc-600 underline-offset-4 transition hover:text-zinc-300 hover:decoration-zinc-400"
-          >
-            See an example ↓
-          </a>
+          Free. No spam — we email when your wishlisted cards drop in price.
         </p>
       </div>
     </section>

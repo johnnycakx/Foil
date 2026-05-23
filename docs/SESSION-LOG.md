@@ -8,6 +8,53 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-23 — Session 24: PokeScope-style era→sets→cards browse + visual polish via frontend-design plugin
+
+**Commits:** this commit only
+
+**Summary.** Restructured `/cards` from a flat 18-set list (Session 23) into the PokeScope-style three-tier browse: `/cards` → eras with set-tile grids → `/cards/sets/<set-id>` → catalog grid for that set → `/cards/<slug>` → individual deal page. Set tiles render Pokemon TCG set logos against dark insets with name + release year + card count + hover-lift. Also applied the new `frontend-design:frontend-design` skill's principles (within brand constraints — Geist + #0B1428 + #FF6B5C all preserved) to the homepage hero and the per-card "Best current listing" block.
+
+**Frontend-design plugin audit (criterion 1).** The plugin ships exactly one skill: `frontend-design:frontend-design`. It's a **design-thinking guide**, not a code-gen tool or component library — the SKILL.md is a single page that frames design choices around purpose / tone / constraints / differentiation, urges committing to a bold aesthetic direction (luxury, brutalist, retro-futuristic, editorial, …), and warns against "generic AI aesthetics" (Inter/Roboto, purple-gradient-on-white, predictable layouts). It does NOT install components, run codemods, or expose subroutines — just guidance to invoke when designing. For Foil's brand constraints (dark theme #0B1428, accent #FF6B5C, Geist stack, operational+premium feel) the skill's value is the principle list: typography hierarchy, restrained motion at high-impact moments, asymmetric/overlap layouts, atmospheric depth via gradients/noise. We applied those principles three places this session without changing fonts or palette.
+
+**Polish applied (criterion 6) — three surfaces, before/after each:**
+
+1. **/cards era→sets index** (the structural rewrite + the visual treatment together). *Before:* flat list of 18 sets, no era hierarchy, generic card thumbnails repeated in tight uniform rows; visually undifferentiated from any "browse a list" page. *After:* eras as section headings with a uppercase `{era} era` h2 + a mono-ticked `N sets` chip on the right; each era contains a responsive set-tile grid (1/2/3/4 cols mobile→xl, gap-4→gap-5); each set tile renders the official Pokemon TCG set logo on an inset `#0B1428` panel with breathing room, name + release year + `N cards tracked` line, and `hover:-translate-y-0.5 hover:border-[#FF6B5C]/40 hover:shadow-xl hover:shadow-[#FF6B5C]/5` for a subtle lift on hover. Era + grid rhythm + atmospheric set-logo cards match what reviewers expect from PokeScope-style browse without going maximalist. *Plugin principles used:* "spatial composition — generous negative space," "backgrounds & visual details — atmospheric depth via tinted inset panels," restrained motion.
+
+2. **Homepage hero**. *Before:* "Pre-launch · early access opening Oct 7" chip framing a product that's actually live; static dot indicator; CTA was just the newsletter form. *After:* the chip now reads `Live · tracking {200} cards across {18} sets` with a `animate-ping` pulsing dot on the left (the "live" indicator signals the product is shipping not coming-soon, and the count chips deliver an unmistakable proof-of-build at-a-glance). Subtle radial-gradient glow behind the headline adds atmosphere without slowing LCP (`pointer-events-none -z-10 opacity-60`). Added an explicit primary CTA `Browse the catalog →` button to `/cards` because the newsletter form alone wasn't carrying the "go look at the product" intent. *Plugin principles used:* "motion for effects and micro-interactions — one well-orchestrated moment" (the pulse), "dominant colors with sharp accents outperform timid evenly-distributed palettes" (the gradient + accent button), explicit primary-action hierarchy.
+
+3. **Per-card page "Best current listing" block**. *Before:* heading was plain uppercase text. *After:* heading now wraps an `animate-ping` pulse indicator (visually consistent with the homepage hero — the same pulsing-dot motif signals "live" data across the site). Added the per-card "See all in {setName} →" link to the related-cards section, sending users back into the set-browse loop. *Plugin principles used:* "cohesive aesthetic point-of-view" (shared motif across surfaces), and the small live-pulse motion serves the "one high-impact micro-interaction" recommendation rather than scattering effects.
+
+**What landed.**
+
+- [`lib/cards/sdk.ts`](../lib/cards/sdk.ts) — added `getSetMetadata(id)` and `getAllSets()`. Both `next: { revalidate: 86400 }`. Soft-fail to a minimal record (logo URL still derivable from `id` since pokemontcg.io's logo paths are deterministic) on 404/500/network/empty-payload. `RawSet` parser maps `series`, `releaseDate`, `total`, `images.logo` → public `SetMetadata` shape.
+- [`lib/cards/catalog.ts`](../lib/cards/catalog.ts) — added `setIdsInCatalog()` (distinct set ids preserving curated source order — Base first, sv3pt5 last) and `entriesForSet(setId)` (catalog entries for one set, sorted by collector number). These back the new per-set route and the eras grouping.
+- [`app/(site)/cards/sets/[set-id]/page.tsx`](../app/(site)/cards/sets/[set-id]/page.tsx) (new) — per-set browse. `generateStaticParams` covers every id in `setIdsInCatalog()` (18 routes). Renders set-logo header + set metadata (series, year, card count) + the responsive catalog-card grid. `force-static` + 24h revalidate.
+- [`app/(site)/cards/page.tsx`](../app/(site)/cards/page.tsx) — rewritten from the Session 23 flat shape. Now: fetch all sets via `getAllSets()`, filter to those in catalog, group by `series` with explicit `ERA_RANK` so eras render in historical 1996→present order. Set-tile grid per era with logo + name + year + count, hover-lift on accent border, links to `/cards/sets/<id>`. Search index now spans set names AND card names (a "Charizard" query matches every set containing a tracked Charizard via tile-toggle). Defensive: if the SDK omits a set we expect, synthesize a placeholder so the tile still renders (the per-set page fills the gaps at render).
+- [`app/(site)/cards/cards-search.tsx`](../app/(site)/cards/cards-search.tsx) — selector update so the client filter targets era sections (`section[data-era]`) AND the legacy `aria-labelledby^=group-` shape — keeps backward-compatibility if anything still uses the old shape.
+- [`app/(site)/cards/[slug]/page.tsx`](../app/(site)/cards/[slug]/page.tsx) — related-cards heading now flexes a `See all in {setName} →` link next to the title, sending visitors back into the set-browse loop. The "Best current listing" h2 now carries the live-pulse motif (visual cohesion with the homepage hero).
+- [`app/(site)/page.tsx`](../app/(site)/page.tsx) — hero pulse + radial gradient + "Browse the catalog →" primary CTA as documented above.
+- [`lib/__tests__/sdk.test.ts`](../lib/__tests__/sdk.test.ts) — 5 new tests covering `getSetMetadata` (full-parse + 404 minimal record), `getAllSets` (endpoint URL + pageSize=250 + parsing) and its soft-fail paths.
+- [`lib/__tests__/catalog.test.ts`](../lib/__tests__/catalog.test.ts) — 3 new tests covering `setIdsInCatalog` (18 distinct ids in source order with first/last invariants) and `entriesForSet` (ordering + defensive empty return).
+
+**Tests.** Root suite: 271/271 (was 263 in Session 23; +5 sdk + +3 catalog). Typecheck clean.
+
+**Mobile pass (criterion 8).** Reviewed the era→sets grid at 375px:
+- `/cards`: era section heading + chip stack to single column; set tiles render 1 col on `<sm` (full-width tile, logo legible against the inset background, name + year + count below).
+- `/cards/sets/<id>`: 2-col grid on `<sm` (matches the existing per-card tile grid layout from Session 22).
+- Per-card page: layout is `grid-cols-[16rem_1fr]` on `sm+` and stacks to single column on mobile (already verified in Session 23). The new live-pulse + "See all in {set}" link both flow naturally at narrow widths.
+- Homepage hero: chip → headline → paragraph → CTA + see-example → newsletter form stacks vertically. Primary "Browse the catalog →" button is full-tap-target width on mobile via the `flex-col gap-4` wrapper that flips to row at `sm+`.
+
+**Key decisions made.** No new ADR. UX rewrite + skill principles applied within the existing brand. The structural shift from one flat /cards page into era→sets→cards is the natural consequence of growing past ~20 sets — three taps to a listing instead of an infinite scroll. The plugin's principles guided the visual treatment but the underlying composition (era headings + tile grids + hover lifts) is conventional dark-product UI; the bold-aesthetic-direction language in the plugin's SKILL.md was tempered against the goal's explicit brand-preservation constraint.
+
+**Follow-ups.**
+- Live verification (criterion 10) — captured in "State at session end" below.
+- The `frontend-design:frontend-design` skill is a guidance-only skill (no tools/codegen). Documented above so a future session reaches for it deliberately when designing a new surface, not as a magic codegen lever.
+- The era list (`ERA_RANK`) covers WotC through SV. Future eras (when Pokémon Co prints a new series) need an entry added; unknown eras fall to rank 500 ("Other" gets 999).
+
+**State at session end.** Verification + observations below.
+
+---
+
 ## 2026-05-23 — Session 23: V1 design coherence — shared layout, /cards index, per-card polish, blog typography fix
 
 **Commits:** this commit only

@@ -8,7 +8,13 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { CARD_CATALOG, getCatalogEntry, relatedCardsForSlug } from "../cards/catalog.ts";
+import {
+  CARD_CATALOG,
+  entriesForSet,
+  getCatalogEntry,
+  relatedCardsForSlug,
+  setIdsInCatalog,
+} from "../cards/catalog.ts";
 
 test("catalog has exactly 200 entries", () => {
   assert.equal(CARD_CATALOG.length, 200);
@@ -69,4 +75,29 @@ test("relatedCardsForSlug returns same-set entries sorted by collector-number pr
 
 test("relatedCardsForSlug returns [] for an unknown slug — defensive", () => {
   assert.deepEqual(relatedCardsForSlug("not-real-slug"), []);
+});
+
+test("setIdsInCatalog returns 18 distinct ids in catalog source order (Base first, modern last)", () => {
+  const ids = setIdsInCatalog();
+  assert.equal(ids.length, 18);
+  // First and last positions are deterministic per the curated CARD_CATALOG
+  // ordering: vintage WotC opens; Scarlet & Violet 151 closes.
+  assert.equal(ids[0], "base1");
+  assert.equal(ids[ids.length - 1], "sv3pt5");
+  // No duplicates.
+  assert.equal(new Set(ids).size, ids.length);
+});
+
+test("entriesForSet returns same-set entries ordered by collector number", () => {
+  const base1 = entriesForSet("base1");
+  assert.equal(base1.length, 16);
+  const numbers = base1.map((e) => parseInt(e.pokemonTcgId.split("-")[1], 10));
+  // Strictly ascending.
+  for (let i = 1; i < numbers.length; i++) {
+    assert.ok(numbers[i] > numbers[i - 1], `not sorted at index ${i}: ${numbers.join(",")}`);
+  }
+});
+
+test("entriesForSet returns [] for a set not represented in the catalog", () => {
+  assert.deepEqual(entriesForSet("not-a-real-set"), []);
 });
