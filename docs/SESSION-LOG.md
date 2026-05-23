@@ -57,7 +57,19 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 - The /cards index uses `force-static` + 24h revalidate. If the Pokemon TCG SDK returns drift in card metadata (rarity reclassification, image-host URL change), the index lags 24h before catching up. Acceptable for V1.
 - The blog typography overrides cover the GFM elements I know about. New post styles that need richer rendering (callouts, custom Card components in MDX) keep using the existing `not-prose` pattern from `mdx-components.tsx`.
 
-**State at session end.** Verification + observations captured below.
+**Live verification (criterion 7).**
+
+- Vercel auto-deploy fired github-triggered on commit `922ff8a` → deployment `foil-rl93sghzk-foilapp.vercel.app` Ready in 35s.
+- All 5 surfaces return 200: `/`, `/cards`, `/cards/base1-4-charizard`, `/blog`, `/blog/how-to-read-a-japanese-pokemon-card`.
+- Shared layout verified — every one of the 5 pages exposes the same nav links in the same order (`/cards`, `/blog`, `/login`), proving the `(site)` route group is wrapping consistently. Inline `Header()` / `Footer()` per-page is gone.
+- `/cards` index renders **200 card links across 18 set groups** (Base Set through Scarlet & Violet 151). Set headings carry the proper display names from `SET_DISPLAY_NAMES`. Live filter input rendered and wired.
+- `/cards/base1-4-charizard` renders the polished layout — `w-56`/`w-64` card image via `next/image`, condition-badge logic in markup, larger price hierarchy. Image optimization through Vercel kicked in thanks to the `images.pokemontcg.io` `remotePatterns` add.
+- `/blog` index lists all 4 posts (`hello-world`, `how-much-is-my-pokemon-card-worth-a-60-second-checklist`, `how-to-read-a-japanese-pokemon-card`, `near-mint-vs-lightly-played-the-difference-that-doubles-a-card-s-price`).
+- Blog typography fix confirmed shipped: the compiled CSS at `/_next/static/chunks/0wc1scn-njs3d.css` now contains `.prose` and `.prose-invert` rules (it did not before this commit). The extended prose className on `/blog/[slug]` is intact (`prose-h4`, `prose-a:no-underline hover:prose-a:underline`, `prose-code`, `prose-pre`, `prose-table`, `prose-img`, etc.).
+
+**Regression caught and fixed mid-verification.** First post-deploy curl showed `/blog/how-to-read-a-japanese-pokemon-card` returning 404 and `/blog` reading "No posts yet. Check back soon." The cause: `app/(site)/blog/posts-meta.ts::POSTS_DIR` still pointed at the pre-move `app/blog/posts/` path, so `getPostSlugs()` returned `[]` and the `dynamicParams = false` blog [slug] route had no matching params at SSG. One-line fix: update the constant to `app/(site)/blog/posts/` (route-group parens ARE part of the filesystem path even though they're elided from the URL). Pushed as `ec28b5a`; Vercel redeployed; all blog routes back to 200.
+
+**State at session end.** Design coherence pass landed. Five public-facing surfaces share one header/footer source-of-truth via the `(site)` route group. `/cards` is now a real browsable index (200 cards, 18 set groups, live filter) rather than a dead "Browse cards" link to a single hardcoded Charizard. `/cards/[slug]` polished — Image-optimized card art, condition-badge inference from listing titles, gradient hero treatment on the Best Deal block, styled watchlist form with replaceable success state. Blog typography actually works — `@tailwindcss/typography` installed and loaded via Tailwind v4's `@plugin` directive, plus extended overrides for every GFM element. `WaitlistForm` and its three supporting files retired; `EmailCapture` is the single newsletter-capture component across homepage + pillars + blog footer.
 
 ---
 
