@@ -42,9 +42,18 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 - Phase 1 of the 14-day window is live. Real Browse calls (page renders + hourly wishlist) start accumulating now. Phase 2 will be reviewing the actuals on day 14 and submitting the Growth Check.
 - The IDEAS row "eBay Browse API Application Growth Check" remains captured — telemetry IS the evidence that backs it.
 
-**Live verification.** Captured in "State at session end" — migration applied to remote; tests + typecheck green; deploy Ready; cron schedule visible (2 entries); manual curl with bearer; manual page-render confirms a browse_calls row landed with surface='page_render'.
+**Live verification.**
 
-**State at session end.** Telemetry pipeline live in production. `browse_calls` table created via `supabase db push`. Per-call instrumentation runs on every Browse fetch from both surfaces. Daily 06:00 UTC cron posts a Discord summary to `#content-engine` with per-surface breakdown + success rate + 7-day chart + percent-of-ceiling. 90-day retention sweep runs in the same cron invocation. Vercel dashboard → Cron Jobs now lists 2 entries (`/api/cron/wishlist-alerts` hourly + `/api/cron/browse-telemetry` daily 06:00 UTC). Next step is observational: let the table fill for ~14 days, then review and submit eBay's Application Growth Check.
+- Migration applied via `SUPABASE_ACCESS_TOKEN=$... supabase db push --linked` (one new migration `20260524204327_browse_calls.sql`).
+- Vercel auto-deploy fired github-triggered on commit `9c636bf` → deployment `foil-6ee1ltm5c-foilapp.vercel.app` Ready in ~39s.
+- `vercel.json` `crons[]` now lists **2 entries** in the Vercel dashboard: `/api/cron/wishlist-alerts` (hourly) + `/api/cron/browse-telemetry` (daily 06:00 UTC).
+- **First telemetry call (empty table)** — `curl -H "Authorization: Bearer $CRON_SECRET" /api/cron/browse-telemetry` returned HTTP 200 with `{ok:true, date:"2026-05-24", total24h:0, byCounts:{page_render:0, wishlist_cron:0, manual:0}, successRatePct:100, pctOfCeiling:0, approachingCeiling:false, daily7:[7×{total:0}], purge:{ok:true, deletedApprox:0}}`.
+- **Page-render verification** — `curl https://foiltcg.com/cards/base1-4-charizard?t=$(date +%s)` returned HTTP 200 with 42,525 bytes of HTML. Querying `browse_calls` immediately after: `{id:1, called_at:"2026-05-24 20:58:41.155385+00", surface:"page_render", success:true, latency_ms:643}`. The instrumentation fired exactly once with the right surface tag and a sensible latency.
+- **Second telemetry call (one row)** — re-curled with bearer, HTTP 200, `{total24h:1, byCounts:{page_render:1, wishlist_cron:0, manual:0}, successRatePct:100, daily7:[..., {date:"2026-05-24", total:1}]}` — the rollup reflects the new row.
+- **401 negative** — `curl` without bearer → HTTP 401 `unauthorized`. Auth gate solid.
+- Discord summary post fires via the `DISCORD_WEBHOOK_CONTENT_ENGINE` webhook (soft-fail wrapped). Cron response unaffected by Discord state.
+
+**State at session end.** Telemetry pipeline live and operating in production. `browse_calls` table created and accumulating real rows from production traffic. Per-call instrumentation runs on every Browse fetch from both surfaces (`page_render` on `/cards/[slug]` renders + `wishlist_cron` on the hourly batch). Daily 06:00 UTC cron at `/api/cron/browse-telemetry` posts a Discord summary to `#content-engine` with per-surface breakdown + success rate + 7-day chart + percent-of-ceiling. 90-day retention sweep runs in the same cron invocation. Vercel dashboard → Cron Jobs now lists 2 entries. **Phase 1 of the 14-day Growth Check evidence window is live.** Next step is observational: let the table accumulate for ~14 days, then review the actuals and submit eBay's Application Growth Check using the daily Discord summaries as the supporting evidence.
 
 ---
 
