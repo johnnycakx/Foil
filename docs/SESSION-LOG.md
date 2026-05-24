@@ -8,6 +8,46 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-24 — Session 28: Daily Browse-call telemetry — Phase 1 of the 14-day Growth Check evidence push
+
+**Commits:** this commit only
+
+**Summary.** With the V1 deal-finder data loop running end-to-end (Sessions 25 → 27), we're now entering a 14-day evidence-collection window: real Browse API usage data needs to accumulate so the eBay Application Growth Check submission has actuals to cite. This goal lands the instrumentation + daily summary cron that produces those actuals. [ADR-025](DECISIONS.md#adr-025--browse-call-telemetry-operational-metadata-only-no-listing-payload) captures the schema choice — operational metadata only (when, which surface, success, latency), no listing payload — and pins it against R-008 by both the table schema AND the `logBrowseCall` API shape.
+
+**What landed.**
+
+- [`supabase/migrations/20260524204327_browse_calls.sql`](../supabase/migrations/20260524204327_browse_calls.sql) (new) — `browse_calls(id bigserial pk, called_at timestamptz default now(), surface check ∈ {page_render, wishlist_cron, manual}, success bool, latency_ms int)` + `called_at desc` index + service-role-only RLS. Applied to remote via `supabase db push --linked`.
+- [`lib/telemetry/browse-calls.ts`](../lib/telemetry/browse-calls.ts) (new) — sole writer for the table. Exports `logBrowseCall` (fire-and-forget insert, soft-fail), `aggregateLast24h` (totals + per-surface counts + success rate + pctOfCeiling + approachingCeiling flag at the 80% threshold against the 5,000-call daily ceiling), `aggregateLast7Days` (7 UTC-bucketed daily totals for the text chart), and `purgeOlderThan` (90-day rolling retention sweep — same invocation as the daily cron).
+- [`lib/affiliate/ebay-browse.ts`](../lib/affiliate/ebay-browse.ts) — instrumented. Every Browse call that reaches the fetch attempt fires `void logBrowseCall({surface, success, latency_ms}).catch(() => {})`. Empty-query + missing-OAuth short-circuits don't log (they're not real Browse calls against the quota). Logging never awaits the hot path; logging errors are swallowed.
+- [`lib/supabase/types.ts`](../lib/supabase/types.ts) — added `browse_calls` Row/Insert/Update types.
+- [`app/(site)/cards/[slug]/page.tsx`](../app/(site)/cards/[slug]/page.tsx) — passes `surface: "page_render"` to `getBestListing`.
+- [`lib/wishlist/scan-batch.ts`](../lib/wishlist/scan-batch.ts) — passes `surface: "wishlist_cron"` to the injected `getBestListing` at the per-slug call site.
+- [`app/api/cron/browse-telemetry/route.ts`](../app/api/cron/browse-telemetry/route.ts) (new) — Node runtime, force-dynamic, GET handler. Same `Authorization: Bearer ${CRON_SECRET}` gate as the wishlist cron (401 / 503 / 200 paths). Runs `aggregateLast24h + aggregateLast7Days + purgeOlderThan(90)` in `Promise.all` then posts the shaped embed via `lib/notifications/discord.ts::postBrowseTelemetry`.
+- [`lib/notifications/discord.ts`](../lib/notifications/discord.ts) — added `postBrowseTelemetry(webhookUrl, ev, opts)`. Orange `📊 Browse telemetry (date)` on idle days; flips red + prepends `⚠ Approaching daily ceiling` when yesterday's count crosses 80%. 7-day text-chart in a code-block field; retention-sweep field added when >0 rows purged.
+- [`vercel.json`](../vercel.json) — second `crons[]` entry: `{path: "/api/cron/browse-telemetry", schedule: "0 6 * * *"}` (06:00 UTC daily, after the last hourly wishlist run settles).
+- [`lib/__tests__/browse-calls-telemetry.test.ts`](../lib/__tests__/browse-calls-telemetry.test.ts) (new) — 10 tests pinning log soft-fail, aggregate rollups, 80%-threshold flip (raw-value compare so `3,999/5,000 = 79.98%` rounds to `80.0` for DISPLAY but does NOT flip the flag), success-rate math, 7-day shape, retention sweep query.
+- [`lib/__tests__/browse-call-instrumentation.test.ts`](../lib/__tests__/browse-call-instrumentation.test.ts) (new) — 7 tests pinning every searchItems call logs exactly one row, latency captured, fetch-throw logs success:false, HTTP error logs success:false, log-side throw doesn't propagate, empty-query + missing-OAuth short-circuits skip logging, default surface = "manual".
+- [`lib/__tests__/cron-browse-telemetry-route.test.ts`](../lib/__tests__/cron-browse-telemetry-route.test.ts) (new) — 7 tests pinning bearer auth predicate + Discord embed shape (idle-day orange + 📊 title, approaching-ceiling red + ⚠ title, purgedRows field present iff >0).
+- [`package.json`](../package.json) — registered the three new test files in `npm test`.
+- [`docs/DECISIONS.md`](DECISIONS.md) — [ADR-025](DECISIONS.md#adr-025--browse-call-telemetry-operational-metadata-only-no-listing-payload).
+
+**Tests.** Targeted suite (3 new files): 25/25 green. Full-suite run gated on the closure step.
+
+**Key decisions.** [ADR-025](DECISIONS.md#adr-025--browse-call-telemetry-operational-metadata-only-no-listing-payload) is the only new architectural record. The schema choice — four operational columns, no query/title/price/URL — was the open question, and the R-008 compliance posture is the load-bearing reason for the narrow shape. The `logBrowseCall` API shape enforces the same boundary at the type level: there's no parameter for a listing field, so a future contributor can't accidentally log one.
+
+**One implementation detail caught by tests.** The `approachingCeiling` threshold check originally compared the ROUNDED `pctOfCeiling` (one decimal) against 80%. 3,999 rows → `79.98%` → rounds to `80.0` for display → would have falsely tripped the flag. Fixed: compare the unrounded raw percent against the threshold, keep the rounded value for the embed display. Pinned in `browse-calls-telemetry.test.ts` so a future refactor can't regress.
+
+**Follow-ups.**
+
+- Phase 1 of the 14-day window is live. Real Browse calls (page renders + hourly wishlist) start accumulating now. Phase 2 will be reviewing the actuals on day 14 and submitting the Growth Check.
+- The IDEAS row "eBay Browse API Application Growth Check" remains captured — telemetry IS the evidence that backs it.
+
+**Live verification.** Captured in "State at session end" — migration applied to remote; tests + typecheck green; deploy Ready; cron schedule visible (2 entries); manual curl with bearer; manual page-render confirms a browse_calls row landed with surface='page_render'.
+
+**State at session end.** Telemetry pipeline live in production. `browse_calls` table created via `supabase db push`. Per-call instrumentation runs on every Browse fetch from both surfaces. Daily 06:00 UTC cron posts a Discord summary to `#content-engine` with per-surface breakdown + success rate + 7-day chart + percent-of-ceiling. 90-day retention sweep runs in the same cron invocation. Vercel dashboard → Cron Jobs now lists 2 entries (`/api/cron/wishlist-alerts` hourly + `/api/cron/browse-telemetry` daily 06:00 UTC). Next step is observational: let the table fill for ~14 days, then review and submit eBay's Application Growth Check.
+
+---
+
 ## 2026-05-24 — Session 27: Wishlist alert cron — hourly Vercel Cron Job walks watchlists → sends Resend emails on price drop. Closes ROADMAP NEXT #9.
 
 **Commits:** this commit only

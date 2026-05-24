@@ -791,6 +791,66 @@ Three viable schedulers were available:
 
 ---
 
+## ADR-025 — Browse call telemetry: operational metadata only, no listing payload
+
+**Date:** 2026-05-24
+**Status:** Accepted
+
+**Context.** [ADR-024](#adr-024--wishlist-alert-cron-on-vercel-cron-jobs-vs-github-actions-or-supabase-edge-functions) established the per-run Browse-call cap (200) and the `capHit: true` signal in the Discord cron summary as the trigger to submit eBay's Application Growth Check. To actually submit it, we need numbers: actuals for daily Browse usage, the surface distribution (per-card page renders vs the wishlist cron), success rate over time. We also need the same numbers internally to know when we're approaching the 5,000/day ceiling BEFORE the wishlist cron starts shedding work.
+
+The natural shape is a small append-only table: one row per Browse call, with the call's call-site tag, success bool, and latency. The tension is R-008 (eBay 2025 License Agreement) — the agreement prohibits storing listing payloads (titles, prices, item URLs, card identifiers). A naïve telemetry table that captures "what we searched for" or "what came back" trips that. The narrow path: operational metadata only.
+
+**Alternatives considered.**
+
+1. **Scrape Vercel function logs.** Free, no schema. Brittle (log format can change), high-latency (logs are 5-15min behind realtime), and adds a separate log-scraping infrastructure surface. Rejected — telemetry as a side-effect of logging is not durable.
+2. **Track only an in-memory counter per instance.** Resets on every cold start; multi-instance Fluid Compute makes the count fragmentary. Rejected — useless for daily aggregation.
+3. **Persist call metadata + a hash of the search query.** Slightly richer signal (could deduplicate identical queries), but a query hash is borderline-card-identifying and adds a R-008 compliance risk for vanishingly little value. Rejected — out of an abundance of caution.
+4. **Persist call metadata + a query length bucket.** Same tradeoff as #3 with less value. Rejected.
+
+**Decision.** A `browse_calls` table with exactly four columns of operational metadata:
+
+```sql
+browse_calls (
+  id          bigserial primary key,
+  called_at   timestamptz not null default now(),
+  surface     text not null check (surface in ('page_render', 'wishlist_cron', 'manual')),
+  success     boolean not null,
+  latency_ms  integer not null
+);
+```
+
+That's it. No query column, no card_slug column, no result-count column. The `lib/telemetry/browse-calls.ts::logBrowseCall` API enforces the boundary at the type level — there's no parameter that lets a caller pass a price, title, or URL.
+
+**Architectural posture.**
+
+- **Single import boundary** — only `lib/telemetry/browse-calls.ts` writes to `browse_calls`. Two writers (Browse client + cron-route purge) call into it via `logBrowseCall` / `purgeOlderThan`.
+- **Fire-and-forget at the call site** — `lib/affiliate/ebay-browse.ts::searchItems` calls `void logBrowseCall({...}).catch(() => {})` so a Supabase outage cannot block a page render. The hot path never awaits the insert.
+- **No client-side telemetry** — the Browse client only runs server-side. Telemetry inherits the same boundary.
+- **90-day rolling retention** — the daily cron route runs `purgeOlderThan(90, ...)` in the same invocation as the rollup. Long enough to cite trends in a Growth Check application; short enough to keep the table bounded at hundreds of thousands of rows in the worst case (5,000/day × 90d ≈ 450K rows ≈ trivial for Supabase).
+- **Two read functions** — `aggregateLast24h` (per-surface counts + success rate + percent of 5,000 ceiling + approaching-ceiling flag) and `aggregateLast7Days` (per-day totals for the embed's text chart). Both bound by the `(called_at desc)` index.
+
+**Compliance posture (R-008 reinforced).**
+
+- **No listing payload persists.** The schema lacks columns for it; the logBrowseCall API lacks parameters for it.
+- **No card-identifying fields persist.** Even the `surface` column is one of three enum values — it identifies the CALL SITE, not the card.
+- **Telemetry data is internal — never surfaced through any public API.** The route is gated by `CRON_SECRET`; the aggregate posts to a private Discord channel.
+
+**Consequences.**
+
+- **Adds ~5,000 rows/day to Supabase at full quota** — bounded by the 90-day retention sweep. Storage cost negligible at this volume on Supabase's Pro tier (already enabled).
+- **Adds one Discord post per day** to `#content-engine` (the cron's webhook target). Co-tenant with the wishlist-cron summary; signal-to-noise is fine at 2 posts/day combined.
+- **Surfaces the Application Growth Check submission trigger early.** When yesterday's 24h Browse count crosses 80% of 5,000, the Discord embed flips red + prepends "⚠ Approaching daily ceiling." That's the same evidence we cite in the Growth Check application — internal signal and external submission both grounded on the same numbers.
+- **Unlocks future operational dashboards.** When the dataset is meaningful enough to graph (likely 30+ days in), wiring a simple table view at `/admin/telemetry` is a thin layer over `aggregateLast24h` + `aggregateLast7Days`.
+- **No latency added to page renders.** The Browse client measures `Date.now()` deltas and emits the insert via `void`. Cold path: ~0.1ms of CPU. Hot path: unchanged.
+
+**Cross-refs.**
+
+- [ADR-024](#adr-024--wishlist-alert-cron-on-vercel-cron-jobs-vs-github-actions-or-supabase-edge-functions) — the cap that motivates the telemetry.
+- [R-008](RISKS.md) — the compliance posture this ADR reinforces by example.
+- IDEAS row "eBay Browse API Application Growth Check" — telemetry IS the evidence for that submission.
+
+---
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

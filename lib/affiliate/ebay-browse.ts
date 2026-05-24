@@ -1,4 +1,5 @@
-// eBay Browse API client. See ADR-021 Session 21 amendment + ADR-023.
+// eBay Browse API client. See ADR-021 Session 21 amendment + ADR-023 +
+// ADR-025 (telemetry instrumentation).
 //
 // Replaces lib/affiliate/epn.ts::getBestListing as the V1 live-listing
 // source once the production keyset enabled (Session 25 webhook → Session
@@ -13,6 +14,12 @@
 //   3. Affiliate URL construction stays in lib/affiliate/epn.ts —
 //      buildAffiliateUrl is the single source of truth for `mkevt`/
 //      `campid`/`customid` param assembly. This module imports it.
+//
+// Telemetry rule (ADR-025): every Browse call — success OR failure —
+// fires a fire-and-forget logBrowseCall with the caller-supplied
+// `surface` tag. Logging never throws, never awaits the caller, never
+// affects the response. The payload is operational metadata only
+// (surface + success + latency_ms) — no listing fields persist.
 
 import { buildAffiliateUrl } from "./epn.ts";
 import type {
@@ -22,6 +29,7 @@ import type {
   GetBestListingInput,
 } from "./epn.ts";
 import { getAccessToken } from "./ebay-oauth.ts";
+import { logBrowseCall, type BrowseSurface } from "../telemetry/browse-calls.ts";
 
 const BROWSE_SEARCH_ENDPOINT = "https://api.ebay.com/buy/browse/v1/item_summary/search";
 const MARKETPLACE_ID = "EBAY_US";
@@ -31,6 +39,12 @@ export type SearchItemsInput = {
   limit?: number;
   /** Test injection — passed through to OAuth + Browse fetch calls. */
   fetchImpl?: typeof fetch;
+  /** Telemetry tag — see ADR-025. Defaults to "manual" so an
+   *  un-instrumented caller still produces a useful telemetry row. */
+  surface?: BrowseSurface;
+  /** Test injection — override logBrowseCall so we can pin the call
+   *  shape without writing to Supabase. */
+  logImpl?: typeof logBrowseCall;
 };
 
 /**
@@ -40,6 +54,11 @@ export type SearchItemsInput = {
  *
  * The OAuth access token is fetched lazily and cached in-memory by
  * lib/affiliate/ebay-oauth.ts.
+ *
+ * Telemetry: every invocation that reaches the fetch attempt records one
+ * row in browse_calls with (surface, success, latency_ms). Empty-query
+ * short-circuit + missing-OAuth path DON'T log — those are not "Browse
+ * calls" against eBay's quota.
  */
 export async function searchItems(input: SearchItemsInput): Promise<EpnSearchResult> {
   if (!input.query?.trim()) {
@@ -55,6 +74,10 @@ export async function searchItems(input: SearchItemsInput): Promise<EpnSearchRes
   const url =
     `${BROWSE_SEARCH_ENDPOINT}?q=${encodeURIComponent(input.query)}&limit=${limit}`;
 
+  const surface: BrowseSurface = input.surface ?? "manual";
+  const log = input.logImpl ?? logBrowseCall;
+  const startedAt = Date.now();
+
   const fetchFn = input.fetchImpl ?? fetch;
   let response: Response;
   try {
@@ -69,8 +92,15 @@ export async function searchItems(input: SearchItemsInput): Promise<EpnSearchRes
       cache: "no-store",
     });
   } catch (err) {
+    // Fire-and-forget — never await on the hot path. The .catch keeps an
+    // unhandled rejection from escaping.
+    void log({ surface, success: false, latency_ms: Date.now() - startedAt }).catch(() => {});
     return { ok: false, error: `fetch_failed: ${(err as Error).message}` };
   }
+
+  const latencyMs = Date.now() - startedAt;
+  const httpSuccess = response.ok;
+  void log({ surface, success: httpSuccess, latency_ms: latencyMs }).catch(() => {});
 
   if (!response.ok) {
     return { ok: false, status: response.status, error: `http_${response.status}` };
@@ -137,6 +167,9 @@ function parseItemSummaries(body: unknown): EpnProductHit[] {
  * and return the affiliate-wrapped link via lib/affiliate/epn.ts's
  * buildAffiliateUrl (single source of truth for affiliate URL shape).
  * Returns `null` on any failure — page renders the fallback CTA.
+ *
+ * Telemetry: forwards `surface` to searchItems so the underlying Browse
+ * call lands in browse_calls with the call-site tag.
  */
 export async function getBestListing(input: GetBestListingInput): Promise<EpnBestListing | null> {
   const query = [input.cardName, input.setName].filter(Boolean).join(" ").trim();
@@ -146,6 +179,7 @@ export async function getBestListing(input: GetBestListingInput): Promise<EpnBes
     query,
     limit: 25,
     fetchImpl: input.fetchImpl,
+    surface: input.surface,
   });
   if (!result.ok || result.hits.length === 0) return null;
 

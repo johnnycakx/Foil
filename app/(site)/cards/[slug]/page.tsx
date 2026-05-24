@@ -110,11 +110,12 @@ export default async function CardPage({
 
   const card = await getCardMetadata({ id: entry.pokemonTcgId });
 
-  // Render-time EPN fetch — no caching. Soft-fails to null on any EPN error.
+  // Render-time Browse fetch — no caching. Soft-fails to null on any error.
   const best: EpnBestListing | null = await getBestListing({
     cardName: card.name,
     setName: card.setName,
     customId: "foil-card-page",
+    surface: "page_render",
   });
 
   const fallbackUrl = affiliateSearchUrl(`${card.name} ${card.setName}`, "foil-card-page");

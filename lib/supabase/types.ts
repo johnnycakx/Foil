@@ -224,6 +224,30 @@ export type Database = {
         }>;
         Relationships: [];
       };
+      browse_calls: {
+        Row: {
+          id: number;
+          called_at: string;
+          surface: "page_render" | "wishlist_cron" | "manual";
+          success: boolean;
+          latency_ms: number;
+        };
+        Insert: {
+          id?: number;
+          called_at?: string;
+          surface: "page_render" | "wishlist_cron" | "manual";
+          success: boolean;
+          latency_ms: number;
+        };
+        Update: Partial<{
+          id: number;
+          called_at: string;
+          surface: "page_render" | "wishlist_cron" | "manual";
+          success: boolean;
+          latency_ms: number;
+        }>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

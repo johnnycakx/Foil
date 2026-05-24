@@ -286,6 +286,67 @@ export async function postWishlistAlertRun(
   });
 }
 
+export type BrowseTelemetryInput = {
+  /** ISO yyyy-mm-dd of the day this summary covers (UTC, == cron fire day). */
+  date: string;
+  total24h: number;
+  byCounts: { page_render: number; wishlist_cron: number; manual: number };
+  successRatePct: number;
+  pctOfCeiling: number;
+  approachingCeiling: boolean;
+  /** Daily totals oldest-first, length 7. Used for a small text chart. */
+  daily7: Array<{ date: string; total: number }>;
+  /** Rows deleted by the 90d retention sweep, for audit. */
+  purgedRows?: number;
+};
+
+/**
+ * Daily Browse-API call telemetry summary (ADR-025). Posted by the
+ * /api/cron/browse-telemetry route after every 06:00 UTC fire.
+ *
+ * Color flips red + the body prepends "⚠ Approaching daily ceiling" when
+ * yesterday's call count >= 80% of the 5,000/day Browse quota — that's
+ * the load-bearing visual signal that the Application Growth Check
+ * submission is due.
+ */
+export async function postBrowseTelemetry(
+  webhookUrl: string,
+  ev: BrowseTelemetryInput,
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<PostWebhookResult> {
+  const chart = ev.daily7
+    .map((d) => `${d.date.slice(5)}: ${String(d.total).padStart(4, " ")}`)
+    .join("\n");
+  const fields: DiscordEmbed["fields"] = [
+    { name: "24h total", value: String(ev.total24h), inline: true },
+    { name: "% of 5,000/day", value: `${ev.pctOfCeiling.toFixed(1)}%`, inline: true },
+    { name: "Success rate", value: `${ev.successRatePct.toFixed(1)}%`, inline: true },
+    { name: "page_render", value: String(ev.byCounts.page_render), inline: true },
+    { name: "wishlist_cron", value: String(ev.byCounts.wishlist_cron), inline: true },
+    { name: "manual", value: String(ev.byCounts.manual), inline: true },
+    { name: "Last 7 days", value: `\`\`\`\n${chart}\n\`\`\``, inline: false },
+  ];
+  if (typeof ev.purgedRows === "number" && ev.purgedRows > 0) {
+    fields.push({ name: "Retention sweep", value: `${ev.purgedRows} rows purged (>90d)`, inline: false });
+  }
+  const title = ev.approachingCeiling
+    ? `⚠ Approaching daily ceiling — Browse telemetry (${ev.date})`
+    : `📊 Browse telemetry (${ev.date})`;
+  const color = ev.approachingCeiling ? COLOR_RED_ERROR : COLOR_FOIL_ORANGE;
+  return postWebhook({
+    webhookUrl,
+    embeds: [
+      {
+        title,
+        color,
+        timestamp: new Date().toISOString(),
+        fields,
+      },
+    ],
+    fetchImpl: opts.fetchImpl,
+  });
+}
+
 export async function postDeploy(
   webhookUrl: string,
   ev: { status: "started" | "succeeded" | "failed"; url?: string; commitSha?: string },

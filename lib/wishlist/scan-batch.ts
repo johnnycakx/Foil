@@ -168,6 +168,7 @@ export async function scanWatchlists(input: ScanWatchlistsInput): Promise<ScanRe
         cardName: metadata.name,
         setName: metadata.setName,
         customId: "foil-wishlist-alert",
+        surface: "wishlist_cron",
       });
     } catch (err) {
       result.errors.push({

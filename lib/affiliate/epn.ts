@@ -197,6 +197,10 @@ export type GetBestListingInput = {
   customId?: string;
   /** Test injection. */
   fetchImpl?: typeof fetch;
+  /** Telemetry tag — which call site initiated this Browse call. The
+   *  Browse client logs every call to browse_calls keyed on this; see
+   *  ADR-025. Consumed by lib/affiliate/ebay-browse.ts; EPN ignores it. */
+  surface?: "page_render" | "wishlist_cron" | "manual";
 };
 
 /**
