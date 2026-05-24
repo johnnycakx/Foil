@@ -37,9 +37,13 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 - ROADMAP NOW #8 stays Pending in this entry. It closes in the goal that confirms keyset compliant after John submits the form at developer.ebay.com → Alerts & Notifications → foil → Production with the endpoint URL `https://foiltcg.com/api/webhooks/ebay-marketplace-deletion` and the verification token from `.env.local`. eBay fires the GET challenge, our endpoint returns the correct hash, the keyset flips to compliant, and `EBAY_DEVELOPER_CERT_ID` becomes visible.
 - Next goal: Browse API client implementation in `lib/affiliate/ebay-browse.ts` + the OAuth `client_credentials` helper that wraps `EBAY_DEVELOPER_APP_ID` + `EBAY_DEVELOPER_CERT_ID` into an access token. That goal also wires the `lib/affiliate/links.ts` multi-source selector that swaps `getBestListing()` from EPN-fallback to Browse-primary.
 
-**Live verification.** Captured in "State at session end" — the GET challenge against the production URL was curled and the returned hex matched the locally-computed `sha256(challenge_code + token + endpoint_url)`.
+**Live verification.**
 
-**State at session end.** Webhook endpoint live in production at `https://foiltcg.com/api/webhooks/ebay-marketplace-deletion`. Helpers + handlers tested; route + tests + docs + ADR + env-vars all in the same commit. Vercel auto-deploy fired github-triggered, Ready, GET challenge returns the expected hash. Keyset enablement is the manual step John takes next — submit the form on developer.ebay.com, eBay verifies, keyset flips to compliant, Cert ID becomes available. After that, the Browse API client is the next goal.
+- Vercel auto-deploy fired github-triggered on commit `f9361fc` → deployment `foil-ks219nevz-foilapp.vercel.app` Ready in ~1 minute.
+- `curl 'https://foiltcg.com/api/webhooks/ebay-marketplace-deletion?challenge_code=test'` → HTTP 200, body `{"challengeResponse":"e92a329cd03cd33968493a8782818de54005ebd58bf75a6282dc62f2279edb7b"}`.
+- Locally computed `sha256('test' + EBAY_DELETION_VERIFICATION_TOKEN + 'https://foiltcg.com/api/webhooks/ebay-marketplace-deletion')` → `e92a329cd03cd33968493a8782818de54005ebd58bf75a6282dc62f2279edb7b`. Bytes match. Endpoint URL composition + verification token + concatenation order all verified end-to-end against the production environment.
+
+**State at session end.** Webhook endpoint live in production at `https://foiltcg.com/api/webhooks/ebay-marketplace-deletion` and answering the GET challenge with the byte-exact hash eBay will compare against. Helpers + handlers + tests + docs + ADR + env-vars all in one commit. Keyset enablement is the manual step John takes next — submit the form at developer.ebay.com → Alerts & Notifications → foil → Production with endpoint URL `https://foiltcg.com/api/webhooks/ebay-marketplace-deletion` and verification token from `.env.local`. eBay fires the GET challenge against the live endpoint, our endpoint returns the matching hash, keyset flips to compliant, and `EBAY_DEVELOPER_CERT_ID` becomes visible. After that, the Browse API client is the next goal.
 
 ---
 
