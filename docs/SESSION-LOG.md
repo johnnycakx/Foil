@@ -53,9 +53,16 @@ grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope
 - `lib/affiliate/links.ts` multi-source selector: deferred until TCGplayer affiliate-program approval lands (ROADMAP LATER #26).
 - `lib/affiliate/epn.ts::searchProducts` is no longer called from any page-render path — candidate for deletion when the selector lands.
 
-**Live verification.** Captured in "State at session end" — three /cards/[slug] pages curl'd from production and the curated "Best current listing" markup confirmed in each, not the fallback CTA.
+**Live verification.**
 
-**State at session end.** Browse API client live in production. OAuth + Browse + URL-wrap end-to-end verified against `api.ebay.com` from the local goal session (sample item: Charizard Base Set Unlimited Holo from a real eBay listing at $41.69). Per-card pages now render curated lowest-priced listings instead of the fallback CTA. ROADMAP NOW #8 ✅ closed. The wishlist-alert cron is the next logical goal; `lib/affiliate/links.ts` waits on TCGplayer approval.
+- Vercel auto-deploy fired github-triggered on commit `9eed7bb` → deployment `foil-ojaetfe9e-foilapp.vercel.app` Ready in ~1 minute.
+- All three curated cards return HTTP 200 with the curated "Buy on eBay →" markup (NOT the "Live deal data is briefly unavailable / Browse on eBay" fallback):
+  - `/cards/base1-4-charizard` → **$41.69** — *"Pokémon TCG Charizard 4/102 Base Set Unlimited Holo Rare HP - Nintendo 1999 Card"*
+  - `/cards/sv3pt5-199-charizard-ex` → **$20.00** — *"Charizard ex · 151 (MEW) #199 Extended Art"*
+  - `/cards/swsh7-8-leafeon-vmax` → **$6.50** — *"Leafeon VMAX 008/203 SWSH07: Evolving Skies Holo"*
+- Three real lowest-priced live eBay listings rendered, three different sets, three different price ranges. OAuth + Browse + URL-wrap end-to-end confirmed on production traffic.
+
+**State at session end.** Browse API client live in production with three real curated listings rendered against production traffic. OAuth `client_credentials` flow + Browse `item_summary/search` + affiliate-URL wrapping all working end-to-end. Per-card pages now render real lowest-priced listings instead of the fallback CTA. ROADMAP NOW #8 ✅ closed. The wishlist-alert cron is the next logical goal (data layer is unblocked — `getBestListing()` returns real prices); `lib/affiliate/links.ts` waits on TCGplayer approval per ADR-023.
 
 ---
 
