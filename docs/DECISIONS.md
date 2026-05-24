@@ -687,6 +687,56 @@ eBay offers two paths to enable a disabled keyset:
 
 ---
 
+## ADR-023 — Browse API client ships; `lib/affiliate/links.ts` multi-source selector deferred until TCGplayer access lands
+
+**Date:** 2026-05-24
+**Status:** Accepted
+
+**Context.** The eBay Marketplace Account Deletion webhook ([ADR-022](#adr-022--marketplace-account-deletion-compliance-via-subscribe-path-over-exemption)) flipped the disabled `foil` production keyset to compliant — `EBAY_DEVELOPER_CERT_ID` became visible in the eBay developer dashboard and the Browse API OAuth `client_credentials` flow is now usable. The [ADR-021 Session 21 amendment](#adr-021--epn-as-v1-live-listing-source-browse-api-deferred) had already specified the exact code swap:
+
+- Endpoint: `api.partner.ebay.com/v1/{AccountSID}/products` → `api.ebay.com/buy/browse/v1/item_summary/search`
+- Auth: `Bearer ${EBAY_EPN_AUTH_TOKEN}` → `Bearer ${oauthAccessToken}` from `client_credentials` against `api.ebay.com/identity/v1/oauth2/token`
+- Response parsing: `products[]` → `itemSummaries[]` with stringified `price.value`
+
+What the Session 21 amendment did NOT settle: whether to land a multi-source selector (`lib/affiliate/links.ts`) wrapping both EPN-fallback and Browse-primary call sites in the same goal — anticipating the TCGplayer affiliate-program approval that's still pending ([ROADMAP LATER #26](ROADMAP.md#later--1-3-months-2026-06-11--2026-08-20)).
+
+**Alternatives considered.**
+
+1. **Build `lib/affiliate/links.ts` now as the single getBestListing facade across EPN + Browse.** Cleaner abstraction up-front. But there's currently only one provider that returns real data (Browse) — EPN never resolved to a real listing surface (per Session 21 amendment — EPN credentials authenticate the affiliate reporting API, not product search). A "multi-source selector" wrapping one real source plus the placeholder EPN module is premature abstraction with no immediate consumer.
+2. **Build `links.ts` and `lib/affiliate/tcgplayer.ts` as a hypothetical second source.** Same problem — TCGplayer's affiliate-program approval hasn't landed, and writing a client against an unknown API shape is speculative. The TCGplayer goal will define both modules together when the credentials arrive.
+3. **Land `lib/affiliate/ebay-browse.ts` only and have the per-card page import getBestListing from it directly.** No new abstraction; the swap is a one-line import change. EPN's `affiliateSearchUrl` + `buildAffiliateUrl` stay where they are (the affiliate-URL boundary is unchanged — it's only the listing-search surface that swaps).
+
+**Decision.** Option 3. `lib/affiliate/ebay-browse.ts` lands now; the per-card page swaps `getBestListing` import from `@/lib/affiliate/epn` to `@/lib/affiliate/ebay-browse`; `affiliateSearchUrl` (the fallback) and `buildAffiliateUrl` (the affiliate-URL construction primitive) stay imported from `epn.ts`. The multi-source selector is deferred — when TCGplayer affiliate access lands, that goal will wire `lib/affiliate/tcgplayer.ts` AND `lib/affiliate/links.ts` together, with `links.ts::getBestListing` calling both providers in parallel + comparing results.
+
+**Why not link the abstraction in now.** The premature-abstraction failure mode is real: writing a selector before the second provider exists locks in assumptions that the actual TCGplayer API shape may not match. Three similar lines is better than a premature abstraction (per CLAUDE.md "Doing tasks" rule #4). When TCGplayer lands, the selector design will be informed by that API's actual response shape — not extrapolated from a single source.
+
+**Architectural posture (inherits from ADR-021 unchanged).**
+
+- **Server-side fetch only, render-time, `cache: "no-store"`.** Both `lib/affiliate/ebay-oauth.ts::getAccessToken` (the OAuth POST) and `lib/affiliate/ebay-browse.ts::searchItems` (the Browse GET) pass `cache: "no-store"`. The per-card page is `force-dynamic`. We never persist a raw listing payload.
+- **Soft-fail at every layer.** `getAccessToken` returns null on missing creds / 4xx / 5xx / network / bad JSON / malformed response body. `searchItems` returns `{ ok: false }` on the same failure modes plus the missing-OAuth result. `getBestListing` returns null on any soft-fail. The page renders the fallback "browse on eBay" CTA via `affiliateSearchUrl` and never 500s.
+- **Affiliate URL construction stays in `lib/affiliate/epn.ts`.** `buildAffiliateUrl` (the `mkevt`/`campid`/`customid` primitive) is imported by `ebay-browse.ts` rather than reimplemented. Single import boundary preserved — only `epn.ts` constructs raw affiliate URLs anywhere in the repo.
+- **OAuth token cached in-process.** Module-level cache in `ebay-oauth.ts` keyed on `expiresAt`. Refresh when remaining TTL drops below 60s. Each Fluid Compute instance refetches once per 2-hour window. eBay's OAuth endpoint has generous rate limits; the cache exists for latency, not quota.
+
+**Compliance posture (R-008 unchanged).** Browse API responses are read render-time and discarded. No `cached_listings` table. No AI-generated copy describes specific live listings. The editorial paragraphs below the fold continue to describe the card itself, not the listing.
+
+**Consequences.**
+
+- **Closes ROADMAP NOW #8.** Once the live-verification step confirms three /cards/[slug] pages render the curated "Best current listing" block (not the fallback CTA), NOW #8 moves to Done.
+- **Adds 3 new env vars** at the module-required level: `EBAY_DEVELOPER_APP_ID`, `EBAY_DEVELOPER_CERT_ID`, plus the `EBAY_DELETION_VERIFICATION_TOKEN` that ADR-022 already landed. All mirrored across `.env.local` + Vercel (prod + dev) + GH Actions.
+- **EPN module stays in-tree.** `lib/affiliate/epn.ts::searchProducts` is no longer called from any page-render path, but `buildAffiliateUrl` + `affiliateSearchUrl` stay actively imported. When/if the multi-source selector lands, `searchProducts` becomes a candidate for deletion (EPN's product-search surface was never load-bearing per Session 21 amendment).
+- **The wishlist alert cron ([ROADMAP NEXT #9](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10)) is now unblocked** at the data layer — `getBestListing()` returns real prices end-to-end. That cron is now buildable in a follow-up goal.
+- **`lib/affiliate/links.ts` is the next session of next-greatest-leverage** after TCGplayer affiliate access lands. Tracked as ROADMAP LATER #26.
+
+**Cross-refs.**
+
+- [ADR-021 Session 21 amendment](#adr-021--epn-as-v1-live-listing-source-browse-api-deferred) — specified the swap shape; ADR-023 is its implementation record.
+- [ADR-022](#adr-022--marketplace-account-deletion-compliance-via-subscribe-path-over-exemption) — the compliance webhook that unblocked the keyset, prerequisite for ADR-023.
+- [R-008](RISKS.md) — compliance posture inherited end-to-end.
+- [ROADMAP NOW #8](ROADMAP.md) — closes in the SESSION-LOG entry of the goal that lands this ADR.
+- [ROADMAP LATER #26](ROADMAP.md#later--1-3-months-2026-06-11--2026-08-20) — TCGplayer affiliate plumbing, which will trigger `lib/affiliate/links.ts`.
+
+---
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

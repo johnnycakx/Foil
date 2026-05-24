@@ -8,6 +8,57 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-24 — Session 26: Browse API client + OAuth helper — curated best-listing block live on all 200 /cards/[slug] pages. Closes ROADMAP NOW #8.
+
+**Commits:** this commit only
+
+**Summary.** Session 25's webhook flipped the `foil` production keyset to compliant; this goal landed the Browse API client + OAuth `client_credentials` helper that consumes the now-visible Cert ID. The per-card page's `getBestListing` import swapped from `@/lib/affiliate/epn` to `@/lib/affiliate/ebay-browse`; `affiliateSearchUrl` (the fallback CTA) + `buildAffiliateUrl` (the affiliate-URL primitive) stay imported from `epn.ts`, preserving the single-import-boundary contract. The multi-source selector `lib/affiliate/links.ts` is deliberately not built — TCGplayer affiliate access is still pending and writing the selector before the second provider's API shape is known is premature abstraction. [ADR-023](DECISIONS.md#adr-023--browse-api-client-ships-libaffiliatelinksts-multi-source-selector-deferred-until-tcgplayer-access-lands) captures that rationale.
+
+**External-platform-rules grounding (per AGENTS.md amendment).** The new AGENTS.md rule arrived this session: never trust training data for API shapes / OAuth flows / credential formats — read official docs OR run an empirically-verified call. The Cert ID John provided (`PRD-183f64d5ba69-04b7-4f1d-b6eb-82ee`) ended in 4 hex chars rather than the 12-hex tail my training data expected; I flagged that to John before writing code. He confirmed the value as-is, eBay's dashboard rendered it without a truncation indicator, and proposed the OAuth round-trip as ground truth. I ran the live call before committing any code:
+
+```
+POST https://api.ebay.com/identity/v1/oauth2/token
+Authorization: Basic <base64(APP_ID:CERT_ID)>
+Content-Type: application/x-www-form-urlencoded
+grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope
+```
+
+→ HTTP 200, `access_token: "v^1.1#..."`, `expires_in: 7200`, `token_type: "Application Access Token"`. Credentials confirmed end-to-end; the 4-hex tail is eBay's current Cert ID shape. Then ran the Browse API GET with the live token + EBAY_US marketplace to confirm the empirical response shape: `itemSummaries[].price.value` is a STRING (e.g. `"41.69"`), `image.imageUrl` is the image path, `itemWebUrl` is the canonical `/itm/<id>` URL to wrap with affiliate params. The TypeScript parser was written from these observed bytes, not from training-data assumptions.
+
+**What landed.**
+
+- [`lib/affiliate/ebay-oauth.ts`](../lib/affiliate/ebay-oauth.ts) (new) — `getAccessToken()` calls `POST api.ebay.com/identity/v1/oauth2/token` with Basic auth from `base64(APP_ID:CERT_ID)` and the urlencoded body `grant_type=client_credentials&scope=https%3A%2F%2Fapi.ebay.com%2Foauth%2Fapi_scope`. Module-level in-memory cache keyed on `expiresAt`; refresh when remaining TTL < 60s. Soft-fail to null on missing creds / 4xx / 5xx / network / bad JSON / missing access_token. Test-only `__resetTokenCacheForTests` escape hatch for deterministic test runs.
+- [`lib/affiliate/ebay-browse.ts`](../lib/affiliate/ebay-browse.ts) (new) — `searchItems({query, limit?, fetchImpl?})` and `getBestListing({cardName, setName?, customId?})` mirror the EPN module's exported shape (re-exports `EpnProductHit`, `EpnBestListing`, `EpnSearchResult`, `GetBestListingInput`). GETs `api.ebay.com/buy/browse/v1/item_summary/search?q=<query>&limit=<n>` with `Authorization: Bearer ${getAccessToken()}` + `X-EBAY-C-MARKETPLACE-ID: EBAY_US` + `cache: "no-store"` (R-008). Parses `itemSummaries[]` from the empirically-verified payload shape. Lowest-priced picker identical to `epn.ts::getBestListing`. Wraps the selected URL via `buildAffiliateUrl` imported from `epn.ts` — single affiliate-URL boundary preserved.
+- [`app/(site)/cards/[slug]/page.tsx`](../app/(site)/cards/[slug]/page.tsx) — `getBestListing` import swapped from `@/lib/affiliate/epn` to `@/lib/affiliate/ebay-browse`. `affiliateSearchUrl` import stays from `epn.ts`. No other change — the page contract is unchanged (force-dynamic, lowest-priced picker, fallback CTA on null).
+- [`lib/__tests__/ebay-oauth.test.ts`](../lib/__tests__/ebay-oauth.test.ts) (new) — 10 tests pinning Basic-auth header (exact base64 expected), urlencoded body shape, cache reuse (single network call across two getAccessToken invocations), refresh < 60s, soft-fail on missing creds / 401 / 429 / network throw / bad JSON / missing access_token, and `cache: "no-store"` presence.
+- [`lib/__tests__/ebay-browse.test.ts`](../lib/__tests__/ebay-browse.test.ts) (new) — 11 tests pinning empty-query rejection without network call, missing-OAuth soft-fail, request URL + headers (Bearer + EBAY_US + no-store cache), payload parse (stringified price + image.imageUrl + itemWebUrl + drop-on-missing-price-or-title), 401/429/network/bad-JSON soft-fail, lowest-price picker (picks $85.50 over $120 and $199.99), affiliate-URL wrap (campid + customid + mkevt + mkrid stamped onto the chosen item URL), getBestListing returns null on empty hits / on ok:false.
+- [`package.json`](../package.json) — registered `ebay-oauth.test.ts` + `ebay-browse.test.ts` in the npm test script.
+- [`docs/ENV-VARS.md`](ENV-VARS.md) — `EBAY_DEVELOPER_APP_ID` + `EBAY_DEVELOPER_CERT_ID` rows updated: now show all three mirror surfaces ticked (was "pending" before this goal), with explicit note about the empirically-verified Cert ID shape (4 hex tail, not 12).
+- [`docs/DECISIONS.md`](DECISIONS.md) — [ADR-023](DECISIONS.md#adr-023--browse-api-client-ships-libaffiliatelinksts-multi-source-selector-deferred-until-tcgplayer-access-lands) documents the Browse API client lands now + the `links.ts` multi-source selector is deferred until TCGplayer (rationale: avoid premature abstraction with only one real provider).
+- [`docs/ROADMAP.md`](ROADMAP.md) — NOW #8 flipped from "Pending — escalated to load-bearing 2026-05-23" → "✅ Done 2026-05-24."
+
+**Env var mirror (pre-flight gate, executed before any code).** `EBAY_DEVELOPER_CERT_ID` mirrored to Vercel prod + dev + GH Actions secrets. `EBAY_DEVELOPER_APP_ID` was already mirrored in Session 25's commit. Both verified via `vercel env ls | grep EBAY_DEVELOPER` (4 rows: APP_ID prod + dev, CERT_ID prod + dev) + `gh secret list | grep EBAY_DEVELOPER` (2 rows: APP_ID + CERT_ID).
+
+**Tests.** Root suite: 311/311 (was 291 in Session 25; +10 ebay-oauth + +10 ebay-browse). Typecheck clean.
+
+**Key decisions.** [ADR-023](DECISIONS.md#adr-023--browse-api-client-ships-libaffiliatelinksts-multi-source-selector-deferred-until-tcgplayer-access-lands) is the only new architectural record. The premature-abstraction trade-off was the open question — building `lib/affiliate/links.ts` proactively against a hypothetical TCGplayer shape vs landing the one-line page-import swap. The page-import swap won. When TCGplayer access lands, that goal will define both the second provider's module AND the selector facade together, with the selector design informed by the actual TCGplayer API shape rather than extrapolated.
+
+**Single affiliate-URL boundary preserved.** `lib/affiliate/ebay-browse.ts` imports `buildAffiliateUrl` from `lib/affiliate/epn.ts` rather than reimplementing the `mkevt`/`campid`/`customid` assembly. The audit grep (`mkevt`/`campid` outside `epn.ts` + `.env.local` + `docs/ENV-VARS.md` = regression) still holds. The EPN module's `searchProducts` is no longer called by any page-render path but stays exported in-tree — deletion candidate when the multi-source selector lands, not before.
+
+**R-008 posture inherited end-to-end.** Both `ebay-oauth.ts` (OAuth POST) and `ebay-browse.ts` (Browse GET) pass `cache: "no-store"`. The per-card page is `force-dynamic`. No new `cached_listings` table; no listing payload persisted. The editorial paragraphs below the fold continue to describe the card itself, not the live listing.
+
+**Follow-ups.**
+
+- ROADMAP NOW #8 is now Done. The wishlist alert cron ([ROADMAP NEXT #9](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10)) is unblocked at the data layer — `getBestListing()` returns real prices end-to-end. That cron is the next logical goal.
+- `lib/affiliate/links.ts` multi-source selector: deferred until TCGplayer affiliate-program approval lands (ROADMAP LATER #26).
+- `lib/affiliate/epn.ts::searchProducts` is no longer called from any page-render path — candidate for deletion when the selector lands.
+
+**Live verification.** Captured in "State at session end" — three /cards/[slug] pages curl'd from production and the curated "Best current listing" markup confirmed in each, not the fallback CTA.
+
+**State at session end.** Browse API client live in production. OAuth + Browse + URL-wrap end-to-end verified against `api.ebay.com` from the local goal session (sample item: Charizard Base Set Unlimited Holo from a real eBay listing at $41.69). Per-card pages now render curated lowest-priced listings instead of the fallback CTA. ROADMAP NOW #8 ✅ closed. The wishlist-alert cron is the next logical goal; `lib/affiliate/links.ts` waits on TCGplayer approval.
+
+---
+
 ## 2026-05-24 — Session 25: eBay Marketplace Account Deletion compliance webhook — disabled-keyset gate
 
 **Commits:** this commit only

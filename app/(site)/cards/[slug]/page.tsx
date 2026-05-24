@@ -11,11 +11,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  affiliateSearchUrl,
-  getBestListing,
-  type EpnBestListing,
-} from "@/lib/affiliate/epn";
+import { affiliateSearchUrl, type EpnBestListing } from "@/lib/affiliate/epn";
+import { getBestListing } from "@/lib/affiliate/ebay-browse";
 import { CARD_CATALOG, getCatalogEntry, relatedCardsForSlug } from "@/lib/cards/catalog";
 import { getCardMetadata, type CardMetadata } from "@/lib/cards/sdk";
 import { schemaGraph, serializeJsonLd } from "@/lib/seo/schema-helpers";
