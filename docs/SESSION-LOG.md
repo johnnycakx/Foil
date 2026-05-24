@@ -8,6 +8,43 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-24 — Session 30: Resend sender flip → branded `alerts@foiltcg.com`. Closes ROADMAP NOW #9.
+
+**Commits:** this commit only
+
+**Summary.** Session 28's wishlist cron deliberately hit Resend with `from: "Foil <onboarding@resend.dev>"` (Resend's test-mode system address) and got the documented 403 — `validation_error: "verify a domain"`. Between that test (~21:11 UTC) and the natural 22:00 UTC hourly cron tick on 2026-05-24, the foiltcg.com sending domain finished verifying in Resend (DNS records had been added to the Vercel-managed DNS earlier in the same Cowork session). The 22:00 cron then delivered 5 alert emails end-to-end + the manual trigger at 22:08 delivered the 6th — all from the test-mode sender address.
+
+This goal swaps `lib/notifications/resend.ts`'s `DEFAULT_SENDER` to the branded `Foil <alerts@foiltcg.com>`. From this commit forward every email that exits the Foil app — wishlist alerts AND the autonomous newsletter drafts emailed to the founder — carries the verified domain in the From: header.
+
+**What landed.**
+
+- [`lib/notifications/resend.ts`](../lib/notifications/resend.ts):
+  - `DEFAULT_SENDER` constant flipped from `"Foil Content Engine <onboarding@resend.dev>"` to `"Foil <alerts@foiltcg.com>"`. Dropped the "Content Engine" qualifier — the constant now fronts both the newsletter drafts AND the wishlist alerts, so the broader brand name is the right fit.
+  - The inline `sendTransactionalEmail` fallback (line 75 previously) refactored to `input.sender ?? DEFAULT_SENDER` — both functions now share the same default, and there's only one literal sender string to update in the future.
+  - Header comment block (lines 1-9) rewritten — the prior "Sender is Resend's default onboarding@resend.dev — no DNS configuration needed because the destination is the founder's own inbox" line was load-bearing-context that became stale the moment the domain verified. New header captures both surfaces (newsletter drafts + wishlist alerts) and notes the DNS verification timestamp.
+  - JSDoc on `TransactionalEmailInput.sender` updated.
+- [`lib/__tests__/resend.test.ts`](../lib/__tests__/resend.test.ts):
+  - 4 new sender-pin tests — `sendNewsletterDraftEmail` defaults to `Foil <alerts@foiltcg.com>`, override still wins; same pair for `sendTransactionalEmail`.
+  - 1 new structural regression-guard test — walks every `.ts/.tsx/.js/.jsx` file under `lib/` and `app/`, asserts `onboarding@resend.dev` appears nowhere except this test file. Catches a future contributor accidentally pasting back the old sender in any reachable code path BEFORE the next deploy.
+
+**Tests.** Targeted suite (`resend.test.ts`): 13/13 green (8 prior + 5 new). Full-suite run gated on the closure step.
+
+**Key decisions.** No new ADR. The sender flip is mechanical — the architectural decision was in ADR-024 (Wishlist alert cron) which already assumed a branded sender; this goal closes the implementation gap. The structural regression-guard test is the only piece of new "policy" — pins a forbidden string at the repo boundary so a paste-back of the system sender can't slip past code review.
+
+**Side effect: `DEFAULT_SENDER` now applies to newsletter drafts too.** The original constant was named for the content-engine path; this goal broadened it. Practical impact: the autonomous-newsletter-draft email to john.c.craig24@gmail.com (Mon/Thu 14:03 UTC cron) will now arrive from `Foil <alerts@foiltcg.com>` instead of the test-mode sender. Same recipient, same body, branded From: header. No content-engine change needed.
+
+**Follow-ups.**
+
+- ROADMAP NOW #9 ✅ closed.
+- Out of scope (V2 candidates per the goal spec): per-route sender split (`drafts@` for the founder-paste email vs `alerts@` for subscriber emails), `Reply-To` header config, bounce-handling, sender rotation. None urgent at current volume.
+- ROADMAP NOW #10 (14-day Browse evidence push) continues — `browse_calls` telemetry will accumulate, daily Discord summary will post at 06:00 UTC.
+
+**Live verification.** Captured in "State at session end" — new branded From: header confirmed end-to-end.
+
+**State at session end.** Branded sender live in production. Six pre-flip emails (delivered to John during Session 28) carry the historical `onboarding@resend.dev` From: header; every email after this commit carries `Foil <alerts@foiltcg.com>` instead. The structural regression-guard test makes a future accidental revert visible in CI before the next deploy. V1 deal-finder email surface is now fully production-shaped.
+
+---
+
 ## 2026-05-24 — Session 28: Daily Browse-call telemetry — Phase 1 of the 14-day Growth Check evidence push
 
 **Commits:** this commit only

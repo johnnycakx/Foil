@@ -10,11 +10,16 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join } from "node:path";
 import {
   EMAIL_SUBJECT_PREFIX,
   renderEmailHtml,
   sendNewsletterDraftEmail,
+  sendTransactionalEmail,
 } from "../notifications/resend.ts";
+
+const EXPECTED_SENDER = "Foil <alerts@foiltcg.com>";
 
 type CapturedRequest = {
   url: string;
@@ -155,4 +160,108 @@ test("includes the source blog URL + slug + word counts in section d", () => {
   assert.ok(html.includes("https://foiltcg.com/blog/near-mint-vs-lightly-played"));
   assert.ok(html.includes("1499"));
   assert.ok(html.includes("412"));
+});
+
+// ---------------------------------------------------------------------------
+// Sender pins (post-domain-verification, Session 30). Both functions now
+// default to the branded sender; pin it so a future contributor can't
+// silently regress to the Resend onboarding sender.
+// ---------------------------------------------------------------------------
+
+test("sendNewsletterDraftEmail: From header defaults to Foil <alerts@foiltcg.com>", async () => {
+  process.env.RESEND_API_KEY = "re_test_key_abc";
+  const { fetch, calls } = fakeFetch(() =>
+    new Response(JSON.stringify({ id: "msg_sender_1" }), { status: 200 }),
+  );
+  await sendNewsletterDraftEmail(baseInput(), { fetchImpl: fetch });
+  const body = JSON.parse(calls[0].init.body as string) as { from: string };
+  assert.equal(body.from, EXPECTED_SENDER);
+});
+
+test("sendNewsletterDraftEmail: caller-supplied sender override still wins", async () => {
+  process.env.RESEND_API_KEY = "re_test_key_abc";
+  const { fetch, calls } = fakeFetch(() =>
+    new Response(JSON.stringify({ id: "msg_sender_2" }), { status: 200 }),
+  );
+  await sendNewsletterDraftEmail(baseInput(), { fetchImpl: fetch, sender: "Override <x@foiltcg.com>" });
+  const body = JSON.parse(calls[0].init.body as string) as { from: string };
+  assert.equal(body.from, "Override <x@foiltcg.com>");
+});
+
+test("sendTransactionalEmail: From header defaults to Foil <alerts@foiltcg.com>", async () => {
+  process.env.RESEND_API_KEY = "re_test_key_abc";
+  const { fetch, calls } = fakeFetch(() =>
+    new Response(JSON.stringify({ id: "msg_sender_3" }), { status: 200 }),
+  );
+  await sendTransactionalEmail(
+    {
+      to: "subscriber@example.com",
+      subject: "Charizard dropped to $38 — you wanted ≤ $40",
+      html: "<p>price drop</p>",
+    },
+    { fetchImpl: fetch },
+  );
+  const body = JSON.parse(calls[0].init.body as string) as { from: string };
+  assert.equal(body.from, EXPECTED_SENDER);
+});
+
+test("sendTransactionalEmail: caller-supplied sender override still wins", async () => {
+  process.env.RESEND_API_KEY = "re_test_key_abc";
+  const { fetch, calls } = fakeFetch(() =>
+    new Response(JSON.stringify({ id: "msg_sender_4" }), { status: 200 }),
+  );
+  await sendTransactionalEmail(
+    {
+      to: "subscriber@example.com",
+      subject: "X",
+      html: "<p>x</p>",
+      sender: "Override <y@foiltcg.com>",
+    },
+    { fetchImpl: fetch },
+  );
+  const body = JSON.parse(calls[0].init.body as string) as { from: string };
+  assert.equal(body.from, "Override <y@foiltcg.com>");
+});
+
+// ---------------------------------------------------------------------------
+// Structural regression guard: the Resend onboarding system address must
+// not appear anywhere in lib/ or app/ except this test file. The historical
+// fallback sender was "Foil <onboarding@resend.dev>" — if it ever leaks
+// back into a code path, this test catches it before the next deploy.
+// ---------------------------------------------------------------------------
+
+const ROOT = new URL("../..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
+const SELF_TEST_BASENAME = "resend.test.ts";
+const SCAN_DIRS = ["lib", "app"];
+const FORBIDDEN = "onboarding@resend.dev";
+
+function* walkFiles(dir: string): Generator<string> {
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    let st;
+    try { st = statSync(full); } catch { continue; }
+    if (st.isDirectory()) {
+      // Skip node_modules / .next-style noise if it bleeds in.
+      if (entry === "node_modules" || entry.startsWith(".")) continue;
+      yield* walkFiles(full);
+    } else if (/\.(ts|tsx|js|jsx)$/.test(entry)) {
+      yield full;
+    }
+  }
+}
+
+test("onboarding@resend.dev is not referenced in lib/ or app/ outside this test file", () => {
+  const offenders: string[] = [];
+  for (const dir of SCAN_DIRS) {
+    for (const file of walkFiles(join(ROOT, dir))) {
+      // Exclude this test file itself (basename match — robust against
+      // path-separator + drive-letter normalization).
+      if (file.endsWith(SELF_TEST_BASENAME)) continue;
+      const text = readFileSync(file, "utf8");
+      if (text.includes(FORBIDDEN)) {
+        offenders.push(file.replace(/\\/g, "/"));
+      }
+    }
+  }
+  assert.deepEqual(offenders, [], `\nForbidden Resend onboarding sender leaked back into:\n  ${offenders.join("\n  ")}`);
 });

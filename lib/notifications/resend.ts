@@ -1,12 +1,15 @@
-// Resend transactional email wrapper. The Beehiiv Posts API is Enterprise-
-// gated (see ADR-011 consequences → superseded by ADR-012), so every
-// autonomous newsletter draft is instead emailed to the founder for manual
-// paste-into-Beehiiv. Repo-side artifact in docs/newsletter-drafts/ is the
-// permanent record; this email is the immediate ping.
+// Resend transactional email wrapper. Two surfaces today:
+//   1. Autonomous newsletter drafts emailed to the founder for manual
+//      paste-into-Beehiiv (the Posts API is Enterprise-gated — see ADR-011
+//      consequences → superseded by ADR-012). Repo-side artifact in
+//      docs/newsletter-drafts/ is the permanent record.
+//   2. Wishlist alert emails to subscribers when a watched card's current
+//      best price meets their target (ADR-024).
 //
-// Server-side only. The free tier (3K emails/month, 100/day) is plenty for
-// 2 sends/week. Sender is Resend's default onboarding@resend.dev — no DNS
-// configuration needed because the destination is the founder's own inbox.
+// Server-side only. The free tier (3K/month, 100/day) covers both surfaces
+// at current volume. Sender is `Foil <alerts@foiltcg.com>` — the
+// foiltcg.com sending domain is verified on Resend (DNS records live in
+// Vercel-managed DNS, verified 2026-05-24).
 
 export type NewsletterEmailInput = {
   /** Recipient inbox — founder by default; tests use a fixture address. */
@@ -36,7 +39,7 @@ export type SendEmailResult =
   | { ok: false; status?: number; error?: string };
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
-const DEFAULT_SENDER = "Foil Content Engine <onboarding@resend.dev>";
+const DEFAULT_SENDER = "Foil <alerts@foiltcg.com>";
 
 export const EMAIL_SUBJECT_PREFIX = "[Foil Draft] ";
 
@@ -50,7 +53,7 @@ export type TransactionalEmailInput = {
   to: string;
   subject: string;
   html: string;
-  /** Optional override — defaults to "Foil <onboarding@resend.dev>". */
+  /** Optional override — defaults to DEFAULT_SENDER (`Foil <alerts@foiltcg.com>`). */
   sender?: string;
 };
 
@@ -72,7 +75,7 @@ export async function sendTransactionalEmail(
   }
   const fetchFn = opts.fetchImpl ?? fetch;
   const payload = {
-    from: input.sender ?? "Foil <onboarding@resend.dev>",
+    from: input.sender ?? DEFAULT_SENDER,
     to: [input.to],
     subject: input.subject,
     html: input.html,
