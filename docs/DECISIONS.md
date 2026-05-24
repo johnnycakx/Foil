@@ -638,6 +638,55 @@ This amendment closes the gap between ADR-021's original framing and the realiti
 
 ---
 
+## ADR-022 — Marketplace Account Deletion compliance via subscribe path over exemption
+
+**Date:** 2026-05-24
+**Status:** Accepted
+
+**Context.** The eBay developer-account `foil` production keyset was successfully created during Session 24 follow-up, then immediately landed in a disabled state with the banner *"you need to either subscribe to eBay Marketplace User Account Deletion notifications or apply for an exemption."* Without this, the App ID + Cert ID can't be used to fetch a Browse API OAuth access token — meaning [ROADMAP NOW #8](ROADMAP.md#now--this-week--2026-05-27) (the load-bearing surface for V1's best-listing curation per the [ADR-021 Session 21 amendment](#adr-021--epn-as-v1-live-listing-source-browse-api-deferred)) stays blocked.
+
+eBay offers two paths to enable a disabled keyset:
+
+1. **Subscribe** — host a public webhook at a stable URL, register it with eBay's Alerts & Notifications portal, and let eBay POST account-deletion events to it. The endpoint must handle a one-time GET challenge to prove ownership (compute `sha256(challenge_code + verification_token + endpoint_url)` and answer in JSON) and verify every subsequent POST's HMAC signature.
+2. **Exemption** — submit a written attestation to eBay that we don't store eBay-sourced user data. eBay reviews and may approve (timeline opaque), or come back with follow-up questions.
+
+**Alternatives considered.**
+
+- **Apply for the exemption.** Foil genuinely does not persist any eBay-sourced user data — R-008's "no `cached_listings` table, render-time fetch, `cache: "no-store"`" posture meets the exemption criterion on the merits. But the review queue timeline is opaque and exemption approval is reversible at eBay's discretion (a future product surface that *might* store user-shaped data would force re-applying). Faster on paper if approved fast; brittle as a long-term posture.
+- **Wait for Browse API appeal queue.** Independent of the deletion-compliance question — the appeal blocks the OAuth credentials being approved at all, not just enabled. Doesn't address the disabled-keyset banner. Orthogonal item, kept in ROADMAP NOW #8 as the next step after compliance.
+
+**Decision.** Subscribe path. Wire `app/api/webhooks/ebay-marketplace-deletion/route.ts` as a thin Next.js adapter over pure helpers in `lib/ebay-marketplace-deletion.ts`; mirror the new `EBAY_DELETION_VERIFICATION_TOKEN` to Vercel prod + dev + GH Actions; pin the GET challenge format and POST signature gate in tests. John submits the verification form at developer.ebay.com once the endpoint is live — eBay fires the GET challenge, our endpoint returns the correct hash, eBay flips the keyset to "compliant," and the Cert ID becomes visible.
+
+**Why subscribe wins.**
+
+1. **Predictable timeline.** The webhook handshake is mechanical — once deployed, the GET challenge resolves the keyset state in seconds. The exemption queue is opaque (could be days, could be weeks).
+2. **Durable insurance independent of eBay review queues.** A subscribed webhook stays subscribed; we never reapply for compliance regardless of future product surfaces. The exemption is bound to a specific attestation that future surfaces could invalidate.
+3. **Fits the existing webhook pattern.** Two production webhooks already wire the same shape — `app/api/webhooks/stripe/route.ts` (Stripe HMAC) and `app/api/webhooks/vercel-deploys/route.ts` (Vercel HMAC). The deletion endpoint slots in alongside them; pure helpers in `lib/ebay-marketplace-deletion.ts` mirror `lib/vercel-webhook.ts` for testability.
+
+**Architectural posture (mirrors ADR-016 + ADR-021 boundaries).**
+
+- **Pure helpers + thin Next.js adapter.** The hash + signature gate logic lives in `lib/ebay-marketplace-deletion.ts` so `node:test` can pin both. Route file is ~50 lines of Next.js glue.
+- **Synchronous handlers — no I/O on either path.** eBay rejects responses slower than ~3s. GET reads a query param, computes a SHA-256, returns JSON. POST reads the raw body, runs HMAC-verify, returns 200/401. Zero DB writes. Zero outbound fetches. Discord notifications are deliberately omitted from this handler; if we add them later, they must be fire-and-forget per ADR-014 and never block the eBay response.
+- **R-008 reinforcement — we acknowledge and discard.** The POST handler returns `{ acknowledged: true }` and never inspects the payload body beyond the HMAC verify. No log line includes the eBay-sourced username or any user-identifying field. The compliance posture from ADR-021 (no persistence of eBay-sourced user data) extends directly into this surface.
+- **Public route via existing `/api/webhooks` prefix.** No change to `lib/supabase/proxy.ts` PUBLIC_ROUTES needed — the prefix already covers it. Pinned in `lib/__tests__/proxy.test.ts` so a future refactor swapping the prefix for exact rules can't silently gate the endpoint.
+
+**Consequences.**
+
+- **Unblocks ROADMAP NOW #8.** Once John submits the form at developer.ebay.com → Alerts & Notifications → foil → Production and eBay fires the GET challenge, the keyset flips to compliant. The Cert ID becomes visible and gets mirrored to `EBAY_DEVELOPER_CERT_ID`. The Browse API OAuth `client_credentials` flow becomes available in the next goal.
+- **Adds 3 new env vars.** `EBAY_DELETION_VERIFICATION_TOKEN` (the shared secret baked into the hash + HMAC), `EBAY_DEVELOPER_APP_ID` (already captured: `JohnCrai-foil-PRD-4183f64d5-2a0e777e`), `EBAY_DEVELOPER_CERT_ID` (pending compliance). All mirrored across `.env.local` + Vercel (prod + dev) + GH Actions per the standard secret-mirror pattern.
+- **No new permanent runtime state.** The webhook is stateless. No new tables, no new caches, no new dependencies. If we ever need to retain deletion-event records for audit, that's a separate ADR.
+- **Carved out for the next goal.** Browse API client implementation, OAuth `client_credentials` helper, `lib/affiliate/ebay-browse.ts`, the `lib/affiliate/links.ts` multi-source selector, the TCGplayer plumbing, and the wishlist alert cron all stay out of scope. This goal is the compliance gate; the Browse API client is the downstream consumer.
+
+**Cross-refs.**
+
+- [ADR-021 Session 21 amendment](#adr-021--epn-as-v1-live-listing-source-browse-api-deferred) — established the Browse API appeal as load-bearing; ADR-022 is the prerequisite that unblocks the keyset.
+- [ADR-014](#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary) — the soft-fail / single-import-boundary posture extends to this webhook if Discord pings get added.
+- [ADR-016](#adr-016--vercel-deploys--discord-via-code-controlled-webhook-proxy-not-marketplace-install) — the pure-helper + thin-adapter shape is borrowed from here.
+- [R-008](RISKS.md) — the no-persistence posture on eBay-sourced user data is reinforced by this handler's "acknowledge and discard" contract.
+- [ROADMAP NOW #8](ROADMAP.md#now--this-week--2026-05-27) — stays Pending in this goal; closes in the goal that confirms keyset compliant after John submits the form.
+
+---
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

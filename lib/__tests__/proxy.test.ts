@@ -48,6 +48,24 @@ test("Vercel deploy webhook is public — Vercel signs requests with its own HMA
   assert.equal(isPublicRoute("/api/webhooks/vercel-deploys"), true);
 });
 
+test("eBay Marketplace Account Deletion webhook is public (ADR-022)", () => {
+  // Same contract anchor as the Vercel-deploys webhook: covered today by
+  // the /api/webhooks prefix, pinned here so a refactor to per-route exact
+  // rules can't silently gate the endpoint. eBay's GET-challenge handshake
+  // hard-fails if the URL redirects to /login, so this MUST stay public.
+  assert.equal(isPublicRoute("/api/webhooks/ebay-marketplace-deletion"), true);
+});
+
+test("eBay deletion webhook is reachable but adjacent stems can't bleed past /api/webhooks", () => {
+  // The /api/webhooks prefix legitimately covers any sub-path including
+  // /api/webhooks/ebay-marketplace-deletion. What MUST NOT bleed: an
+  // adjacent stem at the /api/webhooks boundary. If the prefix ever swaps
+  // to exact-list rules and someone forgets the trailing-slash safety,
+  // /api/webhooks-public could silently match.
+  assert.equal(isPublicRoute("/api/webhooks-public"), false);
+  assert.equal(isPublicRoute("/api/webhookspublic"), false);
+});
+
 test("newsletter subscribe endpoint is public — unauth visitors can opt in", () => {
   // The EmailCapture component currently calls a Server Action colocated with
   // the blog page (POSTs to /blog/<slug>, which is already public). Pin

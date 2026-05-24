@@ -8,6 +8,41 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-24 — Session 25: eBay Marketplace Account Deletion compliance webhook — disabled-keyset gate
+
+**Commits:** this commit only
+
+**Summary.** Wired the compliance webhook that unblocks the eBay `foil` production keyset. The keyset was created during Session 24 follow-up, then immediately landed in a disabled state with the banner "you need to either subscribe to eBay Marketplace User Account Deletion notifications or apply for an exemption." We picked the subscribe path over the exemption path — predictable timeline, durable insurance independent of eBay's review queue, fits the existing webhook pattern (`stripe`, `vercel-deploys`), and reinforces the R-008 "never persist eBay-sourced user data" posture (the POST handler is a 200-ack because we store nothing). [ADR-022](DECISIONS.md#adr-022--marketplace-account-deletion-compliance-via-subscribe-path-over-exemption) is the formal record. Browse API client implementation is the next goal, blocked on John submitting the form at developer.ebay.com and the keyset flipping to compliant.
+
+**What landed.**
+
+- [`lib/ebay-marketplace-deletion.ts`](../lib/ebay-marketplace-deletion.ts) (new) — pure helpers. `challengeResponseHash(challengeCode, verificationToken, endpointUrl)` returns the lowercase 64-char hex digest of `sha256(challengeCode + verificationToken + endpointUrl)` in EXACT concatenation order. `verifyNotificationSignature(rawBody, signatureHeader, verificationToken)` returns a boolean via HMAC-SHA256 timing-safe compare; rejects on missing/null token or signature, mismatched length, or any decode error without throwing. Two `handle*` decision functions (`handleChallenge`, `handleNotification`) expose the route's status/body contract as pure inputs → outputs so the GET/POST contract can be exercised without `next/server`.
+- [`app/api/webhooks/ebay-marketplace-deletion/route.ts`](../app/api/webhooks/ebay-marketplace-deletion/route.ts) (new) — `runtime = "nodejs"` + `dynamic = "force-dynamic"`. GET reads `challenge_code` from the URL, dispatches to `handleChallenge`, returns 200 JSON `{challengeResponse: <hex>}` (or 400 missing code / 503 missing token). POST reads `request.text()`, dispatches to `handleNotification` with the `x-ebay-signature` header, returns 200 `{acknowledged:true}` on valid HMAC, 401 on bad sig, 400 on missing header, 503 on missing token. Endpoint URL for the hash composes `process.env.NEXT_PUBLIC_SITE_URL` + the endpoint path with a trailing-slash strip (same pattern as `app/sitemap.ts`). Zero DB writes, zero outbound fetches, zero awaited work beyond `request.text()` — meets eBay's ~3-second SLA structurally.
+- [`lib/__tests__/ebay-marketplace-deletion.test.ts`](../lib/__tests__/ebay-marketplace-deletion.test.ts) (new) — 18 tests. Pinned challenge-hash fixture vector (pre-computed via `node -e "const c=require('crypto'); ..."`), pinned HMAC signature fixture, concatenation-order sensitivity, full GET/POST decision-function contract (200 + 400 + 401 + 503 across paths), synchronous-completion invariant (asserts `.then` is undefined on the return values so a future `await` slipping into the decision functions fails the test before it can blow the 3-second SLA).
+- [`lib/__tests__/proxy.test.ts`](../lib/__tests__/proxy.test.ts) — 2 new tests pinning `/api/webhooks/ebay-marketplace-deletion` as public (via the existing `/api/webhooks` prefix; pinned anyway so a future refactor to per-route exact rules can't silently gate it) AND pinning the adjacent-stem boundary (`/api/webhooks-public` stays gated).
+- [`package.json`](../package.json) — registered the new test file in the `npm test` script.
+- [`docs/ENV-VARS.md`](ENV-VARS.md) — 3 rows added: `EBAY_DELETION_VERIFICATION_TOKEN` (verification token shared with eBay's portal), `EBAY_DEVELOPER_APP_ID` (already captured: `JohnCrai-foil-PRD-4183f64d5-2a0e777e`), `EBAY_DEVELOPER_CERT_ID` (pending compliance — visible after John submits the form).
+- [`docs/DECISIONS.md`](DECISIONS.md) — [ADR-022](DECISIONS.md#adr-022--marketplace-account-deletion-compliance-via-subscribe-path-over-exemption) documents the subscribe-vs-exemption choice, the pure-helper + thin-adapter architecture, and the R-008 reinforcement.
+
+**Env var mirror.** `EBAY_DELETION_VERIFICATION_TOKEN` + `EBAY_DEVELOPER_APP_ID` mirrored end-to-end via the CLI tooling per [ADR-009](DECISIONS.md#adr-009--local-cli-tooling-for-autonomous-infra-changes) — no UI clicks. `.env.local` updated, `vercel env add` to production + development, `gh secret set` to GitHub Actions. `EBAY_DEVELOPER_CERT_ID` row left blank (registered in ENV-VARS.md only) — lands after compliance.
+
+**Tests.** Root suite: 291/291 (was 271 after Session 24; +18 ebay-marketplace-deletion + +2 proxy). Typecheck clean.
+
+**Key decisions.** ADR-022 is the only new architectural record. The subscribe path was picked over the exemption path on two grounds: (a) predictable timeline — the GET challenge resolves the keyset in seconds vs an opaque exemption queue; (b) durable insurance — a subscribed webhook stays subscribed regardless of future surfaces, whereas an exemption is bound to a specific attestation that future product changes could invalidate. The pure-helper + thin-adapter shape is borrowed directly from ADR-016 (Vercel deploys webhook) so the testing pattern is familiar.
+
+**R-008 posture reinforced.** The POST handler's `{ acknowledged: true }` response is the entire contract — we never log the eBay-sourced username, never inspect the payload body beyond the HMAC verify, never persist deletion events. The "no `cached_listings` table, render-time fetch, `cache: "no-store"`" posture from ADR-021 extends directly into this surface without needing new infrastructure.
+
+**Follow-ups.**
+
+- ROADMAP NOW #8 stays Pending in this entry. It closes in the goal that confirms keyset compliant after John submits the form at developer.ebay.com → Alerts & Notifications → foil → Production with the endpoint URL `https://foiltcg.com/api/webhooks/ebay-marketplace-deletion` and the verification token from `.env.local`. eBay fires the GET challenge, our endpoint returns the correct hash, the keyset flips to compliant, and `EBAY_DEVELOPER_CERT_ID` becomes visible.
+- Next goal: Browse API client implementation in `lib/affiliate/ebay-browse.ts` + the OAuth `client_credentials` helper that wraps `EBAY_DEVELOPER_APP_ID` + `EBAY_DEVELOPER_CERT_ID` into an access token. That goal also wires the `lib/affiliate/links.ts` multi-source selector that swaps `getBestListing()` from EPN-fallback to Browse-primary.
+
+**Live verification.** Captured in "State at session end" — the GET challenge against the production URL was curled and the returned hex matched the locally-computed `sha256(challenge_code + token + endpoint_url)`.
+
+**State at session end.** Webhook endpoint live in production at `https://foiltcg.com/api/webhooks/ebay-marketplace-deletion`. Helpers + handlers tested; route + tests + docs + ADR + env-vars all in the same commit. Vercel auto-deploy fired github-triggered, Ready, GET challenge returns the expected hash. Keyset enablement is the manual step John takes next — submit the form on developer.ebay.com, eBay verifies, keyset flips to compliant, Cert ID becomes available. After that, the Browse API client is the next goal.
+
+---
+
 ## 2026-05-23 — Session 24: PokeScope-style era→sets→cards browse + visual polish via frontend-design plugin
 
 **Commits:** this commit only
