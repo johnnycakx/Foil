@@ -39,7 +39,14 @@ This goal swaps `lib/notifications/resend.ts`'s `DEFAULT_SENDER` to the branded 
 - Out of scope (V2 candidates per the goal spec): per-route sender split (`drafts@` for the founder-paste email vs `alerts@` for subscriber emails), `Reply-To` header config, bounce-handling, sender rotation. None urgent at current volume.
 - ROADMAP NOW #10 (14-day Browse evidence push) continues — `browse_calls` telemetry will accumulate, daily Discord summary will post at 06:00 UTC.
 
-**Live verification.** Captured in "State at session end" — new branded From: header confirmed end-to-end.
+**Live verification.**
+
+- Vercel auto-deploy fired github-triggered on commit `151d543` → deployment `foil-67upyzr6b-foilapp.vercel.app` Ready in ~34s.
+- Verification path (a) from the goal spec — seed a fresh watchlist row + trigger the cron:
+  - **22:32:46 UTC** — Inserted `{email: john.c.craig24@gmail.com, card_slug: base1-6-gyarados, target_price_cents: 8000}` via PostgREST service-role (slug picked because it's NOT in the existing 6-row 24h cooldown set).
+  - **22:32:59 UTC** — Manual cron invocation with bearer returned HTTP 200 in 2531ms: `{rowsScanned: 1, slugsConsidered: 1, browseCalls: 1, alerted: 1, slugsWithListing: 1, errors: [], capHit: false}`. Row's `last_notified_at` stamped at 22:32:59.
+  - **22:33:01 UTC** — Fire-and-forget telemetry insert landed in `browse_calls` with `surface=wishlist_cron, success=true` (~2s after the cron response — the void logBrowseCall promise resolving a beat behind the hot path, working as designed).
+- John confirmed the resulting email in his inbox carries `From: Foil <alerts@foiltcg.com>` (the branded sender from this commit), not the historical `onboarding@resend.dev`.
 
 **State at session end.** Branded sender live in production. Six pre-flip emails (delivered to John during Session 28) carry the historical `onboarding@resend.dev` From: header; every email after this commit carries `Foil <alerts@foiltcg.com>` instead. The structural regression-guard test makes a future accidental revert visible in CI before the next deploy. V1 deal-finder email surface is now fully production-shaped.
 
