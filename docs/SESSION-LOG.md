@@ -8,6 +8,51 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-24 — Session 27: Wishlist alert cron — hourly Vercel Cron Job walks watchlists → sends Resend emails on price drop. Closes ROADMAP NEXT #9.
+
+**Commits:** this commit only
+
+**Summary.** With Session 26's Browse client returning real prices end-to-end, this goal closed the V1 deal-finder data loop: an hourly Vercel Cron Job at `/api/cron/wishlist-alerts` walks the `watchlists` table, deduplicates Browse calls per `card_slug`, sends a Resend email when current price ≤ target, and stamps `last_notified_at` for the row. [ADR-024](DECISIONS.md#adr-024--wishlist-alert-cron-on-vercel-cron-jobs-vs-github-actions-or-supabase-edge-functions) documents the choice of Vercel Cron Jobs over GH Actions / Supabase Edge Functions — predicate: deploy ↔ schedule coupled in the same git push, auth via env var stamped automatically by Vercel's cron runner.
+
+**What landed.**
+
+- [`app/api/cron/wishlist-alerts/route.ts`](../app/api/cron/wishlist-alerts/route.ts) (new) — Node runtime, force-dynamic, GET handler. Bearer-auth gate (`Authorization: Bearer ${CRON_SECRET}` → 401 on mismatch / 503 if `CRON_SECRET` unset). Wires the live Supabase admin client + `getBestListing` + `sendTransactionalEmail` into the pure orchestrator; posts a single Discord summary to `#content-engine` via `postWishlistAlertRun`; returns `{ok, durationMs, rowsScanned, slugsConsidered, browseCalls, alerted, slugsWithListing, errors, capHit}`.
+- [`lib/wishlist/scan-batch.ts`](../lib/wishlist/scan-batch.ts) (new) — pure orchestrator. `scanWatchlists({supabase, getBestListing, sendEmail, getCardMetadata?, now?, siteUrl, maxBrowseCalls?})` → `ScanResult`. Dedups Browse calls per slug (one call regardless of how many rows watch it), enforces `MAX_BROWSE_CALLS = 200` cap with overridable knob for tests, soft-fails per row (one Resend hiccup doesn't break the rest), aggregates errors with stage tags (`fetch_rows` / `browse` / `send` / `mark_notified` / `metadata` / `catalog_lookup`). Trust contract: `fetchDueRows` already applied the 24h SQL filter; the orchestrator doesn't double-check.
+- [`lib/wishlist/alert-email.ts`](../lib/wishlist/alert-email.ts) (new) — pure composers. `subjectLine` → `"Charizard (Base) dropped to $38 — you wanted ≤ $40"`. `emailBody` → HTML with card image (optional, drops the block when null), listing price + title, affiliate CTA with `customid=foil-wishlist-alert` (distinct from the `foil-card-page` customid used by the per-card landing page so commission attribution comes through cleanly), HTML-escaped against listing-title XSS.
+- [`lib/notifications/resend.ts`](../lib/notifications/resend.ts) — added `sendTransactionalEmail({to, subject, html})` alongside the existing `sendNewsletterDraftEmail`. The existing function is purpose-built for newsletter drafts (with `[Foil Draft]` subject prefix + four-section labeled body); the new sibling is the generic transactional primitive the wishlist cron uses. Soft-fail shape identical.
+- [`lib/notifications/discord.ts`](../lib/notifications/discord.ts) — added `postWishlistAlertRun(webhookUrl, ev, opts)` shaped helper. Embed contains rowsScanned / slugsConsidered / browseCalls / withListing / alertsSent / errors / duration; emoji + color flip to orange + 🔔 on `alerted > 0`, red + ⚠️ on errors, slate + 🕐 on idle run.
+- [`vercel.json`](../vercel.json) (new) — single `crons[]` entry: `{ "path": "/api/cron/wishlist-alerts", "schedule": "0 * * * *" }`. JSON for now (vercel.ts conversion is a future migration tracked separately).
+- [`lib/supabase/public-routes.ts`](../lib/supabase/public-routes.ts) — added `/api/cron` prefix to PUBLIC_ROUTES. The route's own bearer gate is the auth model; gating it via the Supabase proxy would force a public Vercel schedule to also be a user-authenticated request, which it isn't.
+- [`lib/__tests__/wishlist-alert-email.test.ts`](../lib/__tests__/wishlist-alert-email.test.ts) (new) — 8 tests pinning subject shape, dollar-figure rounding, non-USD fall-through, affiliate URL preservation, customid=foil-wishlist-alert presence, optional-image rendering, listing-title XSS escape, per-card page link.
+- [`lib/__tests__/wishlist-scan-batch.test.ts`](../lib/__tests__/wishlist-scan-batch.test.ts) (new) — 7 tests pinning Browse-call dedup, per-row threshold gate, last_notified_at stamping, soft-fail per row, MAX_BROWSE_CALLS cap + capHit=true, 24h cooldown trust contract, catalog-miss skip, fetchDueRows error propagation.
+- [`lib/__tests__/cron-wishlist-route.test.ts`](../lib/__tests__/cron-wishlist-route.test.ts) (new) — 6 tests pinning the bearer auth predicate. Mirrors the route's `Authorization === "Bearer ${expected}"` check byte-for-byte; the route handler can't be loaded under node:test directly (path alias + next/server) so this is the contract anchor.
+- [`lib/__tests__/proxy.test.ts`](../lib/__tests__/proxy.test.ts) — 1 new test pinning `/api/cron/wishlist-alerts` as public via the new `/api/cron` prefix.
+- [`package.json`](../package.json) — registered the three new test files in `npm test`.
+- [`docs/ENV-VARS.md`](ENV-VARS.md) — `CRON_SECRET` row added.
+- [`docs/DECISIONS.md`](DECISIONS.md) — [ADR-024](DECISIONS.md#adr-024--wishlist-alert-cron-on-vercel-cron-jobs-vs-github-actions-or-supabase-edge-functions).
+- [`docs/IDEAS.md`](IDEAS.md) — "eBay Browse API Application Growth Check" entry captured at the top with the binding-trigger criteria.
+- [`docs/ROADMAP.md`](ROADMAP.md) — NEXT #9 flipped to "✅ Done 2026-05-24."
+
+**Env var mirror.** `CRON_SECRET` (64-char alphanumeric hex, generated via `node -e "console.log(require('crypto').randomBytes(48).toString('hex').slice(0,64))"`) mirrored to `.env.local` + Vercel prod + Vercel dev + GH Actions in one shot. Verified via `vercel env ls | grep CRON_SECRET` (2 rows: prod + dev) + `gh secret list | grep CRON_SECRET` (1 row).
+
+**Tests.** Targeted suite (4 files): 40/40 green. Full suite to be confirmed by closure-gate npm test run.
+
+**Key decisions.** [ADR-024](DECISIONS.md#adr-024--wishlist-alert-cron-on-vercel-cron-jobs-vs-github-actions-or-supabase-edge-functions) is the only new architectural record. The scheduler choice trade-off — Vercel Cron Jobs vs GitHub Actions vs Supabase Edge Functions — was the open question; Vercel won on "deploy ↔ schedule coupled in the same git push" + "auth via env-var is the supported shape" + "matches the existing webhook pattern." The Browse-call cap (200/run, 4,800/day vs 5,000/day quota) is structural — surfaces via `capHit: true` in the Discord summary so we notice before quota-bind. The Application Growth Check IDEAS entry captures the next step.
+
+**R-008 posture inherited.** Browse responses are render-time only; the cron stamps `last_notified_at` on the row but never persists the listing payload itself. No new `cached_listings` table. The cron itself is read-write on watchlists (stamps the cooldown field) — that data IS persisted, but it's Foil-internal user data, not eBay-sourced.
+
+**Follow-ups.**
+
+- ROADMAP NEXT #9 ✅ closed. V1 deal-finder data loop is end-to-end functional: watchlist signup → hourly cron → Browse API → Resend email.
+- IDEAS row captured for the eBay Application Growth Check — trigger is `capHit: true` in the Discord summary, OR proactive submission when active distinct-slug count approaches 150.
+- Future: `lib/affiliate/links.ts` multi-source selector remains deferred (per ADR-023) until TCGplayer affiliate access lands. When it does, both the per-card page AND this cron's `getBestListing` import swap to the new facade in one diff.
+
+**Live verification.** Captured in "State at session end" — production deploy Ready; cron schedule visible in Vercel dashboard; manual curl with bearer returns 200 + Discord summary fires.
+
+**State at session end.** Hourly wishlist cron live in production at `/api/cron/wishlist-alerts`. Schedule registered via `vercel.json` `crons[]` → visible in Vercel dashboard. `CRON_SECRET` mirrored across all three surfaces. Manual curl with bearer header verified end-to-end against production; Discord summary posted to `#content-engine`. ROADMAP NEXT #9 ✅ closed. The wishlist email flow goes: visitor sets a target on `/cards/<slug>` → `watchlists` row inserted → next hourly cron run pulls due rows → Browse API queries current best → if ≤ target, Resend email goes out with affiliate-tracked CTA. V1 deal-finder is now feature-complete on the data loop.
+
+---
+
 ## 2026-05-24 — Session 26: Browse API client + OAuth helper — curated best-listing block live on all 200 /cards/[slug] pages. Closes ROADMAP NOW #8.
 
 **Commits:** this commit only

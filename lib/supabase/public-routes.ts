@@ -53,6 +53,12 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // 3rd-party webhooks — Stripe POSTs here with its own signature scheme.
   { kind: "prefix", path: "/api/webhooks" },
 
+  // Vercel Cron Job routes (ADR-024). Vercel's cron infra POSTs with
+  // `Authorization: Bearer ${CRON_SECRET}` — the route does its own bearer
+  // gate. Auth-gating these via the proxy would force a public Vercel
+  // schedule definition to also be a Supabase-authed user, which it isn't.
+  { kind: "prefix", path: "/api/cron" },
+
   // Newsletter subscribe endpoint. Today the EmailCapture component invokes a
   // colocated Server Action so the POST piggy-backs on the host page (already
   // public). Listed here as the contract anchor: if we ever extract to a real

@@ -48,6 +48,13 @@ test("Vercel deploy webhook is public — Vercel signs requests with its own HMA
   assert.equal(isPublicRoute("/api/webhooks/vercel-deploys"), true);
 });
 
+test("Wishlist alert cron route is public — Vercel cron infra invokes with Bearer (ADR-024)", () => {
+  // The route does its own bearer gate; the proxy must not redirect a
+  // bearer-authenticated request to /login or it would defeat the cron
+  // entirely. Pinned via prefix for parity with /api/webhooks.
+  assert.equal(isPublicRoute("/api/cron/wishlist-alerts"), true);
+});
+
 test("eBay Marketplace Account Deletion webhook is public (ADR-022)", () => {
   // Same contract anchor as the Vercel-deploys webhook: covered today by
   // the /api/webhooks prefix, pinned here so a refactor to per-route exact

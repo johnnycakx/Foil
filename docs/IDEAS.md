@@ -19,6 +19,32 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-05-24
+category: infra
+status: captured
+---
+## eBay Browse API Application Growth Check — submit before active watchlists exceed ~200 distinct slugs
+
+Submit eBay's Application Growth Check at developer.ebay.com to lift the Browse API daily quota beyond the default 5,000/day cap. Math: the hourly wishlist cron (ADR-024) is capped at 200 Browse calls per run = 4,800/day, leaving 200-call headroom for per-card page renders. The cap binds when active watchlists span more than ~200 distinct card slugs. Triggers: (a) first Discord summary post showing `capHit: true`, or (b) active distinct-slug count over watchlists table crosses ~150 (proactive). Submission requires a written usage rationale + recent traffic stats — both available from the cron's run logs.
+
+**Context:** Captured 2026-05-24 in Session 27 as part of ADR-024 consequences. Not urgent today — production watchlists table is empty — but the cap is real and binding once usage grows. Adding to IDEAS rather than ROADMAP because the trigger is observational, not date-based.
+
+---
+
+---
+date: 2026-05-23
+category: product
+status: promoted
+---
+## Full programmatic catalog generation (25K+ cards via Pokemon TCG SDK)
+
+Replace the curated 200-card CARD_CATALOG with programmatic generation from the Pokemon TCG SDK — every set, every card, every printing (~150 sets, ~25K cards). Architecture: hybrid SSG (top-N most-searched cards pre-rendered at build) + ISR (long-tail cards revalidate on demand), backed by a Supabase `cards` table rather than a hardcoded array. Sitemap splits into multiple files per Google's 50K-URL-per-sitemap limit. SDK rate-limit handling during bulk import.
+
+**Context:** Decision made 2026-05-23 evening after Session 24 shipped the 200-card era→sets→cards browse. Visual UX is now in place; gap is catalog coverage. Curated 600-card "cheap path" was on the table as Session 25, explicitly rejected by John — full programmatic generation is the correct path because it captures the long tail of "anything Pokemon for sale" search intent permanently, eliminates the "missing sets" problem, and makes the watchlist useful for any card not just curated ones. Session 25 (or 25 + 26 split) implements this. Likely needs ADR for the SSG+ISR hybrid + catalog-table-vs-hardcoded-array decision.
+
+---
+
+---
 date: 2026-05-23
 category: product
 status: promoted

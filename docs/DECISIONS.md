@@ -737,6 +737,60 @@ What the Session 21 amendment did NOT settle: whether to land a multi-source sel
 
 ---
 
+## ADR-024 — Wishlist alert cron on Vercel Cron Jobs (vs GitHub Actions or Supabase Edge Functions)
+
+**Date:** 2026-05-24
+**Status:** Accepted
+
+**Context.** With [ADR-023](#adr-023--browse-api-client-ships-libaffiliatelinksts-multi-source-selector-deferred-until-tcgplayer-access-lands) landing the Browse API client, `getBestListing()` returns real prices end-to-end. The watchlists table ([Session 21 migration `20260522223417_watchlists.sql`](../supabase/migrations/20260522223417_watchlists.sql)) has been collecting rows since the per-card watchlist form shipped. The data layer is unblocked; what's missing is the cadence — something that walks the table hourly, asks Browse "is the current best ≤ this target," and emails via Resend when yes.
+
+Three viable schedulers were available:
+
+1. **Vercel Cron Jobs** — declared in `vercel.json` `crons[]`; invokes a GET on a route in the same deployment. Auth via `Authorization: Bearer ${CRON_SECRET}` (Vercel reads the env var and stamps the header).
+2. **GitHub Actions** — existing `.github/workflows/weekly-content.yml` proves the pattern works for autonomous workloads. A new `wishlist-alerts.yml` could `curl` an unauthenticated endpoint on an hourly cron.
+3. **Supabase Edge Functions** — pg_cron + an edge function that talks to the watchlists table directly. Same database; lowest network hops.
+
+**Alternatives considered.**
+
+- **GitHub Actions** would mean the cron lives outside the Next.js app's deployment unit — a schedule change requires a PR to `.github/workflows/`, not a `vercel.json` edit. The autonomy workflow is fine there because it's a multi-step generation pipeline that benefits from GH's job/step model. The wishlist cron is one HTTP call; the overhead is wrong-shaped.
+- **Supabase Edge Functions** would couple the cron deploy to a separate deploy surface (`supabase functions deploy`). The wishlist alert logic depends on `lib/affiliate/ebay-browse.ts` + `lib/cards/catalog.ts` + `lib/notifications/resend.ts` — porting all that to Deno-runtime edge functions would either duplicate code or fight the Deno/Node module split. Net: more friction for no measurable benefit.
+- **External cron service (Render / Trigger.dev / Hookdeck)** — adds a third deploy surface and a new env var to mirror. Premature for one cron.
+
+**Decision.** Vercel Cron Jobs. `vercel.json` `crons[]` entry pointed at `/api/cron/wishlist-alerts` on the hourly mark; the route handler does its own `Authorization: Bearer ${CRON_SECRET}` gate. Schedule + secret + handler all live inside the Next.js project boundary; schedule changes are part of normal `git push`-driven deploys.
+
+**Why this wins.**
+
+1. **Native to the project boundary.** The schedule is declared in `vercel.json` next to other Vercel config; the route lives next to `/api/webhooks/*` (Stripe, Vercel deploys, eBay deletion). One repo, one deploy unit, one auth model.
+2. **Auth via env-var is the supported shape.** Vercel's Cron Jobs runner reads `CRON_SECRET` from the project env and stamps the bearer header on every cron invocation — no manual secret-passing inside `vercel.json`. The same env value is what John uses for manual `curl` testing.
+3. **Deploy ↔ schedule coupled.** When the cron route changes (new query shape, new email composer), the schedule re-applies to the same deployment in one push. No "code lives in `main` but workflow is still pointed at last week's commit" drift.
+4. **Soft-fail surface matches the rest of the app.** Same Discord summary post pattern as the content engine (`lib/notifications/discord.ts::postWishlistAlertRun`); same Resend wrapper (`lib/notifications/resend.ts::sendTransactionalEmail`); same Supabase admin client (`lib/supabase/admin.ts`).
+
+**Architectural posture.**
+
+- **Pure orchestrator + thin Next.js adapter.** `lib/wishlist/scan-batch.ts::scanWatchlists` accepts injected `supabase`, `getBestListing`, and `sendEmail` shapes and returns an aggregated result. The route handler in `app/api/cron/wishlist-alerts/route.ts` is the ~30-line adapter that wires the live primitives in. Tests pin the orchestrator end-to-end via stubs without next/server.
+- **Dedup by `card_slug`.** Many rows may watch the same card. The orchestrator groups rows by `card_slug` and issues exactly one Browse call per slug per run, then checks each row's `target_price_cents` against the current price independently. This keeps the Browse-API quota linear in unique slugs, not total rows.
+- **24-hour per-row cooldown.** `last_notified_at` stamps after a successful send; the next run's SQL filter (`last_notified_at IS NULL OR last_notified_at < now() - interval '24 hours'`) skips it for the next 24h. Cool-off lives in SQL — not the orchestrator — so a new instance picks it up immediately on deploy.
+- **Browse-call cap = 200.** Math: eBay's Browse API daily quota for "Buy APIs" application access is 5,000 calls/day for new keysets (verify if/when it changes). Hourly cron × 200 calls = 4,800/day, leaving 200-call headroom for per-card page renders. Production hits this cap if the catalog ever exceeds 200 distinct slugs in active watchlists — `capHit` returns `true` in the Discord summary so we notice before requests fail.
+
+**Compliance posture (inherits from ADR-021 / ADR-023 unchanged).** Browse responses are read render-time and discarded. No `cached_listings` table. The cron stamps `last_notified_at` on the row that fired but the listing payload itself never persists.
+
+**Consequences.**
+
+- **Closes ROADMAP NEXT #9** — the wishlist alert cron is the last piece of the V1 deal-finder data loop.
+- **Adds one env var** (`CRON_SECRET`) mirrored across `.env.local` + Vercel (prod + dev) + GH Actions.
+- **Adds one Vercel cron schedule** visible in the Vercel dashboard → Project → Cron Jobs. Disable temporarily by removing the `crons[]` entry from `vercel.json` and redeploying.
+- **Surfaces a Discord summary** to `#content-engine` (using `DISCORD_WEBHOOK_CONTENT_ENGINE` — co-tenant with content-engine pings; if signal-to-noise gets bad we'll split off a `#alerts` channel later).
+- **Application Growth Check on the eBay developer account becomes load-bearing** when active watchlists begin to exceed ~200 distinct slugs — at the current 5,000/day Browse quota and hourly cron cadence, 208 calls/run is the headroom. Tracked in IDEAS for the Sunday-review surface; the right trigger is the first Discord summary with `capHit: true`.
+- **Per-Pro-tier "instant alerts" feature stays carved out.** This goal is the free-tier hourly batch shape only.
+
+**Cross-refs.**
+
+- [ADR-021](#adr-021--epn-as-v1-live-listing-source-browse-api-deferred) + [ADR-023](#adr-023--browse-api-client-ships-libaffiliatelinksts-multi-source-selector-deferred-until-tcgplayer-access-lands) — the live-listing data dependency.
+- [ADR-014](#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary) — the Discord post-pattern this cron follows.
+- [ROADMAP NEXT #9](ROADMAP.md) — closes in the SESSION-LOG entry of the goal that lands this ADR.
+
+---
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

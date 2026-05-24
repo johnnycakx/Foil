@@ -233,6 +233,59 @@ export async function postError(
   });
 }
 
+export type WishlistAlertRunInput = {
+  rowsScanned: number;
+  slugsConsidered: number;
+  browseCalls: number;
+  alerted: number;
+  slugsWithListing: number;
+  errorCount: number;
+  capHit: boolean;
+  /** Run duration in ms — for the at-a-glance perf signal. */
+  durationMs: number;
+};
+
+/**
+ * Post the hourly wishlist-alert cron's summary to a Discord channel. Used
+ * by the cron route after every successful invocation; soft-fails like
+ * every other Discord post.
+ */
+export async function postWishlistAlertRun(
+  webhookUrl: string,
+  ev: WishlistAlertRunInput,
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<PostWebhookResult> {
+  const fields: DiscordEmbed["fields"] = [
+    { name: "Rows scanned", value: String(ev.rowsScanned), inline: true },
+    { name: "Slugs considered", value: String(ev.slugsConsidered), inline: true },
+    { name: "Browse calls", value: String(ev.browseCalls), inline: true },
+    { name: "With listing", value: String(ev.slugsWithListing), inline: true },
+    { name: "Alerts sent", value: String(ev.alerted), inline: true },
+    { name: "Errors", value: String(ev.errorCount), inline: true },
+    { name: "Duration", value: `${(ev.durationMs / 1000).toFixed(1)}s`, inline: true },
+  ];
+  if (ev.capHit) {
+    fields.push({ name: "Cap hit", value: "yes — increased run rate or daily quota next", inline: false });
+  }
+  const color =
+    ev.errorCount > 0 ? COLOR_RED_ERROR :
+    ev.alerted > 0 ? COLOR_FOIL_ORANGE :
+    COLOR_SLATE;
+  const emoji = ev.alerted > 0 ? "🔔" : ev.errorCount > 0 ? "⚠️" : "🕐";
+  return postWebhook({
+    webhookUrl,
+    embeds: [
+      {
+        title: `${emoji} Wishlist alert cron`,
+        color,
+        timestamp: new Date().toISOString(),
+        fields,
+      },
+    ],
+    fetchImpl: opts.fetchImpl,
+  });
+}
+
 export async function postDeploy(
   webhookUrl: string,
   ev: { status: "started" | "succeeded" | "failed"; url?: string; commitSha?: string },

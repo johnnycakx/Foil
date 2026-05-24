@@ -40,6 +40,66 @@ const DEFAULT_SENDER = "Foil Content Engine <onboarding@resend.dev>";
 
 export const EMAIL_SUBJECT_PREFIX = "[Foil Draft] ";
 
+// ---------------------------------------------------------------------------
+// Generic transactional send. Used by the wishlist alert cron (ADR-024) +
+// any future transactional surface (e.g. waitlist confirmations). Keeps the
+// Resend fetch / API key / error shape in one place so callers stay terse.
+// ---------------------------------------------------------------------------
+
+export type TransactionalEmailInput = {
+  to: string;
+  subject: string;
+  html: string;
+  /** Optional override — defaults to "Foil <onboarding@resend.dev>". */
+  sender?: string;
+};
+
+/**
+ * Generic Resend POST. Soft-fail like sendNewsletterDraftEmail — never
+ * throws; returns `{ok:false}` on any failure path so the caller (cron,
+ * Server Action, etc) can log and continue.
+ */
+export async function sendTransactionalEmail(
+  input: TransactionalEmailInput,
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<SendEmailResult> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    return { ok: false, error: "missing_api_key" };
+  }
+  if (!input.to?.trim() || !input.subject?.trim() || !input.html?.trim()) {
+    return { ok: false, error: "missing_required_field" };
+  }
+  const fetchFn = opts.fetchImpl ?? fetch;
+  const payload = {
+    from: input.sender ?? "Foil <onboarding@resend.dev>",
+    to: [input.to],
+    subject: input.subject,
+    html: input.html,
+  };
+  try {
+    const response = await fetchFn(RESEND_ENDPOINT, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const errText = await safeText(response);
+      return { ok: false, status: response.status, error: errText.slice(0, 200) };
+    }
+    const json = (await response.json()) as { id?: string };
+    if (!json.id) {
+      return { ok: false, status: response.status, error: "no_message_id" };
+    }
+    return { ok: true, messageId: json.id };
+  } catch (err) {
+    return { ok: false, error: (err as Error).message };
+  }
+}
+
 /**
  * Send the manual-paste fallback email. Returns the Resend message id on
  * success or {ok:false} on any failure — the caller logs the warning and
