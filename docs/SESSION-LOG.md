@@ -8,6 +8,54 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-24 — Session 32: `docs/EBAY-COMPLIANCE.md` + structural compliance invariants — Phase 2 / Task #11 of the 14-day Growth Check push
+
+**Commits:** this commit only
+
+**Summary.** ROADMAP NOW #10's Phase 2: the canonical internal compliance doc + the structural test suite + the runnable audit script that downstream surfaces (Phase 3: `/legal/ebay-api-compliance` public page; Phase 4: PDF one-pager; Phase 5: privacy/ToS update) all source from. Before this session, the compliance posture was spread across ADRs 021/022/023/024/025 + R-008 — readable by anyone willing to navigate five docs. Now it's a single artifact: every eBay requirement → the file:line that enforces it → the test that pins it. The Application Growth Check submission body will link to this doc.
+
+**What landed.**
+
+- [`docs/EBAY-COMPLIANCE.md`](EBAY-COMPLIANCE.md) (new) — five sections per the goal spec:
+  - **a. Purpose & audience** — eBay reviewers, future agents, John.
+  - **b. Architecture overview** — ASCII block diagram of the request flow showing the two single-import boundaries (Browse module for `api.ebay.com`; EPN module for affiliate URL assembly) + the deletion webhook + the telemetry rollup.
+  - **c. Requirement → Enforcement → Test table** — 12 rows covering the 2025 License Agreement (no-cache, no-AI-training, no-AI-listing-claims), Marketplace Account Deletion compliance, telemetry-without-payload, OAuth client_credentials with public scope only, affiliate attribution, rate-limit posture, marketplace ID, credential hygiene, and the explicit no-scraping architectural absence. Every row links to file:line.
+  - **d. Audit checklist** — 15 spot-check items for ad-hoc or quarterly review.
+  - **e. Maintenance protocol** + maintenance log table. The doc updates in the same commit as any compliance-relevant change.
+- [`lib/__tests__/ebay-compliance-invariants.test.ts`](../lib/__tests__/ebay-compliance-invariants.test.ts) (new) — 6 structural guards that fail CI on regression:
+  - `api.ebay.com` appears only in `lib/affiliate/ebay-browse.ts` + `lib/affiliate/ebay-oauth.ts` (allowlist-pinned).
+  - Raw `mkevt` / `campid` ASSEMBLY (object-literal keys, quoted string args, or URL-fragment literals — NOT bare-word comment references) appears only in `lib/affiliate/epn.ts`. Pattern-tightened on the first run when it correctly flagged a documentation comment in `ebay-browse.ts` referencing the boundary — the comment is load-bearing documentation, so the guard now matches actual assembly context only.
+  - `lib/affiliate/ebay-browse.ts` contains `cache: "no-store"` on every fetch site.
+  - `app/(site)/cards/[slug]/page.tsx` exports `dynamic = "force-dynamic"`.
+  - `browse_calls` migration has exactly the operational-metadata columns (`id`, `called_at`, `surface`, `success`, `latency_ms`) AND none of the forbidden payload-shaped columns (`title`, `price`, `url`, `card_slug`, `seller`, `image`, `payload`, etc.).
+  - `lib/seo/*` does not import from `lib/affiliate/*` — proves the no-AI-on-eBay-data crossover is architecturally absent.
+- [`scripts/compliance-check.ts`](../scripts/compliance-check.ts) (new) — runnable via `npm run compliance:check`. Same 6 invariants, but renders a pass/fail summary table to stdout for ad-hoc audits. Exits 0 on all-pass, 1 on any-fail. Duplication with the test file is intentional: test layer is for the developer loop; script is for the human-readable audit surface.
+- [`package.json`](../package.json) — added `"compliance:check": "node --experimental-strip-types --no-warnings scripts/compliance-check.ts"` (tsx not installed; reusing the same Node-runtime pattern as `npm test`). Registered the invariants test file.
+- [`AGENTS.md`](../AGENTS.md) — appended to the `external-platform-rules` block: "For eBay specifically: see `docs/EBAY-COMPLIANCE.md`." + a sentence on running `npm run compliance:check` and the load-bearing signal if the invariants trip.
+
+**Closure-gate verification.**
+
+- `npm run compliance:check` exits 0 with all 6 invariants PASS.
+- Targeted test suite (invariants file): 6/6 green.
+- 3 random spot-checks from the section-c table (rows #1, #4, #7) all resolve to live file:line references that say what the doc claims. The doc-to-code traceability is real, not aspirational.
+- No `cached_listings` or listing-payload-shaped table exists in `supabase/migrations/`.
+- The deletion webhook still returns 200 on a valid challenge (verified Session 25 → still green).
+
+**Key decisions.** No new ADR. The compliance posture itself was already decided in ADRs 021-025; this session is the *documentation* of that posture into a single artifact + the structural enforcement of it. The decision worth noting in the maintenance log: section c row #2 (no AI training on eBay data) is enforced by architectural absence — Foil's content engine (`lib/seo/*`) never imports `lib/affiliate/*`. The invariants test pins that absence so it can't drift silently.
+
+**Side effect: the doc IS the brief for downstream goals.** Phase 3 (public `/legal/ebay-api-compliance` page) will be a Next.js page that renders a public-facing summary of sections a and b. Phase 4 (PDF one-pager) sources the same content. Phase 5 (privacy/ToS update) references this doc by URL.
+
+**Follow-ups.**
+
+- Phase 3 / Task #8: `/legal/ebay-api-compliance` public page — next goal.
+- Phase 4 / Task #10: PDF one-pager — after Phase 3.
+- Phase 5 / Task #9: Privacy/ToS update — after Phase 4.
+- Phase 6 / Task #12: actual Application Growth Check submission — after the 14-day evidence window closes and Phases 3-5 land.
+
+**State at session end.** Compliance posture now exists as a single 12-row readable artifact with 6 structural guards behind it and a one-command audit script (`npm run compliance:check`). The "5 ADRs + a risks entry" version of the posture is preserved but the canonical front door is now `docs/EBAY-COMPLIANCE.md`. Downstream goals (Phases 3-5) have their source. CI catches a regression on any of the 6 invariants before deploy.
+
+---
+
 ## 2026-05-24 — Session 31: Watchlist diversification — 12 seed rows across catalog + staggered cooldown for 24h Browse-call distribution
 
 **Commits:** this commit only

@@ -22,4 +22,6 @@ If a fact about an external platform is load-bearing for a code path, an env-var
 When in doubt, **ask before asserting**. A 30-second clarifying question is cheaper than a goal cycle spent debugging an OAuth call that fails because the grant_type string was wrong, or a 5-minute back-and-forth re-pasting a credential because the format assumption was stale.
 
 This rule exists because training data is stale, platforms change, and the cost of a wrong external-platform assertion is asymmetric — confidence with no source is the failure mode.
+
+**For eBay specifically:** see [`docs/EBAY-COMPLIANCE.md`](docs/EBAY-COMPLIANCE.md) for the canonical requirement → enforcement → test map. Before touching any code path that calls `api.ebay.com`, constructs an affiliate URL, or persists Browse-related data, read that doc and run `npm run compliance:check`. The structural guards in [`lib/__tests__/ebay-compliance-invariants.test.ts`](lib/__tests__/ebay-compliance-invariants.test.ts) will fail the build on any regression — if they trip, treat that as a load-bearing signal that the change crosses a compliance boundary and update the doc + the test exception list deliberately, not by silencing.
 <!-- END:external-platform-rules -->
