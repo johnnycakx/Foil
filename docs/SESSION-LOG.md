@@ -8,6 +8,48 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-24 — Session 31: Watchlist diversification — 12 seed rows across catalog + staggered cooldown for 24h Browse-call distribution
+
+**Commits:** this commit only
+
+**Summary.** Phase 1 evidence amplifier for ROADMAP NOW #10 (eBay Application Growth Check). The wishlist cron's Browse-call volume was 7 calls/day clustered at the top of one hour (the 7 pre-Session-31 rows). After this goal: 19 rows across 19 distinct catalog slugs with `last_notified_at` deliberately staggered between 1h and 23h ago, so each row crosses the 24h cooldown boundary at a different point across the next 24h cycle. Cron volume should triple (~19 Browse calls/day) AND distribute evenly across the day instead of bursting.
+
+**What landed.**
+
+- [`lib/wishlist/seed-data.ts`](../lib/wishlist/seed-data.ts) (new) — `SEED_ROWS` constant: 12 rows distributed across 4 buckets:
+  - `vintage` × 4 — pre-2001 WotC holos: `base2-3-flareon`, `base3-1-aerodactyl`, `gym1-1-blaines-moltres`, `neo1-4-feraligatr`. Targets $120–$300 (well above Browse prices → daily alerts).
+  - `modern` × 4 — Sword & Shield + Scarlet & Violet chase: `sv3pt5-198-venusaur-ex`, `swsh9-18-charizard-vstar`, `swsh12pt5-19-charizard-vstar`, `cel25-11-mew`. Targets $60–$110.
+  - `modern_substitute` × 2 — catalog has no xy*/sm* outside sm115, so per goal-spec substituted with additional modern chase at borderline targets (`sm115-9-charizard-gx` $40, `swsh7-29-gyarados-vmax` $25). Either side of current Browse price day-to-day.
+  - `unreachable` × 2 — `swsh7-18-flareon-vmax` and `cel25-16-zacian-v` at $1 targets. Exercises the cron's "found listing, didn't alert" path while still contributing a Browse call to the telemetry pool.
+- [`scripts/seed-watchlists.ts`](../scripts/seed-watchlists.ts) (new) — single-purpose Node script. Inline `.env.local` loader (same pattern as `scripts/flush-digest.ts`). POSTs each row via PostgREST service-role with `Prefer: return=minimal`. Staggered cooldown formula: `last_notified_at = now() - (i * 24h / 12)` → 0h, 2h, 4h, …, 22h ago. Tolerant of 4xx (logs + continues) so re-runs are safe.
+- [`lib/__tests__/watchlist-diversification.test.ts`](../lib/__tests__/watchlist-diversification.test.ts) (new) — 10 pure-logic tests on the `SEED_ROWS` constant: 12-row count, all-distinct slugs, all slugs exist in `CARD_CATALOG` (no hallucinated slugs), all emails use the `+wDIV01..12` alias pattern, bucket distribution (4/4/2/2), set-prefix invariants per bucket, target-magnitude bounds per bucket, no overlap with the 7 pre-existing production rows.
+- [`package.json`](../package.json) — registered the new test file in `npm test`.
+
+**Email aliases — Gmail delivery model.** Every seed row uses a `john.c.craig24+wDIV{NN}@gmail.com` alias. Gmail strips the `+...` suffix for delivery routing (all 12 land in John's `john.c.craig24@gmail.com` inbox) while preserving the alias in the `To:` header so it's filterable. Resend delivers to all of them because the recipient domain is `gmail.com` and the verified sender domain is `foiltcg.com` (verified Session 30).
+
+**Why staggered cooldowns?** The cron's SQL filter is `last_notified_at IS NULL OR last_notified_at < now() - interval '24 hours'`. A row with `last_notified_at = 2h ago` won't be eligible to alert again until 22h from now. Staggering across 12 rows at 2-hour intervals means an hourly cron picks up roughly 1 freshly-eligible row per 2-hour window over a 24h cycle — distributed Browse-call volume instead of a single hour-of-day burst. Better for both real-product realism AND the Application Growth Check evidence pool (looks like organic subscriber-driven traffic, not synthetic batch).
+
+**Tests.** Targeted suite (`watchlist-diversification.test.ts`): 10/10 green. Full-suite gated on the closure step.
+
+**Live verification.**
+- Seed script ran cleanly, inserted 12 rows (every line printed `[seed] ok`).
+- SQL after run: **19 total rows, 19 distinct card_slugs, 12 with `email LIKE 'john.c.craig24+wDIV%'`** — exactly the goal's closure-gate shape.
+- Manual cron trigger at ~22:33 UTC → HTTP 200 in 827ms, `{rowsScanned: 0, slugsConsidered: 0, browseCalls: 0, alerted: 0}`. **Correct behavior**: all 19 rows are within their 24h cooldown (the 7 pre-existing were stamped ~22:00 UTC today; the 12 seed rows were stamped 1–23h ago). The first seed row to become eligible is `wDIV12 / cel25-16-zacian-v` at ~01:11 UTC tomorrow (unreachable target → will scan + skip without alert but still log a Browse call). Subsequent rows unlock at 2-hour ticks across the rest of the next 24h.
+
+**Expected cron behavior over the next 24h.** Browse calls land at roughly: 01:11 UTC (wDIV12 — unreachable, no alert), 03:11 (wDIV11 — unreachable), 05:11 (wDIV10 — borderline), 07:11 (wDIV09 — borderline), 09:11 (wDIV08 — alert), 11:11 (wDIV07 — alert), 13:11 (wDIV06 — alert), 15:11 (wDIV05 — alert), 17:11 (wDIV04 — alert), 19:11 (wDIV03 — alert), 21:11 (wDIV02 — alert), 23:11 (wDIV01 — alert). Plus the 7 pre-existing rows re-fire at ~22:00 UTC. Expected daily volume: ~19 Browse calls, ~15 alerts (12 staggered + 6 of the 7 pre-existing whose targets are also above Browse prices), distributed across 24h.
+
+**Key decisions.** No new ADR. Seed-data extracted to `lib/wishlist/` (not `scripts/`) because the diversification test needs to import it AND `tsconfig.json` excludes `scripts/` from typechecking — co-locating the data with the consumer keeps the test typecheck-clean.
+
+**Follow-ups.**
+
+- Tomorrow's 06:00 UTC daily telemetry cron will be the first non-trivial Discord summary post (rolls up today's actual production traffic + the staggered seed activity that fires through the night).
+- Phase 2 of ROADMAP NOW #10 is the next goal: `docs/EBAY-COMPLIANCE.md` + the `/legal/ebay-api-compliance` public page.
+- Out of scope (manual / future): organic subscriber outreach driving real external signups, sender split per-route, EBAY-COMPLIANCE.md drafting (next goal).
+
+**State at session end.** 19 watchlist rows live in production, 12 with staggered cooldowns designed to distribute the wishlist cron's Browse-call volume across 24h. Diversification invariants pinned in tests so a future seed-edit must stay shape-consistent. The 14-day Growth Check evidence pool is now amplified — Phase 1 (telemetry pipeline + diversified watchlist) complete.
+
+---
+
 ## 2026-05-24 — Session 30: Resend sender flip → branded `alerts@foiltcg.com`. Closes ROADMAP NOW #9.
 
 **Commits:** this commit only
