@@ -41,9 +41,15 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 - Phase 5 / Task #9: Privacy/ToS update — references this page by URL.
 - Phase 6 / Task #12: actual Application Growth Check submission — after the 14-day evidence window closes (~2026-06-07) and Phases 4+5 land.
 
-**Live verification.** Captured in "State at session end" — production URL returns 200 and contains all four reviewer-key phrases.
+**Live verification.**
 
-**State at session end.** Public compliance page live at `https://foiltcg.com/legal/ebay-api-compliance` with the brand chrome, 12 requirement cards, and the contact footer. Drift detection pins the page/markdown synchronization in CI. PUBLIC_ROUTES gates the prefix correctly. Sitemap includes the URL. Downstream phases (PDF one-pager, privacy/ToS update) now have a stable public anchor URL to reference. ROADMAP NOW #10 Phase 3 ✅ closed.
+- Vercel auto-deploy fired github-triggered on commit `effbae4` → deployment `foil-mls0y9vnu-foilapp.vercel.app` Ready in ~3 minutes.
+- `curl https://foiltcg.com/legal/ebay-api-compliance` → HTTP 200, 43,979 bytes.
+- All 4 reviewer-key phrases present in the HTML body: `Marketplace Account Deletion` ✓ · `no-store` ✓ · `force-dynamic` ✓ · `client_credentials` ✓.
+- All 12 requirement cards rendered (counted via the React-rendered `Requirement <!-- -->N` prefix that the JSX `Requirement {i + 1}` interpolation produces): cards 1 through 12 each appear exactly once.
+- Allowlist fix (Session-32 invariant correctly flagged the new content module — added `lib/legal/ebay-compliance-content.ts` to `EBAY_API_ALLOWED_FILES` as a documentation-only exception with an explanatory comment, and logged the change in `EBAY-COMPLIANCE.md` maintenance log).
+
+**State at session end.** Public compliance page live at `https://foiltcg.com/legal/ebay-api-compliance` with the brand chrome, all 12 requirement cards, and the contact footer. Drift detection pins the page/markdown synchronization in CI. PUBLIC_ROUTES gates the prefix correctly; the prefix-bleed guard pins `/legalsomething` stays gated. Sitemap includes the URL with priority 0.5 / monthly cadence. Downstream phases (PDF one-pager, privacy/ToS update) now have a stable public anchor URL to reference. ROADMAP NOW #10 Phase 3 ✅ closed.
 
 ---
 
