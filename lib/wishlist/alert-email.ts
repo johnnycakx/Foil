@@ -24,6 +24,11 @@ export type WishlistEmailInputs = {
   /** Absolute URL to /cards/<slug> on production — for the "view full
    *  card page" link below the CTA. */
   cardPageUrl: string;
+  /** RFC 8058 one-click unsubscribe URL for the recipient. Optional —
+   *  when UNSUBSCRIBE_TOKEN_SECRET is missing the cron passes null and the
+   *  visible body link falls back to a mailto, but the email still sends.
+   *  Caller is responsible for minting via lib/unsubscribe-token. */
+  unsubscribeUrl: string | null;
 };
 
 export function formatUsd(cents: number): string {
@@ -103,6 +108,15 @@ export function emailBody(input: WishlistEmailInputs): string {
 
     `<hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />`,
     `<p style="font-size: 11px; color: #999; line-height: 1.5;">You're getting this because you set a watchlist alert at foiltcg.com. We send at most one alert per card per 24 hours. The "Buy on eBay" link is affiliate-tracked — Foil earns a commission on purchases that originate from this email.</p>`,
+    unsubscribeFooter(input.unsubscribeUrl),
     `</body></html>`,
   ].join("\n");
+}
+
+function unsubscribeFooter(url: string | null): string {
+  if (url) {
+    const safe = escapeHtml(url);
+    return `<p style="font-size: 11px; color: #999; line-height: 1.5; margin-top: 8px;">Don't want these? <a href="${safe}" style="color: #999; text-decoration: underline;">Unsubscribe in one click</a>.</p>`;
+  }
+  return `<p style="font-size: 11px; color: #999; line-height: 1.5; margin-top: 8px;">Don't want these? Email john.c.craig24@gmail.com to be removed.</p>`;
 }

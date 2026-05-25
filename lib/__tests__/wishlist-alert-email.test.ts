@@ -25,6 +25,7 @@ function inputs(overrides: Partial<WishlistEmailInputs> = {}): WishlistEmailInpu
     targetPriceCents: 4000,
     cardImage: "https://img.tcg/charizard.png",
     cardPageUrl: "https://foiltcg.com/cards/base1-4-charizard",
+    unsubscribeUrl: "https://foiltcg.com/api/unsubscribe?token=test-token-abc",
     ...overrides,
   };
 }

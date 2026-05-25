@@ -11,6 +11,8 @@
 // foiltcg.com sending domain is verified on Resend (DNS records live in
 // Vercel-managed DNS, verified 2026-05-24).
 
+import { buildUnsubscribeUrl } from "../unsubscribe-token.ts";
+
 export type NewsletterEmailInput = {
   /** Recipient inbox — founder by default; tests use a fixture address. */
   to: string;
@@ -61,6 +63,17 @@ export type TransactionalEmailInput = {
  * Generic Resend POST. Soft-fail like sendNewsletterDraftEmail — never
  * throws; returns `{ok:false}` on any failure path so the caller (cron,
  * Server Action, etc) can log and continue.
+ *
+ * Task #18 (Session 37) adds RFC 8058 + RFC 2369 unsubscribe headers
+ * whenever we can mint an unsubscribe token for the `to` address. Gmail,
+ * Yahoo, and other deliverability-sensitive providers downgrade or
+ * outright reject bulk mail without these headers; the inbox-level
+ * "unsubscribe" button only appears when both List-Unsubscribe and
+ * List-Unsubscribe-Post: List-Unsubscribe=One-Click are present and the
+ * referenced endpoint returns 200 on POST.
+ *
+ * If UNSUBSCRIBE_TOKEN_SECRET is missing we soft-fail (no headers), since
+ * sending a non-functional unsubscribe link is worse than sending none.
  */
 export async function sendTransactionalEmail(
   input: TransactionalEmailInput,
@@ -74,12 +87,26 @@ export async function sendTransactionalEmail(
     return { ok: false, error: "missing_required_field" };
   }
   const fetchFn = opts.fetchImpl ?? fetch;
-  const payload = {
+
+  const unsubscribeUrl = buildUnsubscribeUrl(input.to);
+  const headers: Record<string, string> = {};
+  if (unsubscribeUrl) {
+    // RFC 2369: at least one URI; RFC 8058: declare One-Click support so
+    // mail clients render the inbox-level unsubscribe button.
+    headers["List-Unsubscribe"] = `<${unsubscribeUrl}>`;
+    headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click";
+  }
+
+  const payload: Record<string, unknown> = {
     from: input.sender ?? DEFAULT_SENDER,
     to: [input.to],
     subject: input.subject,
     html: input.html,
   };
+  if (Object.keys(headers).length > 0) {
+    payload.headers = headers;
+  }
+
   try {
     const response = await fetchFn(RESEND_ENDPOINT, {
       method: "POST",

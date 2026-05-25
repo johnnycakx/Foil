@@ -97,6 +97,29 @@ test("newsletter subscribe endpoint is public — unauth visitors can opt in", (
   assert.equal(isPublicRoute("/api/subscribe"), true);
 });
 
+test("/newsletter landing page is public — Twitter-CTA target (Task #18 / Session 37)", () => {
+  // The newsletter landing page must be crawlable for SEO and reachable
+  // anonymously — the entire point is to convert a Twitter visitor into
+  // an email subscriber.
+  assert.equal(isPublicRoute("/newsletter"), true);
+});
+
+test("/api/unsubscribe is public — RFC 8058 one-click + token IS the auth (Task #18)", () => {
+  // The endpoint accepts GET (visible-link path) and POST (List-Unsubscribe-
+  // Post). The HMAC token in the query string is the only auth — the route
+  // cannot redirect to /login or mail clients can't fulfil the one-click flow.
+  assert.equal(isPublicRoute("/api/unsubscribe"), true);
+});
+
+test("/newsletter prefix doesn't bleed (exact route, not prefix)", () => {
+  // /newsletter is registered as exact, NOT prefix, so it must NOT match
+  // /newsletters or /newsletter-archive. If a future change needs nested
+  // routes, swap to prefix consciously + add a bleed guard.
+  assert.equal(isPublicRoute("/newsletters"), false);
+  assert.equal(isPublicRoute("/newsletter-archive"), false);
+  assert.equal(isPublicRoute("/newsletter/anything"), false);
+});
+
 test("per-card landing pages /cards/<slug> are public — buyer-side anonymous-friendly (ADR-020 + ADR-021)", () => {
   assert.equal(isPublicRoute("/cards"), true);
   assert.equal(isPublicRoute("/cards/charizard-base-set-4"), true);

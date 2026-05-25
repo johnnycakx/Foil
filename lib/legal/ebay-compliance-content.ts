@@ -90,3 +90,9 @@ export const ARCHITECTURE_PARAGRAPHS: readonly string[] = [
 ];
 
 export const CONTACT_FOOTER = "Questions? Contact john.c.craig24@gmail.com.";
+
+/** Page-only reference to the broader privacy policy. Rendered on the
+ *  reviewer-facing public page (`/legal/ebay-api-compliance`) but NOT
+ *  on the compliance PDF — the PDF is single-A4-page-budgeted and this
+ *  cross-link doesn't add value for the eBay reviewer use case. */
+export const PRIVACY_CROSS_LINK = "For Foil's general privacy practices (data collected, what we never do with it, how to unsubscribe), see /legal/privacy.";

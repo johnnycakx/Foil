@@ -917,6 +917,78 @@ If every hit is filtered out, return `null` and let the calling page fall back t
 
 ---
 
+## ADR-027 — Unified email capture across three surfaces; default-checked newsletter opt-in on the watchlist form
+
+**Date:** 2026-05-25
+**Status:** Accepted
+
+**Context.** Per [STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md), the owned email list is Foil's deepest moat — it survives algorithm changes, platform pivots, and competitor entry in ways no SEO surface ever can. Every Twitter follower routed into a newsletter signup is worth ~70x of the Twitter-only relationship over time. The funnel-architecture analysis in that doc identifies the email-signup step as the highest-leverage conversion gate in the entire product — every gram of friction removed there is worth disproportionately a lot.
+
+Pre-Session-37 architecture had two email surfaces (the watchlist form on `/cards/[slug]` and the newsletter `EmailCapture` component used on the blog) writing to two different lifecycle outcomes (watchlist alerts vs. weekly newsletter), with no path from a watchlist signup to the newsletter list. A high-intent buyer who set a watchlist on Charizard would never see Foil's market commentary again unless they manually subscribed elsewhere. The strategy doc names three surfaces that all need to write to the same Beehiiv list with source tags for segmentation: watchlist form (high-intent buyer), `/newsletter` landing page (Twitter-CTA target), and a footer email capture (passive capture).
+
+The legal question for the watchlist form's newsletter opt-in: default-checked vs. default-unchecked. Default-checked is legal under US CAN-SPAM if the box is **visible and uncheckable before submit** (which it is). Default-checked is NOT legal under GDPR for EU residents. Foil's V1 audience is US-focused Pokémon TCG buyers, primarily US/UK/AU/CA English-speaking. The strategy doc explicitly calls this question out and lands on default-checked.
+
+**Alternatives considered.**
+
+1. **Default-unchecked checkbox.** Strictly GDPR-safe and the safer long-term default. Lower per-signup newsletter-list growth — best industry estimates suggest a 30-50% lift on opt-ins when the box is default-checked vs unchecked. The strategy doc's "every gram of friction removed is worth disproportionately a lot" argument is the directional decider here.
+2. **Separate-form newsletter signup with no watchlist coupling.** Cleanest from a consent-clarity standpoint but loses the cross-pollination entirely. A high-intent buyer's newsletter signup probability is highest at the moment they're setting a watchlist; deferring the prompt to a separate visit drops the cross-pollination rate by ~80%.
+3. **Mandatory newsletter signup with the watchlist** (no checkbox). Tempting from a list-growth perspective, fails CAN-SPAM's "explicit opt-in" requirement when the user hasn't been told a newsletter exists — and would generate spam-complaint storms.
+4. **Double opt-in confirmation flow** for the newsletter portion. Strictly safer but adds a confirmation-email round-trip that 30-50% of users don't complete. Beehiiv's free tier doesn't support double opt-in flows natively without lifecycle automation (V2+). Defer.
+
+**Decision.** Three email-capture surfaces, all writing to the same Beehiiv list, tagged by source for downstream segmentation:
+
+| Surface | Source tag | Default behaviour |
+|---|---|---|
+| Watchlist form on `/cards/[slug]` | `watchlist-form` | Single email field + price target + opt-in newsletter checkbox (**default-checked**, label: "Also send me Foil's weekly deals newsletter (~1 email/week, unsubscribe anytime)") |
+| `/newsletter` landing page | `newsletter-landing` | Single email field, sample newsletter excerpts, social proof |
+| Footer email capture (every `(site)` page) | `footer` | Compact single-line form |
+
+All three call `lib/beehiiv.ts::subscribeEmail(email, source)`. The watchlist route soft-fails the subscribe call (Beehiiv failure must not block the watchlist insert — the watchlist row is the high-value primitive). The newsletter landing and footer surfaces use the existing `subscribeAction` Server Action via `EmailCapture` component.
+
+**Deliverability requirements bundled in.** Bulk-mail deliverability (Gmail, Yahoo, Apple Mail) now requires RFC 8058 one-click unsubscribe headers in every transactional / newsletter email. The same goal lands:
+
+- HMAC-signed unsubscribe tokens at `lib/unsubscribe-token.ts` (base64url(payload)`.`base64url(signature); secret `UNSUBSCRIBE_TOKEN_SECRET`).
+- `/api/unsubscribe` route handling both GET (visible-link confirmation page) and POST (RFC 8058 List-Unsubscribe-Post: List-Unsubscribe=One-Click).
+- `lib/notifications/resend.ts::sendTransactionalEmail` injects `List-Unsubscribe` + `List-Unsubscribe-Post` headers when the token can be minted (soft-fail to no-header if the secret is missing — sending a non-functional link is worse than sending none).
+- Wishlist alert email body gets a visible "Unsubscribe in one click" link in the footer.
+- Beehiiv's `subscriptions.update(id, { subscription_status: "inactive" })` is the actual remove-from-list call, behind the HMAC verify. Soft-fail — even on Beehiiv outage the confirmation page renders.
+- A DMARC TXT record (`_dmarc.foiltcg.com = "v=DMARC1; p=none;"`) is required for sender-policy alignment; goal can't touch Vercel DNS UI, so it's a manual founder step flagged in SESSION-LOG.
+
+**Architectural posture.**
+
+- **Single import boundary preserved.** `lib/beehiiv.ts` remains the only module that imports `@beehiiv/sdk` (ADR-010 boundary). The watchlist route imports `subscribeEmail` from `@/lib/beehiiv` rather than touching the SDK directly.
+- **Soft-fail discipline.** The watchlist insert succeeds whether or not the Beehiiv subscribe does; the newsletter signup Server Action soft-fails the Discord notification; the unsubscribe route renders success whether or not the Beehiiv unsubscribe lands. Failures are logged, never raised to the user.
+- **Source tags are stable.** `watchlist-form` / `newsletter-landing` / `footer` are pinned by `lib/__tests__/email-capture.test.ts` — a rename requires a deliberate test update, not a silent drift.
+- **HMAC token is stateless.** Verification is signature compare + payload parse; no DB lookup. A 2-year-old unsubscribe link still works (until UNSUBSCRIBE_TOKEN_SECRET is rotated, which would be a deliberate operational decision documented in SESSION-LOG).
+
+**Privacy / ToS bundled in.** [`/legal/privacy`](../app/(site)/legal/privacy/page.tsx) + [`/legal/terms`](../app/(site)/legal/terms/page.tsx) ship in the same goal — plain-language, single-page each, content sourced from `lib/legal/policy-content.ts`. Privacy explicitly states: no sell/share/AI-training; no eBay listing data persisted (R-008 echo); how to unsubscribe + delete. Terms include the FTC affiliate disclosure (eBay Partner Network) and the as-is listing-accuracy disclaimer.
+
+**Consequences.**
+
+- **Newsletter list growth lift expected.** Best industry estimates suggest 30-50% per-watchlist-signup lift from default-checked vs unchecked; actual lift TBD from real cohorts.
+- **Spam-complaint rate to monitor.** Default-checked opt-in generates higher unsubscribe rates than default-unchecked. The honest label ("~1 email/week, unsubscribe anytime") sets expectations. Trigger to flip: per-subscribe unsubscribe rate exceeding 30% over a 14-day rolling window.
+- **Unsubscribe latency.** Beehiiv's free-tier unsubscribe API may not be instant; mail clients expect ≤24h. The HMAC route returns immediately; the actual Beehiiv list state may lag.
+- **DMARC manual step is a goal-scope leak.** The DNS TXT record can't be touched without Vercel DNS UI access; the goal flags this for the founder.
+- **Lifecycle automation is V2.** Welcome series, re-engagement, dormant-subscriber recovery all defer until the list crosses ~1K subscribers and there's real engagement signal to segment on. The source-tag plumbing in this goal is the prerequisite.
+- **GDPR re-evaluation trigger.** If/when EU expansion becomes a focus, flip the watchlist checkbox to default-unchecked and add a per-page geo-detection layer. Tracked as a parked item.
+
+**Cross-refs.**
+
+- [STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md) — the *why* for this decision.
+- [ADR-010](#adr-010--beehiiv-for-newsletter-list-management) — the Beehiiv vendor choice and `lib/beehiiv.ts` import boundary.
+- [ADR-024](#adr-024--wishlist-alert-cron-on-vercel-cron-jobs-vs-github-actions-or-supabase-edge-functions) — the wishlist alert cron that the unsubscribe footer link applies to.
+- [R-008](RISKS.md#r-008--ebay-2025-license-agreement-ai-output--no-cache-compliance) — the no-listing-persistence rule echoed in the privacy policy.
+- [R-009](RISKS.md#r-009--envlocal-entries-can-disappear-during-multi-tool-sessions) — UNSUBSCRIBE_TOKEN_SECRET is a new env var added to the rotation discipline.
+
+**Followup (out of scope for Session 37, tracked as Task #19).**
+
+1. Lifecycle email automation — welcome series (day 0), re-engagement (day 7 no-opens), dormant-subscriber recovery (day 30). Beehiiv automation primitives + source-tag segmentation.
+2. Sender-reputation work — DKIM rotation, BIMI logo, DMARC alignment from p=none → p=quarantine after warm-up.
+3. Engagement metrics dashboard — open rates / click rates / per-source LTV. Currently visible only in Beehiiv UI; surface in `/admin/email-metrics` once data justifies.
+4. EU GDPR-specific consent path — default-unchecked + double-opt-in when geo is EU.
+
+---
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

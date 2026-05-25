@@ -12,6 +12,7 @@
 // layout so a nav change is one edit, not five.
 
 import Link from "next/link";
+import { FooterEmailCapture } from "@/components/footer-email-capture";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -62,17 +63,39 @@ function SiteHeader() {
 function SiteFooter() {
   return (
     <footer className="border-t border-white/5 bg-[#0B1428]">
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-3 px-5 py-8 text-sm text-zinc-500 sm:flex-row sm:items-center sm:px-8">
-        <p>© {new Date().getFullYear()} Foil. The best price on any Pokémon card.</p>
-        <p>
-          Already have access?{" "}
-          <Link
-            href="/login"
-            className="text-zinc-300 underline decoration-zinc-700 underline-offset-4 transition hover:text-white hover:decoration-zinc-400"
-          >
-            Sign in
-          </Link>
-        </p>
+      <div className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
+        <div className="mb-8 max-w-md">
+          <FooterEmailCapture />
+        </div>
+        <div className="flex flex-col items-start justify-between gap-3 border-t border-white/5 pt-6 text-sm text-zinc-500 sm:flex-row sm:items-center">
+          <p>© {new Date().getFullYear()} Foil. The best price on any Pokémon card.</p>
+          <nav className="flex flex-wrap items-center gap-x-4 gap-y-2 text-zinc-400">
+            <Link
+              href="/newsletter"
+              className="transition hover:text-white"
+            >
+              Newsletter
+            </Link>
+            <Link
+              href="/legal/privacy"
+              className="transition hover:text-white"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/legal/terms"
+              className="transition hover:text-white"
+            >
+              Terms
+            </Link>
+            <Link
+              href="/login"
+              className="text-zinc-300 underline decoration-zinc-700 underline-offset-4 transition hover:text-white hover:decoration-zinc-400"
+            >
+              Sign in
+            </Link>
+          </nav>
+        </div>
       </div>
     </footer>
   );

@@ -8,6 +8,72 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-25 — Session 37: Unified email capture + /newsletter + Privacy/ToS + RFC 8058 unsubscribe (Task #18 / ADR-027)
+
+**Commits:** this commit only
+
+**Why this session existed.** Per [STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md), the owned email list is Foil's deepest moat — programmatic SEO scales reach; the email list makes that reach *defensible*. The highest-leverage friction point in the entire funnel is the email-signup gate; this goal unifies three capture surfaces into one Beehiiv list with source tags, lands the Privacy/ToS legal surface (folds in the old standalone Task #9), and ships RFC 8058 one-click unsubscribe so Gmail/Yahoo/Apple Mail render the inbox-level unsubscribe button (and don't downgrade Foil's sender reputation).
+
+**What landed.**
+
+- **Three email-capture surfaces, one list (ADR-027).**
+  - [`app/(site)/cards/[slug]/page.tsx`](../app/(site)/cards/[slug]/page.tsx) — `WatchlistForm` gained a default-checked opt-in checkbox below the price target. Label: "Also send me Foil's weekly deals newsletter (~1 email/week, unsubscribe anytime)". Form field: `opt_in_newsletter` (boolean).
+  - [`app/api/watchlist/route.ts`](../app/api/watchlist/route.ts) — accepts `opt_in_newsletter`, and when true calls `subscribeEmail({email, source: "watchlist-form"})` AFTER the watchlist insert. Wrapped in try/catch so a Beehiiv outage cannot block the watchlist insert (the watchlist row is the high-value primitive; the newsletter subscribe is the bonus).
+  - [`app/(site)/newsletter/page.tsx`](../app/(site)/newsletter/page.tsx) (new) — Twitter-CTA landing page. Server Component, `force-static` + 24h revalidate. Hero with the strategy-doc value prop ("Tell me a card → I email you when it drops"), `EmailCapture source="newsletter-landing"` form, 3 hand-drafted sample-newsletter excerpts, privacy link.
+  - [`components/footer-email-capture.tsx`](../components/footer-email-capture.tsx) (new) — thin wrapper that pre-selects `source="footer"` + `variant="footer"` on the existing `EmailCapture` component. Rendered in [`app/(site)/layout.tsx`](../app/(site)/layout.tsx) so it appears on every (site) page.
+  - Layout footer also gained Privacy + Terms + Newsletter links beside Sign-in.
+
+- **Privacy + ToS (folds in old Task #9).**
+  - [`lib/legal/policy-content.ts`](../lib/legal/policy-content.ts) (new) — shared content module. Privacy: collect (email + watchlists only), use (alerts + newsletter only), never (sell/share, AI training, persist eBay listing data per R-008), unsubscribe + deletion paths. ToS: FTC affiliate disclosure (eBay Partner Network), as-is on listing accuracy, acceptable use, jurisdiction (US-focused for V1).
+  - [`app/(site)/legal/privacy/page.tsx`](../app/(site)/legal/privacy/page.tsx) + [`app/(site)/legal/terms/page.tsx`](../app/(site)/legal/terms/page.tsx) (new) — Server Components inheriting `(site)` chrome. `force-static` + 24h revalidate; canonical URLs + `robots: {index:true, follow:true}`. Plain-language sections; one card per topic.
+  - Both pages reachable via the now-public `/legal/*` prefix in `lib/supabase/public-routes.ts` (added Session 33; Session 37 reuses).
+
+- **RFC 8058 one-click unsubscribe.**
+  - [`lib/unsubscribe-token.ts`](../lib/unsubscribe-token.ts) (new) — HMAC-SHA256 token primitive. `mintUnsubscribeToken(email)` → `base64url(payload).base64url(signature)` where payload = `{e, iat}` and signature is keyed on `UNSUBSCRIBE_TOKEN_SECRET`. `verifyUnsubscribeToken(token)` returns a tagged `{ok, email?, reason?}` result. Constant-time signature compare via `node:crypto.timingSafeEqual`. Returns null on missing/short secret so callers soft-fail to header-less email rather than ship non-functional links. `buildUnsubscribeUrl(email)` produces the absolute `/api/unsubscribe?token=…` URL.
+  - [`app/api/unsubscribe/route.ts`](../app/api/unsubscribe/route.ts) (new) — GET (visible-link path, renders HTML confirmation) and POST (RFC 8058 `List-Unsubscribe-Post: List-Unsubscribe=One-Click`, returns 200 with no body). Token-verify → soft-fail Beehiiv unsubscribe → render success. Even when Beehiiv fails, the page renders success because retrying works.
+  - [`lib/beehiiv.ts`](../lib/beehiiv.ts) — added `unsubscribeEmail(email)`. Looks up by email via `subscriptions.list`, updates status to `inactive` via `subscriptions.update`. Soft-fail; treats `not_found` as success.
+  - [`lib/notifications/resend.ts`](../lib/notifications/resend.ts) — `sendTransactionalEmail` now injects `List-Unsubscribe: <url>` + `List-Unsubscribe-Post: List-Unsubscribe=One-Click` headers when the token can be minted. Missing secret → headers omitted (still sends).
+  - [`lib/wishlist/alert-email.ts`](../lib/wishlist/alert-email.ts) + [`lib/wishlist/scan-batch.ts`](../lib/wishlist/scan-batch.ts) — wishlist alert emails carry a visible "Unsubscribe in one click" link in the body footer (and the RFC 8058 headers from `sendTransactionalEmail`). `WishlistEmailInputs` gained `unsubscribeUrl: string | null`; the cron mints the URL per-recipient via `buildUnsubscribeUrl`.
+  - **New env var: `UNSUBSCRIBE_TOKEN_SECRET`.** 96-char hex (48 random bytes). Mirrored mid-session to `.env.local` + Vercel production + Vercel development + GH Actions. Documented in [`docs/ENV-VARS.md`](ENV-VARS.md). Rotating this secret invalidates unsubscribe links in already-sent emails by design — accept that trade only if compromised.
+
+- **Public routes + sitemap.**
+  - [`lib/supabase/public-routes.ts`](../lib/supabase/public-routes.ts) — `/newsletter` (exact) + `/api/unsubscribe` (exact) added to `PUBLIC_ROUTES`. `/legal/*` was already public from Session 33.
+  - [`app/sitemap.ts`](../app/sitemap.ts) — `/newsletter` (priority 0.8, monthly), `/legal/privacy` + `/legal/terms` (priority 0.4, yearly).
+  - [`lib/__tests__/proxy.test.ts`](../lib/__tests__/proxy.test.ts) — three new tests: `/newsletter` public, `/api/unsubscribe` public, `/newsletter` prefix-bleed guard (must NOT match `/newsletters` or `/newsletter-archive`).
+
+- **Tests.**
+  - [`lib/__tests__/unsubscribe-token.test.ts`](../lib/__tests__/unsubscribe-token.test.ts) (new, 17 tests) — round-trip, tamper detection (byte-flip in signature, payload-rewrite with original sig), malformed inputs, missing-secret graceful degradation, cross-secret rejection, `buildUnsubscribeUrl` round-trip through URL encoding.
+  - [`lib/__tests__/email-capture.test.ts`](../lib/__tests__/email-capture.test.ts) (new, 13 tests) — structural drift guards: watchlist route imports + opt-in gate + source string + try/catch wrap; `/newsletter` page invokes `EmailCapture source="newsletter-landing"` + has force-static + privacy link; footer wrapper pins `source="footer"` + `variant="footer"`; `(site)` layout renders the footer capture + privacy/terms/newsletter links; `WatchlistForm` renders the checkbox default-checked + correct label phrasing + forwards the boolean to the POST body. The R-010 application here: behavioural live verification (submit form + watch Beehiiv) is the closure-gate step; these structural tests catch refactor drift between live verifications.
+  - [`lib/__tests__/wishlist-alert-email.test.ts`](../lib/__tests__/wishlist-alert-email.test.ts) — fixture extended with the new `unsubscribeUrl` field.
+  - [`package.json`](../package.json) — `"test"` script extended to register the two new test files.
+
+- **Docs.**
+  - [`docs/DECISIONS.md`](DECISIONS.md) — ADR-027 added. Documents the unified-capture design, the default-checked vs default-unchecked decision and US-vs-EU trade-off, the soft-fail discipline, and four out-of-scope followups (lifecycle automation, sender reputation, engagement metrics dashboard, EU GDPR consent path).
+  - [`docs/EBAY-COMPLIANCE.md`](EBAY-COMPLIANCE.md) — maintenance log entry; `Last updated` header bumped to Session 37.
+  - [`lib/legal/ebay-compliance-content.ts`](../lib/legal/ebay-compliance-content.ts) — `CONTACT_FOOTER` now references `foiltcg.com/legal/privacy` for general privacy practices. Session 33 drift test still green (all reviewer-key phrases present).
+  - [`docs/ENV-VARS.md`](ENV-VARS.md) — `UNSUBSCRIBE_TOKEN_SECRET` row added.
+
+**Manual founder step — DMARC.** The goal can't touch Vercel DNS UI. To complete the deliverability posture, John needs to add this TXT record at the Vercel DNS dashboard for `foiltcg.com`:
+- Host: `_dmarc`
+- Type: `TXT`
+- Value: `v=DMARC1; p=none;`
+This is a *monitoring* policy (`p=none`) — it doesn't reject or quarantine anything yet, just reports alignment failures to the (default-null) `rua=` mailto. Once Foil has 30+ days of clean DKIM alignment data we can tighten to `p=quarantine`. Tracked as Task #19 follow-up.
+
+**R-010 application this session.** The risk's meta-lesson — self-consistent tests don't prove spec conformance — has a new instance: the unsubscribe-token tests are structurally complete (mint+verify round-trip, tamper detection, cross-secret rejection) BUT they don't prove that Gmail / Yahoo actually honor the `List-Unsubscribe-Post` header on a real production message. The closure-gate live verification + the first real subscriber's mail-client behavior is the actual integration check. The structural tests catch tomorrow's refactor drift; the live verification catches today's deployment errors.
+
+**Followups added (Task #19 + ADR-027 §followup).**
+
+1. Lifecycle email automation — welcome series, re-engagement, dormant-subscriber recovery. Beehiiv automation primitives + source-tag segmentation.
+2. Sender-reputation work — DKIM rotation, BIMI logo, DMARC tightening from `p=none` → `p=quarantine` after warm-up data lands.
+3. Engagement metrics dashboard at `/admin/email-metrics`.
+4. EU GDPR-specific consent — default-unchecked + double-opt-in for EU geo.
+
+**Live verification (pending after deploy).** Curl + grep over: `/newsletter` renders with the EmailCapture; `/legal/privacy` + `/legal/terms` render with the correct sections; footer renders the email capture on a random `(site)` page; `/cards/<slug>` watchlist form renders the opt-in checkbox; `/api/unsubscribe` without a token returns 400; `/api/unsubscribe` with a valid token returns 200 + the confirmation HTML.
+
+**State at session end.** Three email-capture surfaces wired to a single Beehiiv list with source tags. Privacy + ToS legal surface live + linked from the footer + sitemap + compliance content module. RFC 8058 one-click unsubscribe end-to-end. New env var mirrored across all three surfaces. ADR-027 documents the rationale + four followups. The next time a high-intent buyer sets a watchlist, they're also (by default) joining the newsletter — closing the audience-moat loop that STRATEGY-AUDIENCE-MOAT.md identifies as Foil's deepest defensible asset.
+
+---
+
 ## 2026-05-25 — Session 36: Quality-aware listing picker (Task #17 / ADR-026) — replaces lowest-price-wins selector
 
 **Commits:** this commit only

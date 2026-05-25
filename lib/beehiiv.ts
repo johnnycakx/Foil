@@ -96,3 +96,78 @@ export async function subscribeEmail(input: SubscribeInput): Promise<SubscribeRe
   }
   return { ok: false };
 }
+
+// ---------------------------------------------------------------------------
+// Unsubscribe — RFC 8058 one-click + visible link in every email.
+// ---------------------------------------------------------------------------
+
+export type UnsubscribeResult =
+  | { ok: true; status: "unsubscribed" | "already_inactive" | "not_found" }
+  | { ok: false };
+
+/**
+ * Mark a subscriber inactive on Beehiiv. Soft-fail — returns ok:false on
+ * any API failure path so the calling route handler can still render a
+ * "you've been unsubscribed" confirmation to the user (the email IS the
+ * receipt; even if Beehiiv was down, retrying the link works).
+ *
+ * The unsubscribe endpoint is publicly addressable (any holder of a
+ * valid HMAC token can hit it on behalf of the embedded email), so the
+ * lookup-then-update path lives behind the route handler's HMAC verify.
+ *
+ * `not_found` is treated as a success — if the email isn't on the list,
+ * the user IS effectively unsubscribed.
+ */
+export async function unsubscribeEmail(email: string): Promise<UnsubscribeResult> {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) return { ok: false };
+
+  let client: BeehiivClient;
+  let publicationId: string;
+  try {
+    client = getClient();
+    publicationId = getPublicationId();
+  } catch {
+    return { ok: false };
+  }
+
+  // Look up subscription by email. The SDK's list method supports an
+  // email filter. If the email isn't on the list at all, treat as success.
+  try {
+    const listResponse = (await (
+      client.subscriptions as unknown as {
+        list: (
+          pubId: string,
+          req: { email?: string; limit?: number },
+        ) => Promise<{
+          data?: Array<{ id?: string; status?: string; email?: string }>;
+        }>;
+      }
+    ).list(publicationId, { email: normalized, limit: 1 })) ?? {};
+    const rows = listResponse.data ?? [];
+    const match = rows.find((r) => r.email?.toLowerCase() === normalized);
+    if (!match || !match.id) {
+      return { ok: true, status: "not_found" };
+    }
+    if (match.status === "inactive" || match.status === "unsubscribed") {
+      return { ok: true, status: "already_inactive" };
+    }
+
+    // Update the subscription status to inactive.
+    await (
+      client.subscriptions as unknown as {
+        update: (
+          pubId: string,
+          subId: string,
+          req: { subscription_status?: string; status?: string },
+        ) => Promise<unknown>;
+      }
+    ).update(publicationId, match.id, { subscription_status: "inactive" });
+
+    return { ok: true, status: "unsubscribed" };
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("[beehiiv] unsubscribeEmail failed", err);
+    return { ok: false };
+  }
+}

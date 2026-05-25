@@ -350,36 +350,55 @@ function formatReleaseYear(release: string): string {
 function WatchlistForm({ cardSlug, cardName }: { cardSlug: string; cardName: string }) {
   // Inline POST-as-JSON via a tiny script — keeps the page a Server Component
   // while still hitting /api/watchlist with the right shape.
+  //
+  // Task #18 (Session 37): newsletter opt-in checkbox below the price target.
+  // Default-checked per STRATEGY-AUDIENCE-MOAT.md (US CAN-SPAM, visible +
+  // uncheckable before submit). Field name `opt_in_newsletter`. The route
+  // soft-fails the Beehiiv call so a Beehiiv outage can never block the
+  // watchlist insert.
   return (
     <form
-      className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-stretch"
+      className="mt-4 flex flex-col gap-3"
       data-card-slug={cardSlug}
       data-card-name={cardName}
       action={`/api/watchlist`}
       method="post"
     >
-      <input
-        type="email"
-        name="email"
-        required
-        placeholder="you@example.com"
-        className="flex-1 rounded-xl border border-white/15 bg-[#0B1428] px-4 py-3 text-sm text-white placeholder-zinc-500 focus:border-[#FF6B5C] focus:outline-none"
-      />
-      <input
-        type="number"
-        name="target_price"
-        required
-        min={1}
-        step={1}
-        placeholder="Target ($)"
-        className="w-full rounded-xl border border-white/15 bg-[#0B1428] px-4 py-3 text-sm text-white placeholder-zinc-500 focus:border-[#FF6B5C] focus:outline-none sm:w-32"
-      />
-      <button
-        type="submit"
-        className="rounded-xl bg-[#FF6B5C] px-6 py-3 text-sm font-semibold text-[#0B1428] transition hover:bg-[#FF8775]"
-      >
-        Notify me
-      </button>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+        <input
+          type="email"
+          name="email"
+          required
+          placeholder="you@example.com"
+          className="flex-1 rounded-xl border border-white/15 bg-[#0B1428] px-4 py-3 text-sm text-white placeholder-zinc-500 focus:border-[#FF6B5C] focus:outline-none"
+        />
+        <input
+          type="number"
+          name="target_price"
+          required
+          min={1}
+          step={1}
+          placeholder="Target ($)"
+          className="w-full rounded-xl border border-white/15 bg-[#0B1428] px-4 py-3 text-sm text-white placeholder-zinc-500 focus:border-[#FF6B5C] focus:outline-none sm:w-32"
+        />
+        <button
+          type="submit"
+          className="rounded-xl bg-[#FF6B5C] px-6 py-3 text-sm font-semibold text-[#0B1428] transition hover:bg-[#FF8775]"
+        >
+          Notify me
+        </button>
+      </div>
+      <label className="flex items-start gap-3 text-xs text-zinc-400">
+        <input
+          type="checkbox"
+          name="opt_in_newsletter"
+          defaultChecked
+          className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-white/20 bg-[#0B1428] text-[#FF6B5C] focus:ring-[#FF6B5C] focus:ring-offset-0"
+        />
+        <span>
+          Also send me Foil&apos;s weekly deals newsletter (~1 email/week, unsubscribe anytime)
+        </span>
+      </label>
       <script
         dangerouslySetInnerHTML={{
           __html: `
@@ -389,6 +408,8 @@ function WatchlistForm({ cardSlug, cardName }: { cardSlug: string; cardName: str
                 e.preventDefault();
                 var email = form.elements.email.value;
                 var targetDollars = parseFloat(form.elements.target_price.value || '0');
+                var optInEl = form.elements.opt_in_newsletter;
+                var optInNewsletter = optInEl ? !!optInEl.checked : false;
                 var btn = form.querySelector('button[type=submit]');
                 if (btn) btn.disabled = true;
                 fetch('/api/watchlist', {
@@ -398,6 +419,7 @@ function WatchlistForm({ cardSlug, cardName }: { cardSlug: string; cardName: str
                     email: email,
                     card_slug: form.dataset.cardSlug,
                     target_price_cents: Math.round(targetDollars * 100),
+                    opt_in_newsletter: optInNewsletter,
                   }),
                 })
                   .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })

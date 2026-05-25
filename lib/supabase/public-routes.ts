@@ -71,6 +71,15 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // /api/subscribe route, anonymous visitors must still be able to reach it.
   { kind: "exact", path: "/api/subscribe" },
 
+  // Newsletter landing page (Task #18 / Session 37). Twitter-CTA target;
+  // single email field with source='newsletter-landing'.
+  { kind: "exact", path: "/newsletter" },
+
+  // RFC 8058 one-click unsubscribe endpoint (Task #18 / Session 37). Both
+  // GET (visible-link path) and POST (List-Unsubscribe-Post one-click) are
+  // anonymous — the HMAC token IS the identity proof; no session needed.
+  { kind: "exact", path: "/api/unsubscribe" },
+
   // Next.js metadata routes. Already crawler-bound; redirecting them to
   // /login would break SEO indexing of robots.txt / sitemap.xml entirely.
   { kind: "exact", path: "/robots.txt" },

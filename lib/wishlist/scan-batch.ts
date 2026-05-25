@@ -25,6 +25,7 @@ import type { EpnBestListing, GetBestListingInput } from "../affiliate/epn.ts";
 import { getCatalogEntry } from "../cards/catalog.ts";
 import { getCardMetadata, type CardMetadata } from "../cards/sdk.ts";
 import { emailBody, subjectLine, type WishlistEmailInputs } from "./alert-email.ts";
+import { buildUnsubscribeUrl } from "../unsubscribe-token.ts";
 
 export const MAX_BROWSE_CALLS = 200;
 export const COOLDOWN_HOURS = 24;
@@ -194,6 +195,9 @@ export async function scanWatchlists(input: ScanWatchlistsInput): Promise<ScanRe
         targetPriceCents: row.target_price_cents,
         cardImage: metadata.image || null,
         cardPageUrl: `${input.siteUrl.replace(/\/$/, "")}/cards/${slug}`,
+        unsubscribeUrl: buildUnsubscribeUrl(row.email, {
+          baseUrl: input.siteUrl,
+        }),
       };
       const sendResult = await input.sendEmail({
         to: row.email,

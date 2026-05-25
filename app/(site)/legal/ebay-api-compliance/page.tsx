@@ -14,6 +14,7 @@ import {
   CONTACT_FOOTER,
   PAGE_INTRO,
   PAGE_TITLE,
+  PRIVACY_CROSS_LINK,
   REQUIREMENTS,
 } from "@/lib/legal/ebay-compliance-content";
 
@@ -94,6 +95,16 @@ export default function EbayApiCompliancePage() {
 
       <section className="mt-16 border-t border-white/5 pt-8 text-sm text-zinc-500">
         <p>{CONTACT_FOOTER}</p>
+        <p className="mt-3">
+          {PRIVACY_CROSS_LINK.replace("/legal/privacy", "")}
+          <a
+            href="/legal/privacy"
+            className="text-zinc-300 underline decoration-zinc-700 underline-offset-4 transition hover:text-white"
+          >
+            /legal/privacy
+          </a>
+          .
+        </p>
       </section>
     </main>
   );
