@@ -60,6 +60,49 @@ After surfacing the contradiction (per AGENTS.md "ask before asserting"), John a
 
 ---
 
+## 2026-05-25 — Session 35: PDF one-pager for eBay Application Growth Check — Phase 4 / Task #10
+
+**Branch:** `feat/pdf-one-pager` (worktree `../foil-pdf`, parallel to Session 34's webhook fix on main). Will merge AFTER Session 34 lands. This entry will sit BELOW Session 34's on main once both branches merge — keep that ordering when resolving the conflict.
+
+**Summary.** Phase 4 of ROADMAP NOW #10 lands the deliverable Foil attaches to the eBay Application Growth Check submission: a single-page A4 PDF summary of the compliance posture, served from `https://foiltcg.com/compliance/foil-ebay-api-compliance.pdf` and linked from the public `/legal/ebay-api-compliance` page. The PDF and the public page both source from `lib/legal/ebay-compliance-content.ts` (Session 33's content module), so all three reviewer surfaces — markdown doc, public page, attached PDF — stay synchronized by construction. Drift between them now fails CI.
+
+**Library pick — pdfkit + pdf-parse.** The goal called for following a `pdf` skill, but no such skill is installed on disk. Per AGENTS.md docs-first rule, picked pdfkit (mature, MIT, no Chromium dependency, no native compile, embeds searchable text natively — required because the drift test extracts) over Puppeteer/headless-Chrome (would add 200 MB of node_modules + browser sandboxing concerns for a deterministic compile-time artifact) and over @react-pdf/renderer (heavier React runtime for what amounts to four sections of text + one schematic). pdf-parse is the standard Node text-extractor, used in-test only.
+
+**What landed.**
+
+- [`scripts/generate-compliance-pdf.ts`](../scripts/generate-compliance-pdf.ts) (new) — exports `generateCompliancePdf({ commitSha? })` returning `{ buffer, pageCount }`; the CLI entry-point at the bottom of the file runs only when invoked directly, so the test can import the function without triggering a real file write. Commit SHA resolution prefers `VERCEL_GIT_COMMIT_SHA` (Vercel build env) and falls back to `git rev-parse --short HEAD`. Layout: header (title + last-reviewed + commit SHA + URL), `What Foil does` paragraph from `PAGE_INTRO`, `Architecture` paragraph + inline three-lane single-import-boundary diagram drawn with pdfkit primitives + four bullets (render-time / no-persist / no-train / CI-enforced), `Compliance requirements` two-column table (number + bold title + body — dropped the test column per goal spec) closed with `every row has a CI guard; details at foiltcg.com/legal/ebay-api-compliance and on request`, `Marketplace Account Deletion` paragraph, centered footer. 7.5pt body / 6.5pt table — tight typography fits all 12 requirements + diagram + footer in one page.
+- [`public/compliance/foil-ebay-api-compliance.pdf`](../public/compliance/foil-ebay-api-compliance.pdf) (new) — 7.9 KB committed binary artifact. Future regenerations replace in place via `npm run compliance:pdf`.
+- [`app/(site)/legal/ebay-api-compliance/page.tsx`](../app/(site)/legal/ebay-api-compliance/page.tsx) — added `Download as PDF →` link beneath the `Last updated` line + `metadata.alternates.types["application/pdf"]` so HTML clients (e.g. browsers' reader-view, sitemap crawlers, content sniffers) discover the PDF variant. Link uses the `download` attribute to encourage save-to-disk rather than in-tab open.
+- [`proxy.ts`](../proxy.ts) — added `pdf` to the static-asset extension exclusion in the Next.js middleware matcher, alongside existing `svg|png|jpg|jpeg|gif|webp`. PDFs under `/public` now bypass Supabase auth like other static assets. Security review (see closure gate) confirmed the bypass surface matches the platform-static-asset model.
+- [`package.json`](../package.json) — added `"compliance:pdf": "node --experimental-strip-types --no-warnings scripts/generate-compliance-pdf.ts"`. Goal spec called for `tsx`, but tsx isn't installed in this repo (per Session 32's note in `compliance:check`); reused the existing experimental-strip-types pattern. Registered `lib/__tests__/compliance-pdf.test.ts` in the test runner. Added pdfkit / pdf-parse / @types/pdfkit as devDependencies.
+- [`lib/__tests__/compliance-pdf.test.ts`](../lib/__tests__/compliance-pdf.test.ts) (new) — 4 drift-detection tests: renders exactly one A4 page; every `REQUIREMENTS[].body` string is reachable in the extracted PDF text (normalize-by-strip-whitespace, so URL line-wraps don't break the substring match — the first run caught this when the URL in requirement #4 wrapped mid-path); all 4 reviewer-key phrases (`Marketplace Account Deletion`, `no-store`, `force-dynamic`, `client_credentials`) present in extracted text; explicit commit SHA from options round-trips into the header.
+
+**Key decisions worth noting.**
+
+- **No new ADR.** The library pick is documented above; if pdfkit ever proves limiting (custom font embedding, complex tables, etc.) and we migrate, that migration warrants an ADR — this initial pick does not.
+- **Refactored CLI script into library + entry-point** so the drift test calls the build function in-process. The alternative (spawn the CLI via `child_process`, read from tmpdir) would be slower and would couple the test to file-system mechanics. The conditional `invokedAsScript` guard at the bottom of the script keeps `npm run compliance:pdf` working identically.
+- **Drift test uses strip-whitespace matching** rather than collapsed-whitespace. pdf-parse inserts newlines at PDF wrap boundaries — including inside URLs and hyphenated tokens. Stripping all whitespace on both haystack and needle makes the assertion robust to whichever line break pdfkit chose. Reviewer-key phrases are short and don't span wrap boundaries, so they use the simpler collapse-whitespace match.
+
+**Closure-gate verification.**
+
+- `npm run compliance:pdf` → 7.9 KB, 1 page, written to canonical path.
+- `npm run compliance:check` → 6/6 invariants PASS (no regression from the matcher / proxy change).
+- `npm test` → 384 passed, 0 failed, 6 skipped (the vision-confirm fixtures that need a live API key — pre-existing skips).
+- `npx tsc --noEmit` → clean.
+- `/security-review` → no HIGH, no MEDIUM findings. Diff surface: build-time script with no untrusted input, static PDF asset, static link, matcher extension consistent with existing image exclusions.
+
+**Parallel safety.** Worked entirely outside Session 34's file set (the marketplace-deletion webhook test rewrite, oauth changes, RISKS doc, `.env.local`). SESSION-LOG.md and ROADMAP.md will both conflict at merge — clean insertion: Session 35 below Session 34.
+
+**Follow-ups.**
+
+- Merge sequence: Session 34 first (urgent webhook), then this branch.
+- Phase 5 / Task #9: privacy / ToS update referencing `/legal/ebay-api-compliance` by URL — next goal.
+- Phase 6 / Task #12: actual Application Growth Check submission — after Phases 4-5 + 14-day evidence window (~2026-06-07).
+
+**State at session end.** The eBay compliance posture now has three synchronized surfaces — the canonical markdown doc (Session 32), the public web page (Session 33), and the printable PDF one-pager (this session) — all rendering from a single content module. The PDF is committed to `public/compliance/`, reachable at the production URL once the merge lands, and pinned by CI drift detection. The Growth Check application body has its supporting evidence attachment.
+
+---
+
 ## 2026-05-24 — Session 33: `/legal/ebay-api-compliance` public page — Phase 3 / Task #8 of the 14-day Growth Check push
 
 **Commits:** this commit only
