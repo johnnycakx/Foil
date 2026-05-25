@@ -130,6 +130,49 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 ---
 
+## R-009 — `.env.local` entries can disappear during multi-tool sessions
+
+**Severity:** Medium (escalated from Low on 2026-05-25)
+**Status:** `mitigating` — second occurrence within 14 days; trigger to escalate fired.
+
+**The risk.** During Session 28's telemetry goal, `CRON_SECRET` silently disappeared from `.env.local` mid-session. During Session 34 (2026-05-25), `EBAY_DELETION_VERIFICATION_TOKEN` + `NEXT_PUBLIC_SITE_URL` were both missing from `.env.local` (grep returned zero rows for either, despite both having been set at end-of-Session-25). The pattern is now sustained: secrets that exist in Vercel + GH Actions remain stable; secrets that ONLY live in `.env.local` are at risk; secrets that live in all three but are loaded by Cowork-side editor sessions appear to be subject to silent eviction during multi-tool windows.
+
+**Second-occurrence note (Session 34).** The Session 34 disappearance did not cause the production outage that motivated the goal — eBay's "endpoint has not returned success status codes for 24h" email was a root-cause-distinct issue (incorrect ECDSA-vs-HMAC verification logic in `lib/ebay-marketplace-deletion.ts`; fixed in the same session). The `.env.local` drift was found incidentally while diagnosing. Both bugs are recorded together for SESSION-LOG continuity, but they are independent failure modes — see [SESSION-LOG.md Session 34](SESSION-LOG.md) for the narrative split.
+
+**Why mitigating.** Two occurrences in 14 days clears the original "Second occurrence within 14 days" escalation trigger. The eBay 30-day keyset-deactivation timer is the worst-case fire path for any future drift on an eBay-adjacent secret: if a webhook endpoint's required env var drops and the prod runtime starts 503-ing, eBay's monitoring flags it; if unresolved for 30 days, the entire Browse-API keyset is deactivated and V1's deal-finder live-listing surface goes dark.
+
+**Trigger that fired.** Second occurrence within 14 days (Session 28 → Session 34, 2026-05-11 → 2026-05-25).
+
+**Mitigation posture.**
+1. **Source-of-truth discipline:** every production secret MUST live in Vercel + GH Actions, NOT only locally. `.env.local` is a *convenience copy*, not the canonical store. This was the existing R-009 advice and it held — Sessions 28 and 34 both recovered fast because the canonical secret lived in Vercel.
+2. **Vercel-canonical posture (new in Session 34).** Treat `.env.local` as *derived* from Vercel prod, not the source of truth. A future infra goal should land `vercel env pull --environment=production .env.local` at session start so the local file is rehydrated on every cold start. Tracked at [ROADMAP NEXT](ROADMAP.md) — separate followup goal.
+3. **Re-mirror, don't try to recover.** When in doubt for *rotatable* secrets, regenerate + re-mirror across all three surfaces. For *non-rotatable* secrets (anything cached by an external partner that would require a manual re-registration step on their portal — e.g. `EBAY_DELETION_VERIFICATION_TOKEN`), restore the original value from session-log records before regenerating. Session 34 restored the original `XDEA7Dwx...` token to `.env.local` rather than rotating it, because rotation would have forced a manual re-registration on developer.ebay.com.
+4. **Periodic webhook health-check (proposed).** A separate followup goal will add a daily cron (Vercel) that fires a synthetic challenge GET against `/api/webhooks/ebay-marketplace-deletion`, asserts 200 + correct hash, and posts to `#errors` Discord on failure. That gives us 24h detection instead of waiting for eBay's monitoring email.
+5. **Future agents:** if you find a missing env var that the codebase claims should exist, FIRST check Vercel + GH (most likely the canonical value is still there); restore from there if found. Regenerate only when the canonical surfaces are also empty.
+
+---
+
+## R-010 — Self-consistent unit tests do not prove spec conformance
+
+**Severity:** Medium
+**Status:** `mitigating` — surfaced and partially mitigated in Session 34
+
+**The risk.** Session 25's `lib/__tests__/ebay-marketplace-deletion.test.ts` had nine green tests for `verifyNotificationSignature`, including a pinned HMAC fixture vector. Every test passed in CI and locally. But the function's *algorithm itself* was wrong — eBay uses ECDSA against a fetched public key, not HMAC keyed on the verification token. The tests verified that the function did what its implementation said it did (HMAC round-trip), not that the implementation matched the external platform's actual spec. Result: a working CI suite that quietly shipped a broken integration for 24 days, surfaced only when eBay's monitoring threshold tripped.
+
+**Why mitigating.** The Session 34 rewrite landed concrete protections that bind tests to the real spec:
+1. The new ECDSA tests use `crypto.generateKeyPairSync('ec', { namedCurve: 'prime256v1' })` + `createSign('sha1')` — matching eBay's `ssl3-sha1` SDK constant verbatim. A future drift in eBay's algorithm would still pass these tests (same risk class), BUT
+2. The implementation is now anchored to a *canonical reference*: a comment in `lib/ebay-marketplace-deletion.ts` cites `github.com/eBay/event-notification-nodejs-sdk` `lib/validator.js + lib/client.js + lib/constants.js`. A future audit checks our code against eBay's published code, not our own tests.
+3. AGENTS.md's "Read the docs before touching any external platform" rule was strengthened in Session 32 and applied this session — the rewrite was grounded in `developer.ebay.com/marketplace-account-deletion` + the eBay SDK source, not memory.
+
+**Trigger to escalate.** First whichever: (a) any other external integration's behavior surfaces a spec-vs-implementation mismatch that tests didn't catch, (b) a code review finds a unit-test suite that pins its own implementation's output back to itself (round-trip-only) on any external-platform surface, (c) eBay or another partner sends a deactivation/violation notice for any reason not caught by our own tests first.
+
+**Mitigation candidates.**
+1. **End-to-end probes in CI.** For each external-platform integration with a webhook or callback surface, add a CI job that exercises the *real platform* in dev/sandbox if available (eBay's sandbox supports test notifications). A failing sandbox round-trip is the only test that catches a wrong algorithm.
+2. **Public-key + signature fixture from a real eBay payload.** Once we capture one real production POST + its signature header (via a fire-and-forget logging path, masked, R-008-compliant), pin it as a fixture and assert our verifier accepts it. That's a higher-confidence test than round-trip-only.
+3. **Reference-implementation diff watcher.** When eBay updates `event-notification-nodejs-sdk`, an open-source dependency audit (e.g. Renovate or a manual quarterly check) catches algorithm changes before they break us.
+
+---
+
 ## How to log a new risk
 
 1. Next available ID (`R-NNN`, monotonically increasing).

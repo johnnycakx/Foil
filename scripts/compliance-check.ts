@@ -27,6 +27,10 @@ const EBAY_API_ALLOWED_FILES = new Set([
   // references the URL in reviewer-facing prose. See the matching
   // allowlist in lib/__tests__/ebay-compliance-invariants.test.ts.
   "lib/legal/ebay-compliance-content.ts",
+  // Session 34 rewrite: POST notification verification fetches eBay's
+  // public key from api.ebay.com/commerce/notification/v1/public_key/{kid}.
+  // See the matching entry in the invariants test for full rationale.
+  "lib/ebay-marketplace-deletion.ts",
 ]);
 
 const AFFILIATE_PARAM_ALLOWED_FILES = new Set([

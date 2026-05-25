@@ -1,15 +1,15 @@
 // eBay Marketplace Account Deletion compliance endpoint. See ADR-022.
 //
 // PUBLIC route (gate-skipped by lib/supabase/proxy.ts via the existing
-// `/api/webhooks` prefix). The HMAC signature header IS the auth on POST.
+// `/api/webhooks` prefix). The ECDSA signature header IS the auth on POST.
 // GET is unauthenticated by design — eBay calls it before the keyset is
 // flipped to "compliant," so we have to answer the challenge without a
 // shared secret beyond the verification token baked into the hash.
 //
-// SLA: eBay rejects responses slower than ~3s. This handler therefore
-// performs zero DB writes, zero outbound fetches, and zero awaited work
-// beyond reading the raw body string. Discord notifications (if added
-// later) MUST stay fire-and-forget and soft-fail per ADR-014.
+// SLA: eBay rejects responses slower than ~3s. The GET path performs zero
+// I/O. The POST path performs at most one OAuth token fetch (module-cached
+// for ~2h) and one public-key fetch (in-memory cached by kid for ~1h) per
+// instance lifetime; steady-state POSTs are sub-ms.
 //
 // All decision logic lives in lib/ebay-marketplace-deletion.ts so the full
 // GET/POST contract can be unit-tested without next/server. This file is
@@ -50,10 +50,9 @@ export function GET(request: Request): NextResponse {
 
 export async function POST(request: Request): Promise<NextResponse> {
   const rawBody = await request.text();
-  const result = handleNotification({
+  const result = await handleNotification({
     rawBody,
     signatureHeader: request.headers.get("x-ebay-signature"),
-    verificationToken: process.env.EBAY_DELETION_VERIFICATION_TOKEN,
   });
   return toResponse(result);
 }

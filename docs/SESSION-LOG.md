@@ -8,6 +8,49 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-25 — Session 34: URGENT eBay deletion-webhook fix — ECDSA verification rewrite + R-009/R-010 logging
+
+**Commits:** this commit (rewrite + docs)
+
+**Why this session existed.** eBay's automated monitoring sent a 02:30 UTC email saying `https://foiltcg.com/api/webhooks/ebay-marketplace-deletion` had "not returned success status codes for 24h." A live "Send Test Notification" click from the developer.ebay.com dashboard confirmed the endpoint returned 401. The 30-day keyset-deactivation timer was running — if unresolved, V1's Browse-API data loop goes dark.
+
+**Diagnosis path — and why the original goal hypothesis was wrong.** The first goal dispatched assumed both env vars (`EBAY_DELETION_VERIFICATION_TOKEN`, `NEXT_PUBLIC_SITE_URL`) were missing from `.env.local` (true) AND that the route was returning 503 from `missing_verification_token` (false — live GET returned 200 + a correctly-shaped hash). The second goal correctly identified the failure as 401, but hypothesized "token-value drift between Vercel and eBay's cached value." That hypothesis was also wrong:
+
+1. **Empirical proof Vercel has the original Session-25 token.** Computed `sha256("fix34test" + "XDEA7Dwx..." + endpointUrl)` locally → `f6d1a3a82c790a34c3b0de98567be273f0a3b585a3204ea5e401df563abe9a16`. Live GET returned the same 64 hex chars byte-for-byte. Vercel's stored token === the original — no drift.
+2. **eBay's actual POST verification is NOT HMAC-keyed-on-token.** Per [`developer.ebay.com/marketplace-account-deletion`](https://developer.ebay.com/marketplace-account-deletion) + the eBay-published Node SDK ([`github.com/eBay/event-notification-nodejs-sdk`](https://github.com/eBay/event-notification-nodejs-sdk)) `lib/validator.js + lib/client.js + lib/constants.js`: the `x-ebay-signature` header is a **base64-encoded JSON blob** `{ alg, kid, signature, digest }`. Verification fetches eBay's public key from `https://api.ebay.com/commerce/notification/v1/public_key/{kid}` with a client_credentials Application token, then ECDSA-verifies the raw body via `crypto.createVerify('sha1')` (the SDK's `'ssl3-sha1'` constant aliases to plain SHA-1).
+3. **Our Session-25 implementation was using HMAC-SHA256 keyed on the verification token.** Wrong algorithm. Every real POST has been failing since Session 25 — eBay's monitoring just now crossed the threshold to flag us.
+
+After surfacing the contradiction (per AGENTS.md "ask before asserting"), John approved Option 1 — rewrite `verifyNotificationSignature` per the actual spec.
+
+**Why the original tests didn't catch this.** Nine green tests in `lib/__tests__/ebay-marketplace-deletion.test.ts` verified the function did what its own implementation said it did (HMAC round-trip). They never compared against eBay's published reference. This is the meta-lesson captured in new R-010 (self-consistent tests don't prove spec conformance).
+
+**What landed.**
+
+- [`lib/ebay-marketplace-deletion.ts`](../lib/ebay-marketplace-deletion.ts) — rewrite. GET-side (`challengeResponseHash`, `handleChallenge`) preserved verbatim. POST-side replaced: `parseSignatureHeader`, `fetchEbayPublicKey` (in-memory cache by kid, ~1h TTL, fetches from Notification API using `getAccessToken` from `lib/affiliate/ebay-oauth.ts` — single OAuth boundary preserved), new async `verifyNotificationSignature` (ECDSA via `crypto.createVerify('sha1')`), async `handleNotification`. `__resetPublicKeyCacheForTests` test escape hatch.
+- [`app/api/webhooks/ebay-marketplace-deletion/route.ts`](../app/api/webhooks/ebay-marketplace-deletion/route.ts) — POST handler now awaits `handleNotification`. Dropped the verification-token argument since POST no longer depends on it (per eBay's actual spec; this also decouples POST availability from any future env-var drift — R-009).
+- [`lib/__tests__/ebay-marketplace-deletion.test.ts`](../lib/__tests__/ebay-marketplace-deletion.test.ts) — 24 tests (up from 18). GET tests preserved. POST tests rewritten: generates an EC P-256 keypair in setup, signs sample bodies with SHA-1, encodes the `x-ebay-signature` header as base64-JSON, passes the matching PEM via injected `publicKeyFetcher`. Coverage: header parse edge cases, ECDSA accept, signature mismatch, body-mutation rejection, fetcher-null rejection, fetcher-throws rejection, regression pin that POST no longer reads the verification token.
+- [`lib/__tests__/ebay-webhook-env-integrity.test.ts`](../lib/__tests__/ebay-webhook-env-integrity.test.ts) (new, per goal) — asserts `process.env.EBAY_DELETION_VERIFICATION_TOKEN` and `process.env.NEXT_PUBLIC_SITE_URL` are referenced from `app/api/webhooks/ebay-marketplace-deletion/route.ts`. Drift guard for future refactors.
+- [`lib/__tests__/ebay-compliance-invariants.test.ts`](../lib/__tests__/ebay-compliance-invariants.test.ts) + [`scripts/compliance-check.ts`](../scripts/compliance-check.ts) — added `lib/ebay-marketplace-deletion.ts` to `EBAY_API_ALLOWED_FILES` allowlist with explanatory comment (the file now legitimately fetches eBay's Notification API for the public key — distinct from a Browse module but the same single-import-boundary pattern).
+- [`docs/EBAY-COMPLIANCE.md`](EBAY-COMPLIANCE.md) — section c row #4 + #5 updated to reflect the ECDSA rewrite (line refs, test count 18→24, new helper exports listed). Audit checklist's `grep api.ebay.com` allowlist updated. Maintenance log entry added.
+- [`docs/RISKS.md`](RISKS.md) — R-009 escalated Low→Medium, `monitoring`→`mitigating` (second occurrence in 14 days triggered the existing escalation criterion; eBay's 30-day keyset-deactivation timer is now the documented worst-case fire path). R-010 added.
+- [`.env.local`](../.env.local) — appended the original Session-25 `EBAY_DELETION_VERIFICATION_TOKEN` value verbatim (no rotation — rotation would have forced a manual re-registration on the developer portal). `NEXT_PUBLIC_SITE_URL` appended too. Both surfaces already had these in Vercel + GH Actions.
+
+**The two issues are decoupled in the narrative.** R-009 (`.env.local` drift) is real but is NOT what caused the 401. R-010 (the ECDSA-vs-HMAC bug) is what caused the 401. They surfaced together in one diagnosis pass because the goal text bundled them; the fix kept them separate. Future readers should not conflate.
+
+**Tests.** All 24 deletion tests + 8 env-integrity/invariant tests pass. Full suite + tsc + /security-review run as part of closure gate.
+
+**Live verification (pending after deploy).** A fresh GET challenge proves the GET path still works. The real proof point is John clicking "Send Test Notification" again on the developer.ebay.com dashboard — expectation is 200, not 401. If 401 persists after deploy lands, the diagnosis was still incomplete (would point to a curve mismatch or `JSON.stringify` vs raw-body discrepancy).
+
+**Follow-ups added.**
+
+- Webhook health-check cron — daily Vercel cron firing a synthetic GET challenge against the endpoint, asserting 200 + correct hash, posting to `#errors` Discord on failure. Gives 24h detection vs waiting for eBay's monitoring email. (Tracked as a NEXT item.)
+- R-009 systemic mitigation — `vercel env pull --environment=production` on session start to make `.env.local` derived-not-canonical. Out of scope for this goal; separate followup.
+- A real eBay-payload fixture — once one production POST lands and is logged (R-008-compliant, masked), pin its signature header + raw body as a fixture so the ECDSA verifier is tested against eBay's actual bytes, not just self-generated ones.
+
+**State at session end.** ECDSA verification deployed; eBay can now actually verify a Send Test Notification POST and pass. R-009 escalated to Medium with a sustained-pattern note. R-010 added as the meta-lesson. All compliance invariants still pass. `.env.local` restored to a state where local dev is parity with prod. The Application Growth Check submission story remains intact — Phase 3's `/legal/ebay-api-compliance` page is unaffected.
+
+---
+
 ## 2026-05-24 — Session 33: `/legal/ebay-api-compliance` public page — Phase 3 / Task #8 of the 14-day Growth Check push
 
 **Commits:** this commit only

@@ -65,6 +65,15 @@ const EBAY_API_ALLOWED_FILES = new Set([
   // fetch call, contains no actual integration code. Session 33 (Phase 3
   // of ROADMAP NOW #10) added this entry.
   "lib/legal/ebay-compliance-content.ts",
+  // Session 34 rewrite: POST notification verification fetches eBay's
+  // public key from api.ebay.com/commerce/notification/v1/public_key/{kid}
+  // (Notification API) to ECDSA-verify the x-ebay-signature header. This
+  // is the canonical eBay-SDK pattern — the previous HMAC-keyed-on-
+  // verification-token implementation was wrong and caused the
+  // Send-Test-Notification 401s eBay flagged in the 24h monitoring email.
+  // No listing payload is stored; the in-memory public-key cache (~1h TTL)
+  // holds operational metadata only and is R-008 / ADR-025 compliant.
+  "lib/ebay-marketplace-deletion.ts",
 ]);
 
 const AFFILIATE_PARAM_ALLOWED_FILES = new Set([
