@@ -1,0 +1,8 @@
+{
+  "_observed": "Credible Near-Mint Charizard at fair market — this is the listing the picker SHOULD pick. Title has the Pokemon HP stat ('HP 120') which the picker's HP_HEAVILY_PLAYED_PATTERN regex must NOT false-positive on (the gate matches HP-as-heavily-played but not HP-followed-by-a-number, which is always the Pokémon HP stat).",
+  "title": "Charizard Base Set Shadowless Holo #4/102 NM HP 120 Pokemon Card 1999",
+  "itemUrl": "https://www.ebay.com/itm/credible-001",
+  "image": "https://img.example/credible-001.jpg",
+  "price": 285.00,
+  "currency": "USD"
+}

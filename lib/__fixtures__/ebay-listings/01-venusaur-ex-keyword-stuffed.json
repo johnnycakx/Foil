@@ -1,0 +1,8 @@
+{
+  "_observed": "Production case 2026-05-25 — the wishlist alert email that triggered Task #17. eBay search for 'Venusaur ex 151' returned a $1.75 'NEAR MINT' listing that was actually a keyword-stuffed sleeve / accessory. The title matches every search keyword, the condition string reads 'NEAR MINT', but $1.75 vs $40-80 real market makes the listing junk. Stage 1 (outlier rejection) is the gate that catches this — $1.75 falls well below 30% of any credible-listing median.",
+  "title": "Venusaur ex 151 NEAR MINT Pokemon Card Sleeve Holo Foil Collectible Mint Holder",
+  "itemUrl": "https://www.ebay.com/itm/junk-001",
+  "image": "https://img.example/junk-001.jpg",
+  "price": 1.75,
+  "currency": "USD"
+}

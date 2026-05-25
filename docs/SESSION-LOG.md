@@ -8,6 +8,44 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-25 — Session 36: Quality-aware listing picker (Task #17 / ADR-026) — replaces lowest-price-wins selector
+
+**Commits:** this commit only
+
+**Why this session existed.** The wishlist-alert cron on 2026-05-25 surfaced a $1.75 "Venusaur ex 151 NEAR MINT" recommendation in an email to a subscriber. Real market for that card is $40-80. The listing was a keyword-stuffed sleeve / accessory — its title matched every Browse search keyword, but its price reflected the accessory, not the card. The same failure mode poisoned every `/cards/[slug]` page render: lowest-absolute-price-wins surfaces keyword-stuffed garbage whenever any exists in the result set. Per `docs/STRATEGY-PROGRAMMATIC-SEO.md`, this picker fix is the *precondition* for the catalog-expansion sprint sequence — until the picker fixes this, scaling the surface just amplifies the credibility damage.
+
+**R-010 application.** The Session-25 / 26 unit tests for `getBestListing` were green and self-consistent: they pinned that the selector picks the lowest of N hand-crafted prices. They did not anchor on real eBay catalog behaviour. The bug was structurally invisible to CI because no test asserted against a real eBay junk pattern. This session's fixtures (`lib/__fixtures__/ebay-listings/`) directly close that gap — every fixture's `_observed` field cites the original case it derives from. Future picker contributors will see the production-anchored test data, not synthetic round-trips.
+
+**What landed.**
+
+- [`lib/affiliate/listing-picker.ts`](../lib/affiliate/listing-picker.ts) (new) — pure `pickBestListing(hits): EpnProductHit | null`. Four stages, fall-through to null: (1) outlier rejection at `max(median * 0.30, $3)`; (2) title-quality keyword reject (`lot`, `bulk`, `commons`, `collection`, `job lot`, `proxy`, `fake`, `reproduction`, `custom`, `fan art`) + `pokemon`/`pokémon` mention cap > 1; (3) condition-keyword reject (`damaged`, `poor`, `for parts`, `heavily played`, `dmg`, `creased`, `bent`, `ripped`, `burn`, `ink`, `water damage`) + `/\bHP\b(?!\s*\d)/i` regex for the "Heavily Played" abbreviation that doesn't false-positive on the Pokémon HP stat; (4) lowest-price among survivors. Thresholds + keyword lists are `export const` so the followup threshold-tuning goal has a single source of truth to adjust.
+- [`lib/affiliate/ebay-browse.ts`](../lib/affiliate/ebay-browse.ts) — `getBestListing` swapped its inline `for` loop for `pickBestListing(result.hits)`. Everything else preserved exactly: `cache: "no-store"`, surface telemetry, OAuth, affiliate-URL wrapping. Soft-fail flow unchanged — `null` from the picker → `null` return → page renders the sponsored search CTA.
+- [`lib/__fixtures__/ebay-listings/`](../lib/__fixtures__/ebay-listings/) (new) — 5 production-anchored JSON fixtures (`01-venusaur-ex-keyword-stuffed.json` is the literal Session-36 production case). Each fixture's `_observed` field is the R-010 anchor.
+- [`lib/__tests__/listing-picker.test.ts`](../lib/__tests__/listing-picker.test.ts) (new) — 33 tests. Pin: median math, outlier-rejection threshold, every title-junk keyword individually, every condition-junk keyword individually, Pokemon-mention cap (including diacritic), HP-stat false-positive guard ("Charizard HP 120" passes; "in HP condition" + "NM/HP" reject), end-to-end picker against fixture combinations.
+- [`lib/__tests__/ebay-browse.test.ts`](../lib/__tests__/ebay-browse.test.ts) — pin #6 updated to "quality-aware picker" semantics. Added two new regression tests: the literal Session-36 case ($1.75 Venusaur outlier → $45 credible) and the all-junk soft-fall to null.
+- [`docs/DECISIONS.md`](DECISIONS.md) — ADR-026 added. Documents the 4-stage design, the threshold choices (0.30 outlier ratio, $3 floor, Pokemon-mention cap=1), the deliberate deviation from the goal's literal `" HP "` substring (regex over substring — the literal would false-positive on every Pokémon-card title with the HP stat), and the four followup tasks scoped out of this session.
+- [`lib/legal/ebay-compliance-content.ts`](../lib/legal/ebay-compliance-content.ts) — `ARCHITECTURE_PARAGRAPHS` gained a 3rd paragraph describing the curation layer for public-page reviewers. Also fixed a Session-34 hangover: paragraph #4 said "verifies eBay's HMAC signature" — corrected to "verifies eBay's signature" (the verification is ECDSA per Session 34).
+- [`docs/EBAY-COMPLIANCE.md`](EBAY-COMPLIANCE.md) — section b architecture overview gained a "Curation layer between Browse and page" paragraph. Maintenance log entry added. The picker file is **NOT** in `EBAY_API_ALLOWED_FILES` — it's pure (no fetch, no persistence) so the single-import-boundary invariants are unchanged.
+
+**The HP-regex deviation, explicit.** The goal listed `" HP "` (with surrounding spaces) as a condition-junk keyword for "Heavily Played." A literal substring match would false-positive on virtually every Pokémon card title that lists the HP stat ("Charizard HP 120 Base Set" contains the literal `" HP "`). The Pokémon HP stat is *always* followed by a number; the heavily-played "HP" abbreviation never is. The implementation uses `/\bHP\b(?!\s*\d)/i` — pinned by a test that asserts "Charizard HP 120 Base Set" passes and "in HP condition" + "NM/HP" reject. Documented in ADR-026 + the picker source. This is the only deliberate deviation from the goal text.
+
+**R-010 mitigation status.** Session 34 added R-010 as a meta-lesson and three mitigation candidates. This session lands the first one in practice: production-anchored fixtures driving the test suite. The eBay-SDK + spec-doc-referenced anchoring from Session 34's verification rewrite is the equivalent pattern at the verification boundary; the picker fixtures are the equivalent at the selection boundary. R-010 stays `mitigating` — the meta-lesson applies to every external-platform integration boundary, not just the two we've closed.
+
+**Tests.** Picker tests in isolation: 33/33 green. ebay-browse with picker swapped in: 13/13 green. Legal drift test (4-paragraph ARCHITECTURE update): 5/5 green. Full suite gated on closure.
+
+**Followup tasks added (out of scope for Session 36, tracked in ADR-026).**
+
+1. Picker-decision telemetry — count rejections by reason. Operational metadata only, R-008 compliant.
+2. Threshold tuning — once rejection-rate data exists.
+3. Seller-rating filter — extend Browse parse to read `seller.feedbackPercentage`.
+4. Multi-factor weighted scoring — when threshold gating can't keep up with adversarial title patterns.
+
+**Live verification (pending after deploy).** The 5 `/cards/[slug]` pages named in the goal — `base1-4-charizard`, `sv3pt5-199-charizard-ex`, `swsh7-8-leafeon-vmax`, `sv3pt5-2-venusaur-ex` (the screenshot case), `base1-2-blastoise` — each curl + grep for the rendered listing-block markup. Pins that the picker doesn't accidentally regress the page render contract.
+
+**State at session end.** Quality-aware picker is the only change between `getBestListing`'s Browse call and the affiliate-wrapped result. The `/cards/[slug]` page render contract is unchanged. The wishlist alert cron now surfaces only credible deals — the Session-36 production failure mode (junk listing recommended via email) cannot repeat for the same reason. ROADMAP gains a Task #17 row marked Done. ADR-026 documents the decision + the four followup tasks. The Application Growth Check submission story is unaffected.
+
+---
+
 ## 2026-05-25 — Session 34: URGENT eBay deletion-webhook fix — ECDSA verification rewrite + R-009/R-010 logging
 
 **Commits:** this commit (rewrite + docs)

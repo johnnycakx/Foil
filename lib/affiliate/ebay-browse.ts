@@ -29,6 +29,7 @@ import type {
   GetBestListingInput,
 } from "./epn.ts";
 import { getAccessToken } from "./ebay-oauth.ts";
+import { pickBestListing } from "./listing-picker.ts";
 import { logBrowseCall, type BrowseSurface } from "../telemetry/browse-calls.ts";
 
 const BROWSE_SEARCH_ENDPOINT = "https://api.ebay.com/buy/browse/v1/item_summary/search";
@@ -163,10 +164,20 @@ function parseItemSummaries(body: unknown): EpnProductHit[] {
 }
 
 /**
- * Convenience: search Browse for a card, pick the lowest-priced listing,
- * and return the affiliate-wrapped link via lib/affiliate/epn.ts's
- * buildAffiliateUrl (single source of truth for affiliate URL shape).
- * Returns `null` on any failure — page renders the fallback CTA.
+ * Convenience: search Browse for a card, pick the cheapest credible
+ * listing via `pickBestListing` (see ADR-026), and return the affiliate-
+ * wrapped link via lib/affiliate/epn.ts's `buildAffiliateUrl` (single
+ * source of truth for affiliate URL shape).
+ *
+ * Returns `null` on any failure — empty hits, all-hits-filtered-as-junk,
+ * search-API failure — and the consuming page renders the sponsored
+ * search-result CTA per the existing soft-fail pattern.
+ *
+ * Selection rule (Session 36): the previous lowest-price-wins selector
+ * shipped a product bug — surfaced $1.75 keyword-stuffed listings instead
+ * of $40-80 credible listings. `pickBestListing` rejects keyword-stuffed,
+ * damaged, lot, and outlier-priced hits before taking the cheapest
+ * survivor.
  *
  * Telemetry: forwards `surface` to searchItems so the underlying Browse
  * call lands in browse_calls with the call-site tag.
@@ -183,10 +194,8 @@ export async function getBestListing(input: GetBestListingInput): Promise<EpnBes
   });
   if (!result.ok || result.hits.length === 0) return null;
 
-  let best = result.hits[0];
-  for (const hit of result.hits.slice(1)) {
-    if (hit.price < best.price) best = hit;
-  }
+  const best: EpnProductHit | null = pickBestListing(result.hits);
+  if (!best) return null;
 
   const customId = input.customId ?? "foil-card-page";
   return {

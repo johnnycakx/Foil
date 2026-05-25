@@ -1,0 +1,8 @@
+{
+  "_observed": "Bulk-lot listing pattern — a 200-card collection sold as one listing, priced under $50 because each card is worth pennies. The search-by-keyword surface still matches because 'Charizard' appears in the title (claiming to contain one). Title-quality filter (Stage 2) catches this on the 'lot' AND 'collection' AND multi-'Pokemon' mention keywords. The buyer would click through expecting a Charizard deal and find a bag of commons.",
+  "title": "Pokemon Card Collection LOT 200 Cards Holo Rare Charizard Pokemon Pokemon TCG Mixed",
+  "itemUrl": "https://www.ebay.com/itm/junk-004",
+  "image": "https://img.example/junk-004.jpg",
+  "price": 42.00,
+  "currency": "USD"
+}

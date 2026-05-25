@@ -1,6 +1,6 @@
 # Foil — eBay API Compliance
 
-**Status:** Living document. Last updated 2026-05-25 (Session 34). Maintenance protocol at the bottom.
+**Status:** Living document. Last updated 2026-05-25 (Session 36). Maintenance protocol at the bottom.
 
 ## a. Purpose & audience
 
@@ -70,6 +70,8 @@ Two facts the architecture enforces structurally:
 - **Single import boundary for `api.ebay.com`.** Only `lib/affiliate/ebay-browse.ts` (for `/buy/browse/v1/...`) and `lib/affiliate/ebay-oauth.ts` (for `/identity/v1/oauth2/token`) ever construct an `api.ebay.com` URL or fetch from it. Pinned by [`lib/__tests__/ebay-compliance-invariants.test.ts`](../lib/__tests__/ebay-compliance-invariants.test.ts) — any `api.ebay.com` occurrence outside those two files + the test files fails CI.
 - **Single import boundary for affiliate URL construction.** Only `lib/affiliate/epn.ts::buildAffiliateUrl` (and the EPN-internal constants it composes with) ever assemble `mkevt`/`mkcid`/`mkrid`/`campid`/`customid` tracking params. Pinned by the same invariants file.
 
+**Curation layer between Browse and page (ADR-026 — Session 36).** Browse returns title-keyword matches, period. Foil owns the curation responsibility before surfacing a listing as "the best deal." [`lib/affiliate/listing-picker.ts::pickBestListing`](../lib/affiliate/listing-picker.ts) is the pure-function curation layer between `searchItems` and the page render — it rejects statistical price outliers, keyword-stuffed multi-card lots, and damaged-condition titles, then takes the cheapest survivor. If every Browse hit fails curation, the page falls back to the sponsored search-results CTA per the existing soft-fail contract. The picker writes nothing, persists nothing, and operates on data already in-flight — no compliance posture change vs. R-008 / ADR-021.
+
 ---
 
 ## c. Requirement → Enforcement → Test
@@ -132,3 +134,4 @@ Update this doc in the **same commit** when any of these change:
 | 2026-05-24 | Initial doc | Session 32 |
 | 2026-05-24 | Public mirror landed at `/legal/ebay-api-compliance`. Content sourced from `lib/legal/ebay-compliance-content.ts`; drift-detection test pins the page-to-doc sync. The content module references `api.ebay.com` in reviewer-facing prose, so it's added to the structural-invariants `EBAY_API_ALLOWED_FILES` allowlist as a documentation-only exception (no integration code). | Session 33 |
 | 2026-05-25 | **POST-notification verification rewrite.** `lib/ebay-marketplace-deletion.ts::verifyNotificationSignature` was previously an HMAC-SHA256 keyed on `EBAY_DELETION_VERIFICATION_TOKEN` — not eBay's actual spec. Real spec (per `developer.ebay.com/marketplace-account-deletion` + `github.com/eBay/event-notification-nodejs-sdk`): base64-decode the `x-ebay-signature` header → JSON `{ alg, kid, signature, digest }` → fetch eBay's public key from `api.ebay.com/commerce/notification/v1/public_key/{kid}` (OAuth client_credentials, api_scope) → ECDSA-verify the raw body with `crypto.createVerify('sha1')`. Rewrite ships in `lib/ebay-marketplace-deletion.ts`; in-memory PEM cache by kid (~1h TTL); `__resetPublicKeyCacheForTests` escape hatch. New file added to `EBAY_API_ALLOWED_FILES` in invariants test + `scripts/compliance-check.ts`. POST handler no longer depends on the verification token. New env-integrity drift guard at `lib/__tests__/ebay-webhook-env-integrity.test.ts`. R-009 escalated Low→Medium (second occurrence in 14d); new R-010 added (self-consistent tests don't prove spec conformance). | Session 34 |
+| 2026-05-25 | **Quality-aware listing picker (Task #17 / ADR-026).** `getBestListing` no longer selects lowest-absolute-price across all Browse hits — it now delegates to `lib/affiliate/listing-picker.ts::pickBestListing`, which rejects price outliers, keyword-stuffed/multi-card/proxy titles, and damaged-condition keywords before taking the cheapest survivor. Triggered by the production case where a wishlist alert recommended a $1.75 "Venusaur ex 151 NEAR MINT" keyword-stuffed sleeve. New fixtures at `lib/__fixtures__/ebay-listings/` derive from real production observations (R-010 anchor). The picker is pure — no fetch, no persistence — so the compliance posture is unchanged (no `EBAY_API_ALLOWED_FILES` update needed). Section b architecture overview gained a "curation layer" paragraph. | Session 36 |

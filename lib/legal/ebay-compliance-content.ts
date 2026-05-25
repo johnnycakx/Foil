@@ -85,7 +85,8 @@ export const PAGE_INTRO = "This page documents how Foil complies with eBay's 202
 export const ARCHITECTURE_PARAGRAPHS: readonly string[] = [
   "Foil's eBay integration follows a deliberately narrow architecture. Server-side code calls the Browse API at request time, reads the response, renders the page, and discards the response. There is no caching layer, no listing database, no AI training pipeline that touches eBay data.",
   "Every Browse fetch uses cache: 'no-store' and the consuming Next.js page is configured force-dynamic. Authentication is OAuth's client_credentials grant scoped to the public Browse application scope only — no user-context scopes are requested. Every outbound visitor-facing eBay link is wrapped with the documented EPN affiliate tracking parameters via a single source-of-truth function.",
-  "Marketplace Account Deletion notifications are received at a public webhook (https://foiltcg.com/api/webhooks/ebay-marketplace-deletion). The handler verifies eBay's HMAC signature, acknowledges with HTTP 200, and discards the payload. Foil persists no eBay user data of any kind.",
+  "From the listings the Browse API returns, Foil's per-card page surfaces the cheapest credible listing — a pure-function picker filters out keyword-stuffed multi-card lots, damaged-condition titles, and statistical-outlier prices before selecting the lowest-priced survivor. When every returned listing fails curation, the page falls back to a sponsored search-results link rather than recommending a misleading listing.",
+  "Marketplace Account Deletion notifications are received at a public webhook (https://foiltcg.com/api/webhooks/ebay-marketplace-deletion). The handler verifies eBay's signature, acknowledges with HTTP 200, and discards the payload. Foil persists no eBay user data of any kind.",
 ];
 
 export const CONTACT_FOOTER = "Questions? Contact john.c.craig24@gmail.com.";

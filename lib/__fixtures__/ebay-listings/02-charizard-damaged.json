@@ -1,0 +1,8 @@
+{
+  "_observed": "Common eBay junk pattern — damaged Base Set Charizard listed at a low price that passes outlier rejection (because credible Base Set Charizard prices in 'Damaged' grade do legitimately reach $15-25). Title-quality filter passes (no bulk/lot/proxy keywords). The condition keyword 'damaged' (also 'creased') is what catches this at Stage 3. Without the condition gate, a buyer expecting a card that's a 'deal' clicks through to a creased, sleeve-damaged listing.",
+  "title": "Charizard Base Set Holo #4 - Damaged, creased corners, water damage spots",
+  "itemUrl": "https://www.ebay.com/itm/junk-002",
+  "image": "https://img.example/junk-002.jpg",
+  "price": 18.50,
+  "currency": "USD"
+}

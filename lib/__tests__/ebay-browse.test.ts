@@ -6,9 +6,13 @@
 //   4. Bearer auth via getAccessToken; X-EBAY-C-MARKETPLACE-ID: EBAY_US.
 //   5. Parses Browse API item_summary/search response shape (itemSummaries
 //      with stringified price.value).
-//   6. Lowest-price picker selects the cheapest hit.
+//   6. getBestListing selects via the quality-aware picker (ADR-026) —
+//      lowest *credible* price among the hits that clear outlier + title
+//      + condition gates. Lowest-absolute-price junk is rejected.
 //   7. Wrapped via buildAffiliateUrl (campid + customid stamped).
 //   8. 401/429/network/bad-JSON → ok:false; getBestListing → null.
+//   9. All-junk hits → getBestListing → null (page falls back to
+//      affiliateSearchUrl per the soft-fail contract).
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -246,7 +250,7 @@ test("searchItems: returns ok:false on malformed JSON", async () => {
   );
 });
 
-test("getBestListing: picks the lowest-priced hit and wraps the URL with affiliate params", async () => {
+test("getBestListing: picks the cheapest credible hit via the quality-aware picker (ADR-026) and wraps the URL with affiliate params", async () => {
   const { fetch } = fakeFetch([
     tokenJson(),
     json({
@@ -258,7 +262,7 @@ test("getBestListing: picks the lowest-priced hit and wraps the URL with affilia
           price: { value: "120.00", currency: "USD" },
         },
         {
-          title: "Charizard LP — best deal",
+          title: "Charizard LP best deal",
           itemWebUrl: "https://www.ebay.com/itm/bbb",
           image: { imageUrl: "https://img.ebay/b.jpg" },
           price: { value: "85.50", currency: "USD" },
@@ -287,7 +291,10 @@ test("getBestListing: picks the lowest-priced hit and wraps the URL with affilia
         fetchImpl: fetch,
       });
       assert.ok(best);
-      assert.equal(best?.title, "Charizard LP — best deal");
+      // All three titles are credible (no junk keywords, no damage signals,
+      // prices in plausible market range). The picker reduces to lowest-
+      // price-wins among survivors, so the $85.50 listing should win.
+      assert.equal(best?.title, "Charizard LP best deal");
       assert.equal(best?.price, 85.5);
       // Affiliate URL must include campid + customid + EPN tracking params.
       assert.match(best!.affiliateUrl, /campid=555555/);
@@ -296,6 +303,103 @@ test("getBestListing: picks the lowest-priced hit and wraps the URL with affilia
       assert.match(best!.affiliateUrl, /mkrid=711-53200-19255-0/);
       // Wrapped around the lowest-priced item URL specifically.
       assert.match(best!.affiliateUrl, /^https:\/\/www\.ebay\.com\/itm\/bbb\?/);
+    },
+  );
+});
+
+test("getBestListing: rejects keyword-stuffed $1.75 outlier and picks the credible $45 listing (Session 36 regression)", async () => {
+  // Anchors against the production case that triggered Task #17:
+  //   - "Venusaur ex 151" search returned a $1.75 sleeve listing labelled
+  //     "NEAR MINT" that was actually keyword-stuffed garbage.
+  //   - The old lowest-price selector picked the $1.75 hit; the new picker
+  //     rejects it at stage 1 (outlier ratio) and picks the cheapest of
+  //     the credible survivors.
+  const { fetch } = fakeFetch([
+    tokenJson(),
+    json({
+      itemSummaries: [
+        {
+          title: "Venusaur ex 151 NEAR MINT Pokemon Card Sleeve Holo Foil",
+          itemWebUrl: "https://www.ebay.com/itm/junk",
+          image: { imageUrl: "https://img.ebay/junk.jpg" },
+          price: { value: "1.75", currency: "USD" },
+        },
+        {
+          title: "Venusaur ex 151/165 Holo Near Mint Pokemon Card",
+          itemWebUrl: "https://www.ebay.com/itm/credible-a",
+          image: { imageUrl: "https://img.ebay/a.jpg" },
+          price: { value: "45.00", currency: "USD" },
+        },
+        {
+          title: "Venusaur ex 151 Pokemon TCG NM",
+          itemWebUrl: "https://www.ebay.com/itm/credible-b",
+          image: { imageUrl: "https://img.ebay/b.jpg" },
+          price: { value: "62.50", currency: "USD" },
+        },
+        {
+          title: "Venusaur ex 151 Holo Mint",
+          itemWebUrl: "https://www.ebay.com/itm/credible-c",
+          image: { imageUrl: "https://img.ebay/c.jpg" },
+          price: { value: "78.00", currency: "USD" },
+        },
+      ],
+    }),
+  ]);
+  await withEnv(
+    {
+      EBAY_DEVELOPER_APP_ID: "appid",
+      EBAY_DEVELOPER_CERT_ID: "cert",
+      EBAY_CAMPAIGN_ID: "555555",
+    },
+    async () => {
+      __resetTokenCacheForTests();
+      const best = await getBestListing({
+        cardName: "Venusaur ex",
+        setName: "151",
+        fetchImpl: fetch,
+      });
+      assert.ok(best, "expected the picker to surface a credible listing");
+      assert.equal(best?.price, 45.0, "should pick the $45 credible listing, NOT the $1.75 junk");
+      assert.match(best!.affiliateUrl, /^https:\/\/www\.ebay\.com\/itm\/credible-a\?/);
+    },
+  );
+});
+
+test("getBestListing: returns null when every hit is junk (page falls back to affiliateSearchUrl)", async () => {
+  // All hits fail at least one gate. The picker returns null and the
+  // consuming page renders the sponsored search CTA — strictly better
+  // than surfacing a curated junk card.
+  const { fetch } = fakeFetch([
+    tokenJson(),
+    json({
+      itemSummaries: [
+        {
+          title: "Charizard Pokemon LOT 200 Cards Pokemon TCG Collection Mixed Pokemon",
+          itemWebUrl: "https://www.ebay.com/itm/lot",
+          image: { imageUrl: "https://img.ebay/lot.jpg" },
+          price: { value: "42.00", currency: "USD" },
+        },
+        {
+          title: "Charizard Base Set Heavily Played damaged water damage",
+          itemWebUrl: "https://www.ebay.com/itm/dmg",
+          image: { imageUrl: "https://img.ebay/dmg.jpg" },
+          price: { value: "18.50", currency: "USD" },
+        },
+        {
+          title: "Charizard proxy custom holo fan art",
+          itemWebUrl: "https://www.ebay.com/itm/fake",
+          image: { imageUrl: "https://img.ebay/fake.jpg" },
+          price: { value: "5.00", currency: "USD" },
+        },
+      ],
+    }),
+  ]);
+  await withEnv(
+    { EBAY_DEVELOPER_APP_ID: "appid", EBAY_DEVELOPER_CERT_ID: "cert" },
+    async () => {
+      __resetTokenCacheForTests();
+      const out = await getBestListing({ cardName: "Charizard", fetchImpl: fetch });
+      assert.equal(out, null);
     },
   );
 });

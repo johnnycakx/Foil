@@ -851,6 +851,72 @@ That's it. No query column, no card_slug column, no result-count column. The `li
 
 ---
 
+## ADR-026 — Quality-aware listing picker (replaces lowest-price-wins)
+
+**Date:** 2026-05-25
+**Status:** Accepted
+
+**Context.** [ADR-021](#adr-021--epn-as-v1-live-listing-source-browse-api-deferred) → [ADR-023](#adr-023--browse-api-client-ships-libaffiliatelinksts-multi-source-selector-deferred-until-tcgplayer-access-lands) shipped a Browse-API live-listing surface where `getBestListing` selected by absolute-lowest-price across all hits returned by `item_summary/search`. This shipped a real product bug: the 2026-05-25 22:00 UTC wishlist-alert cron emailed a subscriber recommending a **$1.75 "Venusaur ex 151 NEAR MINT" listing** when real market for that card is $40-80. The listing was a keyword-stuffed accessory (sleeve / holder) whose title matched every search keyword, but whose price reflected the accessory, not the card. Same failure mode poisoned every `/cards/[slug]` page render — lowest-price-wins surfaces keyword-stuffed garbage whenever it exists in the result set.
+
+This isn't a tuning problem; it's a structural one. eBay's `item_summary/search` does no quality filtering on its end — it returns title-keyword matches, period. Foil owns the curation responsibility. Without curation, "the deal-finder" surface is structurally untrustworthy on every page on every load.
+
+R-010 amplifies the lesson: the Session-25 / 26 tests for `getBestListing` were self-consistent (they pinned that the selector picks the lowest of N hand-crafted prices) but didn't anchor on real catalog behaviour. The bug was invisible to CI because no test asserted against a real eBay junk pattern. Session 36's fixtures (`lib/__fixtures__/ebay-listings/`) directly close that gap — every fixture's `_observed` field cites the production case it derives from.
+
+**Alternatives considered.**
+
+1. **Tune the search query instead.** Add filters like `categoryIds=2611` (Pokémon Individual Cards) to the Browse API call to narrow what eBay returns upstream. Promising but partial — even within the Pokémon-cards category, keyword-stuffed listings exist. Worth doing as a *complement* to picker filtering, not a replacement. Tracked as a followup (out of scope for this goal).
+2. **Multi-factor weighted scoring.** Combine price, seller rating, condition, recency, image-presence into a score. More sophisticated than threshold gating but adds complexity, depends on more fields than `item_summary` reliably populates, and over-fits before we have signal data. Defer until threshold tuning has measurable rejection-rate telemetry.
+3. **Cache historical median prices per card and reject sub-30% outliers absolutely.** A statistical baseline keyed on PokeTrace data would catch the $1.75 case sharply. Two problems: PokeTrace tier-cost (we'd need to extend the cache surface) and the R-008 implications of storing aggregate price signals tied to eBay listings. Future direction once PokeTrace Scale tier is in play; not for Session 36.
+4. **Lowest-price among only the top-3-by-search-relevance.** eBay's `item_summary` doesn't expose a relevance score, and `sort=BestMatch` (the default) is opaque. Rejected — we'd be assuming eBay's sort already does what it observably doesn't.
+
+**Decision.** Implement a pure-function 4-stage picker in `lib/affiliate/listing-picker.ts::pickBestListing`. Stages, in order:
+
+1. **Outlier rejection.** Compute median price across all hits. Reject any hit priced below `max(median * 0.30, $3.00)`. The 30% ratio keeps the picker permissive when the catalog is genuinely cheap (commons, modern singles) and aggressive when the catalog is expensive (vintage holos, graded slabs). The $3 absolute floor catches "herd of junk" cases where the median itself is dragged low.
+2. **Title quality.** Reject (case-insensitive substring) any title containing `lot`, `bulk`, `commons`, `collection`, `job lot`, `proxy`, `fake`, `reproduction`, `custom`, `fan art`, OR titles with > 1 `pokemon`/`pokémon` mention (a strong multi-card signal).
+3. **Condition.** Reject (case-insensitive substring) titles containing `damaged`, `poor`, `for parts`, `heavily played`, `dmg`, `creased`, `bent`, `ripped`, `burn`, `ink`, `water damage`, plus the regex `/\bHP\b(?!\s*\d)/i` (the Pokémon HP stat is always followed by a number; the heavily-played "HP" abbreviation never is — see deviation below).
+4. **Lowest-price among survivors.** The original behaviour, narrowed.
+
+If every hit is filtered out, return `null` and let the calling page fall back to `affiliateSearchUrl` — strictly better than surfacing a curated junk card.
+
+**Threshold choices — explicit, not magical.**
+
+- **`OUTLIER_RATIO = 0.30`.** Chosen as a balance between (a) the $1.75 Venusaur case (~3% of credible median = aggressive reject) and (b) the legitimate "$15 LP Charizard" case (~30% of NM median = keep). First-cut value; tuning belongs in the followup.
+- **`ABSOLUTE_PRICE_FLOOR = $3.00`.** Catches the case where the herd of junk pulls the median down (e.g., all hits are $1-2 sleeve listings). The picker returns null and the page falls back to the sponsored search CTA.
+- **`POKEMON_MENTION_CAP = 1`.** Legitimate single-card titles say "Pokemon Card" once; multi-card lots repeat the word for keyword density.
+
+**Deviation from goal text — `" HP "` regex over literal substring.** The goal listed `" HP "` (with surrounding spaces) as a condition-junk keyword. A literal substring match would false-positive on virtually every Pokémon card title that lists the HP stat (`"Charizard HP 120 Base Set"`). The Pokémon HP stat is ALWAYS followed by a number; the heavily-played "HP" abbreviation NEVER is. The implementation uses `/\bHP\b(?!\s*\d)/i` — word-boundary HP not followed by optional whitespace + a digit. Pinned by a test that asserts "Charizard HP 120 Base Set" passes and "in HP condition" / "NM/HP" reject. Documented for the follow-on tuning goal so it can be revisited if the regex over-rejects.
+
+**Architectural posture.**
+
+- **Pure function.** `pickBestListing` takes `EpnProductHit[]`, returns `EpnProductHit | null`. No I/O, no async, no env dependencies. Test surface is the whole behaviour.
+- **R-010 anchor.** Fixtures in `lib/__fixtures__/ebay-listings/` derive from real production observations. Every fixture file's `_observed` field cites its source.
+- **Soft-fail preserved.** When all hits filter out, `getBestListing` returns `null` and `app/(site)/cards/[slug]/page.tsx` already falls back to `affiliateSearchUrl(...)` — no caller-side change needed.
+- **Telemetry posture preserved.** `pickBestListing` operates *after* the Browse call, so the `browse_calls` row is logged for every search regardless of whether the picker found something credible. The picker's rejection decisions are NOT persisted in this iteration — telemetry on rejection-rate-by-reason is the followup goal.
+
+**Consequences.**
+
+- **Wishlist alerts now surface only credible deals.** The Session-36 production case ($1.75 Venusaur email) cannot repeat for this failure mode.
+- **`/cards/[slug]` pages may show the fallback CTA instead of a curated listing more often.** A page that previously surfaced a junk card now shows the sponsored search CTA — a strict UX improvement (a sponsored search is honest about being a search; a junk-card recommendation is dishonest about being a deal).
+- **Affiliate-click conversion may shift.** Junk-card click-throughs likely converted at near-zero rate anyway; the fallback CTA at least starts a credible search. Net effect probably-positive but unmeasurable until we have per-card click telemetry.
+- **Thresholds may need tuning.** First-cut values. The followup tracks "rejection rate by reason" — too-many rejections on a card suggests a too-tight gate; too-few suggests too-loose. Land that telemetry before tightening anything.
+- **One new `api.ebay.com` boundary file? No.** The picker is pure; it doesn't call `api.ebay.com`. No update to `EBAY_API_ALLOWED_FILES` needed.
+
+**Cross-refs.**
+
+- [ADR-021](#adr-021--epn-as-v1-live-listing-source-browse-api-deferred) — establishes the live-listing surface this ADR refines.
+- [ADR-023](#adr-023--browse-api-client-ships-libaffiliatelinksts-multi-source-selector-deferred-until-tcgplayer-access-lands) — the Browse-API selector that this ADR's picker plugs into.
+- [R-010](RISKS.md#r-010--self-consistent-unit-tests-do-not-prove-spec-conformance) — the meta-lesson this ADR's fixtures + production-anchored tests close on the picker boundary.
+- [STRATEGY-PROGRAMMATIC-SEO.md](STRATEGY-PROGRAMMATIC-SEO.md) — names this work as "Task #17 picker fix" and the precondition for the catalog expansion sprint sequence.
+
+**Followup tasks (out of scope for Session 36).**
+
+1. Picker-decision telemetry — extend `browse_calls` (or add a sibling table) to record rejection counts by reason. Operational-metadata-only, R-008 compliant.
+2. Threshold tuning — once rejection-rate-by-reason data exists, revisit `OUTLIER_RATIO`, `ABSOLUTE_PRICE_FLOOR`, and the keyword lists.
+3. Seller-rating filter — add a `seller.feedbackPercentage` check once we extend the Browse parse to read it from `item_summary`.
+4. Multi-factor weighted scoring — when the threshold model can't keep up with adversarial title patterns.
+
+---
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).
