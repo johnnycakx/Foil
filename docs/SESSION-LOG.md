@@ -39,7 +39,16 @@ After surfacing the contradiction (per AGENTS.md "ask before asserting"), John a
 
 **Tests.** All 24 deletion tests + 8 env-integrity/invariant tests pass. Full suite + tsc + /security-review run as part of closure gate.
 
-**Live verification (pending after deploy).** A fresh GET challenge proves the GET path still works. The real proof point is John clicking "Send Test Notification" again on the developer.ebay.com dashboard — expectation is 200, not 401. If 401 persists after deploy lands, the diagnosis was still incomplete (would point to a curve mismatch or `JSON.stringify` vs raw-body discrepancy).
+**Live verification.**
+
+- Vercel auto-deploy: commit `9ff76b6` → deployment `foil-7qc9jhbhe-foilapp.vercel.app` reached `Ready` in ~1m post-push.
+- GET challenge (post-deploy): `curl -sS "https://foiltcg.com/api/webhooks/ebay-marketplace-deletion?challenge_code=s34verify"` →
+  - LIVE: `{"challengeResponse":"01476a01034b09b40284c05fc3869b226945e1976a23dd368d80ceeaf0bfe5a8"}`
+  - EXPECTED (`sha256("s34verify" + "XDEA7Dwx..." + endpointUrl)`): `01476a01034b09b40284c05fc3869b226945e1976a23dd368d80ceeaf0bfe5a8`
+  - **Byte-for-byte match** — confirms Vercel runtime still has the Session-25 original token, GET path is healthy on the new deploy.
+- `vercel env ls`: `EBAY_DELETION_VERIFICATION_TOKEN` present on Production + Development; `NEXT_PUBLIC_SITE_URL` present on Production + Preview.
+- `gh secret list`: both vars present (`EBAY_DELETION_VERIFICATION_TOKEN` 2026-05-24, `NEXT_PUBLIC_SITE_URL` 2026-05-20).
+- POST verification (Send Test Notification): John clicked Send Test Notification on developer.ebay.com → Alerts & Notifications → foil after the GET-challenge hash match was confirmed. Banner: **200 / Success** — ECDSA rewrite resolves the 401 fire path. Keyset returns to compliant once eBay's monitoring tick re-runs (typically within minutes).
 
 **Follow-ups added.**
 
