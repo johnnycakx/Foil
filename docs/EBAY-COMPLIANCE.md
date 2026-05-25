@@ -130,3 +130,4 @@ Update this doc in the **same commit** when any of these change:
 | Date | Change | Session |
 |---|---|---|
 | 2026-05-24 | Initial doc | Session 32 |
+| 2026-05-24 | Public mirror landed at `/legal/ebay-api-compliance`. Content sourced from `lib/legal/ebay-compliance-content.ts`; drift-detection test pins the page-to-doc sync. The content module references `api.ebay.com` in reviewer-facing prose, so it's added to the structural-invariants `EBAY_API_ALLOWED_FILES` allowlist as a documentation-only exception (no integration code). | Session 33 |

@@ -16,6 +16,7 @@ const LANDING_PATHS: { path: string; priority: number; changeFrequency: Metadata
   { path: "/pokemon-card-value-calculator", priority: 0.9, changeFrequency: "monthly" },
   { path: "/pokemon-card-condition-guide", priority: 0.9, changeFrequency: "monthly" },
   { path: "/blog", priority: 0.7, changeFrequency: "weekly" },
+  { path: "/legal/ebay-api-compliance", priority: 0.5, changeFrequency: "monthly" },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

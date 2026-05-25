@@ -23,6 +23,10 @@ const ROOT = process.cwd();
 const EBAY_API_ALLOWED_FILES = new Set([
   "lib/affiliate/ebay-browse.ts",
   "lib/affiliate/ebay-oauth.ts",
+  // Documentation-only — the public legal page's content module
+  // references the URL in reviewer-facing prose. See the matching
+  // allowlist in lib/__tests__/ebay-compliance-invariants.test.ts.
+  "lib/legal/ebay-compliance-content.ts",
 ]);
 
 const AFFILIATE_PARAM_ALLOWED_FILES = new Set([

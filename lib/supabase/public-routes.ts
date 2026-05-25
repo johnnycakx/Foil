@@ -59,6 +59,12 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // schedule definition to also be a Supabase-authed user, which it isn't.
   { kind: "prefix", path: "/api/cron" },
 
+  // Public legal / compliance pages — anything under /legal/* is
+  // reviewer-facing and must be crawlable. Session 33 added the first
+  // such page (/legal/ebay-api-compliance, the public mirror of
+  // docs/EBAY-COMPLIANCE.md). Future privacy/ToS lands here too.
+  { kind: "prefix", path: "/legal" },
+
   // Newsletter subscribe endpoint. Today the EmailCapture component invokes a
   // colocated Server Action so the POST piggy-backs on the host page (already
   // public). Listed here as the contract anchor: if we ever extract to a real

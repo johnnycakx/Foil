@@ -59,6 +59,12 @@ function rel(filePath: string): string {
 const EBAY_API_ALLOWED_FILES = new Set([
   "lib/affiliate/ebay-browse.ts",
   "lib/affiliate/ebay-oauth.ts",
+  // Documentation-only — the reviewer-facing /legal/ebay-api-compliance
+  // page's content module. References the URL in prose (e.g. "never
+  // calls api.ebay.com") to describe the compliance posture. Makes no
+  // fetch call, contains no actual integration code. Session 33 (Phase 3
+  // of ROADMAP NOW #10) added this entry.
+  "lib/legal/ebay-compliance-content.ts",
 ]);
 
 const AFFILIATE_PARAM_ALLOWED_FILES = new Set([

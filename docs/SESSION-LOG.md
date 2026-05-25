@@ -8,6 +8,45 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-24 — Session 33: `/legal/ebay-api-compliance` public page — Phase 3 / Task #8 of the 14-day Growth Check push
+
+**Commits:** this commit only
+
+**Summary.** Phase 3 of ROADMAP NOW #10 lands the public mirror of `docs/EBAY-COMPLIANCE.md`: a reviewer-facing summary at `https://foiltcg.com/legal/ebay-api-compliance` with conservative typography, brand chrome from the existing `(site)` route group, all 12 compliance requirements rendered as readable cards (no internal file:line refs), and a drift-detection test that fails CI if the canonical doc diverges from the page. The URL is the link John pastes into eBay's Application Growth Check supporting-evidence field.
+
+**What landed.**
+
+- [`lib/legal/ebay-compliance-content.ts`](../lib/legal/ebay-compliance-content.ts) (new) — shared content module. Exports `REQUIREMENTS` (12 entries each with `title` + `body`), `PAGE_INTRO`, `ARCHITECTURE_PARAGRAPHS`, `CONTACT_FOOTER`. The page and the drift test both import from here so the source-of-truth is single. `title` strings are the bold-prefix text from EBAY-COMPLIANCE.md section c verbatim; `body` is a reviewer-facing rewrite without file:line citations.
+- [`app/(site)/legal/ebay-api-compliance/page.tsx`](../app/(site)/legal/ebay-api-compliance/page.tsx) (new) — Next.js Server Component under the `(site)` route group, so it inherits the shared header/footer chrome (sticky orange-dot nav, Sign in link, footer copyright). Renders intro → architecture paragraphs → 12 requirement cards (each card: numbered `Requirement N` chip in `#FFC7BA`, title in white, body in zinc-300, on a `#101D38` panel with rounded-2xl + `border-white/5`). `metadata.alternates.canonical` + `robots: {index:true, follow:true}` configured for SEO.
+- [`lib/supabase/public-routes.ts`](../lib/supabase/public-routes.ts) — added `{kind: "prefix", path: "/legal"}` to PUBLIC_ROUTES. Anything under `/legal/*` is reviewer-facing and must be crawlable; future privacy/ToS pages land here too.
+- [`lib/__tests__/proxy.test.ts`](../lib/__tests__/proxy.test.ts) — 2 new tests: `/legal/ebay-api-compliance` + `/legal/privacy` + `/legal/terms` pinned as public; `/legalsomething` + `/legal-archive` pinned as default-gated (prefix-bleed guard).
+- [`app/sitemap.ts`](../app/sitemap.ts) — `{path: "/legal/ebay-api-compliance", priority: 0.5, changeFrequency: "monthly"}` added to LANDING_PATHS so search crawlers find the page.
+- [`lib/__tests__/legal-ebay-api-compliance.test.ts`](../lib/__tests__/legal-ebay-api-compliance.test.ts) (new) — 5 drift-detection tests:
+  - Parses `docs/EBAY-COMPLIANCE.md` section c table via regex (`/^\|\s*\d+\s*\|\s*\*\*(.+?)\*\*/`), extracts the bold-prefix title from every row, asserts set equality with `REQUIREMENTS[].title`. **A new requirement row in the markdown fails the build until a matching content-module entry is added — and vice versa, stale page entries fail too.**
+  - Row count must match between markdown and content module.
+  - Reviewer-key phrases (`Marketplace Account Deletion`, `no-store`, `force-dynamic`, `client_credentials`) must appear somewhere in the rendered content.
+  - Every `REQUIREMENTS` entry has a non-empty body ≥ 80 chars (catches stub additions).
+  - Page narrative (intro + architecture paragraphs) must be present and non-trivial.
+- [`package.json`](../package.json) — registered the new test file.
+
+**Tests.** Targeted (proxy + new drift file): 26/26 green. Full-suite gated on closure.
+
+**Key decisions.** No new ADR. The single-source-of-truth pattern (content module shared between page render and drift test) was the only design choice; the alternative — rendering the Next Server Component directly under node:test — would require pulling Next.js's React runtime into the test environment, which doesn't work under `--experimental-strip-types`. Extracting the content to a pure module costs nothing and makes the drift assertion trivial.
+
+**Why the drift test matters.** Without it, the public page falls out of sync with the canonical doc the first time someone adds a requirement to `docs/EBAY-COMPLIANCE.md` and forgets to update the page. Reviewers reading the page wouldn't know what they were missing. The test makes the synchronization a build-time concern: the next git push fails until the page is updated.
+
+**Follow-ups.**
+
+- Phase 4 / Task #10: PDF one-pager — sources the same content module. Likely a Puppeteer-rendered PDF of this page with print-friendly CSS, or a hand-built React-PDF surface.
+- Phase 5 / Task #9: Privacy/ToS update — references this page by URL.
+- Phase 6 / Task #12: actual Application Growth Check submission — after the 14-day evidence window closes (~2026-06-07) and Phases 4+5 land.
+
+**Live verification.** Captured in "State at session end" — production URL returns 200 and contains all four reviewer-key phrases.
+
+**State at session end.** Public compliance page live at `https://foiltcg.com/legal/ebay-api-compliance` with the brand chrome, 12 requirement cards, and the contact footer. Drift detection pins the page/markdown synchronization in CI. PUBLIC_ROUTES gates the prefix correctly. Sitemap includes the URL. Downstream phases (PDF one-pager, privacy/ToS update) now have a stable public anchor URL to reference. ROADMAP NOW #10 Phase 3 ✅ closed.
+
+---
+
 ## 2026-05-24 — Session 32: `docs/EBAY-COMPLIANCE.md` + structural compliance invariants — Phase 2 / Task #11 of the 14-day Growth Check push
 
 **Commits:** this commit only

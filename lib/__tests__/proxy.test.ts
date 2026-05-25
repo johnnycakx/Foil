@@ -48,6 +48,22 @@ test("Vercel deploy webhook is public — Vercel signs requests with its own HMA
   assert.equal(isPublicRoute("/api/webhooks/vercel-deploys"), true);
 });
 
+test("/legal/* pages are public — reviewer-facing compliance surface (Session 33)", () => {
+  // The public mirror of docs/EBAY-COMPLIANCE.md is the URL pasted into
+  // eBay's Application Growth Check supporting-evidence field. It MUST
+  // stay crawlable. Future privacy / ToS pages land under the same prefix.
+  assert.equal(isPublicRoute("/legal/ebay-api-compliance"), true);
+  assert.equal(isPublicRoute("/legal/privacy"), true); // future
+  assert.equal(isPublicRoute("/legal/terms"), true); // future
+});
+
+test("/legal prefix doesn't bleed into adjacent path stems", () => {
+  // The /legal prefix is "prefix" type — matches /legal and /legal/...
+  // but must NOT match /legalsomething or /legal-archive.
+  assert.equal(isPublicRoute("/legalsomething"), false);
+  assert.equal(isPublicRoute("/legal-archive"), false);
+});
+
 test("Wishlist alert cron route is public — Vercel cron infra invokes with Bearer (ADR-024)", () => {
   // The route does its own bearer gate; the proxy must not redirect a
   // bearer-authenticated request to /login or it would defeat the cron
