@@ -17,12 +17,17 @@ import {
   REQUIREMENTS,
 } from "@/lib/legal/ebay-compliance-content";
 
+const PDF_PATH = "/compliance/foil-ebay-api-compliance.pdf";
+
 export const metadata: Metadata = {
   title: PAGE_TITLE,
   description:
     "Foil's compliance with eBay's 2025 License Agreement, Buy APIs program terms, Marketplace Account Deletion compliance, and EPN agreement.",
   alternates: {
     canonical: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://foiltcg.com"}/legal/ebay-api-compliance`,
+    types: {
+      "application/pdf": PDF_PATH,
+    },
   },
   robots: { index: true, follow: true },
 };
@@ -39,6 +44,15 @@ export default function EbayApiCompliancePage() {
           eBay API Compliance
         </h1>
         <p className="mt-3 text-sm text-zinc-500">Last updated {lastUpdated}</p>
+        <p className="mt-3">
+          <a
+            href={PDF_PATH}
+            className="inline-flex items-center gap-1 text-sm font-medium text-[#FFC7BA] underline-offset-4 hover:underline"
+            download
+          >
+            Download as PDF <span aria-hidden="true">→</span>
+          </a>
+        </p>
       </header>
 
       <section className="mt-8 leading-relaxed text-zinc-300">
