@@ -40,7 +40,23 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 3. Seller-rating filter — extend Browse parse to read `seller.feedbackPercentage`.
 4. Multi-factor weighted scoring — when threshold gating can't keep up with adversarial title patterns.
 
-**Live verification (pending after deploy).** The 5 `/cards/[slug]` pages named in the goal — `base1-4-charizard`, `sv3pt5-199-charizard-ex`, `swsh7-8-leafeon-vmax`, `sv3pt5-2-venusaur-ex` (the screenshot case), `base1-2-blastoise` — each curl + grep for the rendered listing-block markup. Pins that the picker doesn't accidentally regress the page render contract.
+**Live verification.**
+
+- Vercel auto-deploy: commit `28f149b` → deployment `foil-nc5zytreo-foilapp.vercel.app` reached `Ready` in ~2m post-push.
+- The 5 `/cards/[slug]` pages named in the goal — `base1-4-charizard`, `sv3pt5-199-charizard-ex`, `swsh7-8-leafeon-vmax`, `sv3pt5-2-venusaur-ex` (the screenshot case), `base1-2-blastoise` — curl + grep'd for HTTP status, rendered listing-block, first-price, and affiliate-URL campid stamping.
+- **Slug correction.** The goal text named the Venusaur slug as `sv3pt5-2-venusaur-ex`. That slug doesn't exist in the catalog and returned 404. The actual catalog slug for Venusaur ex 151 is **`sv3pt5-198-venusaur-ex`** (collector #198). Re-curled the corrected slug and verified.
+- Results (HTTP 200 + best-listing first price + credibility check vs the old $1.75-junk failure mode):
+
+| Slug | Status | Best-listing price | Credibility |
+|---|---|---|---|
+| `base1-4-charizard` | 200 | $45.02 | ✅ credible Base Set Charizard (LP-range) |
+| `sv3pt5-199-charizard-ex` | 200 | $32.54 | ✅ credible 151 Charizard ex |
+| `swsh7-8-leafeon-vmax` | 200 | $12.99 | ✅ credible modern Leafeon VMAX |
+| `sv3pt5-198-venusaur-ex` | 200 | **$119.95** | ✅ **the Session-36 production case** — was $1.75 keyword-stuffed junk pre-fix; picker now surfaces a credible $119.95 listing |
+| `base1-2-blastoise` | 200 | $25.99 | ✅ credible Base Set Blastoise (LP-range) |
+
+- Affiliate-URL spot-check on the Venusaur ex page: rendered `https://www.ebay.com/itm/157742546123?...&mkevt=1&mkcid=1&mkrid=711-53200-19255-0&toolid=10001&campid=5339154326&customid=foil-card-page` — all EPN tracking params + the prod campid (5339154326) + per-page customid present.
+- No `/sch/i.html` (sponsored search) fallback URL surfaced on any of the 5 pages — every page found at least one listing that passed the picker. The all-junk soft-fall path is exercised by unit tests but didn't fire in production for these top-200 slugs.
 
 **State at session end.** Quality-aware picker is the only change between `getBestListing`'s Browse call and the affiliate-wrapped result. The `/cards/[slug]` page render contract is unchanged. The wishlist alert cron now surfaces only credible deals — the Session-36 production failure mode (junk listing recommended via email) cannot repeat for the same reason. ROADMAP gains a Task #17 row marked Done. ADR-026 documents the decision + the four followup tasks. The Application Growth Check submission story is unaffected.
 
