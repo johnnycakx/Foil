@@ -16,6 +16,15 @@ function supabaseStorageHost(): string {
 const nextConfig: NextConfig = {
   // .mdx pages render directly via file-based routing alongside .tsx
   pageExtensions: ["ts", "tsx", "md", "mdx"],
+  // /cards + /cards/sets/[set-id] fan out N parallel pokemontcg.io fetches
+  // (~50 cards per Base-era set). When pokemontcg.io is slow, the default
+  // 60s per-page static-generation timeout fires before the parallel-fetch
+  // group resolves. Bump to 5 min — first build that warms the next/fetch
+  // 24h revalidate cache pays the full cost; subsequent builds are cheap.
+  // Pre-existing build issue (first surfaced in the b67ed97 deploy); fix
+  // ride-alongs Session 39 because the failure is blocking the visual-
+  // identity deploy.
+  staticPageGenerationTimeout: 300,
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "cdn.poketrace.com" },
