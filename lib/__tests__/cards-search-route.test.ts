@@ -229,6 +229,25 @@ test("getCardMetadata: ALSO retries on 4xx (catalog IDs are known-valid; 4xx == 
 // Bug 5 — footer email capture suppressed on /start.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Baked-snapshot fallback — Session 40 amendment.
+// ---------------------------------------------------------------------------
+
+test("baked-metadata fallback layer is wired in lib/cards/sdk.ts", () => {
+  const src = readFile("lib/cards/sdk.ts");
+  // The fallback layer must (a) load baked-metadata.json + (b) gate the
+  // fallback on `usingDefaultFetch` so test-stubbed fetchImpl bypasses
+  // it (preserving the soft-fail-to-minimal-record semantics tests assert).
+  assert.match(src, /baked-metadata\.json/);
+  assert.match(src, /usingDefaultFetch\s*=\s*!input\.fetchImpl/);
+  assert.match(src, /usingDefaultFetch\s*&&\s*BAKED\.cards/);
+});
+
+test("bake script registered in package.json `bake:cards`", () => {
+  const src = readFile("package.json");
+  assert.match(src, /"bake:cards"\s*:\s*"node[^"]+scripts\/bake-card-metadata\.ts"/);
+});
+
 test("FooterEmailCapture: suppresses on /start via usePathname check", () => {
   const src = readFile("components/footer-email-capture.tsx");
   // The suppress-list must include /start.
