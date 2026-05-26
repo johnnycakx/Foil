@@ -15,7 +15,11 @@ import { getCardMetadata, getSetMetadata } from "@/lib/cards/sdk";
 
 export const dynamic = "force-static";
 export const dynamicParams = false;
-export const revalidate = 86_400;
+// Session 40 / Task #23 Bug 3: shortened from 24h → 1h. Upstream
+// pokemontcg.io is intermittently 504/404-ing under load; a short
+// revalidate window means a build that catches a bad-upstream minute
+// self-heals within an hour instead of sticking for a day.
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   return setIdsInCatalog().map((id) => ({ "set-id": id }));

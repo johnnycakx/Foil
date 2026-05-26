@@ -151,8 +151,22 @@ test("searchCards: returns [] after all retries 504 (soft-fail intact)", async (
   }) as unknown as typeof fetch;
   const hits = await searchCards({ query: "charizard", limit: 8, fetchImpl: always504 });
   assert.equal(hits.length, 0, "soft-fail still returns []");
-  // 1 initial + 2 retries = 3 calls.
-  assert.equal(calls, 3, "expected 1 initial call + 2 retries (3 total)");
+  // 1 initial + 3 retries = 4 calls (RETRY_DELAYS_MS = [200, 600, 1800]).
+  assert.equal(calls, 4, "expected 1 initial call + 3 retries (4 total)");
+});
+
+test("searchCards: does NOT retry on 4xx (user query, empty result is a real outcome)", async () => {
+  const { searchCards } = await import("../cards/sdk.ts");
+  let calls = 0;
+  const fourOhFour: typeof fetch = (async () => {
+    calls++;
+    return new Response("Not Found", { status: 404 });
+  }) as unknown as typeof fetch;
+  const hits = await searchCards({ query: "charizard", limit: 8, fetchImpl: fourOhFour });
+  assert.equal(hits.length, 0);
+  // searchCards opts OUT of retryOn4xx — 4xx is a real "no match" outcome
+  // for user-input queries, not upstream flake.
+  assert.equal(calls, 1, "expected no retries on 4xx for user-input search");
 });
 
 test("getCardMetadata: retries on 504 and recovers (Bug 3 — set page placeholders)", async () => {
@@ -179,6 +193,35 @@ test("getCardMetadata: retries on 504 and recovers (Bug 3 — set page placehold
   assert.equal(out.name, "Alakazam");
   assert.equal(out.image, "https://images.pokemontcg.io/base1/1_hires.png");
   // The fallback flag must NOT be set — a successful retry is a real record.
+  assert.equal(out.fallback, undefined);
+});
+
+test("getCardMetadata: ALSO retries on 4xx (catalog IDs are known-valid; 4xx == upstream flake)", async () => {
+  // Session 40 verified upstream pokemontcg.io intermittently returns
+  // 404 for cards that exist. Since our IDs come from CARD_CATALOG,
+  // a 4xx response means upstream is flaky, not that the card is gone.
+  // getCardMetadata opts into retryOn4xx; the retry recovers.
+  const { getCardMetadata } = await import("../cards/sdk.ts");
+  let calls = 0;
+  const flaky404 = (async () => {
+    calls++;
+    if (calls < 3) return new Response("Not Found", { status: 404 });
+    return new Response(
+      JSON.stringify({
+        data: {
+          id: "base1-12",
+          name: "Ninetales",
+          number: "12",
+          set: { id: "base1", name: "Base" },
+          images: { large: "https://images.pokemontcg.io/base1/12_hires.png" },
+        },
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  }) as unknown as typeof fetch;
+  const out = await getCardMetadata({ id: "base1-12", fetchImpl: flaky404 });
+  assert.equal(calls, 3, "expected 2 retries on 404 before recovery");
+  assert.equal(out.name, "Ninetales");
   assert.equal(out.fallback, undefined);
 });
 

@@ -18,31 +18,49 @@
 const POKEMON_TCG_API_BASE = "https://api.pokemontcg.io/v2/cards";
 const CACHE_TTL_SECONDS = 86_400; // 24h — metadata is stable, no need to refetch hot.
 
-// Session 40 / Task #23: pokemontcg.io issues transient 504s under load.
-// Retry on 5xx + network errors with small backoff so a single hiccup
-// doesn't bake a fallback-record into our 24h cache. Tries: 200ms, 600ms.
-const RETRY_DELAYS_MS = [200, 600];
+// Session 40 / Task #23: pokemontcg.io issues both transient 504s AND
+// transient 404s under load (verified by repeated probes — a card that
+// exists may 404 for one request and 200 for the next, with no pattern).
+// Retry on 5xx + network errors always; retry on 4xx only when the caller
+// is doing an ID-based lookup against an ID we control (catalog entries
+// are known-valid, so a 4xx response means upstream is flaky, not that
+// the card is missing).
+//
+// Tries: 200ms, 600ms, 1800ms — 1 initial + 3 retries = 4 attempts,
+// ~2.6s total budget. Well under the per-page SSG timeout (300s) and
+// imperceptible at /api/cards/search runtime cost.
+const RETRY_DELAYS_MS = [200, 600, 1800];
 
 async function sleep(ms: number): Promise<void> {
   await new Promise((r) => setTimeout(r, ms));
 }
 
+type FetchRetryOptions = {
+  /** Treat 4xx as a transient failure and retry. Default false. Opt in
+   *  for ID-based lookups against catalog-controlled IDs (a 4xx means
+   *  upstream is flaky, not that the resource is missing). */
+  retryOn4xx?: boolean;
+};
+
 /**
- * Wrapper around fetch that retries on 5xx + network errors with a
- * small backoff. Caller-supplied `fetchImpl` lets tests inject stubs.
- * Returns the final Response or null if every attempt threw.
+ * Wrapper around fetch that retries on 5xx + network errors (always)
+ * and 4xx (when `retryOn4xx` is set) with a backoff schedule. Caller-
+ * supplied `fetchImpl` lets tests inject stubs. Returns the final
+ * Response or null if every attempt threw.
  */
 async function fetchWithRetry(
   url: string,
   init: RequestInit,
   fetchImpl: typeof fetch = fetch,
+  options: FetchRetryOptions = {},
 ): Promise<Response | null> {
+  const { retryOn4xx = false } = options;
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
     try {
       const response = await fetchImpl(url, init);
-      // Retry only on 5xx — 4xx is the caller's problem, 2xx/3xx are
-      // wins (3xx redirects resolve before we see them in fetch).
-      if (response.status >= 500 && attempt < RETRY_DELAYS_MS.length) {
+      const isTransient =
+        response.status >= 500 || (retryOn4xx && response.status >= 400 && response.status < 500);
+      if (isTransient && attempt < RETRY_DELAYS_MS.length) {
         await sleep(RETRY_DELAYS_MS[attempt]);
         continue;
       }
@@ -106,6 +124,10 @@ export async function getCardMetadata(input: GetCardMetadataInput): Promise<Card
       next: { revalidate: CACHE_TTL_SECONDS },
     } as RequestInit,
     fetchFn,
+    // Our card IDs come from CARD_CATALOG (server-controlled); a 4xx
+    // from pokemontcg.io means upstream is flaky, not that the card
+    // is missing. Retry on 4xx in addition to 5xx.
+    { retryOn4xx: true },
   );
 
   if (!response || !response.ok) {
@@ -230,6 +252,9 @@ export async function getSetMetadata(input: GetSetMetadataInput): Promise<SetMet
       next: { revalidate: CACHE_TTL_SECONDS },
     } as RequestInit,
     fetchFn,
+    // Same reasoning as getCardMetadata — set IDs come from the
+    // catalog, so a 4xx is upstream flake.
+    { retryOn4xx: true },
   );
   if (!response || !response.ok) return minimalSetRecord(id);
   let body: { data?: RawSet } | null;
