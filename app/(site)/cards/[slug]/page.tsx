@@ -164,25 +164,25 @@ export default async function CardPage({
                 height={558}
                 priority
                 sizes="(min-width: 640px) 16rem, 14rem"
-                className="w-56 rounded-2xl border border-white/10 shadow-2xl shadow-black/40 sm:w-64"
+                className="w-56 rounded-2xl border border-foil-navy/10 shadow-2xl shadow-foil-navy/20 sm:w-64"
               />
             ) : (
               <div
                 aria-hidden
-                className="w-56 rounded-2xl border border-white/10 bg-[#101D38] sm:w-64"
+                className="w-56 rounded-2xl border border-foil-navy/10 bg-foil-cream sm:w-64"
                 style={{ aspectRatio: "245 / 342" }}
               />
             )}
           </div>
           <div>
-            <p className="font-mono text-xs uppercase tracking-wider text-zinc-400">
+            <p className="font-mono text-xs uppercase tracking-wider text-foil-slate">
               {card.setName} · #{card.number}
               {card.rarity ? <> · {card.rarity}</> : null}
             </p>
-            <h1 className="mt-2 text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+            <h1 className="font-display mt-2 text-4xl font-bold leading-tight tracking-[-0.02em] text-foil-navy sm:text-5xl">
               {card.name}
             </h1>
-            <p className="mt-4 text-base text-zinc-300 sm:text-lg">
+            <p className="mt-4 text-base text-foil-slate sm:text-lg">
               Live listings on eBay, sorted to surface the best current deal.
               Set a target price and we&apos;ll email you when one drops.
             </p>
@@ -190,17 +190,17 @@ export default async function CardPage({
         </div>
 
         <section
-          className="mt-10 rounded-2xl border border-[#FF6B5C]/25 bg-gradient-to-br from-[#101D38] via-[#0B1428] to-[#101D38] p-6 shadow-2xl shadow-[#FF6B5C]/5 sm:p-8"
+          className="mt-10 rounded-2xl border border-foil-gold/40 bg-foil-cream p-6 shadow-xl shadow-foil-navy/10 sm:p-8"
           aria-labelledby="best-deal-heading"
         >
           <div className="flex items-start justify-between gap-3">
             <h2
               id="best-deal-heading"
-              className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#FFC7BA]"
+              className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-foil-gold"
             >
               <span className="relative inline-flex h-1.5 w-1.5" aria-hidden>
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FF6B5C] opacity-60" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foil-gold opacity-60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-gold" />
               </span>
               Best current listing
             </h2>
@@ -208,8 +208,8 @@ export default async function CardPage({
               <span
                 className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${
                   condition.tone === "grade"
-                    ? "bg-emerald-500/15 text-emerald-300"
-                    : "bg-white/10 text-zinc-200"
+                    ? "bg-foil-gold/20 text-foil-navy"
+                    : "bg-foil-navy/10 text-foil-navy"
                 }`}
               >
                 {condition.label}
@@ -221,28 +221,28 @@ export default async function CardPage({
             <>
               <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                 <div className="min-w-0">
-                  <p className="text-4xl font-bold tabular-nums text-white sm:text-5xl">
+                  <p className="font-display text-4xl font-bold tabular-nums text-foil-navy sm:text-5xl">
                     {formatPrice(best.price, best.currency)}
                   </p>
-                  <p className="mt-2 line-clamp-2 text-sm text-zinc-300">{best.title}</p>
+                  <p className="mt-2 line-clamp-2 text-sm text-foil-slate">{best.title}</p>
                 </div>
                 <a
                   href={best.affiliateUrl}
                   target="_blank"
                   rel="sponsored noopener noreferrer"
-                  className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#FF6B5C] px-6 py-3 text-sm font-semibold text-[#0B1428] transition hover:bg-[#FF8775]"
+                  className="inline-flex shrink-0 items-center justify-center rounded-full bg-foil-navy px-6 py-3 text-sm font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40"
                 >
                   Buy on eBay →
                 </a>
               </div>
-              <p className="mt-5 text-[11px] uppercase tracking-wider text-zinc-500">
+              <p className="mt-5 text-[11px] uppercase tracking-wider text-foil-slate">
                 Live listing · Prices update on every page load · Affiliate-tracked — Foil earns a commission on eBay purchases that originate from this link.
               </p>
             </>
           ) : (
             <>
               <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-zinc-300">
+                <p className="text-sm text-foil-slate">
                   Live deal data is briefly unavailable. Browse current eBay
                   listings while we re-sync.
                 </p>
@@ -250,12 +250,12 @@ export default async function CardPage({
                   href={fallbackUrl}
                   target="_blank"
                   rel="sponsored noopener noreferrer"
-                  className="inline-flex shrink-0 items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/5"
+                  className="inline-flex shrink-0 items-center justify-center rounded-full border border-foil-navy/20 bg-foil-cream px-6 py-3 text-sm font-semibold text-foil-navy transition hover:border-foil-gold/40 hover:bg-foil-gold/5"
                 >
                   Browse on eBay →
                 </a>
               </div>
-              <p className="mt-5 text-[11px] uppercase tracking-wider text-zinc-500">
+              <p className="mt-5 text-[11px] uppercase tracking-wider text-foil-slate">
                 Affiliate-tracked search · Foil earns a commission on eBay purchases that originate from this link.
               </p>
             </>
@@ -263,24 +263,24 @@ export default async function CardPage({
         </section>
 
         <section
-          className="mt-10 rounded-2xl border border-white/10 bg-[#101D38] p-6 sm:p-8"
+          className="mt-10 rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-8"
           aria-labelledby="watchlist-heading"
         >
-          <h2 id="watchlist-heading" className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+          <h2 id="watchlist-heading" className="text-sm font-semibold uppercase tracking-wider text-foil-gold">
             Email me when it drops
           </h2>
-          <p className="mt-3 text-sm text-zinc-300">
+          <p className="mt-3 text-sm text-foil-slate">
             Set a target price; we&apos;ll email you the moment a {card.name}{" "}
             listing meets it. No account required.
           </p>
           <WatchlistForm cardSlug={slug} cardName={card.name} />
-          <p className="mt-3 text-[11px] uppercase tracking-wider text-zinc-500">
+          <p className="mt-3 text-[11px] uppercase tracking-wider text-foil-slate">
             One-shot email · No spam · Unsubscribe by clicking the link in any email we send.
           </p>
         </section>
 
-        <section className="mt-12 border-t border-white/5 pt-8 text-sm text-zinc-300">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+        <section className="mt-12 border-t border-foil-navy/10 pt-8 text-sm text-foil-slate">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-foil-gold">
             About this card
           </h2>
           <div className="mt-3 space-y-4 leading-relaxed">
@@ -303,14 +303,14 @@ export default async function CardPage({
         </section>
 
         {related.length > 0 && (
-          <aside className="mt-12 border-t border-white/5 pt-8" aria-labelledby="related-heading">
+          <aside className="mt-12 border-t border-foil-navy/10 pt-8" aria-labelledby="related-heading">
             <div className="flex items-baseline justify-between gap-4">
-              <h2 id="related-heading" className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+              <h2 id="related-heading" className="text-sm font-semibold uppercase tracking-wider text-foil-gold">
                 More from {card.setName}
               </h2>
               <Link
                 href={`/cards/sets/${card.setId}`}
-                className="text-xs font-medium text-[#FF6B5C] underline decoration-[#FF6B5C]/30 underline-offset-4 transition hover:decoration-[#FF6B5C]"
+                className="text-xs font-medium text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold hover:text-foil-coral"
               >
                 See all in {card.setName} →
               </Link>
@@ -323,12 +323,12 @@ export default async function CardPage({
                   <li key={r.slug}>
                     <Link
                       href={`/cards/${r.slug}`}
-                      className="block rounded-xl border border-white/5 bg-[#101D38] p-4 transition hover:border-[#FF6B5C]/30"
+                      className="block rounded-xl border border-foil-navy/10 bg-foil-cream p-4 shadow-sm shadow-foil-navy/5 transition hover:-translate-y-0.5 hover:border-foil-gold/40 hover:shadow-md hover:shadow-foil-navy/10"
                     >
-                      <p className="font-mono text-[11px] uppercase tracking-wider text-zinc-500">
+                      <p className="font-mono text-[11px] uppercase tracking-wider text-foil-slate">
                         #{number}
                       </p>
-                      <p className="mt-1 font-semibold text-white">{display}</p>
+                      <p className="mt-1 font-semibold text-foil-navy">{display}</p>
                     </Link>
                   </li>
                 );
@@ -370,7 +370,7 @@ function WatchlistForm({ cardSlug, cardName }: { cardSlug: string; cardName: str
           name="email"
           required
           placeholder="you@example.com"
-          className="flex-1 rounded-xl border border-white/15 bg-[#0B1428] px-4 py-3 text-sm text-white placeholder-zinc-500 focus:border-[#FF6B5C] focus:outline-none"
+          className="flex-1 rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-sm text-foil-navy placeholder-foil-slate/60 outline-none focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30"
         />
         <input
           type="number"
@@ -379,21 +379,21 @@ function WatchlistForm({ cardSlug, cardName }: { cardSlug: string; cardName: str
           min={1}
           step={1}
           placeholder="Target ($)"
-          className="w-full rounded-xl border border-white/15 bg-[#0B1428] px-4 py-3 text-sm text-white placeholder-zinc-500 focus:border-[#FF6B5C] focus:outline-none sm:w-32"
+          className="w-full rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-sm text-foil-navy placeholder-foil-slate/60 outline-none focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30 sm:w-32"
         />
         <button
           type="submit"
-          className="rounded-xl bg-[#FF6B5C] px-6 py-3 text-sm font-semibold text-[#0B1428] transition hover:bg-[#FF8775]"
+          className="rounded-xl bg-foil-navy px-6 py-3 text-sm font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40"
         >
           Notify me
         </button>
       </div>
-      <label className="flex items-start gap-3 text-xs text-zinc-400">
+      <label className="flex items-start gap-3 text-xs text-foil-slate">
         <input
           type="checkbox"
           name="opt_in_newsletter"
           defaultChecked
-          className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-white/20 bg-[#0B1428] text-[#FF6B5C] focus:ring-[#FF6B5C] focus:ring-offset-0"
+          className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-foil-navy/20 bg-foil-cream text-foil-gold focus:ring-foil-gold focus:ring-offset-0"
         />
         <span>
           Also send me Foil&apos;s weekly deals newsletter (~1 email/week, unsubscribe anytime)
@@ -425,7 +425,7 @@ function WatchlistForm({ cardSlug, cardName }: { cardSlug: string; cardName: str
                   .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
                   .then(function (res) {
                     if (res.ok && res.body && res.body.ok) {
-                      form.outerHTML = '<div class="mt-4 rounded-xl border border-[#FF6B5C]/40 bg-[#FF6B5C]/10 p-4 text-sm text-[#FFE2DA]"><p class="font-medium text-white">You\\'re on the list.</p><p class="mt-1 text-[#FFC7BA]">We\\'ll email you the moment ' + (form.dataset.cardName || 'this card') + ' hits your target price.</p></div>';
+                      form.outerHTML = '<div class="mt-4 rounded-xl border border-foil-gold/40 bg-foil-gold/10 p-4 text-sm text-foil-navy"><p class="font-medium text-foil-navy">You\\'re on the list.</p><p class="mt-1 text-foil-slate">We\\'ll email you the moment ' + (form.dataset.cardName || 'this card') + ' hits your target price.</p></div>';
                     } else if (btn) {
                       btn.disabled = false;
                       btn.textContent = 'Try again';

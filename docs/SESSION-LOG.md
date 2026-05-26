@@ -8,6 +8,59 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-26 — Session 39: visual identity overhaul (cream + navy + gold) — Task #22 / ADR-029
+
+**Commits:** this commit only
+
+**Why this session existed.** Day-after-Session-38 founder design call concluded the dark/coral palette still read as "indie SaaS template" rather than "Pokemon TCG collector niche." Yesterday's Aceternity primitives ([ADR-028](DECISIONS.md#adr-028--aceternity-ui-patterns-code-owned-no-npm-vendor-niche-visual-identity)) gave us niche-distinctive *motion* but the palette + chrome around them was the giveaway. The Twitter pinned-post launch was blocked on a real visual identity. Session 39 *retunes* the Session 38 foundation — the components stay, the colors change.
+
+**What landed.**
+
+### Part A — Palette tokens + Aceternity retune
+
+- [`app/globals.css`](../app/globals.css) — five `--color-foil-*` tokens declared inside `@theme inline` so Tailwind 4 auto-generates `bg-foil-cream`, `text-foil-navy`, `border-foil-gold`, `hover:bg-foil-coral`, etc. `:root` defaults flipped to cream/navy. `prefers-color-scheme: dark` override removed — cream is the identity across light/dark OS prefs.
+- [`components/aceternity/background-gradient-animation.tsx`](../components/aceternity/background-gradient-animation.tsx) — gained `variant` prop. New default `"corner-shimmer"` renders 1–2 low-opacity gold/navy blobs anchored to the bottom-right corner; legacy `"full"` mode kept for back-compat. Default `containerBg` flips cream. The full-page rainbow is gone.
+- [`components/aceternity/card-3d.tsx`](../components/aceternity/card-3d.tsx) — added `shadow-lg shadow-foil-navy/10` default + `hover:ring-1 hover:ring-foil-gold/30`. The hover-ring rotates with the perspective tilt — reads as "holographic card under a sleeve."
+- [`components/aceternity/magnetic-button.tsx`](../components/aceternity/magnetic-button.tsx) — added shared `MAGNETIC_DEFAULTS` class set: `shadow-md shadow-foil-navy/15 hover:shadow-lg hover:shadow-foil-navy/25 hover:ring-2 hover:ring-foil-gold/40`. Magnetic translate gains a constant `-2px` Y component so the button always rises a touch on engagement.
+- [`components/aceternity/sparkles.tsx`](../components/aceternity/sparkles.tsx) — default color flipped from coral to gold (RGB triplet `201, 162, 75`). Component stays exported; usage on the homepage removed.
+
+### Part B — Public surface migration (cream / navy / gold)
+
+Every public-surface file under `app/(site)/` migrated to the token system. Coral demoted to hover-state-only. Editorial headlines pick up `font-display tracking-[-0.02em]`.
+
+| Surface | Notable change |
+|---|---|
+| [`app/(site)/layout.tsx`](../app/(site)/layout.tsx) | Header: cream BG, navy wordmark, gold pulse-dot (was coral). Footer: cream + slate text + gold-underline hover. |
+| [`app/(site)/page.tsx`](../app/(site)/page.tsx) | Hero H1 single-color navy (no coral inline span). `Sparkles` removed; `Card3D` wraps each HERO_CARDS thumbnail for hover-tilt. Primary CTA is `MagneticLink` navy → gold-ring hover. ExampleResult / HowItWorks / FoundingMember / FinalCTA all migrated. |
+| [`app/(site)/start/page.tsx`](../app/(site)/start/page.tsx) + [`components/start-page-form.tsx`](../components/start-page-form.tsx) | **Numbering bug fixed** — dropped `1./2./3.` step labels; named section headers ("Tell me a card", "Set target prices", "Where to email you") replace them. Section 2 stays conditional on `selected.length > 0` but the missing number no longer creates a visible gap. Submit button = magnetic translate + hover-y-lift + gold-ring. |
+| [`app/(site)/cards/page.tsx`](../app/(site)/cards/page.tsx) + [`cards-search.tsx`](../app/(site)/cards/cards-search.tsx) | Cream set tiles, gold hover-tinted lift, set-name `group-hover:text-foil-coral` (the *only* place coral appears on this surface). |
+| [`app/(site)/cards/[slug]/page.tsx`](../app/(site)/cards/[slug]/page.tsx) | Best-listing block flipped: gold border + cream BG + navy price + navy Buy CTA with gold-ring hover. Live indicator dot is gold-pulse. Watchlist form + success message migrated. |
+| [`app/(site)/cards/sets/[set-id]/page.tsx`](../app/(site)/cards/sets/[set-id]/page.tsx) | Set logo on navy chip (cards designed for dark BG); set name `group-hover:text-foil-coral`. |
+| [`app/(site)/blog/page.tsx`](../app/(site)/blog/page.tsx) + [`[slug]/page.tsx`](../app/(site)/blog/[slug]/page.tsx) | Index migrated. Post page prose chain rewritten — dropped `prose-invert`, every `prose-*` override switched to the cream tokens. Existing posts inherit the new look automatically. |
+| [`app/(site)/legal/{privacy,terms,ebay-api-compliance}/page.tsx`](../app/(site)/legal) | All three legal pages cream + gold accents. |
+| [`app/(site)/newsletter/page.tsx`](../app/(site)/newsletter/page.tsx) | Cream sample-excerpt cards + gold week-label. |
+| [`components/email-capture.tsx`](../components/email-capture.tsx) | Both inline + footer variants migrated. Subscribe CTA is navy → gold-ring on hover. |
+
+### Part C — Drift guards + docs
+
+- [`lib/__tests__/aceternity-components.test.ts`](../lib/__tests__/aceternity-components.test.ts) — updated to assert the Session-39 defaults: gold RGB triplet (`201, 162, 75`) on BackgroundGradientAnimation + Sparkles, `#F8F5F0` cream containerBg, `corner-shimmer` default variant, gold hover-ring on Card3D + MagneticButton. Homepage-composition test updated: asserts `<Card3D>` is present and `<Sparkles>` is NOT rendered (ADR-029 explicitly removes the sparkle overlay).
+- [`lib/__tests__/visual-regression.test.ts`](../lib/__tests__/visual-regression.test.ts) (NEW) — palette token presence in globals.css, no-dark-mode-override, H1-is-single-color invariant on homepage, corner-shimmer variant + Card3D wrap on homepage, no `1./2./3.` numbering literals on /start form, gold accent + cream surfaces on /cards browse + /cards/[slug] + Buy-CTA navy→gold-hover-ring, **cross-cutting coral hover-only rule** across 15 public-surface files (every `bg-foil-coral` and `ring-foil-coral` must be `hover:`-prefixed; raw `#FF6B5C` / `#FF8775` / `#0B1428` / `#101D38` hex literals are banned).
+- [`package.json`](../package.json) — `visual-regression.test.ts` registered in the `test` script.
+- [`docs/DECISIONS.md`](DECISIONS.md) — [ADR-029](DECISIONS.md#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness) lands. Documents the palette lock, the four-component retune, the coral hover-only rule, the `/start` numbering fix, and four out-of-scope followups.
+- [`docs/ROADMAP.md`](ROADMAP.md) — Task #22 added to NOW (visual identity overhaul, ✅ Done). Existing LATER `scan_cards` row renumbered to Task #27 to free up #22.
+
+**Decisions resolved during the session.**
+
+- **Task #22 collision.** The existing LATER Task #22 (`scan_cards` per-card persistence) bumped to #27. Visual identity overhaul takes the #22 slot in NOW so it lines up with the `/goal Task #22` dispatch text.
+- **`/start` numbering.** Dropped numbering entirely (vs. always-render-step-2 or renumber-on-the-fly). Named section headers eliminate the 1→3 gap without adding visual weight to a greyed-out empty section.
+- **Coral as error indicator.** `text-foil-coral` (without `hover:` prefix) appears in error-message text on the /start form + EmailCapture form. Pragmatic exception to "coral hover-only" — error UI needs a non-neutral attention tone and gold reads as warning, not error. Test pins `bg-foil-coral` + `ring-foil-coral` only; `text-foil-coral` is allowed without the prefix.
+
+**Closure gate result is filled in by the live-verify step below before the commit lands.**
+
+**Follow-ups added to ROADMAP.** None new. Three ADR-029 followups (`prefers-reduced-motion`, Card3D thumbnail composition, Cabinet Grotesk via `next/font/local`) tracked in the ADR — out of scope for Session 39. (The Session-38-noted `images.scrydex.com` remotePatterns gap closed in commit `b67ed97` before this session started.)
+
+---
+
 ## 2026-05-25 — Session 38: /start multi-card onboarding + Aceternity-UI aesthetic refresh (Task #20 / ADR-028)
 
 **Commits:** this commit only

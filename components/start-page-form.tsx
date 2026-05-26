@@ -162,26 +162,26 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
 
   if (submission.state === "success") {
     return (
-      <section className="rounded-3xl border border-[#FF6B5C]/30 bg-gradient-to-br from-[#101D38] via-[#0B1428] to-[#101D38] p-8 sm:p-10">
-        <p className="text-xs font-medium uppercase tracking-widest text-[#FFC7BA]">
+      <section className="rounded-3xl border border-foil-gold/40 bg-foil-cream p-8 shadow-xl shadow-foil-navy/10 sm:p-10">
+        <p className="text-xs font-medium uppercase tracking-widest text-foil-gold">
           You&apos;re tracking {submission.count} cards
         </p>
-        <h2 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+        <h2 className="font-display mt-3 text-2xl font-bold tracking-[-0.02em] text-foil-navy sm:text-3xl">
           We&apos;ve got it from here.
         </h2>
-        <p className="mt-4 text-base text-zinc-300">
-          Foil checks eBay every hour. The first time one of your cards drops to a price worth buying, the email lands. <span className="text-zinc-400">Add <code className="rounded bg-white/5 px-1.5 py-0.5 text-sm">alerts@foiltcg.com</code> to your contacts so Gmail doesn&apos;t hide it.</span>
+        <p className="mt-4 text-base text-foil-slate">
+          Foil checks eBay every hour. The first time one of your cards drops to a price worth buying, the email lands. <span className="text-foil-slate/80">Add <code className="rounded bg-foil-navy/10 px-1.5 py-0.5 text-sm text-foil-navy">alerts@foiltcg.com</code> to your contacts so Gmail doesn&apos;t hide it.</span>
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <a
             href="/cards"
-            className="inline-flex items-center justify-center rounded-xl bg-[#FF6B5C] px-5 py-2.5 text-sm font-semibold text-[#0B1428] transition hover:bg-[#FF8775]"
+            className="inline-flex items-center justify-center rounded-xl bg-foil-navy px-5 py-2.5 text-sm font-semibold text-foil-cream transition hover:bg-foil-coral"
           >
             Browse the catalog →
           </a>
           <a
             href="/newsletter"
-            className="text-sm text-zinc-300 underline decoration-zinc-700 underline-offset-4 transition hover:text-white"
+            className="text-sm text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
           >
             Or read the newsletter
           </a>
@@ -191,16 +191,16 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="rounded-3xl border border-white/10 bg-[#101D38] p-6 sm:p-8">
-      {/* SEARCH */}
+    <form onSubmit={onSubmit} className="rounded-3xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-8">
+      {/* SEARCH — section header (ADR-029: dropped numeric prefix). */}
       <label className="block">
-        <span className="text-sm font-medium text-white">1. Type a card name</span>
+        <span className="font-display text-base font-bold text-foil-navy">Tell me a card</span>
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="charizard, pikachu, lugia…"
-          className="mt-2 w-full rounded-xl border border-white/15 bg-[#0B1428] px-4 py-3 text-base text-white placeholder:text-zinc-500 outline-none transition focus:border-[#FF6B5C]"
+          className="mt-2 w-full rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/60 outline-none transition focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30"
           autoFocus
         />
       </label>
@@ -209,7 +209,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
       {(searching || searchResults.length > 0) && (
         <ul className="mt-4 space-y-2">
           {searching && searchResults.length === 0 && (
-            <li className="text-sm text-zinc-500">Searching…</li>
+            <li className="text-sm text-foil-slate">Searching…</li>
           )}
           {searchResults.map((hit) => {
             const isCatalogued = cataloguedSet.has(hit.id);
@@ -222,10 +222,10 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
                   disabled={!isCatalogued || isSelected}
                   className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-left transition ${
                     isSelected
-                      ? "border-[#FF6B5C]/40 bg-[#FF6B5C]/10 opacity-60"
+                      ? "border-foil-gold/40 bg-foil-gold/5 opacity-60"
                       : isCatalogued
-                        ? "border-white/10 bg-[#0B1428] hover:border-[#FF6B5C]/40 hover:bg-[#FF6B5C]/5"
-                        : "border-white/5 bg-[#0B1428]/50 opacity-50 cursor-not-allowed"
+                        ? "border-foil-navy/10 bg-foil-cream hover:border-foil-gold/50 hover:bg-foil-gold/5"
+                        : "border-foil-navy/5 bg-foil-cream/50 opacity-50 cursor-not-allowed"
                   }`}
                 >
                   <Image
@@ -234,20 +234,20 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
                     width={48}
                     height={67}
                     unoptimized
-                    className="h-16 w-12 rounded-md object-cover ring-1 ring-white/10"
+                    className="h-16 w-12 rounded-md object-cover ring-1 ring-foil-navy/10"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-medium text-white">{hit.name}</p>
-                    <p className="truncate text-xs text-zinc-400">
+                    <p className="truncate text-sm font-medium text-foil-navy">{hit.name}</p>
+                    <p className="truncate text-xs text-foil-slate">
                       {hit.setName} · #{hit.number}
                     </p>
                   </div>
                   {isSelected ? (
-                    <span className="text-xs font-medium text-[#FFC7BA]">Selected ✓</span>
+                    <span className="text-xs font-medium text-foil-gold">Selected ✓</span>
                   ) : isCatalogued ? (
-                    <span className="text-xs font-medium text-[#FF6B5C]">+ Track</span>
+                    <span className="text-xs font-medium text-foil-navy">+ Track</span>
                   ) : (
-                    <span className="text-xs text-zinc-500">Not yet tracked</span>
+                    <span className="text-xs text-foil-slate">Not yet tracked</span>
                   )}
                 </button>
               </li>
@@ -256,17 +256,18 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
         </ul>
       )}
 
-      {/* SELECTED CARDS */}
+      {/* SELECTED CARDS — section header (no number). Only renders once
+          the user has picked at least one card. */}
       {selected.length > 0 && (
         <div className="mt-8">
-          <p className="text-sm font-medium text-white">
-            2. Set targets <span className="text-zinc-500">(leave blank for &ldquo;any drop&rdquo;)</span>
+          <p className="font-display text-base font-bold text-foil-navy">
+            Set target prices <span className="font-sans text-sm font-normal text-foil-slate">(leave blank for &ldquo;any drop&rdquo;)</span>
           </p>
           <ul className="mt-3 space-y-2">
             {selected.map((s) => (
               <li
                 key={s.id}
-                className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#0B1428] px-3 py-2"
+                className="flex items-center gap-3 rounded-xl border border-foil-navy/10 bg-foil-cream px-3 py-2 shadow-sm shadow-foil-navy/5"
               >
                 <Image
                   src={s.image}
@@ -274,16 +275,16 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
                   width={40}
                   height={56}
                   unoptimized
-                  className="h-14 w-10 rounded-md object-cover ring-1 ring-white/10"
+                  className="h-14 w-10 rounded-md object-cover ring-1 ring-foil-navy/10"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="truncate text-sm font-medium text-white">{s.name}</p>
-                  <p className="truncate text-xs text-zinc-500">
+                  <p className="truncate text-sm font-medium text-foil-navy">{s.name}</p>
+                  <p className="truncate text-xs text-foil-slate">
                     {s.setName} · #{s.number}
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-sm text-zinc-500">$</span>
+                  <span className="text-sm text-foil-slate">$</span>
                   <input
                     type="number"
                     inputMode="decimal"
@@ -292,14 +293,14 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
                     value={s.targetPriceUsd}
                     onChange={(e) => updateTarget(s.id, e.target.value)}
                     placeholder="any"
-                    className="w-20 rounded-lg border border-white/15 bg-[#0B1428] px-2 py-1.5 text-right text-sm text-white placeholder:text-zinc-500 outline-none focus:border-[#FF6B5C]"
+                    className="w-20 rounded-lg border border-foil-navy/15 bg-foil-cream px-2 py-1.5 text-right text-sm text-foil-navy placeholder:text-foil-slate/60 outline-none focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => removeCard(s.id)}
                   aria-label={`Remove ${s.name}`}
-                  className="ml-1 rounded-md p-1 text-zinc-500 transition hover:bg-white/5 hover:text-white"
+                  className="ml-1 rounded-md p-1 text-foil-slate transition hover:bg-foil-navy/5 hover:text-foil-navy"
                 >
                   ✕
                 </button>
@@ -309,10 +310,10 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
         </div>
       )}
 
-      {/* EMAIL + OPT-IN */}
+      {/* EMAIL + OPT-IN — section header (no number). */}
       <div className="mt-8">
         <label className="block">
-          <span className="text-sm font-medium text-white">3. Your email</span>
+          <span className="font-display text-base font-bold text-foil-navy">Where to email you</span>
           <input
             type="email"
             value={email}
@@ -320,15 +321,15 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
             placeholder="you@gmail.com"
             required
             autoComplete="email"
-            className="mt-2 w-full rounded-xl border border-white/15 bg-[#0B1428] px-4 py-3 text-base text-white placeholder:text-zinc-500 outline-none transition focus:border-[#FF6B5C]"
+            className="mt-2 w-full rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/60 outline-none transition focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30"
           />
         </label>
-        <label className="mt-4 flex items-start gap-3 text-sm text-zinc-300">
+        <label className="mt-4 flex items-start gap-3 text-sm text-foil-slate">
           <input
             type="checkbox"
             checked={optInNewsletter}
             onChange={(e) => setOptInNewsletter(e.target.checked)}
-            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-white/20 bg-[#0B1428] text-[#FF6B5C] focus:ring-[#FF6B5C] focus:ring-offset-0"
+            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-foil-navy/20 bg-foil-cream text-foil-gold focus:ring-foil-gold focus:ring-offset-0"
           />
           <span>
             Also send me Foil&apos;s weekly deals newsletter (~1 email/week, unsubscribe anytime)
@@ -340,7 +341,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
       <button
         type="submit"
         disabled={submission.state === "submitting" || selected.length === 0}
-        className="mt-8 w-full rounded-xl bg-[#FF6B5C] px-6 py-3.5 text-base font-semibold text-[#0B1428] shadow-lg shadow-[#FF6B5C]/30 transition-colors hover:bg-[#FF8775] disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-8 w-full rounded-xl bg-foil-navy px-6 py-3.5 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:bg-foil-navy disabled:hover:ring-0"
       >
         {submission.state === "submitting"
           ? "Setting up…"
@@ -348,7 +349,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
       </button>
 
       {submission.state === "error" && (
-        <p role="alert" className="mt-3 text-sm text-[#FFB6A8]">
+        <p role="alert" className="mt-3 text-sm text-foil-coral">
           {submission.message}
         </p>
       )}

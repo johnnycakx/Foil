@@ -1,5 +1,5 @@
 // Structural drift guards for the Aceternity-pattern components shipped
-// in Session 38 / ADR-028.
+// in Session 38 / ADR-028, retuned in Session 39 / ADR-029.
 //
 // These components are pure presentational + use CSS keyframes / pointer
 // listeners for motion — there is no meaningful HTML snapshot to assert
@@ -7,8 +7,9 @@
 // tests below pin the structural anchors a refactor would slip past:
 //   - Each component file exists and exports the named API the rest of
 //     the codebase imports.
-//   - The 4 brand-tuned color defaults stay in BackgroundGradientAnimation
-//     so a refactor can't quietly drift the holographic palette.
+//   - The Session-39 gold/navy default palette stays in
+//     BackgroundGradientAnimation so a refactor can't quietly drift the
+//     niche-signal palette back to the pre-pivot coral.
 //   - The MagneticButton + MagneticLink siblings exist (the layout uses
 //     MagneticLink for navigation CTAs, MagneticButton for form CTAs).
 //   - Card3D composes the three-piece API (Card3D / Card3DBody /
@@ -34,14 +35,26 @@ test("BackgroundGradientAnimation: exports the named function", () => {
   assert.match(src, /export\s+function\s+BackgroundGradientAnimation/);
 });
 
-test("BackgroundGradientAnimation: defaults to Foil brand color triplets", () => {
+test("BackgroundGradientAnimation: defaults to gold/navy palette (ADR-029)", () => {
   const src = readFile("components/aceternity/background-gradient-animation.tsx");
-  // The four colors: Foil primary (#FF6B5C) + teal + violet + amber.
-  // We pin the RGB triplets the file defaults to so a refactor can't
-  // quietly drift the holographic palette away from the niche signal.
-  assert.match(src, /firstColor\s*=\s*["']255,\s*107,\s*92["']/);
-  assert.match(src, /secondColor\s*=\s*["']100,\s*220,\s*200["']/);
-  assert.match(src, /thirdColor\s*=\s*["']180,\s*130,\s*255["']/);
+  // Foil gold #C9A24B = rgb(201, 162, 75); navy #0F1E3A = rgb(15, 30, 58).
+  // We pin the RGB triplets so a refactor can't drift the palette back
+  // to the pre-ADR-029 rainbow.
+  assert.match(src, /firstColor\s*=\s*["']201,\s*162,\s*75["']/);
+  assert.match(src, /secondColor\s*=\s*["']15,\s*30,\s*58["']/);
+});
+
+test("BackgroundGradientAnimation: containerBg defaults to cream (ADR-029)", () => {
+  const src = readFile("components/aceternity/background-gradient-animation.tsx");
+  // Cream #F8F5F0 is the page surface across every (site) route.
+  assert.match(src, /containerBg\s*=\s*["']#F8F5F0["']/);
+});
+
+test("BackgroundGradientAnimation: default variant is corner-shimmer (ADR-029)", () => {
+  const src = readFile("components/aceternity/background-gradient-animation.tsx");
+  // The new restrained mode replaces the full-page rainbow; pin the prop
+  // default so a refactor can't quietly re-enable the rainbow.
+  assert.match(src, /variant\s*=\s*["']corner-shimmer["']/);
 });
 
 test("BackgroundGradientAnimation: SVG goo filter is present (blobs merge instead of overlap)", () => {
@@ -79,6 +92,13 @@ test("Card3D: pointer leaves reset the rotation to 0/0 (no stuck tilt)", () => {
   assert.match(src, /rotateY\(0deg\) rotateX\(0deg\)/);
 });
 
+test("Card3D: hover ring uses Foil gold (ADR-029 — gold = premium hover signal)", () => {
+  const src = readFile("components/aceternity/card-3d.tsx");
+  // Gold hover-ring is the niche signal — a refactor that drops it
+  // returns the card to a generic CTA hover.
+  assert.match(src, /hover:ring-foil-gold/);
+});
+
 // ---------------------------------------------------------------------------
 // magnetic-button.tsx
 // ---------------------------------------------------------------------------
@@ -102,6 +122,12 @@ test("MagneticButton: pointer leave resets transform to (0, 0)", () => {
   assert.ok(occurrences >= 2, "expected at least 2 resets (button + link onMouseLeave)");
 });
 
+test("MagneticButton: default chrome includes gold hover-ring (ADR-029)", () => {
+  const src = readFile("components/aceternity/magnetic-button.tsx");
+  // Universal hover-ring + shadow-expansion baked into MAGNETIC_DEFAULTS.
+  assert.match(src, /hover:ring-foil-gold/);
+});
+
 // ---------------------------------------------------------------------------
 // sparkles.tsx
 // ---------------------------------------------------------------------------
@@ -111,10 +137,11 @@ test("Sparkles: exports the named function", () => {
   assert.match(src, /export\s+function\s+Sparkles\b/);
 });
 
-test("Sparkles: defaults to 30 sparkles in Foil primary color", () => {
+test("Sparkles: defaults to 30 sparkles in Foil gold (ADR-029)", () => {
   const src = readFile("components/aceternity/sparkles.tsx");
   assert.match(src, /count\s*=\s*30/);
-  assert.match(src, /color\s*=\s*["']255,\s*107,\s*92["']/);
+  // Gold #C9A24B = rgb(201, 162, 75). Pre-Session-39 default was coral.
+  assert.match(src, /color\s*=\s*["']201,\s*162,\s*75["']/);
 });
 
 test("Sparkles: container is aria-hidden + pointer-events:none (decorative-only)", () => {
@@ -129,11 +156,15 @@ test("Sparkles: container is aria-hidden + pointer-events:none (decorative-only)
 // Composition — homepage hero uses the components correctly
 // ---------------------------------------------------------------------------
 
-test("Homepage Hero: composes BackgroundGradientAnimation + Sparkles + MagneticLink", () => {
+test("Homepage Hero: composes BackgroundGradientAnimation + Card3D + MagneticLink (ADR-029: no Sparkles)", () => {
   const src = readFile("app/(site)/page.tsx");
   assert.match(src, /<BackgroundGradientAnimation\b/);
-  assert.match(src, /<Sparkles\b/);
+  // Card3D wraps the hero card grid for hover-tilt (replaces Sparkles).
+  assert.match(src, /<Card3D\b/);
   assert.match(src, /<MagneticLink[^>]*href=["']\/start["']/);
+  // ADR-029 explicitly removed Sparkles from the hero (component still
+  // ships in-tree but is no longer rendered here).
+  assert.doesNotMatch(src, /<Sparkles\b/);
 });
 
 test("Homepage Hero: H1 carries font-display class (Bricolage Grotesque)", () => {

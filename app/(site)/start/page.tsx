@@ -51,13 +51,13 @@ export default function StartPage() {
   return (
     <main className="relative mx-auto w-full max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
       <header className="mb-10 text-center sm:text-left">
-        <p className="text-xs font-medium uppercase tracking-widest text-[#FFC7BA]">
+        <p className="text-xs font-medium uppercase tracking-widest text-foil-gold">
           Get started
         </p>
-        <h1 className="font-display mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-5xl">
+        <h1 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl md:text-5xl">
           Tell me what cards you want.
         </h1>
-        <p className="mt-3 text-base text-zinc-300 sm:text-lg">
+        <p className="mt-3 text-base text-foil-slate sm:text-lg">
           I&apos;ll email you the moment each one drops to a price worth buying. Track
           up to 50 at once.
         </p>
@@ -65,11 +65,11 @@ export default function StartPage() {
 
       <StartPageForm cataloguedIds={cataloguedIds} />
 
-      <p className="mt-10 text-center text-xs text-zinc-500">
+      <p className="mt-10 text-center text-xs text-foil-slate">
         Privacy is in the{" "}
         <a
           href="/legal/privacy"
-          className="underline decoration-zinc-700 underline-offset-4 transition hover:text-zinc-300"
+          className="underline decoration-foil-navy/20 underline-offset-4 transition hover:text-foil-navy hover:decoration-foil-gold"
         >
           policy
         </a>

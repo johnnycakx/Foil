@@ -1,37 +1,45 @@
 "use client";
 
 // Background gradient animation — Aceternity-pattern, code-owned MIT
-// (see ADR-028). Renders four blurred color "blobs" that drift across
-// the container on slow CSS keyframe loops, plus a noise overlay for
-// texture. CSS-only — no framer-motion dependency.
+// (see ADR-028, retuned per ADR-029).
 //
-// Tuned to Foil's brand: `#FF6B5C` accent + `#0B1428` deep navy + a hint
-// of holographic iridescence via teal/violet secondary blobs. The result
-// reads as "holographic foil card under a light" — which is the niche
-// signal the strategy doc wants us to land.
+// Session 39 retune: the previous full-page rainbow blob read as "indie
+// SaaS template" against the new cream/navy/gold collector palette. The
+// component now defaults to `variant="corner-shimmer"` — a restrained
+// holographic glint pinned to the bottom-right corner — so the cards on
+// the page become visual interest, not the background. The legacy
+// `variant="full"` mode is kept for backwards-compat (no caller uses it
+// today, but it's cheap to preserve and tests pin its shape).
+//
+// CSS-only — no framer-motion dependency.
 
 import { useEffect, useRef } from "react";
 
+type Variant = "corner-shimmer" | "full";
+
 type Props = {
-  /** Override the dominant gradient stops. Defaults pick Foil brand. */
+  /** Visual mode. Default `"corner-shimmer"` per ADR-029. */
+  variant?: Variant;
+  /** Override the gold/navy gradient stops. RGB triplets only. */
   firstColor?: string;
   secondColor?: string;
   thirdColor?: string;
   fourthColor?: string;
-  /** Solid container background under the blobs. */
+  /** Solid container background under the blobs. Default cream. */
   containerBg?: string;
   className?: string;
   children?: React.ReactNode;
-  /** Interactive blob that tracks the pointer. Default true. */
+  /** Interactive blob that tracks the pointer. Default true (full mode only). */
   interactive?: boolean;
 };
 
 export function BackgroundGradientAnimation({
-  firstColor = "255, 107, 92", // #FF6B5C — Foil primary
-  secondColor = "100, 220, 200", // teal — holo highlight
-  thirdColor = "180, 130, 255", // violet — holo secondary
-  fourthColor = "255, 200, 120", // amber — warm accent
-  containerBg = "#0B1428",
+  variant = "corner-shimmer",
+  firstColor = "201, 162, 75", // #C9A24B — Foil gold
+  secondColor = "15, 30, 58", // #0F1E3A — Foil navy
+  thirdColor = "201, 162, 75", // gold echo
+  fourthColor = "15, 30, 58", // navy echo
+  containerBg = "#F8F5F0",
   className,
   children,
   interactive = true,
@@ -39,7 +47,7 @@ export function BackgroundGradientAnimation({
   const interactiveRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!interactive) return;
+    if (!interactive || variant !== "full") return;
     const el = interactiveRef.current;
     if (!el) return;
     let curX = 0;
@@ -65,14 +73,14 @@ export function BackgroundGradientAnimation({
       window.removeEventListener("mousemove", onMove);
       cancelAnimationFrame(raf);
     };
-  }, [interactive]);
+  }, [interactive, variant]);
 
   return (
     <div
       className={`relative h-full w-full overflow-hidden ${className ?? ""}`}
       style={{ background: containerBg }}
     >
-      {/* SVG filter — gooey effect for the blobs to merge instead of overlap. */}
+      {/* SVG filter — gooey effect so the blobs merge instead of overlap. */}
       <svg className="hidden">
         <defs>
           <filter id="foil-blob-goo">
@@ -87,93 +95,106 @@ export function BackgroundGradientAnimation({
           </filter>
         </defs>
       </svg>
-      <div
-        className="absolute inset-0"
-        style={{
-          filter: "url(#foil-blob-goo) blur(40px)",
-        }}
-      >
+
+      {variant === "corner-shimmer" ? (
+        // Restrained bottom-right glint. Two blobs, low opacity, anchored
+        // to the corner — reads as "light catching a foil card" rather
+        // than "rainbow gradient background."
         <div
-          className="absolute h-[80%] w-[80%] [mix-blend-mode:hard-light] opacity-100"
-          style={{
-            background: `radial-gradient(circle at center, rgba(${firstColor}, 0.8) 0, rgba(${firstColor}, 0) 50%) no-repeat`,
-            top: "calc(50% - 40%)",
-            left: "calc(50% - 40%)",
-            transformOrigin: "center center",
-            animation: "foilBlobVertical 30s ease infinite",
-          }}
-        />
-        <div
-          className="absolute h-[80%] w-[80%] [mix-blend-mode:hard-light] opacity-100"
-          style={{
-            background: `radial-gradient(circle at center, rgba(${secondColor}, 0.65) 0, rgba(${secondColor}, 0) 50%) no-repeat`,
-            top: "calc(50% - 40%)",
-            left: "calc(50% - 40%)",
-            transformOrigin: "calc(50% - 400px)",
-            animation: "foilBlobOrbit 20s reverse infinite",
-          }}
-        />
-        <div
-          className="absolute h-[80%] w-[80%] [mix-blend-mode:hard-light] opacity-100"
-          style={{
-            background: `radial-gradient(circle at center, rgba(${thirdColor}, 0.65) 0, rgba(${thirdColor}, 0) 50%) no-repeat`,
-            top: "calc(50% - 40% + 200px)",
-            left: "calc(50% - 40% - 500px)",
-            transformOrigin: "calc(50% + 400px)",
-            animation: "foilBlobOrbit 40s linear infinite",
-          }}
-        />
-        <div
-          className="absolute h-[80%] w-[80%] [mix-blend-mode:hard-light] opacity-70"
-          style={{
-            background: `radial-gradient(circle at center, rgba(${fourthColor}, 0.65) 0, rgba(${fourthColor}, 0) 50%) no-repeat`,
-            top: "calc(50% - 40%)",
-            left: "calc(50% - 40%)",
-            transformOrigin: "calc(50% - 200px)",
-            animation: "foilBlobHorizontal 40s ease infinite",
-          }}
-        />
-        {interactive && (
+          className="pointer-events-none absolute inset-0"
+          style={{ filter: "url(#foil-blob-goo) blur(48px)" }}
+        >
           <div
-            ref={interactiveRef}
-            className="absolute -top-1/2 -left-1/2 h-full w-full [mix-blend-mode:hard-light] opacity-70"
+            className="absolute h-[28%] w-[28%] opacity-40"
             style={{
-              background: `radial-gradient(circle at center, rgba(${firstColor}, 0.8) 0, rgba(${firstColor}, 0) 50%) no-repeat`,
+              background: `radial-gradient(circle at center, rgba(${firstColor}, 0.55) 0, rgba(${firstColor}, 0) 60%) no-repeat`,
+              bottom: "-6%",
+              right: "-6%",
+              animation: "foilBlobOrbit 60s linear infinite",
             }}
           />
-        )}
-      </div>
+          <div
+            className="absolute h-[22%] w-[22%] opacity-25"
+            style={{
+              background: `radial-gradient(circle at center, rgba(${secondColor}, 0.5) 0, rgba(${secondColor}, 0) 60%) no-repeat`,
+              bottom: "4%",
+              right: "10%",
+              animation: "foilBlobHorizontal 50s ease-in-out infinite",
+            }}
+          />
+        </div>
+      ) : (
+        // Legacy full mode (no caller uses today; preserved for back-compat).
+        <div
+          className="absolute inset-0"
+          style={{ filter: "url(#foil-blob-goo) blur(40px)" }}
+        >
+          <div
+            className="absolute h-[80%] w-[80%] [mix-blend-mode:hard-light] opacity-100"
+            style={{
+              background: `radial-gradient(circle at center, rgba(${firstColor}, 0.8) 0, rgba(${firstColor}, 0) 50%) no-repeat`,
+              top: "calc(50% - 40%)",
+              left: "calc(50% - 40%)",
+              transformOrigin: "center center",
+              animation: "foilBlobVertical 30s ease infinite",
+            }}
+          />
+          <div
+            className="absolute h-[80%] w-[80%] [mix-blend-mode:hard-light] opacity-100"
+            style={{
+              background: `radial-gradient(circle at center, rgba(${secondColor}, 0.65) 0, rgba(${secondColor}, 0) 50%) no-repeat`,
+              top: "calc(50% - 40%)",
+              left: "calc(50% - 40%)",
+              transformOrigin: "calc(50% - 400px)",
+              animation: "foilBlobOrbit 20s reverse infinite",
+            }}
+          />
+          <div
+            className="absolute h-[80%] w-[80%] [mix-blend-mode:hard-light] opacity-100"
+            style={{
+              background: `radial-gradient(circle at center, rgba(${thirdColor}, 0.65) 0, rgba(${thirdColor}, 0) 50%) no-repeat`,
+              top: "calc(50% - 40% + 200px)",
+              left: "calc(50% - 40% - 500px)",
+              transformOrigin: "calc(50% + 400px)",
+              animation: "foilBlobOrbit 40s linear infinite",
+            }}
+          />
+          <div
+            className="absolute h-[80%] w-[80%] [mix-blend-mode:hard-light] opacity-70"
+            style={{
+              background: `radial-gradient(circle at center, rgba(${fourthColor}, 0.65) 0, rgba(${fourthColor}, 0) 50%) no-repeat`,
+              top: "calc(50% - 40%)",
+              left: "calc(50% - 40%)",
+              transformOrigin: "calc(50% - 200px)",
+              animation: "foilBlobHorizontal 40s ease infinite",
+            }}
+          />
+          {interactive && (
+            <div
+              ref={interactiveRef}
+              className="absolute -top-1/2 -left-1/2 h-full w-full [mix-blend-mode:hard-light] opacity-70"
+              style={{
+                background: `radial-gradient(circle at center, rgba(${firstColor}, 0.8) 0, rgba(${firstColor}, 0) 50%) no-repeat`,
+              }}
+            />
+          )}
+        </div>
+      )}
 
       <style jsx>{`
         @keyframes foilBlobVertical {
-          0% {
-            transform: translateY(-50%);
-          }
-          50% {
-            transform: translateY(50%);
-          }
-          100% {
-            transform: translateY(-50%);
-          }
+          0% { transform: translateY(-50%); }
+          50% { transform: translateY(50%); }
+          100% { transform: translateY(-50%); }
         }
         @keyframes foilBlobHorizontal {
-          0% {
-            transform: translateX(-50%) translateY(-10%);
-          }
-          50% {
-            transform: translateX(50%) translateY(10%);
-          }
-          100% {
-            transform: translateX(-50%) translateY(-10%);
-          }
+          0% { transform: translateX(-10%) translateY(-5%); }
+          50% { transform: translateX(10%) translateY(5%); }
+          100% { transform: translateX(-10%) translateY(-5%); }
         }
         @keyframes foilBlobOrbit {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
       `}</style>
 

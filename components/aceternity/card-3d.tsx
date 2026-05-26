@@ -60,7 +60,7 @@ export function Card3D({
           onMouseEnter={onMouseEnter}
           onMouseMove={onMouseMove}
           onMouseLeave={onMouseLeave}
-          className="relative transition-transform duration-200 ease-linear [transform-style:preserve-3d]"
+          className="relative rounded-xl shadow-lg shadow-foil-navy/10 transition-all duration-200 ease-linear hover:shadow-xl hover:shadow-foil-navy/20 hover:ring-1 hover:ring-foil-gold/30 [transform-style:preserve-3d]"
         >
           {children}
         </div>

@@ -27,16 +27,16 @@ export default function PrivacyPage() {
   return (
     <main className="mx-auto w-full max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
       <header className="mb-10">
-        <p className="text-xs font-medium uppercase tracking-widest text-[#FFC7BA]">
+        <p className="text-xs font-medium uppercase tracking-widest text-foil-gold">
           Legal
         </p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+        <h1 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl">
           {PRIVACY_TITLE}
         </h1>
-        <p className="mt-2 text-sm text-zinc-500">
+        <p className="mt-2 text-sm text-foil-slate">
           Last updated {PRIVACY_LAST_UPDATED}
         </p>
-        <p className="mt-6 text-base leading-relaxed text-zinc-300">
+        <p className="mt-6 text-base leading-relaxed text-foil-slate">
           {PRIVACY_INTRO}
         </p>
       </header>
@@ -45,12 +45,12 @@ export default function PrivacyPage() {
         {PRIVACY_SECTIONS.map((section) => (
           <section
             key={section.heading}
-            className="rounded-2xl border border-white/5 bg-[#101D38] p-6 sm:p-8"
+            className="rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-8"
           >
-            <h2 className="text-lg font-semibold tracking-tight text-white sm:text-xl">
+            <h2 className="font-display text-lg font-bold tracking-[-0.02em] text-foil-navy sm:text-xl">
               {section.heading}
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-300 sm:text-base">
+            <p className="mt-3 text-sm leading-relaxed text-foil-slate sm:text-base">
               {section.body}
             </p>
           </section>

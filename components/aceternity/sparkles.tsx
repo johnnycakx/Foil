@@ -24,7 +24,7 @@ type Props = {
 
 export function Sparkles({
   count = 30,
-  color = "255, 107, 92", // #FF6B5C
+  color = "201, 162, 75", // #C9A24B — Foil gold (ADR-029)
   className,
   minSize = 1,
   maxSize = 3,

@@ -1058,6 +1058,77 @@ The result is bundle-light, framework-portable, and visually equivalent for our 
 
 ---
 
+## ADR-029 — Cream + navy + gold visual identity for collector-niche distinctiveness
+
+**Date:** 2026-05-26
+**Status:** Accepted (supersedes the holographic-rainbow palette from [ADR-028](#adr-028--aceternity-ui-patterns-code-owned-no-npm-vendor-niche-visual-identity) for default surfaces; the Aceternity component scaffolding from ADR-028 remains in place and is *retuned*, not replaced)
+
+**Context.** Session 38 ([ADR-028](#adr-028--aceternity-ui-patterns-code-owned-no-npm-vendor-niche-visual-identity)) shipped the Aceternity-pattern interactive primitives (`BackgroundGradientAnimation`, `Card3D`, `MagneticButton`/`MagneticLink`, `Sparkles`) on top of a dark `#0B1428` / coral `#FF6B5C` palette. Founder design review concluded the result still read as "competent indie-SaaS template" rather than "Pokémon TCG collector niche." The blocker: a rainbow-blob full-page backdrop + a high-saturation coral primary on dark = generic 2024-era SaaS aesthetic. Pokemon TCG collectors visually identify with cream/parchment card faces, navy ink, gold foil accents — a palette that pre-dates the SaaS visual canon by decades.
+
+The decision needed to land before the Twitter pinned-post launch.
+
+**Alternatives considered.**
+
+1. **Keep the dark/coral palette, swap fonts only.** Rejected — typography alone can't move a layout that reads as a SaaS template into "niche-distinctive."
+2. **Adopt the v0 / shadcn slate palette (zinc + emerald + accent).** Rejected — that IS the generic SaaS visual canon. Every YC company ships some variant of it.
+3. **High-saturation maximalist (e.g. ColorMagic or '90s-PokeRetro pastel pop).** Rejected — too kitsch, signals "fan project" not "buyer-grade product."
+4. **Cream + navy + gold + restricted accent.** **Adopted.** Cream as page surface, navy as text + primary CTA bg, gold as premium / foil / live-indicator accent, coral demoted to hover-state-only. Matches the Pokémon TCG card face's own cream + navy + foil-gold visual vocabulary. Plenty of premium consumer brands sit in this palette (Letterboxd, Substack, Hardcover.app) without losing distinctiveness.
+
+**Decision.** Lock the palette as five `--color-foil-*` tokens declared in `app/globals.css` `@theme inline` so they auto-generate Tailwind utility shorthands (`bg-foil-cream`, `text-foil-navy`, `border-foil-gold`, etc.):
+
+| Token         | Hex       | Role                                                       |
+|---------------|-----------|------------------------------------------------------------|
+| `foil-cream`  | `#F8F5F0` | Page BG (every public surface)                             |
+| `foil-navy`   | `#0F1E3A` | Primary text + CTA bg                                      |
+| `foil-slate`  | `#4A5568` | Secondary text, mutes                                      |
+| `foil-gold`   | `#C9A24B` | Premium / foil / live-indicators / hover ring              |
+| `foil-coral`  | `#FF6B5C` | **Hover-state ONLY** — never default                       |
+
+**Aceternity primitives retuned, not replaced.** The four components shipped by ADR-028 stay in `components/aceternity/` with the same API. Three changes:
+
+- **`BackgroundGradientAnimation` gains a `variant` prop.** New default `"corner-shimmer"` renders 1–2 low-opacity gold/navy blobs anchored to the bottom-right corner. Legacy `"full"` mode kept for back-compat. Default `containerBg` flips cream; palette flips gold + navy. The full-page rainbow goes away.
+- **`MagneticButton` + `MagneticLink` ship default hover-ring + shadow-expansion.** The magnetic translate is the engagement signal; on top of it every Magnetic CTA gets a 2px gold hover-ring and shadow-lift. Default callsite chrome (bg/text/padding) still flows from `className` so the API stays compositional.
+- **`Card3D` adds default shadow + gold hover-ring.** Soft `shadow-foil-navy/10` baseline, `hover:ring-foil-gold/30` on engage. The hover-ring rotates with the card's perspective tilt — reads as "holographic card under a binder sleeve."
+- **`Sparkles` recolors default to gold and is removed from the hero JSX.** Component stays exported + tested in case a future surface wants it; the homepage no longer renders it (the 8-card grid is the visual interest now, not the sparkle overlay).
+
+**Coral hover-only rule.** Coral (`foil-coral` / `#FF6B5C`) appears nowhere as a default state. Defense-in-depth: `lib/__tests__/visual-regression.test.ts` walks every public-surface file and asserts that every `bg-foil-coral` and `ring-foil-coral` occurrence is preceded by `hover:` or `group-hover:`. A raw `#FF6B5C` hex anywhere in the public-surface set fails the test. Coral becomes the "premium hover signal" — the same way native consumer apps reserve their brand color for the engaged state.
+
+**Typography.** Bricolage Grotesque (already loaded as `--font-display` per ADR-028) gets `tracking-[-0.02em]` and weight 700 on every editorial headline — h1, h2, section labels. Geist stays for body. The aesthetic shift is palette + tracking; the type face itself was already the right choice.
+
+**/start UX fix.** The pre-Session-39 onboarding form labelled steps "1. / 2. / 3." but section 2 only rendered conditionally on card selection, so first-time visitors saw "1 → 3" with no 2. The fix drops numbering entirely and uses named section headers ("Tell me a card", "Set target prices", "Where to email you"). Section 2 stays conditional but the lack of number eliminates the visible gap.
+
+**Architectural posture.**
+
+- **Tokens, not literals.** Every cream/navy/gold/coral reference lives in Tailwind class form (`bg-foil-cream`) rather than as a raw `#F8F5F0`. Future palette tweaks are one edit to `globals.css`. The visual-regression test pins this — raw hex literals in any public-surface file fail.
+- **No new components.** ADR-028's four primitives + the existing PlanCard / EmailCapture / WatchlistForm composition is enough. Session 39 retunes the chrome; the structure stays.
+- **No dark-mode override.** `globals.css` no longer responds to `prefers-color-scheme: dark`. Cream is the identity across light/dark OS prefs — collectors don't expect a "dark mode" card-shop, and forking the palette doubles the maintenance surface.
+- **Drift guards in CI.** `aceternity-components.test.ts` updates pin the new gold/navy defaults; `visual-regression.test.ts` (new) pins the no-coral-default rule + token-not-hex rule across 15 public-surface files.
+
+**Consequences.**
+
+- **Niche-distinctive identity locks in.** The homepage now reads as "Pokemon TCG card shop with editorial polish" rather than "AI startup CTA." This is the entire point of the goal.
+- **Twitter pinned-post unblocked.** John can paste the bio + foiltcg.com/start CTA and the landing page converts.
+- **Bundle stays the same.** The retune is pure-CSS / token edits — no new runtime dependencies, no measurable client-bundle delta.
+- **`prefers-reduced-motion` still NOT honored.** Carry-over from ADR-028. A11y followup still deferred.
+- **The pre-Session-39 darker-coral hover (`#FF8775`) is dropped.** Hover state is now `foil-coral` on its own; the gold hover-ring provides additional state signal.
+- **Per-card best-listing block changes appearance.** What was a coral-bordered gradient panel becomes a gold-bordered cream panel with a navy price + navy Buy CTA. The "live" affordance moves from coral pulse-dot to gold pulse-dot. R-008 caching posture unchanged — only visual chrome.
+- **Blog prose chain rewritten for cream.** Drops `prose-invert`, switches every prose-* override to the new tokens. Existing posts inherit the new look on next render with no per-post edits.
+
+**Cross-refs.**
+
+- [STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md) — names the niche-distinctive visual-identity requirement that ADR-028 + ADR-029 close.
+- [ADR-028](#adr-028--aceternity-ui-patterns-code-owned-no-npm-vendor-niche-visual-identity) — Aceternity component scaffolding; this ADR retunes the palette on top of it.
+
+**Followups (out of scope for Session 39).**
+
+1. `prefers-reduced-motion` honoring on the gradient + magnetic components (still carried from ADR-028).
+2. Per-card thumbnail `Card3D` wrap on `/cards/[slug]` and `/cards/sets/<id>` (carried from ADR-028 — primitive already shipped, composition is thin polish).
+3. Cabinet Grotesk via `next/font/local` if the founder wants to revisit the Session-38 substitution.
+
+(The Session-38-noted `images.scrydex.com` remotePatterns gap closed in commit `b67ed97` before Session 39 started — no longer a followup.)
+
+---
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

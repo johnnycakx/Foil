@@ -1,29 +1,39 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/*
+ * Session 39 — Cream / Navy / Gold visual identity (ADR-029).
+ * Foil's palette is collector-niche: cream page surface, navy text,
+ * gold premium-signal, coral RESERVED for hover state only.
+ *
+ * The `--color-foil-*` tokens are exposed inside `@theme inline` so
+ * Tailwind 4 auto-generates `bg-foil-cream`, `text-foil-navy`,
+ * `border-foil-gold`, `hover:bg-foil-coral`, etc. shorthand classes
+ * across the codebase.
+ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8f5f0;
+  --foreground: #0f1e3a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  /* Foil palette — locked Session 39. */
+  --color-foil-cream: #f8f5f0;
+  --color-foil-navy: #0f1e3a;
+  --color-foil-slate: #4a5568;
+  --color-foil-gold: #c9a24b;
+  --color-foil-coral: #ff6b5c;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   /* Display font for hero headlines + onboarding surfaces — Session 38. */
   --font-display: var(--font-display);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }

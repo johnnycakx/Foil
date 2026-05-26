@@ -1,8 +1,13 @@
 "use client";
 
-// Magnetic Button — Aceternity-pattern, code-owned (see ADR-028).
+// Magnetic Button — Aceternity-pattern, code-owned (see ADR-028, retuned
+// per ADR-029).
+//
 // CSS-only — the button shifts up to ~12px toward the pointer when the
-// cursor is within ~80px, smoothing back to rest on pointer-leave.
+// cursor is within ~80px, smoothing back to rest on pointer-leave. The
+// magnetic motion IS the engagement-lift; on top of it Session 39 adds
+// a gold hover-ring + shadow expansion via Tailwind `hover:` so the
+// affordance reads as "premium / foil" rather than "generic SaaS CTA."
 //
 // Best for primary CTAs where a small extra micro-interaction lifts
 // engagement (per docs/STRATEGY-AUDIENCE-MOAT.md, "every gram of
@@ -11,6 +16,12 @@
 // rewards intent).
 
 import React, { useRef } from "react";
+
+// Class set applied to both Button + Link siblings. Caller still controls
+// bg/text/padding/rounded via the `className` prop; these defaults are
+// purely additive (shadow + ring + transition).
+const MAGNETIC_DEFAULTS =
+  "inline-flex items-center justify-center shadow-md shadow-foil-navy/15 transition-all duration-200 ease-out will-change-transform hover:shadow-lg hover:shadow-foil-navy/25 hover:ring-2 hover:ring-foil-gold/40";
 
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   /** Maximum displacement in px. Default 12. */
@@ -42,7 +53,9 @@ export function MagneticButton({
       return;
     }
     const factor = strength / radius;
-    el.style.transform = `translate(${dx * factor}px, ${dy * factor}px)`;
+    // Subtract a small constant lift on the Y axis so the button rises
+    // a touch in addition to leaning toward the pointer (ADR-029).
+    el.style.transform = `translate(${dx * factor}px, ${dy * factor - 2}px)`;
   };
 
   const onMouseLeave = () => {
@@ -55,7 +68,7 @@ export function MagneticButton({
       ref={ref}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
-      className={`inline-flex items-center justify-center transition-transform duration-200 ease-out will-change-transform ${className ?? ""}`}
+      className={`${MAGNETIC_DEFAULTS} ${className ?? ""}`}
       {...buttonProps}
     >
       {children}
@@ -96,7 +109,7 @@ export function MagneticLink({
       return;
     }
     const factor = strength / radius;
-    el.style.transform = `translate(${dx * factor}px, ${dy * factor}px)`;
+    el.style.transform = `translate(${dx * factor}px, ${dy * factor - 2}px)`;
   };
 
   const onMouseLeave = () => {
@@ -110,7 +123,7 @@ export function MagneticLink({
       href={href}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
-      className={`inline-flex items-center justify-center transition-transform duration-200 ease-out will-change-transform ${className ?? ""}`}
+      className={`${MAGNETIC_DEFAULTS} ${className ?? ""}`}
       {...anchorProps}
     >
       {children}

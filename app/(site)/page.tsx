@@ -7,7 +7,7 @@ import { EmailCapture } from "@/components/email-capture";
 import { CARD_CATALOG, setIdsInCatalog } from "@/lib/cards/catalog";
 import { BackgroundGradientAnimation } from "@/components/aceternity/background-gradient-animation";
 import { MagneticLink } from "@/components/aceternity/magnetic-button";
-import { Sparkles } from "@/components/aceternity/sparkles";
+import { Card3D } from "@/components/aceternity/card-3d";
 
 const SITE_TITLE = "Foil — The best price on any Pokémon card";
 const SITE_DESCRIPTION =
@@ -70,66 +70,62 @@ function Hero() {
   const setCount = setIdsInCatalog().length;
   return (
     <section className="relative isolate overflow-hidden">
-      {/* Aceternity gradient backdrop — Foil-tuned holographic palette. */}
+      {/* ADR-029: restrained bottom-right shimmer instead of a full-page
+          rainbow. Cards on the page are the visual interest. */}
       <div className="absolute inset-0 -z-10">
         <BackgroundGradientAnimation
+          variant="corner-shimmer"
           interactive={false}
-          firstColor="255, 107, 92"
-          secondColor="100, 220, 200"
-          thirdColor="180, 130, 255"
-          fourthColor="255, 200, 120"
-          containerBg="#0B1428"
           className="h-full w-full"
         />
       </div>
 
-      {/* Card-grid backdrop — translucent, behind the copy. */}
+      {/* Card grid backdrop — translucent, behind the copy, with 3D
+          tilt-on-hover via Card3D. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-2 px-5 opacity-[0.18] sm:px-8 sm:opacity-25"
+        className="pointer-events-none absolute inset-0 -z-10 mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-2 px-5 opacity-50 sm:px-8 sm:opacity-70"
       >
         {HERO_CARDS.map((c) => (
-          <div
-            key={c.id}
-            className={`relative aspect-[5/7] w-20 shrink-0 overflow-hidden rounded-md shadow-2xl ring-1 ring-white/5 sm:w-24 md:w-28 ${c.tilt}`}
-          >
-            <Image
-              src={`https://images.pokemontcg.io/${c.id}_hires.png`}
-              alt={c.alt}
-              width={240}
-              height={336}
-              unoptimized
-              className="h-full w-full object-cover"
-              priority={false}
-            />
+          <div key={c.id} className={`shrink-0 ${c.tilt}`}>
+            <Card3D>
+              <div className="relative aspect-[5/7] w-20 overflow-hidden rounded-md ring-1 ring-foil-navy/10 sm:w-24 md:w-28">
+                <Image
+                  src={`https://images.pokemontcg.io/${c.id}_hires.png`}
+                  alt={c.alt}
+                  width={240}
+                  height={336}
+                  unoptimized
+                  className="h-full w-full object-cover"
+                  priority={false}
+                />
+              </div>
+            </Card3D>
           </div>
         ))}
       </div>
 
       <div className="relative mx-auto w-full max-w-6xl px-5 pt-16 pb-20 sm:px-8 sm:pt-24 sm:pb-28">
-        <p className="inline-flex items-center gap-2 rounded-full border border-[#FF6B5C]/30 bg-[#FF6B5C]/10 px-3 py-1 text-xs font-medium text-[#FFC7BA] backdrop-blur-sm">
+        <p className="inline-flex items-center gap-2 rounded-full border border-foil-gold/40 bg-foil-cream/80 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">
           <span className="relative inline-flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FF6B5C] opacity-60" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foil-gold opacity-60" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-gold" />
           </span>
           Live · tracking {cardCount} cards across {setCount} sets
         </p>
 
-        {/* Headline in display font; sparkles cluster behind for holographic
-            shimmer without stealing the focal point. */}
-        <div className="relative mt-6 max-w-3xl">
-          <Sparkles count={24} className="pointer-events-none" />
-          <h1 className="font-display relative text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl">
-            Tell me a Pokémon card.{" "}
-            <span className="text-[#FF6B5C]">I&apos;ll email you when it drops.</span>
-          </h1>
-        </div>
+        {/* Headline — single-color navy. Type-led, no Sparkles overlay
+            (ADR-029). Bricolage Grotesque variable weight at 700 with
+            tight tracking to read as "editorial" rather than "SaaS". */}
+        <h1 className="font-display mt-6 max-w-3xl text-4xl font-bold leading-[1.05] tracking-[-0.02em] text-foil-navy sm:text-5xl md:text-6xl">
+          Tell me a Pokémon card. I&apos;ll email you when it drops.
+        </h1>
 
-        <p className="mt-5 max-w-2xl text-lg text-zinc-300 sm:text-xl">
+        <p className="mt-5 max-w-2xl text-lg text-foil-slate sm:text-xl">
           Foil watches eBay&apos;s live listings, filters the keyword-stuffed
           junk, and emails you the moment a real listing drops to your target
           price.{" "}
-          <span className="text-zinc-400">
+          <span className="text-foil-slate/80">
             Built by a Level-4 TCGplayer Verified Seller who got tired of
             comparing 20 listings to find one good one.
           </span>
@@ -138,13 +134,13 @@ function Hero() {
         <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
           <MagneticLink
             href="/start"
-            className="rounded-xl bg-[#FF6B5C] px-6 py-3.5 text-base font-semibold text-[#0B1428] shadow-lg shadow-[#FF6B5C]/30 transition-colors hover:bg-[#FF8775]"
+            className="rounded-xl bg-foil-navy px-6 py-3.5 text-base font-semibold text-foil-cream"
           >
             Start tracking cards →
           </MagneticLink>
           <Link
             href="/cards"
-            className="text-sm text-zinc-200 underline decoration-zinc-600 underline-offset-4 transition hover:text-white hover:decoration-zinc-300"
+            className="text-sm text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
           >
             Browse the catalog →
           </Link>
@@ -152,7 +148,7 @@ function Hero() {
 
         <div className="mt-10 max-w-xl">
           <EmailCapture source="homepage_hero" variant="inline" headline="Or just get the weekly newsletter." />
-          <p className="mt-3 text-xs text-zinc-400">
+          <p className="mt-3 text-xs text-foil-slate">
             Free. No spam — about one email a week, unsubscribe anytime.
           </p>
         </div>
@@ -181,10 +177,10 @@ function HowItWorks() {
   ];
 
   return (
-    <section className="border-y border-white/5 bg-[#101D38]">
+    <section className="border-y border-foil-navy/10 bg-foil-cream">
       <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
-        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">How it works</h2>
-        <p className="mt-3 max-w-2xl text-zinc-400">
+        <h2 className="font-display text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl">How it works</h2>
+        <p className="mt-3 max-w-2xl text-foil-slate">
           Three steps. No comparing tabs, no scrolling endless listings, no
           wondering whether a seller is legit.
         </p>
@@ -192,13 +188,13 @@ function HowItWorks() {
           {steps.map((s) => (
             <li
               key={s.num}
-              className="rounded-2xl border border-white/10 bg-[#0B1428] p-6"
+              className="rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 transition hover:shadow-md hover:shadow-foil-navy/10"
             >
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#FF6B5C]/40 bg-[#FF6B5C]/10 text-sm font-semibold text-[#FF6B5C]">
+              <span className="font-display inline-flex h-9 w-9 items-center justify-center rounded-full border border-foil-gold/40 bg-foil-gold/10 text-sm font-bold text-foil-navy">
                 {s.num}
               </span>
-              <h3 className="mt-4 text-lg font-semibold">{s.title}</h3>
-              <p className="mt-2 text-sm text-zinc-400">{s.body}</p>
+              <h3 className="font-display mt-4 text-lg font-bold text-foil-navy">{s.title}</h3>
+              <p className="mt-2 text-sm text-foil-slate">{s.body}</p>
             </li>
           ))}
         </ol>
@@ -212,47 +208,46 @@ function ExampleResult() {
     <section id="example" className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
       <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-[#FF6B5C]">
+          <p className="text-xs font-medium uppercase tracking-wider text-foil-gold">
             What you actually see
           </p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-            That Charizard you want?{" "}
-            <span className="text-[#FF6B5C]">Currently $313 on eBay.</span>
+          <h2 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl">
+            That Charizard you want? Currently $313 on eBay.
           </h2>
-          <p className="mt-4 text-zinc-300">
+          <p className="mt-4 text-foil-slate">
             Foil doesn&apos;t just dump you on a search page. It picks the single
             best live listing, shows you what each condition and grade is currently
             worth, and tells you whether to buy now, lowball, or wait for a drop.
           </p>
-          <ul className="mt-6 space-y-3 text-sm text-zinc-400">
+          <ul className="mt-6 space-y-3 text-sm text-foil-slate">
             <li className="flex items-start gap-3">
-              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
               <span>
-                <span className="font-medium text-white">One best deal, not 200 listings.</span>{" "}
+                <span className="font-medium text-foil-navy">One best deal, not 200 listings.</span>{" "}
                 We score every active listing on price + shipping + condition + seller
                 rating and show you the winner.
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
               <span>
-                <span className="font-medium text-white">Wishlist alerts that actually fire.</span>{" "}
+                <span className="font-medium text-foil-navy">Wishlist alerts that actually fire.</span>{" "}
                 Tell Foil your target price; we email you the second a matching
                 listing appears. Hourly checks on free, sub-minute on Founding.
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
               <span>
-                <span className="font-medium text-white">Graded vs raw, side by side.</span>{" "}
+                <span className="font-medium text-foil-navy">Graded vs raw, side by side.</span>{" "}
                 Foil shows the full grade ladder — raw NM, PSA 7 through 10, BGS,
                 CGC — so you can decide whether the raw is a steal or the slab is.
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
               <span>
-                <span className="font-medium text-white">Japanese and modern covered.</span>{" "}
+                <span className="font-medium text-foil-navy">Japanese and modern covered.</span>{" "}
                 Vintage WOTC, modern Mega ex, Japanese-exclusive sets — if there&apos;s
                 a listing, Foil finds it.
               </span>
@@ -260,50 +255,50 @@ function ExampleResult() {
           </ul>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-[#101D38] p-1 shadow-2xl shadow-[#FF6B5C]/5">
-          <div className="rounded-[14px] bg-[#0B1428] p-5">
+        <div className="rounded-2xl border border-foil-gold/40 bg-foil-cream p-1 shadow-xl shadow-foil-navy/10">
+          <div className="rounded-[14px] bg-foil-cream p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-wide text-zinc-500">
+                <p className="text-xs uppercase tracking-wide text-foil-slate">
                   Best current deal
                 </p>
-                <p className="mt-1 text-4xl font-bold tabular-nums text-white">$313.51</p>
-                <p className="mt-1 text-xs text-zinc-500">
+                <p className="mt-1 text-4xl font-bold tabular-nums text-foil-navy">$313.51</p>
+                <p className="mt-1 text-xs text-foil-slate">
                   9% below 30-day avg · top-rated seller · free ship
                 </p>
               </div>
-              <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300">
+              <span className="rounded-full bg-foil-gold/15 px-2.5 py-1 text-xs font-medium text-foil-navy">
                 Good deal
               </span>
             </div>
 
-            <div className="mt-6 border-t border-white/10 pt-5">
+            <div className="mt-6 border-t border-foil-navy/10 pt-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="truncate font-semibold text-white">Charizard</p>
-                  <p className="truncate text-sm text-zinc-400">
+                  <p className="truncate font-semibold text-foil-navy">Charizard</p>
+                  <p className="truncate text-sm text-foil-slate">
                     Base Set · #4/102 · Holo Rare (Unlimited)
                   </p>
-                  <p className="mt-0.5 text-xs text-zinc-500">Lightly Played · NM verified by seller</p>
+                  <p className="mt-0.5 text-xs text-foil-slate">Lightly Played · NM verified by seller</p>
                   <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <span className="text-lg font-semibold tabular-nums text-white">$313.51</span>
-                    <span className="text-xs text-zinc-400">+ free shipping</span>
-                    <span className="text-xs text-zinc-500">·</span>
-                    <span className="text-xs text-[#FFB6A8]">
+                    <span className="text-lg font-semibold tabular-nums text-foil-navy">$313.51</span>
+                    <span className="text-xs text-foil-slate">+ free shipping</span>
+                    <span className="text-xs text-foil-slate">·</span>
+                    <span className="text-xs text-foil-slate">
                       PSA 10 currently:{" "}
-                      <span className="font-semibold text-[#FF6B5C]">$30,100</span>
+                      <span className="font-semibold text-foil-navy">$30,100</span>
                     </span>
                   </div>
                 </div>
-                <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300">
+                <span className="rounded-full bg-foil-navy px-2.5 py-1 text-xs font-medium text-foil-cream transition hover:bg-foil-coral">
                   Buy →
                 </span>
               </div>
             </div>
 
-            <p className="mt-5 rounded-lg bg-[#FF6B5C]/10 px-3 py-2 text-xs text-[#FFC7BA]">
+            <p className="mt-5 rounded-lg border border-foil-gold/30 bg-foil-gold/5 px-3 py-2 text-xs text-foil-navy">
               Heads up: the raw is $313, but a PSA 10 of the same card recently sold
-              for <span className="font-semibold text-white">$30,100</span>. If the
+              for <span className="font-semibold">$30,100</span>. If the
               corners look mint, get it graded before reselling.
             </p>
           </div>
@@ -335,13 +330,13 @@ function FoundingMember() {
   ];
 
   return (
-    <section className="border-y border-white/5 bg-[#101D38]">
+    <section className="border-y border-foil-navy/10 bg-foil-cream">
       <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
         <div className="max-w-2xl">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 className="font-display text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl">
             Free forever. Or $59 once to lock in everything.
           </h2>
-          <p className="mt-3 text-zinc-400">
+          <p className="mt-3 text-foil-slate">
             Foil&apos;s deal-finder is free for everyone. Founding Member is for
             early supporters who want every premium feature we&apos;ll ever ship —
             locked in at launch price, one charge, no recurring. We&apos;d build
@@ -370,7 +365,7 @@ function FoundingMember() {
           />
         </div>
 
-        <p className="mt-6 text-xs text-zinc-500">
+        <p className="mt-6 text-xs text-foil-slate">
           Founding Member is a one-time charge — no subscription, no auto-renewal.
           Price climbs to $79 at public launch.
         </p>
@@ -400,22 +395,24 @@ function PlanCard({
   return (
     <div
       className={`relative flex flex-col rounded-2xl border p-6 sm:p-8 ${
-        isPro ? "border-[#FF6B5C]/40 bg-[#0B1428] ring-1 ring-[#FF6B5C]/20" : "border-white/10 bg-[#0B1428]"
+        isPro
+          ? "border-foil-gold/50 bg-foil-cream ring-1 ring-foil-gold/30 shadow-lg shadow-foil-navy/10"
+          : "border-foil-navy/10 bg-foil-cream shadow-sm shadow-foil-navy/5"
       }`}
     >
       <div className="flex items-start justify-between">
-        <h3 className="text-xl font-semibold">{name}</h3>
+        <h3 className="font-display text-xl font-bold text-foil-navy">{name}</h3>
         <span
           className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-            isPro ? "bg-[#FF6B5C]/15 text-[#FFC7BA]" : "bg-white/5 text-zinc-400"
+            isPro ? "bg-foil-gold/15 text-foil-navy" : "bg-foil-navy/5 text-foil-slate"
           }`}
         >
           {tag}
         </span>
       </div>
       <div className="mt-4 flex items-baseline gap-1.5">
-        <span className="text-4xl font-bold tabular-nums">{price}</span>
-        <span className="text-sm text-zinc-400">{pricePer}</span>
+        <span className="font-display text-4xl font-bold tabular-nums text-foil-navy">{price}</span>
+        <span className="text-sm text-foil-slate">{pricePer}</span>
       </div>
 
       <ul className="mt-6 flex-1 space-y-3 text-sm">
@@ -423,9 +420,9 @@ function PlanCard({
           <li key={f.label} className="flex items-start gap-3">
             <FeatureIcon enabled={f.value !== false && f.value !== "—"} />
             <span className="min-w-0">
-              <span className="text-zinc-300">{f.label}</span>
+              <span className="text-foil-navy">{f.label}</span>
               {typeof f.value === "string" && (
-                <span className="block text-xs text-zinc-500">{f.value}</span>
+                <span className="block text-xs text-foil-slate">{f.value}</span>
               )}
             </span>
           </li>
@@ -436,8 +433,8 @@ function PlanCard({
         href={cta.href}
         className={`mt-7 block rounded-xl px-4 py-3 text-center text-sm font-semibold transition ${
           isPro
-            ? "bg-[#FF6B5C] text-[#0B1428] hover:bg-[#FF8775]"
-            : "border border-white/15 bg-white/5 text-white hover:bg-white/10"
+            ? "bg-foil-navy text-foil-cream hover:bg-foil-coral"
+            : "border border-foil-navy/15 bg-foil-cream text-foil-navy hover:border-foil-gold/40 hover:bg-foil-gold/5"
         }`}
       >
         {cta.label}
@@ -449,7 +446,7 @@ function PlanCard({
 function FeatureIcon({ enabled }: { enabled: boolean }) {
   if (!enabled) {
     return (
-      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white/5 text-zinc-500">
+      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-foil-navy/5 text-foil-slate">
         <svg viewBox="0 0 16 16" className="h-2.5 w-2.5" aria-hidden="true">
           <line x1="3" y1="8" x2="13" y2="8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </svg>
@@ -457,7 +454,7 @@ function FeatureIcon({ enabled }: { enabled: boolean }) {
     );
   }
   return (
-    <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#FF6B5C]/20 text-[#FF6B5C]">
+    <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-foil-gold/20 text-foil-gold">
       <svg viewBox="0 0 16 16" className="h-2.5 w-2.5" aria-hidden="true">
         <path d="M3 8.5l3 3 7-7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
       </svg>
@@ -468,11 +465,11 @@ function FeatureIcon({ enabled }: { enabled: boolean }) {
 function FinalCTA() {
   return (
     <section id="waitlist" className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
-      <div className="rounded-3xl border border-[#FF6B5C]/30 bg-gradient-to-br from-[#101D38] via-[#0B1428] to-[#101D38] p-8 sm:p-12">
-        <h2 className="max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">
+      <div className="rounded-3xl border border-foil-gold/40 bg-foil-cream p-8 shadow-xl shadow-foil-navy/10 sm:p-12">
+        <h2 className="font-display max-w-3xl text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl">
           Never overpay for a Pokémon card again.
         </h2>
-        <p className="mt-3 max-w-2xl text-zinc-300">
+        <p className="mt-3 max-w-2xl text-foil-slate">
           Get on the waitlist. We&apos;ll email you the moment early access opens —
           and the first 100 signups get Founding Member at $39 instead of $59.
         </p>
@@ -483,4 +480,3 @@ function FinalCTA() {
     </section>
   );
 }
-

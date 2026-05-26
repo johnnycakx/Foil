@@ -114,26 +114,26 @@ export default async function BlogPostPage({
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs uppercase tracking-wider">
             <time
               dateTime={post.date}
-              className="font-mono text-zinc-500"
+              className="font-mono text-foil-slate"
             >
               {formatDate(post.date)}
             </time>
             {post.tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-medium text-zinc-400"
+                className="rounded-full bg-foil-gold/10 px-2 py-0.5 text-[10px] font-medium text-foil-navy"
               >
                 {tag}
               </span>
             ))}
           </div>
 
-          <h1 className="mt-4 text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+          <h1 className="font-display mt-4 text-4xl font-bold leading-tight tracking-[-0.02em] text-foil-navy sm:text-5xl">
             {post.title}
           </h1>
-          <p className="mt-4 text-lg text-zinc-300">{post.description}</p>
+          <p className="mt-4 text-lg text-foil-slate">{post.description}</p>
 
-          <div className="mt-10 prose prose-invert max-w-none prose-headings:tracking-tight prose-headings:text-white prose-h2:mt-12 prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg prose-p:text-zinc-300 prose-a:text-[#FF6B5C] prose-a:no-underline hover:prose-a:underline prose-strong:text-white prose-li:text-zinc-300 prose-ol:text-zinc-300 prose-ul:text-zinc-300 prose-blockquote:border-l-[#FF6B5C]/40 prose-blockquote:text-zinc-300 prose-blockquote:not-italic prose-code:rounded prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[#FFC7BA] prose-code:before:content-none prose-code:after:content-none prose-pre:rounded-xl prose-pre:border prose-pre:border-white/10 prose-pre:bg-[#101D38] prose-pre:text-zinc-200 prose-hr:border-white/10 prose-table:text-sm prose-th:text-white prose-th:border-white/15 prose-td:border-white/10 prose-td:text-zinc-300 prose-img:rounded-xl prose-img:border prose-img:border-white/10">
+          <div className="mt-10 prose max-w-none prose-headings:tracking-[-0.02em] prose-headings:font-display prose-headings:text-foil-navy prose-h2:mt-12 prose-h2:text-2xl prose-h3:text-xl prose-h4:text-lg prose-p:text-foil-navy/85 prose-a:text-foil-navy prose-a:underline prose-a:decoration-foil-gold prose-a:underline-offset-4 hover:prose-a:text-foil-coral prose-strong:text-foil-navy prose-li:text-foil-navy/85 prose-ol:text-foil-navy/85 prose-ul:text-foil-navy/85 prose-blockquote:border-l-foil-gold/60 prose-blockquote:text-foil-slate prose-blockquote:not-italic prose-code:rounded prose-code:bg-foil-navy/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-foil-navy prose-code:before:content-none prose-code:after:content-none prose-pre:rounded-xl prose-pre:border prose-pre:border-foil-navy/10 prose-pre:bg-foil-navy prose-pre:text-foil-cream prose-hr:border-foil-navy/10 prose-table:text-sm prose-th:text-foil-navy prose-th:border-foil-navy/15 prose-td:border-foil-navy/10 prose-td:text-foil-slate prose-img:rounded-xl prose-img:border prose-img:border-foil-navy/15">
             <PostBody />
           </div>
 
@@ -146,8 +146,8 @@ export default async function BlogPostPage({
         </article>
 
         {related.length > 0 && (
-          <aside className="mt-16 border-t border-white/5 pt-8">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+          <aside className="mt-16 border-t border-foil-navy/10 pt-8">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-foil-gold">
               Keep reading
             </h2>
             <ul className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -155,12 +155,12 @@ export default async function BlogPostPage({
                 <li key={p.slug}>
                   <Link
                     href={`/blog/${p.slug}`}
-                    className="block rounded-xl border border-white/5 bg-[#101D38] p-4 transition hover:border-[#FF6B5C]/30"
+                    className="block rounded-xl border border-foil-navy/10 bg-foil-cream p-4 shadow-sm shadow-foil-navy/5 transition hover:-translate-y-0.5 hover:border-foil-gold/40 hover:shadow-md hover:shadow-foil-navy/10"
                   >
-                    <p className="font-mono text-[11px] uppercase tracking-wider text-zinc-500">
+                    <p className="font-mono text-[11px] uppercase tracking-wider text-foil-slate">
                       {formatDate(p.date)}
                     </p>
-                    <p className="mt-1 font-semibold text-white">{p.title}</p>
+                    <p className="mt-1 font-semibold text-foil-navy">{p.title}</p>
                   </Link>
                 </li>
               ))}

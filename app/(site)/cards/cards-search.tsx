@@ -63,7 +63,7 @@ export function CardsSearch({ index }: { index: SearchEntry[] }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by name or set — try “Charizard”, “Base Set”, “Lugia”…"
-          className="w-full rounded-2xl border border-white/15 bg-[#101D38] px-5 py-3.5 text-base text-white placeholder-zinc-500 outline-none transition focus:border-[#FF6B5C] focus:bg-[#152549]"
+          className="w-full rounded-2xl border border-foil-navy/15 bg-foil-cream px-5 py-3.5 text-base text-foil-navy placeholder-foil-slate/60 outline-none transition focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30"
           autoComplete="off"
         />
         {query && (
@@ -73,7 +73,7 @@ export function CardsSearch({ index }: { index: SearchEntry[] }) {
               setQuery("");
               inputRef.current?.focus();
             }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full px-2 py-1 text-xs text-zinc-400 transition hover:bg-white/5 hover:text-white"
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full px-2 py-1 text-xs text-foil-slate transition hover:bg-foil-navy/5 hover:text-foil-navy"
             aria-label="Clear search"
           >
             Clear
@@ -81,8 +81,8 @@ export function CardsSearch({ index }: { index: SearchEntry[] }) {
         )}
       </div>
       {query && (
-        <p className="mt-2 text-xs text-zinc-500">
-          Filtering on “<span className="text-zinc-300">{query}</span>”
+        <p className="mt-2 text-xs text-foil-slate">
+          Filtering on “<span className="text-foil-navy">{query}</span>”
         </p>
       )}
     </div>

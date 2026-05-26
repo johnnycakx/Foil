@@ -63,15 +63,15 @@ export default async function SetIndexPage({ params }: PageProps) {
 
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 px-5 pt-12 pb-20 sm:px-8 sm:pt-16">
-      <nav aria-label="Breadcrumb" className="font-mono text-[11px] uppercase tracking-wider text-zinc-500">
-        <Link href="/cards" className="transition hover:text-zinc-200">
+      <nav aria-label="Breadcrumb" className="font-mono text-[11px] uppercase tracking-wider text-foil-slate">
+        <Link href="/cards" className="transition hover:text-foil-navy">
           ← All sets
         </Link>
       </nav>
 
       <header className="mt-6 grid gap-6 sm:grid-cols-[12rem_1fr] sm:items-center">
         {set.logoUrl ? (
-          <div className="flex h-32 items-center justify-center rounded-2xl border border-white/10 bg-[#0B1428] p-4">
+          <div className="flex h-32 items-center justify-center rounded-2xl border border-foil-navy/10 bg-foil-navy p-4">
             <Image
               src={set.logoUrl}
               alt={`${set.name} set logo`}
@@ -83,14 +83,14 @@ export default async function SetIndexPage({ params }: PageProps) {
           </div>
         ) : null}
         <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-[#FF6B5C]">
+          <p className="text-xs font-medium uppercase tracking-wider text-foil-gold">
             {set.series || "Set"}
             {releaseYear ? <> · {releaseYear}</> : null}
           </p>
-          <h1 className="mt-2 text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+          <h1 className="font-display mt-2 text-4xl font-bold leading-tight tracking-[-0.02em] text-foil-navy sm:text-5xl">
             {set.name}
           </h1>
-          <p className="mt-3 text-base text-zinc-300 sm:text-lg">
+          <p className="mt-3 text-base text-foil-slate sm:text-lg">
             {entries.length} card{entries.length === 1 ? "" : "s"} tracked from this set. Pick one to see the current best eBay listing.
           </p>
         </div>
@@ -103,9 +103,9 @@ export default async function SetIndexPage({ params }: PageProps) {
             <li key={entry.slug}>
               <Link
                 href={`/cards/${entry.slug}`}
-                className="group block rounded-2xl border border-white/5 bg-[#101D38] p-3 transition hover:border-[#FF6B5C]/30 hover:bg-[#152549]"
+                className="group block rounded-2xl border border-foil-navy/10 bg-foil-cream p-3 shadow-sm shadow-foil-navy/5 transition hover:-translate-y-0.5 hover:border-foil-gold/40 hover:shadow-lg hover:shadow-foil-navy/10"
               >
-                <div className="overflow-hidden rounded-xl bg-[#0B1428]">
+                <div className="overflow-hidden rounded-xl bg-foil-navy/5">
                   {entry.meta.image ? (
                     <Image
                       src={entry.meta.image}
@@ -116,14 +116,14 @@ export default async function SetIndexPage({ params }: PageProps) {
                       className="aspect-[245/342] w-full transition group-hover:scale-[1.02]"
                     />
                   ) : (
-                    <div aria-hidden className="w-full bg-[#0B1428]" style={{ aspectRatio: "245 / 342" }} />
+                    <div aria-hidden className="w-full bg-foil-navy/5" style={{ aspectRatio: "245 / 342" }} />
                   )}
                 </div>
                 <div className="mt-3 px-1 pb-1">
-                  <p className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">
+                  <p className="font-mono text-[10px] uppercase tracking-wider text-foil-slate">
                     #{number}
                   </p>
-                  <p className="mt-1 truncate text-sm font-semibold text-white group-hover:text-[#FF8775]">
+                  <p className="mt-1 truncate text-sm font-semibold text-foil-navy group-hover:text-foil-coral">
                     {entry.meta.name}
                   </p>
                 </div>

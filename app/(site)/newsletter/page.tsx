@@ -57,13 +57,13 @@ export default function NewsletterPage() {
   return (
     <main className="mx-auto w-full max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
       <header className="mb-12 text-center sm:text-left">
-        <p className="text-xs font-medium uppercase tracking-widest text-[#FFC7BA]">
+        <p className="text-xs font-medium uppercase tracking-widest text-foil-gold">
           The Foil newsletter
         </p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+        <h1 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl">
           Tell me a card → I email you when it drops.
         </h1>
-        <p className="mt-4 text-base leading-relaxed text-zinc-300 sm:text-lg">
+        <p className="mt-4 text-base leading-relaxed text-foil-slate sm:text-lg">
           Weekly market notes from a Level-4 TCGplayer seller. Specific deals, specific data,
           zero spam. About one email a week. Unsubscribe in one click from any email.
         </p>
@@ -76,10 +76,10 @@ export default function NewsletterPage() {
       />
 
       <section className="mt-14">
-        <h2 className="text-xl font-bold tracking-tight text-white sm:text-2xl">
+        <h2 className="font-display text-xl font-bold tracking-[-0.02em] text-foil-navy sm:text-2xl">
           Recent issues
         </h2>
-        <p className="mt-2 text-sm text-zinc-400">
+        <p className="mt-2 text-sm text-foil-slate">
           Three excerpts so you can see what lands in your inbox before you commit.
         </p>
 
@@ -87,15 +87,15 @@ export default function NewsletterPage() {
           {SAMPLE_EXCERPTS.map((excerpt) => (
             <article
               key={excerpt.title}
-              className="rounded-2xl border border-white/10 bg-[#101D38] p-6 sm:p-7"
+              className="rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-7"
             >
-              <p className="text-xs font-medium uppercase tracking-widest text-[#FFC7BA]">
+              <p className="text-xs font-medium uppercase tracking-widest text-foil-gold">
                 {excerpt.week}
               </p>
-              <h3 className="mt-2 text-lg font-semibold tracking-tight text-white sm:text-xl">
+              <h3 className="font-display mt-2 text-lg font-bold tracking-[-0.02em] text-foil-navy sm:text-xl">
                 {excerpt.title}
               </h3>
-              <p className="mt-3 text-sm leading-relaxed text-zinc-300 sm:text-base">
+              <p className="mt-3 text-sm leading-relaxed text-foil-slate sm:text-base">
                 {excerpt.body}
               </p>
             </article>
@@ -103,11 +103,11 @@ export default function NewsletterPage() {
         </div>
       </section>
 
-      <p className="mt-12 text-center text-xs text-zinc-500 sm:text-sm">
+      <p className="mt-12 text-center text-xs text-foil-slate sm:text-sm">
         Privacy is in the{" "}
         <a
           href="/legal/privacy"
-          className="underline decoration-zinc-700 underline-offset-4 transition hover:text-zinc-300"
+          className="underline decoration-foil-navy/20 underline-offset-4 transition hover:text-foil-navy hover:decoration-foil-gold"
         >
           policy
         </a>
