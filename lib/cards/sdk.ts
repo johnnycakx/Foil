@@ -18,6 +18,48 @@
 const POKEMON_TCG_API_BASE = "https://api.pokemontcg.io/v2/cards";
 const CACHE_TTL_SECONDS = 86_400; // 24h — metadata is stable, no need to refetch hot.
 
+// Session 40 / Task #23: pokemontcg.io issues transient 504s under load.
+// Retry on 5xx + network errors with small backoff so a single hiccup
+// doesn't bake a fallback-record into our 24h cache. Tries: 200ms, 600ms.
+const RETRY_DELAYS_MS = [200, 600];
+
+async function sleep(ms: number): Promise<void> {
+  await new Promise((r) => setTimeout(r, ms));
+}
+
+/**
+ * Wrapper around fetch that retries on 5xx + network errors with a
+ * small backoff. Caller-supplied `fetchImpl` lets tests inject stubs.
+ * Returns the final Response or null if every attempt threw.
+ */
+async function fetchWithRetry(
+  url: string,
+  init: RequestInit,
+  fetchImpl: typeof fetch = fetch,
+): Promise<Response | null> {
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    try {
+      const response = await fetchImpl(url, init);
+      // Retry only on 5xx — 4xx is the caller's problem, 2xx/3xx are
+      // wins (3xx redirects resolve before we see them in fetch).
+      if (response.status >= 500 && attempt < RETRY_DELAYS_MS.length) {
+        await sleep(RETRY_DELAYS_MS[attempt]);
+        continue;
+      }
+      return response;
+    } catch (err) {
+      // Network error / timeout. Retry if we have budget left.
+      if (attempt < RETRY_DELAYS_MS.length) {
+        await sleep(RETRY_DELAYS_MS[attempt]);
+        continue;
+      }
+      void err;
+      return null;
+    }
+  }
+  return null;
+}
+
 export type CardMetadata = {
   id: string;
   /** Display name, e.g. "Charizard". */
@@ -54,20 +96,19 @@ export async function getCardMetadata(input: GetCardMetadataInput): Promise<Card
   if (!id) return minimalRecord("");
 
   const fetchFn = input.fetchImpl ?? fetch;
-  let response: Response;
-  try {
-    response = await fetchFn(`${POKEMON_TCG_API_BASE}/${encodeURIComponent(id)}`, {
+  const response = await fetchWithRetry(
+    `${POKEMON_TCG_API_BASE}/${encodeURIComponent(id)}`,
+    {
       method: "GET",
       headers: { Accept: "application/json" },
       // Next.js: cache for 24h. Catalog metadata is not listing data — caching
       // it is fine and reduces API hits during SSG builds.
       next: { revalidate: CACHE_TTL_SECONDS },
-    } as RequestInit);
-  } catch {
-    return minimalRecord(id);
-  }
+    } as RequestInit,
+    fetchFn,
+  );
 
-  if (!response.ok) {
+  if (!response || !response.ok) {
     return minimalRecord(id);
   }
 
@@ -181,17 +222,16 @@ export async function getSetMetadata(input: GetSetMetadataInput): Promise<SetMet
   if (!id) return minimalSetRecord("");
 
   const fetchFn = input.fetchImpl ?? fetch;
-  let response: Response;
-  try {
-    response = await fetchFn(`${POKEMON_TCG_SETS_BASE}/${encodeURIComponent(id)}`, {
+  const response = await fetchWithRetry(
+    `${POKEMON_TCG_SETS_BASE}/${encodeURIComponent(id)}`,
+    {
       method: "GET",
       headers: { Accept: "application/json" },
       next: { revalidate: CACHE_TTL_SECONDS },
-    } as RequestInit);
-  } catch {
-    return minimalSetRecord(id);
-  }
-  if (!response.ok) return minimalSetRecord(id);
+    } as RequestInit,
+    fetchFn,
+  );
+  if (!response || !response.ok) return minimalSetRecord(id);
   let body: { data?: RawSet } | null;
   try {
     body = (await response.json()) as { data?: RawSet };
@@ -214,17 +254,16 @@ export async function getSetMetadata(input: GetSetMetadataInput): Promise<SetMet
  */
 export async function getAllSets(opts: { fetchImpl?: typeof fetch } = {}): Promise<SetMetadata[]> {
   const fetchFn = opts.fetchImpl ?? fetch;
-  let response: Response;
-  try {
-    response = await fetchFn(`${POKEMON_TCG_SETS_BASE}?pageSize=250`, {
+  const response = await fetchWithRetry(
+    `${POKEMON_TCG_SETS_BASE}?pageSize=250`,
+    {
       method: "GET",
       headers: { Accept: "application/json" },
       next: { revalidate: CACHE_TTL_SECONDS },
-    } as RequestInit);
-  } catch {
-    return [];
-  }
-  if (!response.ok) return [];
+    } as RequestInit,
+    fetchFn,
+  );
+  if (!response || !response.ok) return [];
 
   let body: { data?: RawSet[] } | null;
   try {
@@ -327,17 +366,16 @@ export async function searchCards(input: SearchCardsInput): Promise<CardSearchHi
   const queryStr = `name:${cleaned}*`;
 
   const url = `${POKEMON_TCG_API_BASE}?q=${encodeURIComponent(queryStr)}&pageSize=${limit}&orderBy=-set.releaseDate`;
-  let response: Response;
-  try {
-    response = await fetchFn(url, {
+  const response = await fetchWithRetry(
+    url,
+    {
       method: "GET",
       headers: { Accept: "application/json" },
       next: { revalidate: 300 },
-    } as RequestInit);
-  } catch {
-    return [];
-  }
-  if (!response.ok) return [];
+    } as RequestInit,
+    fetchFn,
+  );
+  if (!response || !response.ok) return [];
 
   let body: { data?: RawCard[] } | null;
   try {

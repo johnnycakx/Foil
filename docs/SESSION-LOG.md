@@ -8,6 +8,60 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-26 — Session 40: five-bug pre-launch fix pass — Task #23
+
+**Commits:** this commit only
+
+**Why this session existed.** Live-verification on the Session-39 deploy surfaced five blocking issues — none of them aesthetic regressions from the visual-identity overhaul, but all of them between the build and a clean Twitter-pinned-post launch:
+
+1. **/start typeahead empty.** Type "charizard" → no dropdown. Diagnosis: `curl 'https://api.pokemontcg.io/v2/cards?q=name:charizard*'` → **HTTP 504**. Upstream Pokemon TCG SDK is intermittently returning 504s under load. Our `searchCards` soft-failed to `[]`. Same root cause for Bug 3 below.
+2. **Blog YAML frontmatter leaks into the rendered body.** Every post on `/blog/<slug>` showed the `---title:... description:... ---` block as paragraph text above the prose. Root cause: `next.config.ts` `createMDX` had `remarkPlugins: ["remark-gfm"]` — `remark-frontmatter` was missing entirely, so MDX never parsed (and never stripped) the leading YAML.
+3. **/cards/sets/base1 rendered 12 of 16 cards with gray placeholder boxes.** Same SDK 504 issue — `/v2/cards/base1-1` returns 504, `/v2/cards/base1-2` returns 200. `getCardMetadata` soft-fails to a minimal record with empty image, page renders the fallback div.
+4. **Homepage hero 8-card grid lacked depth** against the new cream surface — cards rendered at `opacity-50/70` with only `ring-1 ring-foil-navy/10`, blending into the page rather than reading as physical objects above it.
+5. **/start showed a redundant "Subscribe to the Foil newsletter" footer-email-capture widget** below the form, duplicating the in-form newsletter opt-in checkbox.
+
+**What landed.**
+
+### Bug 1 + Bug 3 — retry-on-5xx in the Pokemon TCG SDK wrapper
+
+[`lib/cards/sdk.ts`](../lib/cards/sdk.ts) — new `fetchWithRetry()` helper with backoff `[200ms, 600ms]` (1 initial + 2 retries = 3 attempts total). Applied to all four SDK entry points: `getCardMetadata`, `getSetMetadata`, `getAllSets`, `searchCards`. Retries only on 5xx + network errors; 4xx (e.g. 404 for an unknown id) still goes straight to the soft-fail minimal record. The retry is opaque to callers — existing soft-fail semantics intact, `fetchImpl` injection point for tests preserved.
+
+### Bug 2 — `remark-frontmatter` added to the MDX pipeline
+
+[`next.config.ts`](../next.config.ts) `remarkPlugins: ["remark-frontmatter", "remark-gfm"]`. `npm install remark-frontmatter` (v5.0.0) → [`package.json`](../package.json) deps. With this plugin in place, the YAML at the top of every post is parsed as frontmatter by the MDX compiler and stripped from the rendered body; the existing `getPost()` helper in `app/(site)/blog/posts-meta.ts` already reads the frontmatter via `gray-matter` separately, so the metadata path is unchanged — only the body rendering picks up the fix.
+
+### Bug 4 — Homepage hero card-grid depth retune
+
+[`app/(site)/page.tsx`](../app/(site)/page.tsx) Hero card backdrop:
+
+- Each card gains `shadow-xl shadow-foil-navy/30` + `ring-1 ring-foil-navy/15` (was `ring-1 ring-foil-navy/10` with no shadow).
+- Container `opacity-50 sm:opacity-70` → `opacity-90` flat (cards now read as foreground, not ghosted backdrop).
+- Container repositioned `inset-x-0 top-0` + `pt-6 sm:pt-10` so the cards anchor to the top of the hero, not the centerline.
+- Two new scrim divs: (a) a soft `bg-gradient-to-b from-foil-gold/5 via-transparent to-foil-cream` behind the card row only (gives cards a "surface" to sit on without darkening the page), (b) a bottom fade `bg-gradient-to-b from-transparent to-foil-cream` so the H1 reads cleanly against the cards above it.
+- Existing per-card `tilt` (`-rotate-[6deg]`, `rotate-[4deg]`, …) stays — already the collector-binder vibe; the shadows finish the effect.
+
+### Bug 5 — Suppress `<FooterEmailCapture />` on /start
+
+[`components/footer-email-capture.tsx`](../components/footer-email-capture.tsx) — gained a `usePathname()` check + `SUPPRESS_ON_ROUTES = ["/start"]` allowlist. Returns `null` on /start; everywhere else still renders the EmailCapture. Single-file fix; layout untouched.
+
+### Tests + docs
+
+- [`lib/__tests__/cards-search-route.test.ts`](../lib/__tests__/cards-search-route.test.ts) (NEW) — contract pin for the `/api/cards/search` route at two layers: (1) source-level structural pins (file exists, `GET` exported, `NextResponse.json({ hits: ... })` shape, `MAX_QUERY_LENGTH=64` + `RESULT_LIMIT=8` constants stable); (2) behavioral pins on the underlying `searchCards` (6-field SearchHit shape, empty-query short-circuit, **retry-on-504 recovers with the 2nd response**, soft-fail after all 3 attempts 504). Same dual-layer pattern as `cron-wishlist-route.test.ts` since the route imports path-aliased modules that don't resolve under `node --experimental-strip-types`. Plus one assertion that `FooterEmailCapture` suppresses on `/start`.
+- [`package.json`](../package.json) — `cards-search-route.test.ts` registered in the `test` script; `remark-frontmatter` v5.0.0 in dependencies.
+
+**Closure gate.**
+
+- `npm test` — 495/495 passing (480 prior + 10 new in `cards-search-route.test.ts` + 5 wishlist-cron expansions from the broader suite).
+- `npx tsc --noEmit` — clean.
+- `npm run compliance:check` — 6/6 PASS.
+- `/security-review` — no HIGH/MEDIUM findings (filed in the close-out summary).
+- Vercel deploy — Ready.
+- Live-verification (5/5 pass): typed "charizard" on /start → dropdown renders hits; opened a /blog post → no YAML frontmatter in prose; opened /cards/sets/base1 → all 16 cards render real images (no gray placeholders); homepage hero card grid → cards elevated with shadow + tilt above cream surface; /start page → no redundant footer newsletter widget.
+
+**Follow-ups added to ROADMAP.** None new. The pre-existing `staticPageGenerationTimeout` fix from Session 39 + the new retry-on-5xx layer should together insulate future builds from intermittent upstream 504s.
+
+---
+
 ## 2026-05-26 — Session 39: visual identity overhaul (cream + navy + gold) — Task #22 / ADR-029
 
 **Commits:**

@@ -80,16 +80,24 @@ function Hero() {
         />
       </div>
 
-      {/* Card grid backdrop — translucent, behind the copy, with 3D
-          tilt-on-hover via Card3D. */}
+      {/* Card grid backdrop — tactile collector-binder layout with
+          per-card shadows + rotation. Each card sits "above" the cream
+          surface; a soft scrim behind the row keeps the H1 readable. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-2 px-5 opacity-50 sm:px-8 sm:opacity-70"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-3 px-5 pt-6 opacity-90 sm:px-8 sm:gap-4 sm:pt-10"
       >
+        {/* Scrim — a subtle gold/navy gradient behind the card-row only
+            so the cards have a "surface" to sit on without darkening the
+            whole page. Sits between the page bg and the cards. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-foil-gold/5 via-transparent to-foil-cream"
+        />
         {HERO_CARDS.map((c) => (
           <div key={c.id} className={`shrink-0 ${c.tilt}`}>
             <Card3D>
-              <div className="relative aspect-[5/7] w-20 overflow-hidden rounded-md ring-1 ring-foil-navy/10 sm:w-24 md:w-28">
+              <div className="relative aspect-[5/7] w-20 overflow-hidden rounded-md shadow-xl shadow-foil-navy/30 ring-1 ring-foil-navy/15 sm:w-24 md:w-28">
                 <Image
                   src={`https://images.pokemontcg.io/${c.id}_hires.png`}
                   alt={c.alt}
@@ -103,6 +111,14 @@ function Hero() {
             </Card3D>
           </div>
         ))}
+        {/* Copy-area scrim — fades cream over the lower half of the card
+            row so the H1 (rendered in the foreground container) reads
+            cleanly against the busy card backdrop without losing the
+            tactile feel above. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-foil-cream sm:h-40"
+        />
       </div>
 
       <div className="relative mx-auto w-full max-w-6xl px-5 pt-16 pb-20 sm:px-8 sm:pt-24 sm:pb-28">

@@ -53,9 +53,13 @@ const nextConfig: NextConfig = {
 
 // Plugin names must be strings (not imported functions) so Turbopack can pass
 // them across the Rust boundary. Serializable options only.
+//
+// `remark-frontmatter` is required so the `---title:...---` YAML at the top of
+// every blog post is parsed as frontmatter (then stripped from the body) rather
+// than rendered as paragraph text. Session-40 / Task #23 fix.
 const withMDX = createMDX({
   options: {
-    remarkPlugins: ["remark-gfm"],
+    remarkPlugins: ["remark-frontmatter", "remark-gfm"],
     rehypePlugins: [
       [
         "rehype-pretty-code",

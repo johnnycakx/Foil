@@ -11,10 +11,22 @@
 // "footer email capture" map cleanly to a discrete component, and so a
 // future redesign (e.g. swapping the footer copy / layout) doesn't need
 // to touch every consumer.
+//
+// Session 40 / Task #23: suppressed on /start. The /start page has its
+// own in-form newsletter opt-in checkbox; rendering the footer email
+// capture there was redundant.
 
+import { usePathname } from "next/navigation";
 import { EmailCapture } from "@/components/email-capture";
 
+// Routes that already capture an email and shouldn't also show the
+// footer capture. Add a route here if a new page ships its own primary
+// email-capture surface.
+const SUPPRESS_ON_ROUTES: readonly string[] = ["/start"];
+
 export function FooterEmailCapture() {
+  const pathname = usePathname();
+  if (pathname && SUPPRESS_ON_ROUTES.includes(pathname)) return null;
   return (
     <EmailCapture
       source="footer"
