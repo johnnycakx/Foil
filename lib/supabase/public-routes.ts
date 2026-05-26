@@ -75,6 +75,14 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // single email field with source='newsletter-landing'.
   { kind: "exact", path: "/newsletter" },
 
+  // /start onboarding page (Task #20 / Session 38). Multi-card watchlist
+  // signup — the new headline Twitter-CTA target. The page + the /api/start
+  // POST + the /api/cards/search GET (typeahead) all must be reachable
+  // anonymously per ADR-020.
+  { kind: "exact", path: "/start" },
+  { kind: "exact", path: "/api/start" },
+  { kind: "exact", path: "/api/cards/search" },
+
   // RFC 8058 one-click unsubscribe endpoint (Task #18 / Session 37). Both
   // GET (visible-link path) and POST (List-Unsubscribe-Post one-click) are
   // anonymous — the HMAC token IS the identity proof; no session needed.

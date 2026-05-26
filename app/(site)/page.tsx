@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { EmailCapture } from "@/components/email-capture";
 import { CARD_CATALOG, setIdsInCatalog } from "@/lib/cards/catalog";
+import { BackgroundGradientAnimation } from "@/components/aceternity/background-gradient-animation";
+import { MagneticLink } from "@/components/aceternity/magnetic-button";
+import { Sparkles } from "@/components/aceternity/sparkles";
 
 const SITE_TITLE = "Foil — The best price on any Pokémon card";
 const SITE_DESCRIPTION =
@@ -46,62 +50,112 @@ export default async function Home() {
   );
 }
 
+// Hand-curated mix of vintage holos + modern chase. Pokemon TCG SDK image
+// CDN serves these directly via `https://images.pokemontcg.io/<setId>/<n>_hires.png`
+// — same data the per-card pages already load, so the browser cache wins
+// on subsequent navigation. Session 38 / Task #20.
+const HERO_CARDS: { id: string; alt: string; tilt: string }[] = [
+  { id: "base1/4", alt: "Charizard, Base Set", tilt: "-rotate-[6deg]" },
+  { id: "base1/2", alt: "Blastoise, Base Set", tilt: "rotate-[4deg]" },
+  { id: "base1/15", alt: "Venusaur, Base Set", tilt: "-rotate-[3deg]" },
+  { id: "sv3pt5/199", alt: "Charizard ex, Pokémon 151", tilt: "rotate-[5deg]" },
+  { id: "sv3pt5/198", alt: "Venusaur ex, Pokémon 151", tilt: "-rotate-[2deg]" },
+  { id: "swsh7/8", alt: "Leafeon VMAX, Evolving Skies", tilt: "rotate-[7deg]" },
+  { id: "swsh9/25", alt: "Umbreon V, Brilliant Stars", tilt: "-rotate-[5deg]" },
+  { id: "neo1/4", alt: "Lugia, Neo Genesis", tilt: "rotate-[2deg]" },
+];
+
 function Hero() {
   const cardCount = CARD_CATALOG.length;
   const setCount = setIdsInCatalog().length;
   return (
-    <section className="relative mx-auto w-full max-w-6xl overflow-hidden px-5 pt-12 pb-16 sm:px-8 sm:pt-20 sm:pb-24">
-      {/* Subtle radial glow behind the headline — adds atmosphere without
-          slowing the LCP. Pointer-events-none + decorative-only. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 opacity-60"
-        style={{
-          background:
-            "radial-gradient(ellipse at 25% 0%, rgba(255, 107, 92, 0.18) 0%, rgba(11, 20, 40, 0) 55%)",
-        }}
-      />
-      <p className="inline-flex items-center gap-2 rounded-full border border-[#FF6B5C]/30 bg-[#FF6B5C]/10 px-3 py-1 text-xs font-medium text-[#FFC7BA]">
-        <span className="relative inline-flex h-1.5 w-1.5">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FF6B5C] opacity-60" />
-          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
-        </span>
-        Live · tracking {cardCount} cards across {setCount} sets
-      </p>
-      <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
-        The best price on any Pokémon card.{" "}
-        <span className="text-[#FF6B5C]">Right now.</span>
-      </h1>
-      <p className="mt-5 max-w-2xl text-lg text-zinc-300 sm:text-xl">
-        Foil searches eBay&apos;s live listings the moment you ask and surfaces the
-        single highest-value deal for the exact card you want — judged by price,
-        shipping, condition, and seller reputation.{" "}
-        <span className="text-zinc-400">
-          Built by a Level-4 TCGplayer Verified Seller who got tired of comparing
-          20 listings to find one good one.
-        </span>
-      </p>
-
-      <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-        <Link
-          href="/cards"
-          className="inline-flex items-center justify-center rounded-xl bg-[#FF6B5C] px-6 py-3.5 text-base font-semibold text-[#0B1428] transition hover:bg-[#FF8775]"
-        >
-          Browse the catalog →
-        </Link>
-        <a
-          href="#example"
-          className="text-sm text-zinc-400 underline decoration-zinc-700 underline-offset-4 transition hover:text-zinc-200 hover:decoration-zinc-400"
-        >
-          See an example ↓
-        </a>
+    <section className="relative isolate overflow-hidden">
+      {/* Aceternity gradient backdrop — Foil-tuned holographic palette. */}
+      <div className="absolute inset-0 -z-10">
+        <BackgroundGradientAnimation
+          interactive={false}
+          firstColor="255, 107, 92"
+          secondColor="100, 220, 200"
+          thirdColor="180, 130, 255"
+          fourthColor="255, 200, 120"
+          containerBg="#0B1428"
+          className="h-full w-full"
+        />
       </div>
 
-      <div className="mt-10 max-w-xl">
-        <EmailCapture source="homepage_hero" variant="inline" headline="Get the weekly best-deals newsletter." />
-        <p className="mt-3 text-xs text-zinc-500">
-          Free. No spam — we email when your wishlisted cards drop in price.
+      {/* Card-grid backdrop — translucent, behind the copy. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-2 px-5 opacity-[0.18] sm:px-8 sm:opacity-25"
+      >
+        {HERO_CARDS.map((c) => (
+          <div
+            key={c.id}
+            className={`relative aspect-[5/7] w-20 shrink-0 overflow-hidden rounded-md shadow-2xl ring-1 ring-white/5 sm:w-24 md:w-28 ${c.tilt}`}
+          >
+            <Image
+              src={`https://images.pokemontcg.io/${c.id}_hires.png`}
+              alt={c.alt}
+              width={240}
+              height={336}
+              unoptimized
+              className="h-full w-full object-cover"
+              priority={false}
+            />
+          </div>
+        ))}
+      </div>
+
+      <div className="relative mx-auto w-full max-w-6xl px-5 pt-16 pb-20 sm:px-8 sm:pt-24 sm:pb-28">
+        <p className="inline-flex items-center gap-2 rounded-full border border-[#FF6B5C]/30 bg-[#FF6B5C]/10 px-3 py-1 text-xs font-medium text-[#FFC7BA] backdrop-blur-sm">
+          <span className="relative inline-flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FF6B5C] opacity-60" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#FF6B5C]" />
+          </span>
+          Live · tracking {cardCount} cards across {setCount} sets
         </p>
+
+        {/* Headline in display font; sparkles cluster behind for holographic
+            shimmer without stealing the focal point. */}
+        <div className="relative mt-6 max-w-3xl">
+          <Sparkles count={24} className="pointer-events-none" />
+          <h1 className="font-display relative text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl">
+            Tell me a Pokémon card.{" "}
+            <span className="text-[#FF6B5C]">I&apos;ll email you when it drops.</span>
+          </h1>
+        </div>
+
+        <p className="mt-5 max-w-2xl text-lg text-zinc-300 sm:text-xl">
+          Foil watches eBay&apos;s live listings, filters the keyword-stuffed
+          junk, and emails you the moment a real listing drops to your target
+          price.{" "}
+          <span className="text-zinc-400">
+            Built by a Level-4 TCGplayer Verified Seller who got tired of
+            comparing 20 listings to find one good one.
+          </span>
+        </p>
+
+        <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
+          <MagneticLink
+            href="/start"
+            className="rounded-xl bg-[#FF6B5C] px-6 py-3.5 text-base font-semibold text-[#0B1428] shadow-lg shadow-[#FF6B5C]/30 transition-colors hover:bg-[#FF8775]"
+          >
+            Start tracking cards →
+          </MagneticLink>
+          <Link
+            href="/cards"
+            className="text-sm text-zinc-200 underline decoration-zinc-600 underline-offset-4 transition hover:text-white hover:decoration-zinc-300"
+          >
+            Browse the catalog →
+          </Link>
+        </div>
+
+        <div className="mt-10 max-w-xl">
+          <EmailCapture source="homepage_hero" variant="inline" headline="Or just get the weekly newsletter." />
+          <p className="mt-3 text-xs text-zinc-400">
+            Free. No spam — about one email a week, unsubscribe anytime.
+          </p>
+        </div>
       </div>
     </section>
   );

@@ -111,6 +111,16 @@ test("/api/unsubscribe is public — RFC 8058 one-click + token IS the auth (Tas
   assert.equal(isPublicRoute("/api/unsubscribe"), true);
 });
 
+test("/start onboarding page + supporting APIs are public (Task #20 / Session 38)", () => {
+  // /start is the new headline Twitter-CTA target. Must be crawlable for
+  // SEO AND reachable anonymously. The supporting /api/start (bulk insert)
+  // + /api/cards/search (typeahead) must also be reachable without auth —
+  // the page is anonymous-friendly per ADR-020.
+  assert.equal(isPublicRoute("/start"), true);
+  assert.equal(isPublicRoute("/api/start"), true);
+  assert.equal(isPublicRoute("/api/cards/search"), true);
+});
+
 test("/newsletter prefix doesn't bleed (exact route, not prefix)", () => {
   // /newsletter is registered as exact, NOT prefix, so it must NOT match
   // /newsletters or /newsletter-archive. If a future change needs nested

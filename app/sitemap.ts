@@ -17,6 +17,7 @@ const LANDING_PATHS: { path: string; priority: number; changeFrequency: Metadata
   { path: "/pokemon-card-condition-guide", priority: 0.9, changeFrequency: "monthly" },
   { path: "/blog", priority: 0.7, changeFrequency: "weekly" },
   { path: "/newsletter", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/start", priority: 0.95, changeFrequency: "weekly" },
   { path: "/legal/ebay-api-compliance", priority: 0.5, changeFrequency: "monthly" },
   { path: "/legal/privacy", priority: 0.4, changeFrequency: "yearly" },
   { path: "/legal/terms", priority: 0.4, changeFrequency: "yearly" },

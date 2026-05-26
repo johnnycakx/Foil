@@ -281,3 +281,89 @@ function minimalSetRecord(id: string): SetMetadata {
     logoUrl: id ? `https://images.pokemontcg.io/${id}/logo.png` : "",
   };
 }
+
+// ---------------------------------------------------------------------------
+// Card-name search — for the /start onboarding page (Task #20 / Session 38).
+// ---------------------------------------------------------------------------
+
+export type CardSearchHit = {
+  id: string;
+  name: string;
+  setName: string;
+  setId: string;
+  number: string;
+  /** Small thumbnail URL — the search surface uses thumbnails, not hi-res. */
+  image: string;
+};
+
+export type SearchCardsInput = {
+  /** Partial / full card name. Empty → []. */
+  query: string;
+  /** Max results. Default 8. Hard ceiling 25 to keep the response light. */
+  limit?: number;
+  fetchImpl?: typeof fetch;
+};
+
+/**
+ * Search the Pokemon TCG catalog by card name. Returns lightweight hits
+ * (thumbnail-sized image, set context) for the /start multi-select form.
+ *
+ * Soft-fail: returns `[]` on any error path. The caller renders "no results"
+ * uniformly regardless of network / API state.
+ */
+export async function searchCards(input: SearchCardsInput): Promise<CardSearchHit[]> {
+  const q = input.query?.trim();
+  if (!q) return [];
+  const limit = Math.max(1, Math.min(input.limit ?? 8, 25));
+  const fetchFn = input.fetchImpl ?? fetch;
+
+  // The pokemontcg.io v2 query language: `name:value*` is a prefix match.
+  // We escape the user input minimally — drop any character outside
+  // [a-zA-Z0-9 -'.] which covers Pokémon names but neutralizes Lucene
+  // operators (`:`, `(`, `)`, `"`, AND/OR, etc.) that would otherwise let
+  // a malicious query short-circuit the name filter.
+  const cleaned = q.replace(/[^a-zA-Z0-9 \-'.]/g, "").trim();
+  if (!cleaned) return [];
+  const queryStr = `name:${cleaned}*`;
+
+  const url = `${POKEMON_TCG_API_BASE}?q=${encodeURIComponent(queryStr)}&pageSize=${limit}&orderBy=-set.releaseDate`;
+  let response: Response;
+  try {
+    response = await fetchFn(url, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      next: { revalidate: 300 },
+    } as RequestInit);
+  } catch {
+    return [];
+  }
+  if (!response.ok) return [];
+
+  let body: { data?: RawCard[] } | null;
+  try {
+    body = (await response.json()) as { data?: RawCard[] };
+  } catch {
+    return [];
+  }
+
+  const raws = Array.isArray(body?.data) ? body.data : [];
+  const hits: CardSearchHit[] = [];
+  for (const raw of raws) {
+    if (typeof raw.id !== "string" || !raw.id) continue;
+    const setId = derivedSetIdFromId(raw.id);
+    const num = typeof raw.number === "string" ? raw.number : derivedNumberFromId(raw.id);
+    const image =
+      (typeof raw.images?.small === "string" && raw.images.small) ||
+      (typeof raw.images?.large === "string" && raw.images.large) ||
+      `https://images.pokemontcg.io/${setId}/${num}.png`;
+    hits.push({
+      id: raw.id,
+      name: typeof raw.name === "string" ? raw.name : derivedNameFromId(raw.id),
+      setName: typeof raw.set?.name === "string" ? raw.set.name : setId,
+      setId,
+      number: num,
+      image,
+    });
+  }
+  return hits;
+}

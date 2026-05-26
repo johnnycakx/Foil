@@ -989,6 +989,75 @@ All three call `lib/beehiiv.ts::subscribeEmail(email, source)`. The watchlist ro
 
 ---
 
+## ADR-028 — Aceternity-UI patterns: code-owned, no npm vendor, niche visual identity
+
+**Date:** 2026-05-25
+**Status:** Accepted
+
+**Context.** Per [STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md) the audience moat requires *niche-distinctive* visual identity — Foil should not look like a generic dark-product SaaS. Pokémon TCG buyers come from a category with strong visual cues (holographic foil, card-binder hover gestures, set-symbol typography). The previous homepage was a clean generic dark-product layout — competent, but indistinguishable from any startup hero.
+
+[Aceternity UI](https://ui.aceternity.com/components) is an MIT-licensed library of "copy-paste" React components that have become the canonical pattern for niche-distinctive interactive UI: 3D Card Effect (perspective tilt on hover), Background Gradient Animation (drifting blurred color blobs with goo-filter merging), Magnetic Button (pointer-following CTA), Sparkles (twinkling accent dots). They're all visually striking AND framework-portable.
+
+The library distributes via copy-paste rather than npm; the documented expectation is "drop the source file into your `components/` tree and customize." This is intentional — Aceternity wants users to OWN the code, not depend on a vendor's release cadence.
+
+**Alternatives considered.**
+
+1. **Install via npm (`aceternity-ui` is not on npm; community ports like `aceternity-ui-react` exist but are unmaintained forks).** Rejected — copy-paste is the documented distribution model, and forks add untracked drift.
+2. **Use a different library (shadcn/ui, Magic UI, Origin UI, etc.).** shadcn/ui is the dominant pattern for *primitive* components (Button, Dialog) which we don't need — we have working primitives. Magic UI overlaps Aceternity but is less Pokémon-niche-fit. Origin UI is editorial. Aceternity's holographic-card aesthetic IS the niche fit.
+3. **Build the same effects from scratch with no reference library.** This is effectively what we did anyway (see "Implementation deviation" below) — but starting from the Aceternity patterns gives us a shared visual vocabulary the broader ecosystem recognizes.
+4. **Install framer-motion to support the Aceternity components verbatim.** Adds ~120KB to the client bundle for effects that can be implemented in CSS-only. Rejected — pure-CSS implementations are lighter and equally good for our use cases (no sequenced enter/exit animations, no scroll-triggered timelines).
+
+**Decision.** Ship four Aceternity-pattern components as **code-owned MIT-licensed source files** in `components/aceternity/`. Implement them with pure CSS + minimal React state (no framer-motion dependency). Tune the color defaults to Foil's brand palette so the holographic effect reads as "Pokémon TCG foil card under a light," not "generic SaaS gradient."
+
+Component inventory:
+
+| File | Pattern | Used where |
+|---|---|---|
+| `components/aceternity/background-gradient-animation.tsx` | Four blurred RGB blobs drift across the container; SVG goo filter makes them merge instead of overlap. | Homepage hero backdrop. |
+| `components/aceternity/card-3d.tsx` | Pointer-tracked perspective tilt; `Card3DBody` + `Card3DItem` for layered-depth children. | Reserved for `/cards` thumbnails + per-card related-cards block (deferred to follow-up — landed the homepage + /start surfaces this session). |
+| `components/aceternity/magnetic-button.tsx` | CTA shifts up to ±12px toward the pointer within an 80px radius. Sibling `MagneticLink` for `<a>` semantics. | Primary "Start tracking cards →" CTA on the hero. |
+| `components/aceternity/sparkles.tsx` | N twinkling dots positioned by deterministic PRNG; CSS keyframe twinkle with randomized delays. | Behind the hero headline for holographic shimmer. |
+
+**Implementation deviation — pure CSS, not framer-motion.** Aceternity's reference implementations use framer-motion (~120KB on the client). Foil's implementations use:
+- Plain `useState` + `useRef` for pointer tracking.
+- Inline `style` transforms (no animation library).
+- CSS `@keyframes` (in `<style jsx>` blocks) for the perpetual loops (gradient drift, sparkles twinkle).
+
+The result is bundle-light, framework-portable, and visually equivalent for our use cases.
+
+**Cabinet Grotesk substitution.** The goal text named Cabinet Grotesk as the display font. Cabinet Grotesk is a Fontshare release and isn't on Google Fonts; using `next/font/local` would require self-hosting a font file. The substitute is **Bricolage Grotesque** (Google Fonts, variable axes for width + weight), which has comparable geometric-display feel without the self-hosting surface. Documented here so a future migration to Cabinet Grotesk via `next/font/local` is a one-line change in `app/layout.tsx`.
+
+**Architectural posture.**
+
+- **Code-owned, MIT.** Aceternity's MIT license permits copy-paste use; our header comment in each file credits the pattern + names the decision (ADR-028). The components are now Foil source — no vendor release dependency.
+- **No npm dependency added.** No `framer-motion`, no `clsx`, no `tailwind-merge` — all the dependencies the original Aceternity components carry are avoided by the pure-CSS rewrite.
+- **Brand-tuned defaults.** The four-color holographic palette (`#FF6B5C` primary + teal + violet + amber) is the niche-distinctive choice. `lib/__tests__/aceternity-components.test.ts` pins these defaults so a refactor can't quietly drift the palette away from the holographic-foil signal.
+- **Drift guards in CI.** `aceternity-components.test.ts` asserts each file exports the named API, the SVG goo filter is intact (BackgroundGradientAnimation), the three-piece Card3D API stays composable, the magnet defaults hold, and the homepage hero composes the right components.
+
+**Consequences.**
+
+- **Niche-distinctive homepage.** The hero now reads as "Pokémon TCG holographic foil" rather than "generic SaaS dark mode." This is the entire point of the goal.
+- **Light client bundle.** No framer-motion → the new hero adds <5KB gzipped to the page weight (the four component files combined). A framer-motion-based implementation would have added 100KB+.
+- **Browser-quirk surface.** SVG goo filters render slightly differently in Safari vs Chrome (Safari's blur radius interpolation lags). The visual is degraded gracefully on Safari (blobs look softer / less merged) — never broken. If founder observes a real Safari regression in production, we tune the blur stdDeviation.
+- **Future Aceternity components can land cheap.** Adding a new component is a ~150-line file copy + a tuned color default. The drift-guard pattern is replicable.
+- **prefers-reduced-motion is NOT yet honored.** The gradient drift + sparkle twinkle + magnetic motion all play regardless of OS-level reduce-motion setting. A11y followup (out of scope this session): wrap each component in a `@media (prefers-reduced-motion: reduce)` guard that freezes the animation.
+- **/cards thumbnail 3D wrap is deferred.** Card3D ships in the codebase; the per-card-thumbnail composition is a thin follow-up that can land in any future polish goal. The Card3D-component drift guard pins the API so the follow-up doesn't require re-writing the primitive.
+
+**Cross-refs.**
+
+- [STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md) — names the niche-distinctive visual identity requirement.
+- [STRATEGY-PROGRAMMATIC-SEO.md](STRATEGY-PROGRAMMATIC-SEO.md) — the catalog-expansion sprints depend on per-card pages reading as distinctive at scale; the visual identity from this ADR generalises across all 5K pages.
+- Aceternity UI MIT license — preserved as the header credit in each component file.
+
+**Followups (out of scope for Session 38).**
+
+1. `/cards` + `/cards/[slug]` thumbnail wraps in Card3D (the components ship; the wrap is a thin polish goal).
+2. `prefers-reduced-motion` honoring on the gradient + sparkle + magnetic components.
+3. Aceternity Text Hover Effect variant for set-name typography on `/cards/sets/<id>`.
+4. Cabinet Grotesk via `next/font/local` if the founder wants to revisit the substitution.
+
+---
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).
