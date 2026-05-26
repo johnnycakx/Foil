@@ -10,7 +10,9 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ## 2026-05-26 — Session 39: visual identity overhaul (cream + navy + gold) — Task #22 / ADR-029
 
-**Commits:** this commit only
+**Commits:**
+- `0e58c25 feat(visual-identity): cream + navy + gold collector-niche palette (ADR-029 / Task #22)` — the full Session-39 retune
+- `deab618 fix(build): bump staticPageGenerationTimeout to 300s for cards routes` — ride-along fix for a pre-existing build-time pokemontcg.io fetch timeout that was blocking both this deploy and the prior `b67ed97` Scrydex remotePatterns deploy. Not Session-39 work in shape, but Session 39 wouldn't have shipped without it.
 
 **Why this session existed.** Day-after-Session-38 founder design call concluded the dark/coral palette still read as "indie SaaS template" rather than "Pokemon TCG collector niche." Yesterday's Aceternity primitives ([ADR-028](DECISIONS.md#adr-028--aceternity-ui-patterns-code-owned-no-npm-vendor-niche-visual-identity)) gave us niche-distinctive *motion* but the palette + chrome around them was the giveaway. The Twitter pinned-post launch was blocked on a real visual identity. Session 39 *retunes* the Session 38 foundation — the components stay, the colors change.
 
@@ -55,9 +57,26 @@ Every public-surface file under `app/(site)/` migrated to the token system. Cora
 - **`/start` numbering.** Dropped numbering entirely (vs. always-render-step-2 or renumber-on-the-fly). Named section headers eliminate the 1→3 gap without adding visual weight to a greyed-out empty section.
 - **Coral as error indicator.** `text-foil-coral` (without `hover:` prefix) appears in error-message text on the /start form + EmailCapture form. Pragmatic exception to "coral hover-only" — error UI needs a non-neutral attention tone and gold reads as warning, not error. Test pins `bg-foil-coral` + `ring-foil-coral` only; `text-foil-coral` is allowed without the prefix.
 
-**Closure gate result is filled in by the live-verify step below before the commit lands.**
+**Closure gate.**
 
-**Follow-ups added to ROADMAP.** None new. Three ADR-029 followups (`prefers-reduced-motion`, Card3D thumbnail composition, Cabinet Grotesk via `next/font/local`) tracked in the ADR — out of scope for Session 39. (The Session-38-noted `images.scrydex.com` remotePatterns gap closed in commit `b67ed97` before this session started.)
+- `npm test` — 485/485 passing (467 prior + 5 new visual-regression + extras from the wishlist-cron expansion).
+- `npx tsc --noEmit` — clean.
+- `npm run compliance:check` — 6/6 PASS (no eBay code paths touched).
+- `/security-review` — no HIGH/MEDIUM findings (cosmetic refactor).
+- Vercel deploy — first attempt errored on the pre-existing pokemontcg.io static-generation timeout; `deab618` bumped `staticPageGenerationTimeout` to 300s; second attempt (`foil-c6d09mncm-foilapp.vercel.app`) Ready in ~5m30s.
+
+**Live-verification (post-deploy curl probes).**
+
+| URL | Result |
+|---|---|
+| `GET /` | **200 OK** — H1 in single `<h1>` span ("Tell me a Pokémon card. I'll email you when it drops.") in `text-foil-navy`, body `bg-foil-cream text-foil-navy`. No raw `#FF6B5C/#FF8775/#0B1428/#101D38` hex literals in the markup. |
+| `GET /start` | **200 OK** — section headers "Tell me a card" + "Where to email you" present; zero `>1.\s`/`>2.\s`/`>3.\s` step-numbering literals. Section 2 ("Set target prices") still conditionally rendered behind selection. |
+| `GET /cards` | **200 OK** — catalog label `text-foil-gold`, cream set-tile grid. |
+| `GET /cards/base1-4-charizard` | **200 OK** — "Best current listing" panel with `border-foil-gold/40`, Buy CTA `bg-foil-navy`. |
+| `GET /blog` | **200 OK** — "Field notes" gold label, "Foil Blog" headline navy. |
+| `GET /legal/privacy` | **200 OK** — cream BG + navy text confirmed. |
+
+**Follow-ups added to ROADMAP.** None new. Three ADR-029 followups (`prefers-reduced-motion`, Card3D thumbnail composition, Cabinet Grotesk via `next/font/local`) tracked in the ADR — out of scope for Session 39. (The Session-38-noted `images.scrydex.com` remotePatterns gap closed in commit `b67ed97` before this session started; the build-time timeout gap closed via `deab618` in this session.)
 
 ---
 
