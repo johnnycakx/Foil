@@ -21,6 +21,10 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "cdn.poketrace.com" },
       { protocol: "https", hostname: "images.poketrace.com" },
       { protocol: "https", hostname: "images.pokemontcg.io" },
+      // Pokemon TCG SDK has federated some image URLs to scrydex.com.
+      // Without this, ~2 of 8 search hits on /start fall back to broken-image.
+      // See Session 38 followup note.
+      { protocol: "https", hostname: "images.scrydex.com" },
       {
         protocol: "https",
         hostname: supabaseStorageHost(),
