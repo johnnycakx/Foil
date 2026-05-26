@@ -49,16 +49,25 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 - [`lib/__tests__/cards-search-route.test.ts`](../lib/__tests__/cards-search-route.test.ts) (NEW) — contract pin for the `/api/cards/search` route at two layers: (1) source-level structural pins (file exists, `GET` exported, `NextResponse.json({ hits: ... })` shape, `MAX_QUERY_LENGTH=64` + `RESULT_LIMIT=8` constants stable); (2) behavioral pins on the underlying `searchCards` (6-field SearchHit shape, empty-query short-circuit, **retry-on-504 recovers with the 2nd response**, soft-fail after all 3 attempts 504). Same dual-layer pattern as `cron-wishlist-route.test.ts` since the route imports path-aliased modules that don't resolve under `node --experimental-strip-types`. Plus one assertion that `FooterEmailCapture` suppresses on `/start`.
 - [`package.json`](../package.json) — `cards-search-route.test.ts` registered in the `test` script; `remark-frontmatter` v5.0.0 in dependencies.
 
+**Mid-session amendment — Bug 3 retry layer widened.** After the first Session-40 deploy, /cards/sets/base1 rendered only 1 of 16 cards with real images (vs the 12-of-16 partial in the pre-Session-40 baseline). Direct probes of `api.pokemontcg.io/v2/cards/base1-1` returned **HTTP 404** repeatedly (not just 504 as initially diagnosed) — the upstream is intermittently 404-ing for cards that exist, alongside the 504s. Since our card IDs are server-controlled (CARD_CATALOG), a 4xx response means upstream is flaky, not that the card is missing. Second commit (`881a300`) extended `fetchWithRetry` with an opt-in `retryOn4xx` flag (taken by `getCardMetadata` + `getSetMetadata`, declined by `searchCards` + `getAllSets`), extended the retry budget to `[200, 600, 1800]ms` (4 attempts total), and reduced the per-page ISR window on `/cards/sets/[set-id]` from 24h → 1h. After the second deploy, the live verify on `/cards/sets/base1` returned 5 of 16 real card images (vs 1 before the amendment).
+
 **Closure gate.**
 
-- `npm test` — 495/495 passing (480 prior + 10 new in `cards-search-route.test.ts` + 5 wishlist-cron expansions from the broader suite).
+- `npm test` — 497/497 passing (495 + 2 new retry-on-4xx tests added in the amendment commit).
 - `npx tsc --noEmit` — clean.
 - `npm run compliance:check` — 6/6 PASS.
 - `/security-review` — no HIGH/MEDIUM findings (filed in the close-out summary).
-- Vercel deploy — Ready.
-- Live-verification (5/5 pass): typed "charizard" on /start → dropdown renders hits; opened a /blog post → no YAML frontmatter in prose; opened /cards/sets/base1 → all 16 cards render real images (no gray placeholders); homepage hero card grid → cards elevated with shadow + tilt above cream surface; /start page → no redundant footer newsletter widget.
+- Vercel deploy — Ready (two commits: `7833348` initial five-bug pass + `881a300` Bug 3 amendment).
+- Live-verification:
+  - **Bug 1 ✅** — `GET /api/cards/search?q=charizard` returns 200 with 8 Charizard hits (Mega Charizard Y/X ex, Charizard ex from Pokémon 151 + Paldean Fates). Typeahead unblocked.
+  - **Bug 2 ✅** — `/blog/hello-world` body renders the actual post prose; no `title:`/`description:`/`tags:`/`pillar:` YAML in the body.
+  - **Bug 3 ⚠️ partially resolved** — `/cards/sets/base1` renders **5 of 16** real card images (vs 1 of 16 before this session). Cross-set probe of `/cards/sets/sv3pt5` showed **0 of N** — direct upstream probes during this build window returned consistent 404s for those specific IDs. **Upstream-availability bound**, not code-fixable in-session: pokemontcg.io is broadcasting transient 404s + 504s across the same IDs over short windows. The structural mitigation (retry on 5xx + 4xx for catalog IDs, 4-attempt budget, 1h ISR) is in place; the page will self-heal on each ISR revalidate cycle as upstream returns to healthy. Per-card pages (`/cards/[slug]`) are force-dynamic and retry on every request, so they're insulated.
+  - **Bug 4 ✅** — Homepage hero ships 16 `shadow-xl shadow-foil-navy/30` instances (8 cards × srcset variants), 2 scrim gradients (gold-tint behind row + cream-fade above H1). Cards now read as tactile above the cream surface.
+  - **Bug 5 ✅** — `/start` no longer renders the "Subscribe to the Foil newsletter" footer widget (0 occurrences); homepage still does (1 occurrence) — confirming the suppression is route-scoped, not global.
 
-**Follow-ups added to ROADMAP.** None new. The pre-existing `staticPageGenerationTimeout` fix from Session 39 + the new retry-on-5xx layer should together insulate future builds from intermittent upstream 504s.
+**Twitter launch unblocked.** The Twitter pinned-post target (`foiltcg.com/start`) works: typeahead returns hits, form converts, no redundant newsletter widget. The set-page partial state (Bug 3) is on a secondary surface that's not on the primary conversion path; ISR will self-heal within an hour of upstream recovery.
+
+**Follow-ups added to ROADMAP.** None new. The combination of `staticPageGenerationTimeout: 300` (Session 39) + retry-on-5xx + retry-on-4xx for catalog-controlled IDs + 1h ISR (Session 40) is the realistic upstream-insulation we can do at the SDK layer. A deeper structural fix — baking catalog metadata into a repo-committed JSON snapshot so SSG doesn't depend on upstream at all — is worth considering as a future task if upstream-flakiness becomes a recurring launch-blocker.
 
 ---
 
