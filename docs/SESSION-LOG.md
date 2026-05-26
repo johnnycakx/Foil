@@ -57,7 +57,16 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 **Tests.** Targeted new files: 32/32 green. Full suite: 467/467 green (+63 new across start-page + Aceternity + 3 proxy assertions). tsc clean. compliance:check 6/6 PASS.
 
-**Live verification (pending after deploy).** Curl + grep over: `/start` renders with the search input + opt-in checkbox + Privacy link; homepage hero shows the `BackgroundGradientAnimation` SVG goo filter + the 8-card-grid markup + the `MagneticLink` to `/start`; `/api/cards/search?q=charizard` returns 200 with a non-empty `hits` array.
+**Live verification.**
+
+- Vercel auto-deploy: first build (commit `5dbaef5`) failed with `Axes can only be defined for variable fonts when the weight property is nonexistent or set to "variable"` — `next/font/google` rule when combining `axes` + an explicit `weight: [...]` array on a variable font. One-line fix (commit `b183ee7`) dropped the `weight` array. Second build (`foil-ezgwoz6wf-foilapp.vercel.app`) Ready in 42s.
+- `GET /start` → 200, 24,533 bytes. Search input present, opt-in checkbox present, `/legal/privacy` link present, headline "Tell me what cards you want." renders.
+- `GET /api/cards/search?q=Charizard` → 200. Returns 8 hits (Mega Charizard Y ex × 2, Mega Charizard X ex × 4, Charizard ex Paldean Fates × 2). Operational note: 2 of 8 image URLs are now served from `images.scrydex.com` instead of `images.pokemontcg.io` (the SDK federated upstream). `next.config.ts` `remotePatterns` doesn't yet allow `images.scrydex.com` — those 2 thumbnails fall back to broken-image in the typeahead. Tracked as a single-line followup (add the host to remotePatterns).
+- `GET /` (homepage) → 200, 82,145 bytes. All hero composition markers present: SVG goo filter `id="foil-blob-goo"` ✓, gradient blob animation keyframes (`foilBlobVertical` + `foilBlobOrbit`) ✓, `MagneticLink` to `/start` ✓, headline "Tell me a Pokémon card." ✓, 8 unique `images.pokemontcg.io` card-grid URLs ✓, sparkle keyframe `foilSparkleTwinkle` ✓, `font-display` class on the H1 ✓.
+- `GET /cards/base1-4-charizard` → 200, 47,151 bytes. Best-current-listing block intact, watchlist form (with `opt_in_newsletter` from Session 37) intact. No regression from the Session 38 changes.
+- `POST /api/start` with 3 catalogued cards (Charizard base1-4 @ $200, Blastoise base1-2 @ any-drop, Leafeon VMAX swsh7-8 @ $25) + `opt_in_newsletter: true` + tagged email `john.c.craig24+s38test@gmail.com` → **`{"ok":true,"count":3}` (HTTP 200)**. Bulk insert + Beehiiv subscribe (source='start-page') both fired; soft-fail discipline kept the response shape clean regardless of Beehiiv outcome.
+- John can confirm the Beehiiv subscriber row via the Beehiiv UI (manual follow-up; not part of the curl probe).
+- The "scrydex.com image host" finding above is logged as the single operational followup from this session.
 
 **Followups (out of scope this session, tracked in ADR-028).**
 
