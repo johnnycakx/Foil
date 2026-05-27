@@ -8,6 +8,65 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-26 — Session 42: MDX component palette migration sweep — Task #26 / ADR-031
+
+**Commits:** this commit only
+
+**Why this session existed.** Session 39's visual-identity overhaul ([ADR-029](DECISIONS.md#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness)) flipped every public surface to cream/navy/gold AND pinned the no-coral-default rule via `visual-regression.test.ts` — but the test's `PUBLIC_SURFACES` list only covered the 15 page-level files. It missed `mdx-components.tsx`, which carries the custom components rendered INSIDE blog-post bodies. Those components still shipped the pre-Session-39 dark-mode palette. The Callout warning variant (`bg-amber-500/5 text-amber-100`) on the new cream surface = washed-out amber-on-cream = effectively invisible. The "Heads up" warning callout in `how-much-is-my-pokemon-card-worth-a-60-second-checklist.mdx` was unreadable. Blog posts are linked from the footer's "Field notes" surface; the bug was the visible-launch blocker before the Twitter pinned-post.
+
+**The meta-lesson.** Page-level visual-regression doesn't catch component-level color drift. The page file uses foil-* tokens; the component file it imports uses zinc/sky/amber/emerald. The surface-list grep in `visual-regression.test.ts` can't see across that boundary. Fix: extend `PUBLIC_SURFACES` to include `mdx-components.tsx` AND add component-specific structural assertions.
+
+**Pre-flight audit — pre-cream tokens in `mdx-components.tsx`:**
+
+| Component | Pre-cream tokens (before) |
+|---|---|
+| `Callout` (info / warning / tip) | `bg-sky-500/5 text-sky-100` · `bg-amber-500/5 text-amber-100` · `bg-emerald-500/5 text-emerald-100`; body wrapper `text-zinc-100/90`; labels `text-sky-300` / `text-amber-300` / `text-emerald-300` |
+| `CardScannerEmbed` | `border-[#FF6B5C]/30 bg-gradient-to-br from-[#101D38] via-[#0B1428]`; H3 `text-white`; body `text-zinc-300`; label `text-[#FFC7BA]`; CTA `bg-[#FF6B5C] text-[#0B1428] hover:bg-[#FF8775]` |
+| `FAQ` | H2 `text-white`; H3 `text-white`; body `text-zinc-300` |
+| `TopicLink` | `text-[#FF6B5C] decoration-[#FF6B5C]/40 hover:decoration-[#FF6B5C]`; arrow `text-[#FF6B5C]` |
+| `pre` MDX override | `border-white/10 bg-[#0B1428]` (no text color set; would inherit) |
+| `code` MDX override | `bg-white/10 text-zinc-100` |
+
+**Token map applied:**
+
+| Component | Cream-palette tokens (after) |
+|---|---|
+| `Callout` info | `border-foil-navy/15 bg-foil-cream text-foil-navy`, label `text-foil-gold`, tag "Note" |
+| `Callout` warning | `border-foil-gold/40 bg-foil-cream text-foil-navy`, label `text-foil-gold`, tag "Heads up" (per ADR-031 — "Heads up" is gold-accent; coral reserved for a future `warn` variant if content requires it) |
+| `Callout` tip | `border-foil-gold/50 bg-foil-gold/5 text-foil-navy`, label `text-foil-gold`, tag "Pro tip" |
+| Callout body wrapper | `text-foil-navy [&>p]:my-0 [&>p+p]:mt-2` (was `text-zinc-100/90 …`) |
+| `CardScannerEmbed` | `border-foil-gold/40 bg-foil-cream shadow-xl shadow-foil-navy/10`; label `text-foil-gold`; H3 `font-display text-foil-navy tracking-[-0.02em]`; body `text-foil-slate`; CTA navy bg + cream text + magnetic hover-y-lift + gold-ring hover |
+| `FAQ` | H2 `font-display text-foil-navy tracking-[-0.02em]`; per-item card `border-foil-navy/10 bg-foil-cream shadow-sm hover:border-foil-gold/40 hover:bg-foil-gold/5`; H3 `text-foil-navy`; body `text-foil-navy/85` |
+| `TopicLink` | `text-foil-navy decoration-foil-gold hover:text-foil-coral`; arrow `text-foil-gold` |
+| `pre` override | `border-foil-navy/15 bg-foil-navy text-foil-cream` — now matches the `prose-pre:*` chain in `app/(site)/blog/[slug]/page.tsx` |
+| `code` override | `bg-foil-navy/10 text-foil-navy` — now matches the `prose-code:*` chain |
+
+**Test extensions ([`lib/__tests__/visual-regression.test.ts`](../lib/__tests__/visual-regression.test.ts)):**
+
+- `mdx-components.tsx` added to `PUBLIC_SURFACES` — the existing cross-cutting no-coral-default + no-raw-hex invariants now extend to it.
+- New: `MDX components: no text-white / text-zinc-* / bg-white/<n> on text-bearing nodes` — explicit negative assertions on the pre-cream Tailwind tokens that caused the bug.
+- New: `Callout: all three variants ship the cream/navy palette + a foil-* label` — pins each variant's wrap class shape.
+- New: `FAQ component: heading + question + answer all use foil-* tokens` — pins H3 + answer `<p>` color classes.
+- New: `MDX pre/code overrides match the prose-* cream styling (no drift)` — pins parity between the MDX override and the prose chain.
+- New: `CardScannerEmbed + TopicLink: cream palette, no pre-cream coral defaults` — pins the CTA + TopicLink shape.
+
+**Existing posts unchanged.** Every `.mdx` under `app/(site)/blog/posts/` still uses `variant="info" | "warning" | "tip"` exactly as before — editorial content untouched. Only the variant rendering changed.
+
+**Closure gate.**
+
+- `npm test` — 518/518 passing (513 prior + 5 new MDX-component assertions).
+- `npx tsc --noEmit` — clean.
+- `npm run compliance:check` — 6/6 PASS.
+- `/security-review` — no HIGH/MEDIUM findings (palette-only Tailwind class substitutions; no new data flow, no new sinks).
+- Vercel deploy — Ready.
+- Live-verify on `/blog/how-much-is-my-pokemon-card-worth-a-60-second-checklist` (the post with the previously-invisible Heads up callout): callout renders `text-foil-navy` body on `bg-foil-cream` with `border-foil-gold/40` accent and `text-foil-gold` "Heads up" label — legible.
+
+**Note on screenshots.** The second goal dispatch requested 4 blog-post screenshots attached to this SESSION-LOG entry. The agent runs in a CLI environment without a browser screenshot tool — visual verification is performed via curl + grep over the rendered HTML (asserting the expected `text-foil-navy bg-foil-cream border-foil-gold/40` markup), not via image capture. If founder wants the screenshot artifacts, open each post URL in a browser post-deploy and capture manually.
+
+**Follow-ups added to ROADMAP.** None new. A future `warn` variant for true alarm-tone callouts (coral border + label stripe) can land when a post needs one; no current post needs it.
+
+---
+
 ## 2026-05-26 — Session 41: per-card page reference-data layer — Task #24 / ADR-030
 
 **Commits:** this commit only

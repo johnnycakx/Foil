@@ -1189,6 +1189,43 @@ The `loadBakedSnapshot()` normalizer fills these defaults into pre-Session-41 ba
 
 ---
 
+## ADR-031 — MDX component palette discipline: tokens only, contrast-tested at the component layer
+
+**Date:** 2026-05-26
+**Status:** Accepted
+
+**Context.** Session 39 ([ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness)) migrated every public surface to the cream/navy/gold palette and pinned the no-coral-default invariant with `lib/__tests__/visual-regression.test.ts`. The invariant covered 15 page-level surfaces. It did NOT cover `mdx-components.tsx` — the custom components rendered INSIDE blog-post bodies (`<Callout>`, `<FAQ>`, `<CardScannerEmbed>`, `<TopicLink>`, the `pre`/`code` MDX overrides). Those components still carried the pre-Session-39 dark-mode palette: callout variants used `bg-sky-500/5 text-sky-100` (info), `bg-amber-500/5 text-amber-100` (warning), `bg-emerald-500/5 text-emerald-100` (tip) — all light text on light-tinted backgrounds. The CardScannerEmbed used `bg-gradient-to-br from-[#101D38] via-[#0B1428]` with `text-white` and a coral CTA. Once the page chrome flipped cream, the Callout body text rendered as washed-out pastel on cream — the "Heads up" warning callout in `how-much-is-my-pokemon-card-worth-a-60-second-checklist.mdx` was effectively invisible. Blog posts are linked from the footer's "Field notes" surface, so the bug blocked the Twitter pinned-post launch.
+
+**The meta-lesson.** Page-level visual-regression doesn't catch component-level color drift. Components imported INTO a page render their own classNames, which the page's surface-list grep can't see. The fix needed both layers: extend the file allowlist to include `mdx-components.tsx`, AND pin component-specific invariants (Callout body uses `text-foil-navy` not `text-zinc-*`, FAQ question/answer use foil-* tokens, pre/code overrides match the prose-* chain).
+
+**Decision.** Three policies for MDX components going forward:
+
+1. **Token-only colors.** `mdx-components.tsx` may reference colors ONLY via the canonical 5 Tailwind foil-* tokens (`foil-cream`, `foil-navy`, `foil-slate`, `foil-gold`, `foil-coral`). No raw hex literals, no Tailwind palette colors (`zinc-*`, `sky-*`, `amber-*`, `emerald-*`, `slate-*`). The visual-regression test pins this via `text-zinc-\d+`/`text-sky-\d+`/`text-amber-\d+`/`text-emerald-\d+` doesNotMatch assertions on the file.
+
+2. **Contrast at the component layer, tested.** Each component must explicitly set a foreground color class on every text node it renders — no relying on inherited prose chain (because `not-prose` callouts opt OUT of the chain). The test asserts each known text-bearing node anchor (e.g. Callout body wrapper is `<div className="text-foil-navy …">`, FAQ answer is `<p … text-foil-navy/85>q.answer</p>`).
+
+3. **Variant accent mapping.** Three Callout variants ship today: `info` (gold-subtle, tag "Note"), `warning` (gold-accent, tag "Heads up"), `tip` (gold-prominent, tag "Pro tip"). All three use the gold family. **Coral remains hover-only at the component layer too** — the visual-regression test's existing `bg-foil-coral` / `ring-foil-coral` hover-only invariants now extend to `mdx-components.tsx`. If a future post needs a true alarm-tone callout, add a new `warn` variant with `border-foil-coral/40` (stripe) + `text-foil-coral` (label) — coral on border + label is permitted, coral as background fill is not. The visual-regression test already encodes that asymmetry.
+
+**Pre/code parity with the prose chain.** The MDX `pre` and `code` overrides previously SHADOWED the prose-pre / prose-code styling declared in `app/(site)/blog/[slug]/page.tsx`. Two different style declarations for the same elements led to drift potential — fix the MDX override to match the prose chain (navy bg + cream text for `pre`; navy/10 bg + navy text for `code`), so a future change in one surface naturally syncs the other.
+
+**Variant naming exception ("Heads up" = gold).** The pre-Session-42 code mapped variant `warning` to a coral display tag "Heads up". The user-facing "Heads up" string is closer to a heads-up note than a critical-warning siren. Per spec, it renders gold-accent. The variant *key* (`warning`) stays so existing posts don't need editorial edits; only the *accent* changes. If a future post needs a stronger alarm tone, add a new `warn` variant beside the three existing ones — don't overload `warning`-as-heads-up.
+
+**Consequences.**
+
+- **Blog posts now read on cream.** Every `<Callout>` body renders foil-navy on foil-cream — legible. The `how-much-is-my-pokemon-card-worth` "Heads up" callout, the launch-blocking case, is fixed.
+- **Visual-regression test now catches MDX drift.** A future PR that adds a Callout variant using `text-white` or `bg-amber-500/5` trips the existing `mdx-components.tsx`-scoped negative assertions.
+- **One narrow asymmetry vs ADR-029.** Coral can appear in `border-foil-coral/40` + `text-foil-coral` on a Callout variant without `hover:` prefix (state-signal, not default fill). The visual-regression test was already permissive about `text-foil-coral` (error/state indicator); ADR-031 extends the same logic to `border-foil-coral`. Background coral on a default state still trips the test.
+- **No new components, no new tokens.** Strictly scoped to fixing the contrast bug and pinning the invariant. The 5 foil-* tokens remain the canonical set.
+
+**Cross-refs.**
+
+- [ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness) — the original cream/navy/gold lock; this ADR extends its enforcement to MDX components.
+- `lib/__tests__/visual-regression.test.ts` — `PUBLIC_SURFACES` list now includes `mdx-components.tsx`. Component-specific assertions live in the same file.
+
+**Followups.** None planned. The single "Watch out" / coral-stripe variant isn't needed by any current post; add when content requires it.
+
+---
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

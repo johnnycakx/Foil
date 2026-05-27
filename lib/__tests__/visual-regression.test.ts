@@ -34,6 +34,11 @@ const PUBLIC_SURFACES: readonly string[] = [
   "app/(site)/legal/ebay-api-compliance/page.tsx",
   "app/(site)/newsletter/page.tsx",
   "components/email-capture.tsx",
+  // Session 42 / ADR-031: MDX components rendered inside blog post
+  // bodies were missed by the Session 39 sweep — adding them to the
+  // public-surfaces list extends the no-coral-default + no-raw-hex
+  // invariants to cover callouts, FAQ, TopicLink, code blocks, etc.
+  "mdx-components.tsx",
 ];
 
 // ---------------------------------------------------------------------------
@@ -187,4 +192,57 @@ test("Every public surface: no raw #FF6B5C hex literal — use the foil-coral to
     assert.doesNotMatch(src, /#0B1428/i, `raw #0B1428 hex in ${rel} — pre-Session-39 deep-navy bg, use bg-foil-navy or bg-foil-cream`);
     assert.doesNotMatch(src, /#101D38/i, `raw #101D38 hex in ${rel} — pre-Session-39 lighter-dark bg, use bg-foil-cream`);
   }
+});
+
+// ---------------------------------------------------------------------------
+// Session 42 / ADR-031 — MDX components don't drift back to dark-mode tokens.
+// ---------------------------------------------------------------------------
+
+test("MDX components: no text-white / text-zinc-* / bg-white/<n> on text-bearing nodes", () => {
+  const src = readFile("mdx-components.tsx");
+  // The Session-39 sweep missed mdx-components.tsx. The "Heads up"
+  // callout was rendering text-amber-100 on bg-amber-500/5 — light-on-
+  // light = invisible against the new cream surface. Pin the negative.
+  assert.doesNotMatch(src, /text-white\b/, "text-white in mdx-components.tsx — should be text-foil-navy");
+  assert.doesNotMatch(src, /text-zinc-\d+/, "text-zinc-* in mdx-components.tsx — should be text-foil-navy / text-foil-slate");
+  assert.doesNotMatch(src, /text-zinc-100\/\d+/, "text-zinc-100/<opacity> in mdx-components.tsx — pre-cream leftover");
+  assert.doesNotMatch(src, /text-sky-\d+/, "text-sky-* (pre-cream info palette)");
+  assert.doesNotMatch(src, /text-amber-\d+/, "text-amber-* (pre-cream warning palette)");
+  assert.doesNotMatch(src, /text-emerald-\d+/, "text-emerald-* (pre-cream tip palette)");
+});
+
+test("Callout: all three variants ship the cream/navy palette + a foil-* label", () => {
+  const src = readFile("mdx-components.tsx");
+  // CALLOUT_STYLES must declare info + warning + tip and each must use
+  // foil-* tokens for wrap + label. Pin by structural anchors.
+  assert.match(src, /info\s*:\s*\{[\s\S]*?wrap:\s*["'][^"']*foil-(?:cream|navy|gold)/);
+  assert.match(src, /warning\s*:\s*\{[\s\S]*?wrap:\s*["'][^"']*foil-(?:cream|navy|gold)/);
+  assert.match(src, /tip\s*:\s*\{[\s\S]*?wrap:\s*["'][^"']*foil-(?:cream|gold)/);
+  // Body text wrapper must be foil-navy (not the pre-cream text-zinc-100/90).
+  assert.match(src, /<div className="text-foil-navy/);
+});
+
+test("FAQ component: heading + question + answer all use foil-* tokens", () => {
+  const src = readFile("mdx-components.tsx");
+  // Question: text-foil-navy. Answer: text-foil-navy/85 (per spec for readability contrast).
+  assert.match(src, /<h3[^>]*text-foil-navy[^>]*>\{q\.question\}<\/h3>/);
+  assert.match(src, /<p[^>]*text-foil-navy\/85[^>]*>\{q\.answer\}<\/p>/);
+});
+
+test("MDX pre/code overrides match the prose-* cream styling (no drift)", () => {
+  const src = readFile("mdx-components.tsx");
+  // The MDX <pre> override SHADOWS the prose-pre chain. If they disagree
+  // the rendered code block looks different from what blog/[slug] specs.
+  // Both should be navy bg + cream text.
+  assert.match(src, /<pre[\s\S]*?bg-foil-navy[\s\S]*?text-foil-cream/);
+  // Inline code: navy/10 bg + navy text matches prose-code:bg-foil-navy/10 prose-code:text-foil-navy.
+  assert.match(src, /<code[\s\S]*?bg-foil-navy\/10[\s\S]*?text-foil-navy/);
+});
+
+test("CardScannerEmbed + TopicLink: cream palette, no pre-cream coral defaults", () => {
+  const src = readFile("mdx-components.tsx");
+  // CardScannerEmbed CTA: navy bg + cream text + gold-ring on hover.
+  assert.match(src, /CardScannerEmbed[\s\S]*?bg-foil-navy[\s\S]*?text-foil-cream/);
+  // TopicLink anchor: navy text, gold underline, coral on hover.
+  assert.match(src, /TopicLink[\s\S]*?text-foil-navy[\s\S]*?decoration-foil-gold[\s\S]*?hover:text-foil-coral/);
 });
