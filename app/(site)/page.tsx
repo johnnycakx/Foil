@@ -50,19 +50,22 @@ export default async function Home() {
   );
 }
 
-// Hand-curated mix of vintage holos + modern chase. Pokemon TCG SDK image
-// CDN serves these directly via `https://images.pokemontcg.io/<setId>/<n>_hires.png`
-// — same data the per-card pages already load, so the browser cache wins
-// on subsequent navigation. Session 38 / Task #20.
+// Session 43 (ADR-033) — modern grail seed list. Seven modern alt-art /
+// rainbow chase cards + one vintage anchor (Base Set Charizard) form
+// the hero backdrop. These ARE the cards collectors search for; the
+// row reads as "these are the grails Foil watches" rather than "these
+// are vintage cards from someone's binder." Image URLs hit the Pokemon
+// TCG SDK CDN directly — same data the per-card pages load, so the
+// browser cache wins on subsequent navigation.
 const HERO_CARDS: { id: string; alt: string; tilt: string }[] = [
-  { id: "base1/4", alt: "Charizard, Base Set", tilt: "-rotate-[6deg]" },
-  { id: "base1/2", alt: "Blastoise, Base Set", tilt: "rotate-[4deg]" },
-  { id: "base1/15", alt: "Venusaur, Base Set", tilt: "-rotate-[3deg]" },
-  { id: "sv3pt5/199", alt: "Charizard ex, Pokémon 151", tilt: "rotate-[5deg]" },
-  { id: "sv3pt5/198", alt: "Venusaur ex, Pokémon 151", tilt: "-rotate-[2deg]" },
-  { id: "swsh7/8", alt: "Leafeon VMAX, Evolving Skies", tilt: "rotate-[7deg]" },
-  { id: "swsh9/25", alt: "Umbreon V, Brilliant Stars", tilt: "-rotate-[5deg]" },
-  { id: "neo1/4", alt: "Lugia, Neo Genesis", tilt: "rotate-[2deg]" },
+  { id: "swsh7/215",  alt: "Umbreon VMAX Alt Art (Moonbreon), Evolving Skies", tilt: "-rotate-[6deg]" },
+  { id: "swsh7/218",  alt: "Rayquaza VMAX Alt Art, Evolving Skies",            tilt: "rotate-[4deg]"  },
+  { id: "swsh35/74",  alt: "Charizard VMAX Rainbow Rare, Champions Path",      tilt: "-rotate-[3deg]" },
+  { id: "swsh11/186", alt: "Giratina V Alt Art, Lost Origin",                  tilt: "rotate-[5deg]"  },
+  { id: "swsh12/186", alt: "Lugia V Alt Art, Silver Tempest",                  tilt: "-rotate-[2deg]" },
+  { id: "swsh8/269",  alt: "Mew VMAX Alt Art, Fusion Strike",                  tilt: "rotate-[7deg]"  },
+  { id: "swsh4/188",  alt: "Pikachu VMAX Rainbow, Vivid Voltage",              tilt: "-rotate-[5deg]" },
+  { id: "base1/4",    alt: "Charizard, Base Set (vintage anchor)",             tilt: "rotate-[2deg]"  },
 ];
 
 function Hero() {
@@ -80,20 +83,16 @@ function Hero() {
         />
       </div>
 
-      {/* Card grid backdrop — tactile collector-binder layout with
-          per-card shadows + rotation. Each card sits "above" the cream
-          surface; a soft scrim behind the row keeps the H1 readable. */}
+      {/* Card grid backdrop — Session 43 (ADR-033): cards drop to 0.28
+          opacity + a slight blur + reduced saturation so they read as
+          an atmospheric "binder behind frosted glass" rather than the
+          page's primary visual. The copy in front is the hero now; the
+          cards are the texture. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-3 px-5 pt-6 opacity-90 sm:px-8 sm:gap-4 sm:pt-10"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-3 px-5 pt-6 sm:px-8 sm:gap-4 sm:pt-10"
+        style={{ opacity: 0.28, filter: "blur(0.5px) saturate(0.65)" }}
       >
-        {/* Scrim — a subtle gold/navy gradient behind the card-row only
-            so the cards have a "surface" to sit on without darkening the
-            whole page. Sits between the page bg and the cards. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-foil-gold/5 via-transparent to-foil-cream"
-        />
         {HERO_CARDS.map((c) => (
           <div key={c.id} className={`shrink-0 ${c.tilt}`}>
             <Card3D>
@@ -111,15 +110,19 @@ function Hero() {
             </Card3D>
           </div>
         ))}
-        {/* Copy-area scrim — fades cream over the lower half of the card
-            row so the H1 (rendered in the foreground container) reads
-            cleanly against the busy card backdrop without losing the
-            tactile feel above. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-foil-cream sm:h-40"
-        />
       </div>
+
+      {/* Copy-area scrim — Session 43 (ADR-033). Sits ABOVE the cards
+          (their wrapper is -z-10; this is -z-[5]) but BELOW the headline
+          container (default stack). Mobile uses a top-down linear cream
+          fade so the H1+lead paragraph sit on a clean cream slab; the
+          desktop breakpoint replaces it with a radial-from-top-left
+          gradient so the cards remain visible bottom-right while the
+          headline zone (top-left) is fully scrimmed. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-[5] bg-gradient-to-b from-foil-cream via-foil-cream/85 to-foil-cream/40 sm:bg-none sm:[background:radial-gradient(ellipse_at_top_left,var(--color-foil-cream)_0%,color-mix(in_oklab,var(--color-foil-cream)_92%,transparent)_28%,color-mix(in_oklab,var(--color-foil-cream)_55%,transparent)_55%,transparent_85%)]"
+      />
 
       <div className="relative mx-auto w-full max-w-6xl px-5 pt-16 pb-20 sm:px-8 sm:pt-24 sm:pb-28">
         <p className="inline-flex items-center gap-2 rounded-full border border-foil-gold/40 bg-foil-cream/80 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">

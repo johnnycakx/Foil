@@ -11,6 +11,7 @@
 
 import Link from "next/link";
 import { FooterEmailCapture } from "@/components/footer-email-capture";
+import { Logo } from "@/components/brand/logo";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -28,13 +29,10 @@ function SiteHeader() {
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
         <Link
           href="/"
-          className="font-display flex items-center gap-2 text-lg font-bold tracking-tight text-foil-navy transition hover:text-foil-coral"
+          aria-label="Foil — home"
+          className="inline-flex items-center transition hover:text-foil-coral"
         >
-          <span className="relative inline-flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foil-gold opacity-60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-foil-gold" />
-          </span>
-          Foil
+          <Logo size="md" />
         </Link>
         <nav className="flex items-center gap-5 text-sm">
           <Link

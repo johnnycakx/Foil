@@ -22,9 +22,44 @@ const bricolage = Bricolage_Grotesque({
   axes: ["wdth"],
 });
 
+// ADR-032 — brand metadata aligned with the deal-finder positioning
+// (ADR-020) + the gold-rhombus mark. The OG + Twitter card reference
+// /public/og-image.png so every share renders the new brand surface.
 export const metadata: Metadata = {
-  title: "Foil — Value a Pokémon card in seconds",
-  description: "Snap a Pokémon card, get a multi-source valuation in under 10 seconds.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://foiltcg.com"),
+  title: {
+    default: "Foil — The best price on any Pokémon card",
+    template: "%s · Foil",
+  },
+  description:
+    "Search any Pokémon card and instantly see the best live deal across eBay. Free wishlist alerts when prices drop.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  openGraph: {
+    type: "website",
+    title: "Foil — The best price on any Pokémon card",
+    description:
+      "Search any Pokémon card and instantly see the best live deal across eBay. Free wishlist alerts when prices drop.",
+    siteName: "Foil",
+    url: "/",
+    images: [
+      { url: "/og-image.png", width: 1200, height: 630, alt: "Foil — the best price on any Pokémon card" },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Foil — The best price on any Pokémon card",
+    description:
+      "Search any Pokémon card and instantly see the best live deal across eBay. Free wishlist alerts when prices drop.",
+    creator: "@foilcards",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({

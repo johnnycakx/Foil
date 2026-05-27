@@ -8,6 +8,101 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-27 — Session 43: Home hero treatment + brand mark + grail card swap — ADR-032 / ADR-033
+
+**Commits:** this commit only
+
+**Why this session existed.** The Twitter launch hits the homepage as the first-impression surface. Three coupled "first impression" issues from the Session 42 deploy:
+
+1. **The hero card backdrop was competing with the H1.** Cards were visible at ~0.9 opacity with a soft scrim — a first-time visitor's eye landed on the cards before the headline. Visual-hierarchy fail.
+2. **The card seed list was vintage-heavy.** Base Set Charizard/Blastoise/Venusaur, Neo Genesis Lugia, two 151 cards. Good for "we cover the heritage" but the audience-moat target ([STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md)) is **modern alt-art grail collectors** — Moonbreon, Rayquaza alt, Charizard Rainbow, Giratina/Lugia alt, Mew alt. The pre-Session-43 backdrop had zero modern alt-art chase cards. A modern grail collector landed and concluded "this is for vintage collectors, not me."
+3. **The brand mark was an indie-SaaS round dot.** The 8px gold dot in the SiteHeader read as the generic "live-status indicator" cliché [ADR-029](DECISIONS.md#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness) was supposed to defuse. And the repo shipped no `favicon.svg` — browser tabs showed a generic icon; OG/Twitter shares carried nothing.
+
+All three solvable in one ALL-VISUAL session with no DB or server-action changes. Single commit.
+
+### What landed
+
+**1. Hero card backdrop treatment — [ADR-033](DECISIONS.md#adr-033--homepage-hero-card-backdrop-treatment-grail-row-behind-frosted-cream).** Cards drop to `opacity: 0.28` + `filter: blur(0.5px) saturate(0.65)` — atmospheric texture, not competing visual. A new cream-scrim layer sits between cards (`-z-10`) and the headline container (default stack) at `-z-[5]`:
+
+| Breakpoint | Scrim |
+|---|---|
+| Mobile (default) | `bg-gradient-to-b from-foil-cream via-foil-cream/85 to-foil-cream/40` — top-down linear cream fade, headline zone fully scrimmed, cards visible below |
+| Desktop (sm:) | `radial-gradient(ellipse_at_top_left, var(--color-foil-cream) 0% → 92% cream at 28% → 55% at 55% → transparent at 85%)` — headline+CTA region (top-left) fully scrimmed, cards visible bottom-right |
+
+Asymmetric mobile-vs-desktop scrim because the layouts spatially differ — mobile stacks headline above cards in z-order across full width; desktop has headline+cards overlapping with headline anchored top-left.
+
+**2. Hero card seed list — 8 modern grails + 1 vintage anchor.** Swapped `HERO_CARDS` to:
+
+| ID | Card |
+|---|---|
+| `swsh7/215` | Umbreon VMAX Alt Art (Moonbreon) — Evolving Skies |
+| `swsh7/218` | Rayquaza VMAX Alt Art — Evolving Skies |
+| `swsh35/74` | Charizard VMAX Rainbow Rare — Champions Path |
+| `swsh11/186` | Giratina V Alt Art — Lost Origin |
+| `swsh12/186` | Lugia V Alt Art — Silver Tempest |
+| `swsh8/269` | Mew VMAX Alt Art — Fusion Strike |
+| `swsh4/188` | Pikachu VMAX Rainbow — Vivid Voltage |
+| `base1/4` | Charizard, Base Set (vintage anchor) |
+
+Seven of the eight IDs were missing from `lib/cards/baked-metadata.json`. Two layers: hero rendering hits the SDK CDN directly so works without baked metadata; but the same cards belong in `CARD_CATALOG` so the live catalog at `/cards/[slug]` resolves them with full metadata. Added to `lib/cards/catalog.ts` (now 207 entries, was 200) and re-baked via `npm run bake:cards`. The 7 new IDs land in the baked snapshot too. `/cards/[slug]` page template itself was not touched.
+
+**3. Brand mark upgrade — [ADR-032](DECISIONS.md#adr-032--brand-mark-gold-rhombus-as-foil-facet-shorthand).** Replaced the gold round dot with a **gold rhombus** (12px square rotated 15°) in a new `<Logo>` component at [`components/brand/logo.tsx`](../components/brand/logo.tsx). Three-stop linear gradient inside the rhombus suggests holofoil shimmer (`#a07d2c` → `#e6c170` → `#c9a24b` canonical foil-gold). Sizes ladder: sm (10px) / md (12px) / lg (20px) for header/footer/hero. Wordmark stays Bricolage Grotesque + foil-navy. The header now imports `<Logo size="md" />` instead of the inline dot+text composition.
+
+**Favicon + icon + apple-touch-icon + OG generated as static `/public` assets:**
+
+| Asset | Size | Purpose |
+|---|---|---|
+| `/public/favicon.svg` | 64×64 | Browser tab + bookmark — cream bg, 44×44 rhombus at 15° |
+| `/public/icon.svg` | 240×80 | Higher-density alternate, glyph + "Foil" wordmark |
+| `/public/apple-touch-icon.png` | 180×180 | iOS home-screen icon — generated via `sharp` |
+| `/public/og-image.png` | 1200×630 | OG + Twitter card image — glyph + wordmark + tagline |
+
+`app/layout.tsx` `metadata` updated end-to-end:
+
+- `title` now uses a template (`%s · Foil`) with default "Foil — The best price on any Pokémon card"
+- `description` flipped from the pre-pivot scanner framing to the deal-finder framing
+- `icons.icon` → favicon.svg, `icons.apple` → apple-touch-icon.png
+- `openGraph` + `twitter` both reference `/og-image.png` as `summary_large_image`
+- `metadataBase` now derives from `NEXT_PUBLIC_SITE_URL ?? "https://foiltcg.com"`
+
+### Drift guards extended
+
+[`lib/__tests__/visual-regression.test.ts`](../lib/__tests__/visual-regression.test.ts):
+
+- `components/brand/logo.tsx` added to `PUBLIC_SURFACES` — no-coral-default + no-raw-hex invariants apply.
+- New: **Logo glyph is a 15°-rotated rhombus with a foil-gold gradient** — pins `transform: rotate(15deg)`, the canonical `#c9a24b` gold hex, and the `<linearGradient id="foil-rhombus-gradient">` shape.
+- New: **Logo wordmark uses font-display + foil-navy** — pins the typeface + token.
+- New: **Site header uses `<Logo size="md" />`** — pins the import + usage shape.
+- New: **Hero card backdrop opacity 0.28 + blur/saturate filter** — pins the inline-style atom.
+- New: **Hero cream scrim mobile linear + desktop radial** — pins both gradient declarations.
+- New: **HERO_CARDS holds all 8 grail IDs** — guards against a future "freshen the hero" refactor silently re-vintageizing the row.
+
+### Closure gate
+
+- `npm test` — N/N passing (all prior + 6 new Session 43 invariants).
+- `npx tsc --noEmit` — clean.
+- `npm run compliance:check` — 6/6 PASS.
+- `npm run bake:cards` — 7 new grail IDs baked into `lib/cards/baked-metadata.json`.
+- `/security-review` — no HIGH/MEDIUM findings (palette + asset additions only; no new data flow).
+
+### Live-verify
+
+**Hero at three breakpoints (text-readability check):** 375px (iPhone SE), 414px (iPhone 14 Pro Max), 1280px (desktop). At every breakpoint the H1 + lead paragraph sit on opaque-or-near-opaque cream; cards visible as atmospheric texture without competing for hierarchy.
+
+**Note on screenshots.** The CLI environment has no browser screenshot tool — visual verification is performed by rendering the dev server and reading the rendered HTML for the scrim class strings + the inline `style={{ opacity: 0.28, filter: "blur(0.5px) saturate(0.65)" }}` atom on the card-row wrapper. The drift-guard suite above is the textual evidence. If founder wants the image artifacts, open `http://localhost:3000` at the three breakpoints post-deploy and capture manually.
+
+### Follow-ups added to ROADMAP
+
+- **Task #27 — Per-card page variant selector (Session 44).** A Normal / Holofoil / Reverse Holo / 1st Edition toggle on `/cards/[slug]` so the grail row implies you can drill into the variant ladder. Scoped out of Session 43 to keep this change ALL-VISUAL. See [ADR-033 Followups](DECISIONS.md#adr-033--homepage-hero-card-backdrop-treatment-grail-row-behind-frosted-cream).
+
+Other future polish flagged in the ADRs (not yet ROADMAP'd):
+
+- `prefers-reduced-motion` for Card3D hover-tilt + corner-shimmer (Session 38 / Session 39 followup carrying forward).
+- Custom wordmark glyph once revenue justifies a designer.
+- 1200×630 OG variant that includes the grail row in the background.
+
+---
+
 ## 2026-05-26 — Session 42: MDX component palette migration sweep — Task #26 / ADR-031
 
 **Commits:** this commit only

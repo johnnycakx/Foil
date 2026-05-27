@@ -1,6 +1,6 @@
 # Foil Roadmap
 
-**Last updated:** 2026-05-26 (Session 42 MDX component palette migration — see [ADR-031](DECISIONS.md#adr-031--mdx-component-palette-discipline-tokens-only-contrast-tested-at-the-component-layer))
+**Last updated:** 2026-05-27 (Session 43 hero treatment + brand mark + grail card swap — see [ADR-032](DECISIONS.md#adr-032--brand-mark-gold-rhombus-as-foil-facet-shorthand) + [ADR-033](DECISIONS.md#adr-033--homepage-hero-card-backdrop-treatment-grail-row-behind-frosted-cream))
 **Owner:** John Craig (solo)
 **Cadence:** Updated at the end of every goal. See [Project Second Brain](../CLAUDE.md#project-second-brain) for the auto-maintenance contract.
 
@@ -47,6 +47,7 @@ The roadmap has four buckets. NOW is what's actively blocking the next ship. NEX
 | 14 | **Expand `seo-strategy.md` cluster topics for deal-finder framing** | Backlog currently has ~35 cluster topics from the valuation framing. Need to recompose around buyer-intent queries — "[card] for sale," "cheap [card] for sale," "[set] booster value," etc. | Hand-curate from competitive-gap reports + the [card] for sale long-tail. |
 | 15 | **Scrydex API migration evaluation** <!-- reframed via pivot 2026-05-23 --> | Triggered by Pokemon TCG SDK gaps in #8 OR PokeTrace rate limits. Scrydex has per-card endpoints we'd use for richer per-card landing pages (price history, sold-comps). | Tracked in [DECISIONS.md](DECISIONS.md). Now downstream of the deal-finder direction rather than scanner-driven. |
 | 16 | **Slack (or Discord) ops workspace expansion** | [ADR-014](DECISIONS.md#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary) wired the four Foil HQ channels. Next: wire Stripe events, ebay-affiliate clicks (sampled), wishlist alert send-volume per cron. | Mostly already plumbed via `lib/notifications/discord.ts`; this is "wire one more producer per concern." |
+| 27 | **Task #27 — Per-card page variant selector** <!-- added 2026-05-27, Session 43 followup --> | Session 43 ([ADR-033](DECISIONS.md#adr-033--homepage-hero-card-backdrop-treatment-grail-row-behind-frosted-cream)) seeded the homepage hero with 8 modern grail cards across 7 sets — each one has 2-4 priced variants in `tcgplayerPrices` (Normal / Holofoil / Reverse Holo / 1st Edition / Rainbow / etc). The Session 41 `<CardVariantsSection>` already RENDERS those variants as a stacked PriceRangeBar list, but there's no INTERACTIVE selector — you can't switch the best-listing block + watchlist form to pin the targeted variant. Task #27 ships a `<VariantSelector>` Client Component on `/cards/[slug]` that updates URL state (`?variant=holofoil`) and re-keys the best-listing block + watchlist target-price input to the selected variant. Scope: ALL new code in `/cards/[slug]` — no schema change (URL state only), no DB change, no server-action change. Trigger to start: Session 44. | Claude Code |
 
 ---
 

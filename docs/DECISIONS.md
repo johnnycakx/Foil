@@ -1226,6 +1226,144 @@ The `loadBakedSnapshot()` normalizer fills these defaults into pre-Session-41 ba
 
 ---
 
+## ADR-032 — Brand mark: gold rhombus as foil-facet shorthand
+
+**Date:** 2026-05-27
+**Status:** Accepted
+
+**Context.** Between Sessions 39-42 the SiteHeader rendered the wordmark "Foil" preceded by a 8px gold round dot with a ping animation. The dot read as the generic SaaS-template "live-status indicator" pattern — exactly the visual cliché [ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness) named as the failure mode the cream/navy/gold palette was supposed to defuse. A round dot is also semantically null: it doesn't say "this brand is about Pokemon TCG," "this brand is about deals," or anything specific to Foil. With the Twitter launch hitting the homepage as the first impression surface, the brand mark needed to do work the dot wasn't doing.
+
+**Design constraints (founder design call, 2026-05-27).**
+
+1. Stay in the cream/navy/gold palette — no new tokens.
+2. Keep it geometric — a literal pokeball or card-back illustration would over-commit the visual to a Pokemon-only product, and we want the door open for multi-TCG later.
+3. The glyph must be reducible to a favicon-sized primitive (16-32px) without losing identity.
+4. The "Foil" wordmark stays in display typeface (Bricolage Grotesque), navy. Only the glyph changes.
+5. Must read as "premium / collector / foil" at first glance.
+
+**Decision.** Replace the round dot with a **gold rhombus** — a single rotated parallelogram (12px square rotated 15°). Three rationales:
+
+1. **Foil-facet shorthand.** A tilted parallelogram reads as a card corner caught in light, a holofoil facet, a refracted-light glint. The mark IS the product name visualized — what a holofoil card looks like when light hits a corner.
+2. **Geometric primitive, scales cleanly.** SVG `<rect>` rotated 15° survives downscaling to 16px favicon without anti-aliasing degradation. No detail to lose.
+3. **Three-stop linear gradient internal to the rhombus** suggests holofoil shimmer (deeper gold top-left → cream-tinted highlight mid → canonical foil-gold bottom-right). At 12px it reads as "premium fill"; at 64-180px favicon size the gradient itself is legible. The gradient stops use `#a07d2c` (deeper gold) → `#e6c170` (highlight) → `#c9a24b` (canonical `foil-gold`). The third stop is the canonical foil-gold hex; the first two are tonal shifts of the same hue, not new palette tokens.
+
+**Component shape ([`components/brand/logo.tsx`](../components/brand/logo.tsx)).**
+
+- `<LogoGlyph size>` — the rhombus only. Used as the favicon primitive and any "icon without wordmark" surface (footer column header, share buttons, etc.).
+- `<Logo size withWordmark>` — glyph + wordmark in an inline-flex row. Used in the SiteHeader (size="md"). `withWordmark={false}` collapses to just the glyph.
+- `size: "sm" | "md" | "lg"` — 10px / 12px / 20px glyph respectively; text-sm / text-lg / text-2xl wordmark. The single sizing ladder means header / footer / future hero use the same component without per-call tweaks.
+
+**Favicon + icon + apple-touch-icon + OG.** Four static assets land in `/public`:
+
+- `/favicon.svg` — 64×64, cream bg + 44×44 rhombus rotated 15°, gold gradient. Browser tab + bookmark.
+- `/icon.svg` — 240×80, cream bg + rhombus left + "Foil" wordmark right. Higher-density alternate icon, also serves as the rich-share fallback for systems that ignore `og:image`.
+- `/apple-touch-icon.png` — 180×180, generated via `sharp` from the same SVG template. iOS home-screen icon.
+- `/og-image.png` — 1200×630, generated via `sharp`. Includes glyph + wordmark + tagline. Used in `og:image` + `twitter:image` so every share renders the new brand surface.
+
+`app/layout.tsx` `metadata` updated to reference all four. The pre-Session-43 `metadata` still pointed at the old "Snap a Pokémon card, get a multi-source valuation" description — that description was the pre-pivot ([ADR-020](#adr-020--pivot-to-buyer-side-deal-finder-positioning)) scanner framing and was wrong for the deal-finder product. ADR-032 brings the root-layer metadata into alignment with the deal-finder positioning along the way.
+
+**Drift guards ([`lib/__tests__/visual-regression.test.ts`](../lib/__tests__/visual-regression.test.ts)).** `components/brand/logo.tsx` is added to `PUBLIC_SURFACES` so the existing no-coral-default + no-raw-hex invariants apply. Three new component-specific assertions pin: glyph rotation (`transform: rotate(15deg)`), the canonical foil-gold hex `#c9a24b` in the gradient, the SVG `<linearGradient id="foil-rhombus-gradient">` shape, the wordmark's `font-display` + `text-foil-navy` tokens, and the header's `<Logo size="md" />` import.
+
+**Consequences.**
+
+- **Brand surface upgrade.** The header now reads as collector-niche rather than indie-SaaS-template. Same single-line silhouette (glyph + 4-letter wordmark), so layout doesn't shift.
+- **Favicon now renders in browser tabs.** Pre-Session-43 the repo shipped no `favicon.svg`; browsers showed a generic icon. The launch surface gets a real bookmark glyph.
+- **OG/Twitter shares carry the brand mark.** Every Twitter share of a Foil URL now renders the gold rhombus + wordmark + tagline at 1200×630 — a much higher-recognition share image than nothing.
+- **Single sizing ladder.** Adding a `<Logo size="lg" />` to a future hero/marquee surface needs no per-call CSS — the ladder picks up automatically.
+- **Wordmark+typeface unchanged.** Bricolage Grotesque, font-bold, foil-navy. Only the glyph mutates between sessions.
+- **No new tokens introduced.** The two additional gradient stops (`#a07d2c`, `#e6c170`) are tonal shifts of foil-gold, not palette additions. They never appear outside the glyph SVG.
+
+**Cross-refs.**
+
+- [ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness) — the cream/navy/gold lock that ADR-032 extends into the brand mark.
+- [ADR-020](#adr-020--pivot-to-buyer-side-deal-finder-positioning) — the deal-finder positioning that the new metadata description aligns with.
+- [ADR-033](#adr-033--homepage-hero-card-backdrop-treatment-grail-row-behind-frosted-cream) — the coupled hero treatment that shipped in the same session.
+
+**Followups.**
+
+1. Hand-design a true wordmark glyph (a custom "F" lockup, or a custom Foil monogram) once the brand has revenue to justify a designer. The rhombus is the right primitive for now; a custom wordmark is the post-launch polish.
+2. Apple-touch-icon at higher resolutions (167×167, 152×152) if iOS share quality on Pad/iPhone shows the 180px scaling badly.
+3. Dark-mode favicon variant — currently the favicon assumes a light-mode browser chrome; if Foil ever ships a dark surface, we'd want a dark-bg favicon SVG via `prefers-color-scheme`.
+
+---
+
+## ADR-033 — Homepage hero card backdrop treatment: grail row behind frosted cream
+
+**Date:** 2026-05-27
+**Status:** Accepted
+
+**Context.** Sessions 38-40 evolved the homepage hero through three iterations. Session 38 ([ADR-028](#adr-028--aceternity-ui-patterns-code-owned-no-npm-vendor-niche-visual-identity)) introduced the 8-card binder backdrop. Session 40 added depth (shadow + opacity tuning + scrim) to fix a "gray placeholder" failure mode. Session 42 ([ADR-031](#adr-031--mdx-component-palette-discipline-tokens-only-contrast-tested-at-the-component-layer)) shipped MDX-component cream-palette parity. By Session 43 the hero card grid was visible but **competing for attention** with the H1 — first-time visitors' eye went to the cards first, the headline second. With the Twitter launch hitting the homepage as the first-impression surface, the hero needed the H1+CTA to win the visual hierarchy unambiguously.
+
+A separate failure mode: the card seed list itself ([Session 38](SESSION-LOG.md)) was vintage-heavy — Base Set Charizard/Blastoise/Venusaur, Neo Genesis Lugia, two 151 cards. That seed was good for "we cover vintage too" reassurance but bad for the audience moat. The audience-moat strategy ([STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md)) targets active Pokemon TCG collectors who chase modern alt-art grails — Umbreon VMAX Alt Art (Moonbreon), Rayquaza VMAX Alt Art, Charizard VMAX Rainbow, Giratina/Lugia alt arts, Mew VMAX alt art. The pre-Session-43 backdrop didn't include a single one of those cards. A modern grail collector landed on Foil and saw a row of 90s holos — first impression: "this is for vintage collectors, not me."
+
+**Decision.** Two coupled changes:
+
+### 1. Card backdrop treatment — opacity + filter + cream scrim
+
+The cards drop to **opacity: 0.28**, gain `filter: blur(0.5px) saturate(0.65)`. Effect: the card row reads as *atmospheric texture* — a binder behind frosted glass, sensed rather than studied. The H1+lead paragraph now win the visual hierarchy unambiguously.
+
+A **cream scrim layer** sits ABOVE the card row and BELOW the headline container (z-index ordering: cards `-z-10`, scrim `-z-[5]`, headline default):
+
+- **Mobile (default):** `bg-gradient-to-b from-foil-cream via-foil-cream/85 to-foil-cream/40`. A top-down linear cream fade — the top half (where H1+lead paragraph sit) is fully cream-opaque, the bottom half tapers to 40% cream so the cards remain visible below the fold of the headline zone.
+- **Desktop (sm: breakpoint):** Replaced by a radial-gradient anchored at top-left: `radial-gradient(ellipse_at_top_left, var(--color-foil-cream) 0% → 92% cream at 28% → 55% cream at 55% → transparent at 85%)`. The headline+CTA region (top-left) is fully scrimmed; cards stay visible on the right side of the viewport.
+
+The asymmetric mobile-vs-desktop scrim handles the layout-rotation reality: on mobile, headline + cards are vertically stacked (cards below in z-order, but the headline floats above its full width), so a top-down linear scrim works. On desktop, headline + cards spatially overlap (cards spread across the full max-w-6xl container, headline occupies left ~60%), so a radial-from-top-left scrim is the right shape.
+
+Inline `style={{ opacity: 0.28, filter: "..." }}` is used because Tailwind has no arbitrary-filter chain shorthand for `blur(0.5px) saturate(0.65)`. The opacity could ride a Tailwind class but is colocated with the filter for read-clarity (the two values define the treatment together).
+
+### 2. Card seed list — 8 modern grails (with 1 vintage anchor)
+
+`HERO_CARDS` swapped to:
+
+| ID | Card |
+|---|---|
+| `swsh7/215` | Umbreon VMAX Alt Art (Moonbreon) — Evolving Skies |
+| `swsh7/218` | Rayquaza VMAX Alt Art — Evolving Skies |
+| `swsh35/74` | Charizard VMAX Rainbow Rare — Champions Path |
+| `swsh11/186` | Giratina V Alt Art — Lost Origin |
+| `swsh12/186` | Lugia V Alt Art — Silver Tempest |
+| `swsh8/269` | Mew VMAX Alt Art — Fusion Strike |
+| `swsh4/188` | Pikachu VMAX Rainbow — Vivid Voltage |
+| `base1/4`   | Charizard, Base Set (vintage anchor) |
+
+Seven modern alt-art / rainbow chase cards (the actual grails 2026 collectors chase) + one vintage anchor (the universally-recognized headline of the original Base Set). The mix says "we cover the cards you actually want, anchored to the heritage."
+
+Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two layers:
+
+1. Hero-image rendering works without baked-metadata — `<Image src="https://images.pokemontcg.io/<setId>/<n>_hires.png" />` hits the SDK CDN directly.
+2. But the same cards belong in `CARD_CATALOG` so the live catalog at `/cards/[slug]` resolves them with full metadata. Added to `lib/cards/catalog.ts` and re-baked via `npm run bake:cards` so the seven new IDs land in the baked snapshot too.
+
+**Drift guards ([`lib/__tests__/visual-regression.test.ts`](../lib/__tests__/visual-regression.test.ts)).** Three new Session 43 invariants:
+
+1. `opacity: 0.28` + `filter: "blur(0.5px) saturate(0.65)"` present in `app/(site)/page.tsx` — pinning the inline-style atom.
+2. Mobile scrim: `bg-gradient-to-b from-foil-cream via-foil-cream/85 to-foil-cream/40`. Desktop scrim: `radial-gradient(ellipse_at_top_left, var(--color-foil-cream)…`.
+3. All 8 grail IDs present in `HERO_CARDS` — pinning the modern-grail seed against a future "let's freshen the hero" refactor that silently re-vintageizes the row.
+
+**Consequences.**
+
+- **Visual hierarchy reads cleanly.** The H1 wins on first impression; the cards function as atmospheric texture. A first-time visitor's eye lands on "Tell me a Pokémon card. I'll email you when it drops." before noticing the binder backdrop.
+- **Audience-moat signal upgraded.** Moonbreon and friends are present at first glance. A modern grail collector sees their cards immediately; the brand signals "we know what you actually chase."
+- **Vintage signal preserved.** Base Set Charizard remains in the row as the anchor — "we cover the heritage" without making the hero a 90s-throwback.
+- **No layout shift.** Cards are still `aspect-[5/7] w-20 sm:w-24 md:w-28`. The CSS treatment is purely visual; the bounding boxes are unchanged.
+- **Live-verify at three breakpoints.** Tested at 375px (iPhone SE), 414px (iPhone 14 Pro Max), 1280px (desktop) — headline reads cleanly against the scrim at all three.
+- **Catalog grew by 7 entries.** `CARD_CATALOG` is now 207 entries; `/cards/[slug]` resolves the seven new grail pages with full SDK metadata. The page template itself was not touched (per scope discipline).
+- **No CSS-filter regression.** `filter: blur(0.5px) saturate(0.65)` is supported in all modern browsers and degrades gracefully (cards just appear at 0.28 opacity without blur on a browser that ignores the filter property).
+
+**Cross-refs.**
+
+- [ADR-028](#adr-028--aceternity-ui-patterns-code-owned-no-npm-vendor-niche-visual-identity) — the original 8-card hero backdrop.
+- [ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness) — the cream/navy/gold palette the scrim works within.
+- [ADR-032](#adr-032--brand-mark-gold-rhombus-as-foil-facet-shorthand) — the coupled brand mark upgrade that shipped in the same session.
+- [STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md) — the audience the grail seed list is calibrated to.
+
+**Followups.**
+
+1. **`prefers-reduced-motion`** — the corner-shimmer + the Card3D hover-tilt remain. They were already on the radar from ADR-028 / ADR-029. Adding a `@media (prefers-reduced-motion: reduce)` block to disable both will land in a later session.
+2. **Variant selector** — Task #27 (Session 44). A "Normal / Holofoil / Reverse Holo / 1st Edition" toggle on `/cards/[slug]` so the variant grail-row implies you can drill into. Scoped out of Session 43 to keep the change ALL-VISUAL.
+3. **Twitter share image refresh** — `/public/og-image.png` currently shows glyph + wordmark + tagline. Future iteration: a 1200×630 variant that includes the grail row in the background, so a Twitter share previews the hero rather than a wordmark slab.
+
+---
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

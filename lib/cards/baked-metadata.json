@@ -1,5 +1,5 @@
 {
-  "bakedAt": "2026-05-26T22:57:01.545Z",
+  "bakedAt": "2026-05-27T17:58:36.197Z",
   "cards": {
     "base1-2": {
       "id": "base1-2",
@@ -1930,6 +1930,146 @@
       "image": "https://images.pokemontcg.io/sv3pt5/198_hires.png",
       "rarity": "Special Illustration Rare",
       "releaseDate": "2023/09/22"
+    },
+    "base4-4": {
+      "id": "base4-4",
+      "name": "Charizard",
+      "setName": "Base Set 2",
+      "setId": "base4",
+      "number": "4",
+      "image": "https://images.pokemontcg.io/base4/4_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2000/02/24"
+    },
+    "base5-10": {
+      "id": "base5-10",
+      "name": "Dark Machamp",
+      "setName": "Team Rocket",
+      "setId": "base5",
+      "number": "10",
+      "image": "https://images.pokemontcg.io/base5/10_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2000/04/24"
+    },
+    "gym1-4": {
+      "id": "gym1-4",
+      "name": "Erika's Dragonair",
+      "setName": "Gym Heroes",
+      "setId": "gym1",
+      "number": "4",
+      "image": "https://images.pokemontcg.io/gym1/4_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2000/08/14"
+    },
+    "base6-15": {
+      "id": "base6-15",
+      "name": "Machamp",
+      "setName": "Legendary Collection",
+      "setId": "base6",
+      "number": "15",
+      "image": "https://images.pokemontcg.io/base6/15_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2002/05/24"
+    },
+    "neo2-2": {
+      "id": "neo2-2",
+      "name": "Forretress",
+      "setName": "Neo Discovery",
+      "setId": "neo2",
+      "number": "2",
+      "image": "https://images.pokemontcg.io/neo2/2_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2001/06/01"
+    },
+    "neo4-3": {
+      "id": "neo4-3",
+      "name": "Dark Donphan",
+      "setName": "Neo Destiny",
+      "setId": "neo4",
+      "number": "3",
+      "image": "https://images.pokemontcg.io/neo4/3_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2002/02/28"
+    },
+    "neo3-4": {
+      "id": "neo3-4",
+      "name": "Crobat",
+      "setName": "Neo Revelation",
+      "setId": "neo3",
+      "number": "4",
+      "image": "https://images.pokemontcg.io/neo3/4_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2001/09/21"
+    },
+    "swsh7-218": {
+      "id": "swsh7-218",
+      "name": "Rayquaza VMAX",
+      "setName": "Evolving Skies",
+      "setId": "swsh7",
+      "number": "218",
+      "image": "https://images.pokemontcg.io/swsh7/218_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2021/08/27"
+    },
+    "swsh11-186": {
+      "id": "swsh11-186",
+      "name": "Giratina V",
+      "setName": "Lost Origin",
+      "setId": "swsh11",
+      "number": "186",
+      "image": "https://images.pokemontcg.io/swsh11/186_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2022/09/09"
+    },
+    "swsh12-186": {
+      "id": "swsh12-186",
+      "name": "Lugia V",
+      "setName": "Silver Tempest",
+      "setId": "swsh12",
+      "number": "186",
+      "image": "https://images.pokemontcg.io/swsh12/186_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2022/11/11"
+    },
+    "swsh35-74": {
+      "id": "swsh35-74",
+      "name": "Charizard VMAX",
+      "setName": "Champion's Path",
+      "setId": "swsh35",
+      "number": "74",
+      "image": "https://images.pokemontcg.io/swsh35/74_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2020/09/25"
+    },
+    "swsh4-188": {
+      "id": "swsh4-188",
+      "name": "Pikachu VMAX",
+      "setName": "Vivid Voltage",
+      "setId": "swsh4",
+      "number": "188",
+      "image": "https://images.pokemontcg.io/swsh4/188_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2020/11/13"
+    },
+    "swsh7-215": {
+      "id": "swsh7-215",
+      "name": "Umbreon VMAX",
+      "setName": "Evolving Skies",
+      "setId": "swsh7",
+      "number": "215",
+      "image": "https://images.pokemontcg.io/swsh7/215_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2021/08/27"
+    },
+    "swsh8-269": {
+      "id": "swsh8-269",
+      "name": "Mew VMAX",
+      "setName": "Fusion Strike",
+      "setId": "swsh8",
+      "number": "269",
+      "image": "https://images.pokemontcg.io/swsh8/269_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2021/11/12"
     }
   },
   "sets": {

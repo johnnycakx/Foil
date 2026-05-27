@@ -270,6 +270,18 @@ export const CARD_CATALOG: readonly CatalogEntry[] = [
   { pokemonTcgId: "sv3pt5-200", slug: "sv3pt5-200-blastoise-ex" },
   { pokemonTcgId: "sv3pt5-201", slug: "sv3pt5-201-alakazam-ex" },
   { pokemonTcgId: "sv3pt5-205", slug: "sv3pt5-205-mew-ex" },
+
+  // Session 43 (ADR-033) — modern grail seed list added so the homepage
+  // hero card backdrop and the live catalog stay aligned. Each is the
+  // headline alt-art / rainbow chase card for its set; together with
+  // base1-4 they form the 8-card "grail" hero row.
+  { pokemonTcgId: "swsh4-188",  slug: "swsh4-188-pikachu-vmax-rainbow" },           // Vivid Voltage rainbow rare
+  { pokemonTcgId: "swsh7-215",  slug: "swsh7-215-umbreon-vmax-alt-art" },           // Evolving Skies — "Moonbreon"
+  { pokemonTcgId: "swsh7-218",  slug: "swsh7-218-rayquaza-vmax-alt-art" },          // Evolving Skies — Rayquaza alt
+  { pokemonTcgId: "swsh8-269",  slug: "swsh8-269-mew-vmax-alt-art" },               // Fusion Strike — Mew alt
+  { pokemonTcgId: "swsh11-186", slug: "swsh11-186-giratina-v-alt-art" },            // Lost Origin — Giratina alt
+  { pokemonTcgId: "swsh12-186", slug: "swsh12-186-lugia-v-alt-art" },               // Silver Tempest — Lugia alt
+  { pokemonTcgId: "swsh35-74",  slug: "swsh35-74-charizard-vmax-rainbow-rare" },    // Champions Path rainbow rare
 ];
 
 /** Quick lookup by slug. O(1) — built once at module load. */

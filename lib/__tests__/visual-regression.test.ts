@@ -39,6 +39,11 @@ const PUBLIC_SURFACES: readonly string[] = [
   // public-surfaces list extends the no-coral-default + no-raw-hex
   // invariants to cover callouts, FAQ, TopicLink, code blocks, etc.
   "mdx-components.tsx",
+  // Session 43 / ADR-032: brand logo component rendered in the header
+  // (and any future hero/marquee surface). Same no-coral-default rule
+  // applies — the gold rhombus is the brand mark, coral has no place
+  // in the brand surface.
+  "components/brand/logo.tsx",
 ];
 
 // ---------------------------------------------------------------------------
@@ -245,4 +250,85 @@ test("CardScannerEmbed + TopicLink: cream palette, no pre-cream coral defaults",
   assert.match(src, /CardScannerEmbed[\s\S]*?bg-foil-navy[\s\S]*?text-foil-cream/);
   // TopicLink anchor: navy text, gold underline, coral on hover.
   assert.match(src, /TopicLink[\s\S]*?text-foil-navy[\s\S]*?decoration-foil-gold[\s\S]*?hover:text-foil-coral/);
+});
+
+// ---------------------------------------------------------------------------
+// Session 43 / ADR-032 — Brand mark: gold rhombus glyph + Foil wordmark.
+// ---------------------------------------------------------------------------
+
+test("Logo component: glyph is a 15deg-rotated rhombus with a foil-gold gradient", () => {
+  const src = readFile("components/brand/logo.tsx");
+  // The glyph wrapper is rotated 15deg — encoded as an inline style so a
+  // refactor can't silently drop the tilt and turn the rhombus back
+  // into a square.
+  assert.match(src, /transform:\s*["']rotate\(15deg\)["']/);
+  // Three-stop linear gradient suggests holofoil shimmer. Anchor on the
+  // canonical foil-gold hex (#c9a24b — the same value globals.css
+  // exposes via --color-foil-gold).
+  assert.match(src, /#c9a24b/i);
+  // Defs declare the linear-gradient ID we reuse.
+  assert.match(src, /<linearGradient\s+id="foil-rhombus-gradient"/);
+});
+
+test("Logo component: wordmark uses font-display + foil-navy tokens", () => {
+  const src = readFile("components/brand/logo.tsx");
+  // The wordmark stays type-led (Bricolage Grotesque via the
+  // --font-display variable) and navy — only the glyph changed.
+  assert.match(src, /font-display/);
+  assert.match(src, /text-foil-navy/);
+});
+
+test("Site header: uses the <Logo /> brand component (ADR-032)", () => {
+  const src = readFile("app/(site)/layout.tsx");
+  // The pre-Session-43 header inlined a gold round dot (h-2 w-2 rounded-full
+  // bg-foil-gold). The fix replaces it with the <Logo /> component so
+  // every brand surface picks up the same glyph + sizing ladder.
+  assert.match(src, /import\s*\{\s*Logo\s*\}\s*from\s*["']@\/components\/brand\/logo["']/);
+  assert.match(src, /<Logo\s+size=["']md["']/);
+});
+
+// ---------------------------------------------------------------------------
+// Session 43 / ADR-033 — Hero card backdrop treatment.
+// ---------------------------------------------------------------------------
+
+test("Hero: card backdrop opacity is 0.28 + blur+saturate filter (ADR-033)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  // Anchor on the inline-style atom — Tailwind has no arbitrary-filter
+  // chain shorthand for `blur(0.5px) saturate(0.65)`, so we set it as
+  // an inline style. Pin the exact values; a refactor that bumps
+  // opacity back above 0.5 (or drops the filter) would re-elevate the
+  // cards into competing-for-attention territory.
+  assert.match(src, /opacity:\s*0\.28/);
+  assert.match(src, /filter:\s*["']blur\(0\.5px\)\s+saturate\(0\.65\)["']/);
+});
+
+test("Hero: cream scrim covers the headline zone — mobile linear, desktop radial (ADR-033)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  // Mobile default: bg-gradient-to-b from cream → cream/85 → cream/40,
+  // so the H1+lead paragraph zone (the top half) is opaque cream and
+  // the cards fade in below it.
+  assert.match(src, /bg-gradient-to-b\s+from-foil-cream\s+via-foil-cream\/85\s+to-foil-cream\/40/);
+  // Desktop (sm:): radial-gradient anchored at top-left so the
+  // headline+CTA region is fully scrimmed while the cards stay visible
+  // bottom-right. Anchored on the canonical token reference.
+  assert.match(src, /radial-gradient\(ellipse_at_top_left,var\(--color-foil-cream\)/);
+});
+
+test("Hero: HERO_CARDS array swapped to the modern-grail seed list (ADR-033)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  // Pin the 8 grail IDs so a future "let's freshen the hero" refactor
+  // doesn't silently drop the moonbreon/rayquaza/charizard-rainbow
+  // signal that anchors the launch surface.
+  for (const id of [
+    "swsh7/215",
+    "swsh7/218",
+    "swsh35/74",
+    "swsh11/186",
+    "swsh12/186",
+    "swsh8/269",
+    "swsh4/188",
+    "base1/4",
+  ]) {
+    assert.match(src, new RegExp(id.replace("/", "\\/")), `HERO_CARDS missing ${id}`);
+  }
 });

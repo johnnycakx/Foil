@@ -1,9 +1,10 @@
-// Catalog invariants. The 200 entries are hand-curated; tests pin the
+// Catalog invariants. The 207 entries are hand-curated; tests pin the
 // structural properties the page route + sitemap rely on:
 //   1. Every slug is unique (no duplicate routes).
 //   2. Every slug matches the documented format <set-id>-<number>-<kebab-name>.
 //   3. Every pokemonTcgId is non-empty (slug → metadata lookup can't break).
-//   4. The catalog has exactly 200 entries (changes are deliberate).
+//   4. The catalog has exactly 207 entries (changes are deliberate;
+//      Session 43 added 7 grail seeds — see ADR-033).
 //   5. getCatalogEntry(slug) round-trips.
 
 import test from "node:test";
@@ -16,8 +17,8 @@ import {
   setIdsInCatalog,
 } from "../cards/catalog.ts";
 
-test("catalog has exactly 200 entries", () => {
-  assert.equal(CARD_CATALOG.length, 200);
+test("catalog has exactly 207 entries", () => {
+  assert.equal(CARD_CATALOG.length, 207);
 });
 
 test("every slug in the catalog is unique", () => {
@@ -77,13 +78,17 @@ test("relatedCardsForSlug returns [] for an unknown slug — defensive", () => {
   assert.deepEqual(relatedCardsForSlug("not-real-slug"), []);
 });
 
-test("setIdsInCatalog returns 18 distinct ids in catalog source order (Base first, modern last)", () => {
+test("setIdsInCatalog returns 23 distinct ids in catalog source order (Base first, grail seeds last)", () => {
   const ids = setIdsInCatalog();
-  assert.equal(ids.length, 18);
+  // 18 pre-Session-43 sets + 5 new sets the Session 43 grail seeds
+  // introduced (swsh4, swsh8, swsh11, swsh12, swsh35). swsh7 was
+  // already present — the two new swsh7 entries don't change set count.
+  assert.equal(ids.length, 23);
   // First and last positions are deterministic per the curated CARD_CATALOG
-  // ordering: vintage WotC opens; Scarlet & Violet 151 closes.
+  // ordering: vintage WotC opens; the Session 43 grail-seed block closes
+  // with swsh35 (Champions Path — Charizard VMAX Rainbow Rare).
   assert.equal(ids[0], "base1");
-  assert.equal(ids[ids.length - 1], "sv3pt5");
+  assert.equal(ids[ids.length - 1], "swsh35");
   // No duplicates.
   assert.equal(new Set(ids).size, ids.length);
 });
