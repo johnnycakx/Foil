@@ -67,7 +67,31 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 **Twitter launch unblocked.** The Twitter pinned-post target (`foiltcg.com/start`) works: typeahead returns hits, form converts, no redundant newsletter widget. The set-page partial state (Bug 3) is on a secondary surface that's not on the primary conversion path; ISR will self-heal within an hour of upstream recovery.
 
-**Follow-ups added to ROADMAP.** None new. The combination of `staticPageGenerationTimeout: 300` (Session 39) + retry-on-5xx + retry-on-4xx for catalog-controlled IDs + 1h ISR (Session 40) is the realistic upstream-insulation we can do at the SDK layer. A deeper structural fix — baking catalog metadata into a repo-committed JSON snapshot so SSG doesn't depend on upstream at all — is worth considering as a future task if upstream-flakiness becomes a recurring launch-blocker.
+**Late-session amendment — Bug 3 fully resolved via baked catalog snapshot (`b87e939`).**
+
+Rather than ship Session 40 with a known-broken `/cards/sets/[id]` surface, this session added the "deeper structural fix" originally noted as a future task: a one-shot bake script that fetches every CARD_CATALOG entry's metadata when upstream is healthy and commits a `lib/cards/baked-metadata.json` snapshot (91KB; 193 of 200 cards baked + all 173 sets). The SDK now falls back to the baked snapshot when upstream fails, gated on absence of an injected `fetchImpl` so test-stubbed failure-mode assertions remain unchanged.
+
+- [`scripts/bake-card-metadata.ts`](../scripts/bake-card-metadata.ts) (NEW) — concurrent (8 workers) fetcher with incremental saves every 25 cards; tighter per-card retry budget than the SDK runtime layer because this is a one-shot. Run via `npm run bake:cards`.
+- [`lib/cards/baked-metadata.json`](../lib/cards/baked-metadata.json) (NEW) — 91KB committed snapshot. 7 cards uncovered after the first run (base4-4, base5-10, gym1-4, base6-15, neo2-2, neo3-4, neo4-3) — upstream was sustained-504-ing for these during the bake window; a future re-run when upstream is healthier will fill them in.
+- [`lib/cards/sdk.ts`](../lib/cards/sdk.ts) — `getCardMetadata`, `getSetMetadata`, `getAllSets` all gain a baked-snapshot fallback. Loads via `readFileSync` + `JSON.parse` (works under `node --experimental-strip-types`). On parse error / missing file, returns empty defaults — never throws.
+
+**Bug 3 final live-verify post-bake:**
+
+| URL | Result |
+|---|---|
+| `/cards/sets/base1` | **16/16 cards render real images** — Alakazam, Blastoise, Chansey, Charizard, Clefairy, Gyarados, Hitmonchan, Machamp, Magneton, Mewtwo, Nidoking, Ninetales, Poliwrath, Raichu, Venusaur, Zapdos |
+| `/cards/sets/sv3pt5` | 6/6 catalog entries render real images (Alakazam, Blastoise, Charizard, Mew, Pikachu, Venusaur) — up from 0/N pre-bake |
+| `/api/cards/search?q=charizard` | 200 with 8 Charizard hits — unchanged from earlier success window |
+
+**Closure gate (amended).**
+
+- `npm test` — 499/499 passing (497 + 2 new bake-layer tests).
+- `npx tsc --noEmit` — clean.
+- `npm run compliance:check` — 6/6 PASS.
+- `/security-review` — no HIGH/MEDIUM findings on the bake commit either.
+- Vercel deploy (post-bake) `foil-kyiz85nmg-foilapp.vercel.app` — Ready in ~6m.
+
+**Follow-ups added to ROADMAP.** None new. The bake layer is the structural solve. Re-run `npm run bake:cards` periodically when upstream is healthier to cover the remaining 7 IDs and pick up new catalog entries.
 
 ---
 
