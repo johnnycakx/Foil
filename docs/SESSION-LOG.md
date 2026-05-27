@@ -58,10 +58,20 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 - `npx tsc --noEmit` — clean.
 - `npm run compliance:check` — 6/6 PASS.
 - `/security-review` — no HIGH/MEDIUM findings (palette-only Tailwind class substitutions; no new data flow, no new sinks).
-- Vercel deploy — Ready.
-- Live-verify on `/blog/how-much-is-my-pokemon-card-worth-a-60-second-checklist` (the post with the previously-invisible Heads up callout): callout renders `text-foil-navy` body on `bg-foil-cream` with `border-foil-gold/40` accent and `text-foil-gold` "Heads up" label — legible.
+- Vercel deploy `foil-qmzjkek51-foilapp.vercel.app` — Ready in ~4m.
 
-**Note on screenshots.** The second goal dispatch requested 4 blog-post screenshots attached to this SESSION-LOG entry. The agent runs in a CLI environment without a browser screenshot tool — visual verification is performed via curl + grep over the rendered HTML (asserting the expected `text-foil-navy bg-foil-cream border-foil-gold/40` markup), not via image capture. If founder wants the screenshot artifacts, open each post URL in a browser post-deploy and capture manually.
+**Live-verify on all 4 blog posts (rendered-HTML probes):**
+
+| URL | Result |
+|---|---|
+| `/blog/how-much-is-my-pokemon-card-worth-a-60-second-checklist` | ✅ Note + Heads up + Pro tip callouts all render. 3 body wrappers with `text-foil-navy` (escaped-arbitrary-variant Tailwind classes intact). "Heads up" panel: `border-foil-gold/40 bg-foil-cream text-foil-navy` + `text-foil-gold` label. **The launch-blocking invisible "Heads up" callout is fixed.** |
+| `/blog/how-to-read-a-japanese-pokemon-card` | ✅ Same shape: Note + Heads up + Pro tip render; cream callout backgrounds present; zero pre-cream tokens |
+| `/blog/near-mint-vs-lightly-played-the-difference-that-doubles-a-card-s-price` | ✅ Same shape |
+| `/blog/hello-world` | ✅ Heads up + Pro tip render with the new palette (smoke-test post; no Note callout on this one) |
+
+**Cross-cutting palette negative check** (any `text-zinc-*` / `text-white` / `text-sky-*` / `text-amber-*` / `text-emerald-*` on any of the 4 posts): **0 occurrences total**. Pre-cream Tailwind palette fully evicted from the rendered MDX surface.
+
+**Note on screenshots.** The second goal dispatch requested 4 blog-post image screenshots attached to this entry. The agent runs in a CLI environment without a browser screenshot tool — visual verification is performed via curl + grep over the rendered HTML markup (asserting the expected `text-foil-navy bg-foil-cream border-foil-gold/40` class strings), not via image capture. The negative-token check above + the live-verify table is the equivalent textual evidence. If founder wants the image artifacts, open each post URL in a browser post-deploy and capture manually.
 
 **Follow-ups added to ROADMAP.** None new. A future `warn` variant for true alarm-tone callouts (coral border + label stripe) can land when a post needs one; no current post needs it.
 
