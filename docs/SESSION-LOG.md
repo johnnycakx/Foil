@@ -50,12 +50,34 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 **Closure gate.**
 
-- `npm test` — 511/511 passing (499 + 12 new card-page-enhancements tests).
+- `npm test` — 513/513 passing (499 + 14 new card-page-enhancements tests, after one regex tightening for unquoted object-literal keys).
 - `npx tsc --noEmit` — clean.
 - `npm run compliance:check` — 6/6 PASS.
 - `/security-review` — no HIGH/MEDIUM findings (rendering-only changes; no new data flow).
-- Vercel deploy — Ready.
-- Live-verify on `/cards/base1-4-charizard` (filled in after deploy lands).
+- Vercel deploy `foil-jjgcghmu7-foilapp.vercel.app` — Ready.
+
+**Live-verify on `https://foiltcg.com/cards/base1-4-charizard` (5/5 new components rendering):**
+
+| Component | Result |
+|---|---|
+| `<Breadcrumb>` | ✅ `aria-label="Breadcrumb"` present; last item `<span aria-current="page">Charizard</span>`; BreadcrumbList JSON-LD embedded in the page's schemaGraph |
+| Variant badges (types/subtypes by H1) | ✅ "Fire" type chip renders with `border-foil-gold/40 bg-foil-gold/10` |
+| `<CardVariantsSection>` | ✅ "Variants & market range" heading present; Holofoil variant card renders with "Highest value" badge (Charizard base1-4 has only the `holofoil` variant in upstream tcgplayer.prices, so the badge applies to it) |
+| `<LiveTimestamp>` | ✅ `aria-live="polite"` chip rendered with "Live" label and gold pulse dot |
+| `<CardMetadataBlock>` | ✅ All 6 label rows present (Type, Series, Artist, Release year, HP, Rarity) + Attacks section (Fire Spin × 4 Fire cost, 100 damage) + Weaknesses chip ("Water ×2") |
+
+**No regressions on existing blocks:**
+
+| Block | Result |
+|---|---|
+| "Best current listing" panel | ✅ Still rendering (2 occurrences — heading + schema reference) |
+| Watchlist form ("Email me when it drops") | ✅ Still rendering |
+| "More from {setName}" related cards | ✅ Still rendering |
+| BreadcrumbList JSON-LD | ✅ Embedded (2 occurrences: `@type` + the items list) |
+
+**Commits shipped this session:**
+- `8ba7ccb feat(card-page): per-card page reference-data layer (Task #24 / ADR-030 / Session 41)` — 14 files changed, 1,009 insertions, 6 deletions
+- One SESSION-LOG live-verify follow-on (this entry)
 
 **Follow-ups added to ROADMAP.** None new. Four ADR-030 followups (graded prices, TCGplayer affiliate row, Cardmarket integration, periodic bake refresh) tracked in the ADR.
 
