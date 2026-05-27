@@ -55,10 +55,19 @@ function fakeMetadata(name = "Charizard", setName = "Base", image = "https://img
     name,
     setName,
     setId: "base1",
+    series: "Base",
     number: "4",
     image,
     rarity: null,
     releaseDate: null,
+    types: [],
+    subtypes: [],
+    hp: null,
+    artist: null,
+    attacks: [],
+    weaknesses: [],
+    tcgplayerPrices: {},
+    tcgplayerUpdatedAt: "",
   });
 }
 

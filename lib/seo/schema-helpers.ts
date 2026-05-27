@@ -89,6 +89,33 @@ export function serializeJsonLd(jsonLd: unknown): string {
   return JSON.stringify(jsonLd).replace(/</g, "\\u003c");
 }
 
+export type BreadcrumbSchemaItem = {
+  /** Display name on this rung. */
+  name: string;
+  /** Full URL of this rung's page (Google requires absolute URLs). */
+  url: string;
+};
+
+/**
+ * schema.org/BreadcrumbList. Each item is an absolute URL + display
+ * name. Position is 1-indexed per spec. Session 41 / ADR-030.
+ *
+ * Pass the *visual* breadcrumb's item list (same array the
+ * `<Breadcrumb>` component renders) so visual + schema can't drift.
+ */
+export function breadcrumbListSchema(items: readonly BreadcrumbSchemaItem[]) {
+  if (!items.length) return null;
+  return {
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  } as const;
+}
+
 function stripTrailingSlash(s: string): string {
   return s.replace(/\/$/, "");
 }

@@ -15,7 +15,11 @@ import { affiliateSearchUrl, type EpnBestListing } from "@/lib/affiliate/epn";
 import { getBestListing } from "@/lib/affiliate/ebay-browse";
 import { CARD_CATALOG, getCatalogEntry, relatedCardsForSlug } from "@/lib/cards/catalog";
 import { getCardMetadata, type CardMetadata } from "@/lib/cards/sdk";
-import { schemaGraph, serializeJsonLd } from "@/lib/seo/schema-helpers";
+import { breadcrumbListSchema, schemaGraph, serializeJsonLd } from "@/lib/seo/schema-helpers";
+import { Breadcrumb, type BreadcrumbItem } from "@/components/breadcrumb";
+import { CardMetadataBlock } from "@/components/card-metadata-block";
+import { CardVariantsSection } from "@/components/card-variants-section";
+import { LiveTimestamp } from "@/components/live-timestamp";
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = false;
@@ -142,7 +146,23 @@ export default async function CardPage({
       },
     ];
   }
-  const jsonLd = schemaGraph(productSchema);
+
+  // Session 41 / ADR-030: Breadcrumb (visual + BreadcrumbList JSON-LD).
+  // The visual <Breadcrumb> consumes the same `items` array fed into
+  // `breadcrumbListSchema`, so a drift between the two surfaces is
+  // visible to a human reader, not just to Googlebot.
+  const siteRoot = siteUrl().replace(/\/$/, "");
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { label: "Home", href: "/" },
+    { label: "Cards", href: "/cards" },
+    { label: card.setName, href: `/cards/sets/${card.setId}` },
+    { label: card.name, href: `/cards/${slug}` },
+  ];
+  const breadcrumbSchema = breadcrumbListSchema(
+    breadcrumbItems.map((item) => ({ name: item.label, url: `${siteRoot}${item.href}` })),
+  );
+
+  const jsonLd = schemaGraph(productSchema, breadcrumbSchema);
 
   const related = relatedCardsForSlug(slug, 6);
 
@@ -152,6 +172,8 @@ export default async function CardPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
+
+      <Breadcrumb items={breadcrumbItems} />
 
       <article>
         <div className="grid gap-10 sm:grid-cols-[16rem_1fr] sm:items-start sm:gap-12">
@@ -182,11 +204,42 @@ export default async function CardPage({
             <h1 className="font-display mt-2 text-4xl font-bold leading-tight tracking-[-0.02em] text-foil-navy sm:text-5xl">
               {card.name}
             </h1>
+            {/* Variant badges — types + subtypes — render adjacent to the
+                title for at-a-glance card identity. Session 41. */}
+            {(card.types.length > 0 || card.subtypes.length > 0) && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {card.types.map((t) => (
+                  <span
+                    key={`type-${t}`}
+                    className="inline-flex items-center rounded-full border border-foil-gold/40 bg-foil-gold/10 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-foil-navy"
+                  >
+                    {t}
+                  </span>
+                ))}
+                {card.subtypes.map((s) => (
+                  <span
+                    key={`subtype-${s}`}
+                    className="inline-flex items-center rounded-full border border-foil-navy/15 bg-foil-cream px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-foil-slate"
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
+            )}
             <p className="mt-4 text-base text-foil-slate sm:text-lg">
               Live listings on eBay, sorted to surface the best current deal.
               Set a target price and we&apos;ll email you when one drops.
             </p>
           </div>
+        </div>
+
+        {/* Variants + market range (TCGplayer) — Session 41 / ADR-030. */}
+        <CardVariantsSection card={card} currentBestPriceUsd={best?.price ?? null} />
+
+        {/* Live timestamp chip — sits above the Best Listing block as a
+            data-freshness affordance. Client-side ticks every 10s. */}
+        <div className="mt-8 flex items-center justify-between gap-3">
+          <LiveTimestamp />
         </div>
 
         <section
@@ -278,6 +331,10 @@ export default async function CardPage({
             One-shot email · No spam · Unsubscribe by clicking the link in any email we send.
           </p>
         </section>
+
+        {/* Reference-data layer (Session 41 / ADR-030). Renders only the
+            fields the SDK exposes; gracefully skips rows it doesn't have. */}
+        <CardMetadataBlock card={card} />
 
         <section className="mt-12 border-t border-foil-navy/10 pt-8 text-sm text-foil-slate">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-foil-gold">

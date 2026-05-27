@@ -1129,6 +1129,66 @@ The decision needed to land before the Twitter pinned-post launch.
 
 ---
 
+## ADR-030 — Per-card page reference-data layer: PokeScope-inspired additions atop the existing buyer's-action layer
+
+**Date:** 2026-05-26
+**Status:** Accepted
+
+**Context.** `/cards/[slug]` is the surface every Twitter visitor will land on. The Session-37/38/39/40 stack turned it into a competent **buyer's-action page** — live best-listing, conditioned badge, wishlist form, related cards. But a competent collector landing on it from a tweet has a parallel reference workflow: *what type is this card, who illustrated it, what's the range of recent prices across variants, when was the set printed, what's the rarity?* Sites like PokeScope, Cardmarket, and the Pokemon TCG SDK explorer all serve that workflow well; Foil currently lifts none of it.
+
+The risk of skipping this layer: a collector visiting from Twitter cross-references in another tab, anchors their mental price on that other tab's data, and treats Foil's CTA as "another affiliate page." Adding a reference-data layer makes Foil a **strict superset** of the typical Pokemon-card reference site — same data, plus a curated buy CTA on top.
+
+**Alternatives considered.**
+
+1. **Skip the reference layer, double down on listings.** Rejected — competitors are already strong at listings (TCGplayer, eBay search itself). The differentiation is "best curated listing + complete reference," not "marginal listing quality."
+2. **Reference layer as a sub-page (e.g. /cards/[slug]/reference).** Rejected — every cross-link is a chance for the collector to leave. One page, full data, single conversion surface.
+3. **External link to PokeScope / Cardmarket.** Rejected — same problem; bouncing the visitor out of Foil before they hit the buy CTA is exactly what we shouldn't do.
+4. **Reference layer with full pricing data baked into the JSON.** Rejected — pricing data updates frequently; if we bake it, the per-card pages serve stale data for the full ISR window. The TCGplayer prices come from the SDK's `tcgplayer.prices` field which the SDK refreshes daily — fetching at render time is the right call.
+
+**Decision.** Compose five new reference components on `/cards/[slug]`, in this order:
+
+1. **`<Breadcrumb>`** — `Home / Cards / <Set> / <Card>` at the top. Visual breadcrumb + schema.org `BreadcrumbList` JSON-LD, shared from the same `items` array so visual + structured-data can't drift.
+2. **Variant badges next to the H1** — types (e.g. "Fire") + subtypes (e.g. "Stage 2") rendered as small foil-gold-bordered chips. At-a-glance card identity.
+3. **`<CardVariantsSection>`** — TCGplayer Low/Mid/High range per printing (Normal / Holofoil / Reverse Holo / etc), with the current eBay best-listing price marked on each bar for direct comparison. The highest-`market` variant gets a "Highest value" badge.
+4. **`<LiveTimestamp>`** — small "Live · X seconds ago" chip with gold pulse dot, ticking every 10s via setInterval. Signals that the data on this page is fresh-from-this-render, not cached at our edge.
+5. **`<CardMetadataBlock>`** — Type, Subtype, HP, Series, Artist, Release year, Rarity (key/value grid) + Attacks (with cost + damage) + Weaknesses chips. Two columns on desktop, one on mobile.
+
+The buyer's-action layer (best-listing block + watchlist form + related cards) remains exactly as-is. The reference layer is **additive** — it surrounds and supports the CTA, never displaces it.
+
+**SDK extension.** [`lib/cards/sdk.ts`](../lib/cards/sdk.ts) `CardMetadata` gained: `series`, `types`, `subtypes`, `hp`, `artist`, `attacks` (with cost + damage + text), `weaknesses`, `tcgplayerPrices` (keyed by variant slug), `tcgplayerUpdatedAt`. All optional in shape, with `[]` / `null` / `{}` defaults so a soft-fail minimal-record card still renders the page (the new sections gracefully return `null` when their data is missing).
+
+The `loadBakedSnapshot()` normalizer fills these defaults into pre-Session-41 baked entries so older snapshots don't carry undefined-property holes into the rendering path.
+
+**Architectural posture.**
+
+- **No new data sources.** The reference data all lives in the existing Pokemon TCG SDK response — we just weren't extracting it. Zero new external API dependencies.
+- **All new components are Server Components except `<LiveTimestamp>`.** The live timestamp needs `useEffect` + `setInterval` for the relative-time update; everything else can SSR cleanly.
+- **Graceful degradation throughout.** Each section checks its input and returns `null` when it has nothing to render — the page never carries empty headings.
+- **Schema-org breadcrumb is wired through the existing schemaGraph chain.** No new JSON-LD `<script>` tag; the BreadcrumbList drops into the page's existing structured-data envelope alongside the Product schema.
+- **Drift guards in CI.** [`lib/__tests__/card-page-enhancements.test.ts`](../lib/__tests__/card-page-enhancements.test.ts) pins each new component's behavior (rows rendered, null-safety branches, hover/aria attributes) and the page-level composition.
+
+**Consequences.**
+
+- **Strict superset of competing reference sites.** A collector who would otherwise check Cardmarket or PokeScope for the same card now sees the same data on Foil — plus a curated buy CTA.
+- **More raw real-estate per page.** The page is taller now (5 new sections). Mobile readability stays good (single-column metadata grid, stacked variant cards), but bounce rate on mobile is worth watching post-launch.
+- **TCGplayer price freshness is upstream-controlled.** When the SDK's `tcgplayer.prices.<variant>.{low,mid,high,market}` is stale, our visualization is stale too. We can't ground-truth this; the `tcgplayerUpdatedAt` caption is the user-facing honest signal.
+- **Variant section gracefully degrades for cards with no TCGplayer data.** Trainer cards, energies, and pre-2003 sets often lack `tcgplayer.prices` — the section returns `null` rather than rendering an empty panel.
+- **Page is now legitimately reference-grade for collectors.** That's the goal.
+
+**Cross-refs.**
+
+- [STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md) — names the "win the collector niche by being indispensable on a per-card basis" requirement that ADR-030 closes.
+- [ADR-026](#adr-026--quality-aware-listing-picker-replaces-lowest-price-wins) — the buyer's-action layer (best-listing picker) that the reference layer surrounds.
+
+**Followups (out of scope for Session 41).**
+
+1. Graded prices section (PSA 10 / BGS 9.5 / CGC 9.5) — requires a sold-comps integration we don't have yet. The variant section's "highest value" badge is a partial proxy until then.
+2. TCGplayer affiliate row — waiting on V1.5 affiliate approval.
+3. Cardmarket prices integration (the SDK exposes `cardmarket.prices` too) — second cluster of variant bars once we know whether collectors find the TCGplayer row enough.
+4. Re-run `npm run bake:cards` periodically so the baked fallback picks up the new SDK fields (the existing snapshot has them normalized as empty; live-SDK calls populate them in real time).
+
+---
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

@@ -42,10 +42,37 @@ function loadBakedSnapshot(): BakedSnapshot {
     const here = dirname(fileURLToPath(import.meta.url));
     const path = join(here, "baked-metadata.json");
     const raw = readFileSync(path, "utf8");
-    const parsed = JSON.parse(raw) as BakedSnapshot;
+    const parsed = JSON.parse(raw) as Partial<BakedSnapshot> & {
+      cards?: Record<string, Partial<CardMetadata>>;
+    };
+    const normalizedCards: Record<string, CardMetadata> = {};
+    for (const [id, c] of Object.entries(parsed.cards ?? {})) {
+      // Normalize older snapshot entries (pre-Session-41) that lack the
+      // reference-data fields. New fields default to empty so component
+      // null-checks treat them as "no data" rather than crashing.
+      normalizedCards[id] = {
+        id: typeof c.id === "string" ? c.id : id,
+        name: typeof c.name === "string" ? c.name : id,
+        setName: typeof c.setName === "string" ? c.setName : "",
+        setId: typeof c.setId === "string" ? c.setId : "",
+        series: typeof c.series === "string" ? c.series : "",
+        number: typeof c.number === "string" ? c.number : "",
+        image: typeof c.image === "string" ? c.image : "",
+        rarity: c.rarity ?? null,
+        releaseDate: c.releaseDate ?? null,
+        types: Array.isArray(c.types) ? c.types : [],
+        subtypes: Array.isArray(c.subtypes) ? c.subtypes : [],
+        hp: c.hp ?? null,
+        artist: c.artist ?? null,
+        attacks: Array.isArray(c.attacks) ? c.attacks : [],
+        weaknesses: Array.isArray(c.weaknesses) ? c.weaknesses : [],
+        tcgplayerPrices: c.tcgplayerPrices && typeof c.tcgplayerPrices === "object" ? c.tcgplayerPrices : {},
+        tcgplayerUpdatedAt: typeof c.tcgplayerUpdatedAt === "string" ? c.tcgplayerUpdatedAt : "",
+      };
+    }
     return {
       bakedAt: parsed.bakedAt ?? "",
-      cards: parsed.cards ?? {},
+      cards: normalizedCards,
       sets: parsed.sets ?? {},
     };
   } catch {
@@ -117,6 +144,32 @@ async function fetchWithRetry(
   return null;
 }
 
+/** Per-variant TCGplayer price snapshot. Keys are upstream variant slugs
+ *  ("normal", "holofoil", "reverseHolofoil", "1stEditionHolofoil", etc.). */
+export type TcgPlayerVariantPrice = {
+  low: number | null;
+  mid: number | null;
+  high: number | null;
+  market: number | null;
+  directLow: number | null;
+};
+
+export type CardAttack = {
+  name: string;
+  /** Free-form printed damage (often a number string, sometimes "20+", "×", etc.). */
+  damage: string | null;
+  /** Energy-cost icons (e.g. ["Fire","Fire","Colorless"]). */
+  cost: string[];
+  text: string | null;
+};
+
+export type CardWeakness = {
+  /** Type name (e.g. "Water"). */
+  type: string;
+  /** Multiplier as printed (e.g. "×2"). */
+  value: string;
+};
+
 export type CardMetadata = {
   id: string;
   /** Display name, e.g. "Charizard". */
@@ -125,6 +178,8 @@ export type CardMetadata = {
   setName: string;
   /** Set id, e.g. "base1". */
   setId: string;
+  /** Set series / era, e.g. "Base", "Scarlet & Violet". Empty when missing. */
+  series: string;
   /** Collector number as printed, e.g. "4" or "199". */
   number: string;
   /** Card art URL (large preferred, small fallback). */
@@ -133,6 +188,25 @@ export type CardMetadata = {
   rarity: string | null;
   /** Optional — set release date as ISO-ish string, e.g. "1999/01/09". */
   releaseDate: string | null;
+  /** Energy types, e.g. ["Fire"]. Empty array when missing. */
+  types: string[];
+  /** Subtypes, e.g. ["Stage 2"], ["VMAX"], ["EX"]. Empty array when missing. */
+  subtypes: string[];
+  /** HP as printed, e.g. "120". Null for Trainer / Energy cards. */
+  hp: string | null;
+  /** Card art credit, e.g. "Mitsuhiro Arita". Null when missing. */
+  artist: string | null;
+  /** Attacks (Session 41 / ADR-030 — reference-data layer). */
+  attacks: CardAttack[];
+  /** Weaknesses (Session 41 / ADR-030). */
+  weaknesses: CardWeakness[];
+  /** TCGplayer price snapshot per variant, keyed by variant slug
+   *  ("normal"/"holofoil"/"reverseHolofoil"/etc). Empty record when
+   *  upstream doesn't expose tcgplayer.prices for this card. */
+  tcgplayerPrices: Record<string, TcgPlayerVariantPrice>;
+  /** ISO date when tcgplayerPrices was last refreshed upstream (e.g.
+   *  "2026/05/26"). Empty when missing. */
+  tcgplayerUpdatedAt: string;
   /** True when the record was built from the soft-fail fallback path. */
   fallback?: true;
 };
@@ -200,14 +274,43 @@ type RawCard = {
   name?: string;
   number?: string;
   rarity?: string | null;
+  hp?: string | null;
+  types?: string[];
+  subtypes?: string[];
+  artist?: string | null;
   set?: {
     id?: string;
     name?: string;
+    series?: string;
     releaseDate?: string | null;
   };
   images?: {
     small?: string;
     large?: string;
+  };
+  attacks?: Array<{
+    name?: string;
+    damage?: string | null;
+    cost?: string[];
+    text?: string | null;
+  }>;
+  weaknesses?: Array<{
+    type?: string;
+    value?: string;
+  }>;
+  tcgplayer?: {
+    url?: string;
+    updatedAt?: string;
+    prices?: Record<
+      string,
+      {
+        low?: number | null;
+        mid?: number | null;
+        high?: number | null;
+        market?: number | null;
+        directLow?: number | null;
+      }
+    >;
   };
 };
 
@@ -216,19 +319,65 @@ function parseCard(raw: RawCard, requestedId: string): CardMetadata {
   const name = typeof raw.name === "string" && raw.name.trim() ? raw.name.trim() : derivedNameFromId(id);
   const setName = typeof raw.set?.name === "string" ? raw.set.name : derivedSetIdFromId(id);
   const setId = typeof raw.set?.id === "string" ? raw.set.id : derivedSetIdFromId(id);
+  const series = typeof raw.set?.series === "string" ? raw.set.series : "";
   const number = typeof raw.number === "string" ? raw.number : derivedNumberFromId(id);
   const image = (typeof raw.images?.large === "string" && raw.images.large)
     || (typeof raw.images?.small === "string" && raw.images.small)
     || "";
+  const attacks: CardAttack[] = [];
+  if (Array.isArray(raw.attacks)) {
+    for (const a of raw.attacks) {
+      if (!a || typeof a.name !== "string") continue;
+      const cost = Array.isArray(a.cost)
+        ? a.cost.filter((cv): cv is string => typeof cv === "string")
+        : [];
+      attacks.push({
+        name: a.name,
+        damage: typeof a.damage === "string" && a.damage.length ? a.damage : null,
+        cost,
+        text: typeof a.text === "string" && a.text.length ? a.text : null,
+      });
+    }
+  }
+  const weaknesses: CardWeakness[] = [];
+  if (Array.isArray(raw.weaknesses)) {
+    for (const w of raw.weaknesses) {
+      if (!w || typeof w.type !== "string" || typeof w.value !== "string") continue;
+      weaknesses.push({ type: w.type, value: w.value });
+    }
+  }
+  const tcgplayerPrices: Record<string, TcgPlayerVariantPrice> = {};
+  const rawPrices = raw.tcgplayer?.prices;
+  if (rawPrices && typeof rawPrices === "object") {
+    for (const [variant, p] of Object.entries(rawPrices)) {
+      if (!p || typeof p !== "object") continue;
+      tcgplayerPrices[variant] = {
+        low: typeof p.low === "number" ? p.low : null,
+        mid: typeof p.mid === "number" ? p.mid : null,
+        high: typeof p.high === "number" ? p.high : null,
+        market: typeof p.market === "number" ? p.market : null,
+        directLow: typeof p.directLow === "number" ? p.directLow : null,
+      };
+    }
+  }
   return {
     id,
     name,
     setName,
     setId,
+    series,
     number,
     image,
     rarity: typeof raw.rarity === "string" ? raw.rarity : null,
     releaseDate: typeof raw.set?.releaseDate === "string" ? raw.set.releaseDate : null,
+    types: Array.isArray(raw.types) ? raw.types.filter((t): t is string => typeof t === "string") : [],
+    subtypes: Array.isArray(raw.subtypes) ? raw.subtypes.filter((s): s is string => typeof s === "string") : [],
+    hp: typeof raw.hp === "string" && raw.hp.length ? raw.hp : null,
+    artist: typeof raw.artist === "string" && raw.artist.length ? raw.artist : null,
+    attacks,
+    weaknesses,
+    tcgplayerPrices,
+    tcgplayerUpdatedAt: typeof raw.tcgplayer?.updatedAt === "string" ? raw.tcgplayer.updatedAt : "",
   };
 }
 
@@ -238,10 +387,19 @@ function minimalRecord(id: string): CardMetadata {
     name: derivedNameFromId(id),
     setName: derivedSetIdFromId(id),
     setId: derivedSetIdFromId(id),
+    series: "",
     number: derivedNumberFromId(id),
     image: "",
     rarity: null,
     releaseDate: null,
+    types: [],
+    subtypes: [],
+    hp: null,
+    artist: null,
+    attacks: [],
+    weaknesses: [],
+    tcgplayerPrices: {},
+    tcgplayerUpdatedAt: "",
     fallback: true,
   };
 }

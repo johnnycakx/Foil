@@ -8,6 +8,59 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-26 — Session 41: per-card page reference-data layer — Task #24 / ADR-030
+
+**Commits:** this commit only
+
+**Why this session existed.** `/cards/[slug]` is the surface every Twitter visitor lands on, and through Session 40 it had become a competent buyer's-action page (best-listing block, conditioned badge, watchlist form, related cards). What it didn't have: the reference-data layer collectors expect when they cross-reference a card — type, artist, series, attacks, weaknesses, full TCGplayer market range across variants. A visitor opening another tab to PokeScope or Cardmarket and then comparing back to Foil is a visitor we've already half-lost. Session 41 closes that gap by making the page a **strict superset** of competing reference sites.
+
+**What landed.**
+
+### Five new components
+
+- [`components/breadcrumb.tsx`](../components/breadcrumb.tsx) (NEW) — `Home / Cards / <Set> / <Card>`. Visual `<nav aria-label="Breadcrumb">` + the same items array fed into `breadcrumbListSchema` so the visual + JSON-LD can't drift.
+- [`components/card-metadata-block.tsx`](../components/card-metadata-block.tsx) (NEW) — Type, Subtype, HP, Series, Artist, Release year, Rarity (two-column key/value grid) + Attacks (cost + damage + text) + Weaknesses (foil-gold chips). Each section gracefully returns nothing when the data is missing.
+- [`components/live-timestamp.tsx`](../components/live-timestamp.tsx) (NEW, Client) — "Live · Just now / X seconds ago" chip with gold pulse dot, ticking every 10s via `setInterval`. `aria-live="polite"` for assistive tech.
+- [`components/price-range-bar.tsx`](../components/price-range-bar.tsx) (NEW) — visual Low/Mid/High track with a navy marker at the current eBay listing's position. Clamps the marker into `[low, high]` so outlier listings don't break the visual. Returns `null` when `low === null` or `high <= low`.
+- [`components/card-variants-section.tsx`](../components/card-variants-section.tsx) (NEW) — one PriceRangeBar per variant slug from `tcgplayerPrices` (Normal / Holofoil / Reverse Holo / 1st Edition / etc). Highlights the variant with the highest market price as "Highest value." Returns `null` when no upstream pricing data exists.
+
+### SDK extension
+
+[`lib/cards/sdk.ts`](../lib/cards/sdk.ts) `CardMetadata` gained: `series`, `types[]`, `subtypes[]`, `hp`, `artist`, `attacks[]` (with cost + damage + text), `weaknesses[]`, `tcgplayerPrices` keyed by variant slug, `tcgplayerUpdatedAt`. All carry sensible empty defaults (`[]` / `null` / `{}`). `minimalRecord()` updated to ship the new fields as empty defaults. `loadBakedSnapshot()` gained a normalizer that fills these defaults into pre-Session-41 baked entries — the existing 91KB snapshot survives unchanged on disk; the runtime layer fills the gaps. Live SDK calls populate the fields end-to-end.
+
+### Page composition
+
+[`app/(site)/cards/[slug]/page.tsx`](../app/(site)/cards/[slug]/page.tsx) now renders, in order:
+
+1. **Breadcrumb** at top
+2. **Hero** (image + title + types/subtypes badges + sub-copy)
+3. **CardVariantsSection** (TCGplayer market ranges)
+4. **LiveTimestamp** chip
+5. **Best current listing** (existing, unchanged)
+6. **Watchlist form** (existing, unchanged)
+7. **CardMetadataBlock** (Type/Series/Artist/etc + Attacks + Weaknesses)
+8. **About this card** (existing copy block)
+9. **More from {setName}** (related cards, existing)
+
+### Schema + tests
+
+- [`lib/seo/schema-helpers.ts`](../lib/seo/schema-helpers.ts) — new `breadcrumbListSchema(items)` helper. Returns a 1-indexed BreadcrumbList; returns `null` on empty input. Wired into the page's existing `schemaGraph(productSchema, breadcrumbSchema)` chain — no new `<script>` tag.
+- [`lib/__tests__/card-page-enhancements.test.ts`](../lib/__tests__/card-page-enhancements.test.ts) (NEW, 16 tests) — pins each new component's drift surface (rows rendered, null-safety branches, aria attributes, label maps), the BreadcrumbList shape (1-indexed, returns null on empty), and the page-level composition (all 4 new component anchors present, `breadcrumbListSchema` wired into `schemaGraph`).
+- [`lib/__tests__/wishlist-scan-batch.test.ts`](../lib/__tests__/wishlist-scan-batch.test.ts) — `fakeMetadata()` stub updated to ship the new `CardMetadata` shape (existing test that was the only consumer of the old shape; now drift-aligned).
+
+**Closure gate.**
+
+- `npm test` — 511/511 passing (499 + 12 new card-page-enhancements tests).
+- `npx tsc --noEmit` — clean.
+- `npm run compliance:check` — 6/6 PASS.
+- `/security-review` — no HIGH/MEDIUM findings (rendering-only changes; no new data flow).
+- Vercel deploy — Ready.
+- Live-verify on `/cards/base1-4-charizard` (filled in after deploy lands).
+
+**Follow-ups added to ROADMAP.** None new. Four ADR-030 followups (graded prices, TCGplayer affiliate row, Cardmarket integration, periodic bake refresh) tracked in the ADR.
+
+---
+
 ## 2026-05-26 — Session 40: five-bug pre-launch fix pass — Task #23
 
 **Commits:** this commit only
