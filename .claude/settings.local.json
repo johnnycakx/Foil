@@ -166,7 +166,9 @@
       "Bash(dir foil *)",
       "Bash([ -f \"/tmp/foil-session44-clones/taste-skill/skills/$d/SKILL.md\" ])",
       "Bash(cp -r /tmp/foil-session44-clones/taste-skill/skills/__TRACKED_VAR__ ./.claude/skills/__TRACKED_VAR__)",
-      "Bash([ -f \"./.claude/skills/$d/SKILL.md\" ])"
+      "Bash([ -f \"./.claude/skills/$d/SKILL.md\" ])",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(echo \"---EXIT:$?---\")"
     ]
   },
   "enableAllProjectMcpServers": true,

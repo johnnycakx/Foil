@@ -166,6 +166,13 @@ The other taste-skill register bundles (`gpt-tasteskill`, `image-to-code-skill`,
 
 Closure-gate hook (R-011-adjacent discipline): before claiming a UI goal closed, run `npm run design:lint` AND check that the structural drift guards in `lib/__tests__/visual-regression.test.ts` extended for the new surface still pass. Lint failures or unguarded surfaces are a goal-blocker, not a followup.
 
+Design Context (impeccable — Session 44.x `/impeccable teach`)
+
+`PRODUCT.md` (strategic) and `DESIGN.md` (visual, Google Stitch format) at the repo root are the canonical design context, read by every `.claude/skills/impeccable/` command and any DESIGN.md-aware tool. Read them before a UI/design task; they encode the brand line so output doesn't drift toward the generic-AI aesthetic ADR-028/029/032/033 de-risked.
+- **PRODUCT.md** — register (`brand` default; gated app surfaces override to `product` per-task), users, purpose, "trusted collector concierge" personality, the four anti-references (generic AI SaaS template / loud crypto-hype / sterile enterprise dashboard / bargain-bin coupon), 5 design principles, WCAG AA + reduced-motion bar.
+- **DESIGN.md** — the locked cream/navy/gold system (ADR-029) as tokens + named rules: Coral-Hover-Only, Scarce Gold (≤10%), No-Pure-Black-Or-White, Display-for-Headlines, Navy-Tinted Shadow, Flat-At-Rest. Mirrors the `--color-foil-*` tokens in `app/globals.css` and the Bricolage Grotesque / Geist pairing in `app/layout.tsx`. Sidecar `.impeccable/design.json` carries tonal ramps, shadow/motion tokens, and drop-in component snippets.
+Regenerate via `/impeccable document` (visual) or `/impeccable teach` (strategic) when the system drifts; don't hand-edit them to diverge from the code.
+
 Auth gate (lib/supabase/proxy.ts)
 
 The proxy is default-deny — every request redirects unauthenticated users to /login unless its path is in the PUBLIC_ROUTES allowlist. When you add a new route under app/, decide which list it belongs on:
