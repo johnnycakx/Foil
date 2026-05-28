@@ -8,6 +8,29 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-28 — Session 47: hero rework (cards above headline) + floral section distinction — [ADR-037](DECISIONS.md#adr-037--hero-rework-cards-above-the-headline--floral-section-distinction)
+
+**Why.** Two coupled complaints survived the Session 46 warmth pass: the grail cards *still* read as a ghosted backdrop (even at 0.5 opacity behind the scrim), and the page was a single undifferentiated cream column. This session fixes both, planned via `/impeccable shape`, finished via `/impeccable polish`. Strictly the home page.
+
+**Before → after.**
+
+1. **Hero cards: backdrop → foreground showcase.** Were a `0.5`-opacity, blurred, desaturated row *behind* the H1 under an asymmetric scrim (ADR-036). Now a **full-opacity (1.0), no-blur, no-desaturate fanned row ABOVE the H1** — 8 `HERO_CARDS` overlapping via negative margins (`-ml-6 → -ml-8`), each keeping its tilt, sized `w-24` (mobile) → `lg:w-40`. The pitch block (live pill, H1, trust pill, body, CTAs) is now **centered beneath** the fan.
+2. **Scrim deleted.** Cards no longer overlap text, so the entire asymmetric scrim (`from-foil-cream via-…/88` mobile + `linear-gradient(to_right…)` desktop) is gone.
+3. **Card3D + MagneticLink removed from the hero.** The constant 3D-tilt and magnetic-cursor CTA were distracting for a foreground showcase. Cards are static with a subtle CSS hover lift (`hover:-translate-y-2 hover:z-10`); the CTA is a plain `Link` with a hover lift (`-translate-y-0.5` + gold ring + coral). Imports dropped from `page.tsx`; the components stay in-tree (unused on home). Reduced-motion gating unchanged (globals.css reset collapses the lifts).
+4. **Floral section distinction.** New `FloralPattern` component — an inline SVG `<pattern>` of gold (#c9a24b) vines + leaves — rendered as an absolute overlay at **~9% (mobile) / ~12% (desktop)** opacity on the **"How it works" section only**. One deliberate textured band; hero / "What you actually see" / final CTA stay clean cream. Rendered a preview at 12% over cream with navy+slate text on top: texture reads as gentle botanical, text fully legible (contrast unaffected).
+
+**Preserved from Session 46 (untouched):** Fraunces display + Geist body, holofoil spark logo + favicon/icons, reduced-motion gating + contrast fixes, deleted pricing section, trust pill under H1, hero body + section copy trims.
+
+**Self-check.** The `aceternity-components` + `visual-regression` suites pinned the OLD hero (Card3D wrap, MagneticLink CTA, 0.5 opacity, asymmetric scrim). Updated all of them to ADR-037 (cards-above-H1, full opacity, scrim gone, Card3D/Magnetic gone, floral pattern present). Hero cards kept `aria-hidden` (decorative showcase) so SR users land on the H1.
+
+**Closure-gate (R-011 strict).** 530-suite green (incl. new ADR-037 assertions) · `tsc` clean · `npm run build` exit 0 · `compliance:check` 6/6 · `design:lint` 0 new · `/security-review` RUN (presentational, no findings) · push confirmed · Vercel deploy Ready verified. [Detail recorded inline at session end.]
+
+**Doc updates.** This entry; [ADR-037](DECISIONS.md) (+ ADR-036 hero-backdrop part marked superseded); ROADMAP last-updated line.
+
+**Open follow-up (carried).** The 8 `unoptimized` hi-res hero PNGs are now above the fold; optimizing them (Next image resize or non-`_hires` source) remains the Session-45-audit perf follow-up.
+
+---
+
 ## 2026-05-28 — Session 46: home page warmth pass (Fraunces + spark mark + pricing removal) — [ADR-036](DECISIONS.md#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim)
 
 **Why.** Session 45 left the home page accessible + focused at 34/40 but still reading a touch cool/templated. This session adds warmth and personality **without a redesign** — the "trusted collector concierge" register, executed via `/impeccable bolder` (typography + logo + decoration) then `/impeccable polish`, consulting PRODUCT.md + DESIGN.md throughout. Strictly the home page; no palette/register change, no other surfaces.

@@ -6,8 +6,6 @@ import { createClient } from "@/lib/supabase/server";
 import { EmailCapture } from "@/components/email-capture";
 import { CARD_CATALOG, setIdsInCatalog } from "@/lib/cards/catalog";
 import { BackgroundGradientAnimation } from "@/components/aceternity/background-gradient-animation";
-import { MagneticLink } from "@/components/aceternity/magnetic-button";
-import { Card3D } from "@/components/aceternity/card-3d";
 
 const SITE_TITLE = "Foil — The best price on any Pokémon card";
 const SITE_DESCRIPTION =
@@ -55,13 +53,12 @@ export default async function Home() {
 }
 
 // Session 43 (ADR-033) — modern grail seed list. Seven modern alt-art /
-// rainbow chase cards + one vintage anchor (Base Set Charizard) form
-// the hero backdrop. Session 46 (ADR-036) reordered the array so the
-// three signature grails (Giratina, Rayquaza, Moonbreon) sit at the END
-// — in a centered flex-wrap that lands them on the RIGHT, where the
-// asymmetric scrim leaves the cards unobscured and clearly readable.
-// Image URLs hit the Pokemon TCG SDK CDN directly — same data the
-// per-card pages load, so the browser cache wins on subsequent nav.
+// rainbow chase cards + one vintage anchor (Base Set Charizard). As of
+// Session 47 (ADR-037) these are a full-opacity foreground showcase
+// fanned across the top of the hero — no longer a ghosted backdrop. The
+// array order is the left-to-right fan order; tilts give each card
+// character. Image URLs hit the Pokemon TCG SDK CDN directly — same data
+// the per-card pages load, so the browser cache wins on subsequent nav.
 const HERO_CARDS: { id: string; alt: string; tilt: string }[] = [
   { id: "base1/4",    alt: "Charizard, Base Set (vintage anchor)",             tilt: "rotate-[2deg]"  },
   { id: "swsh35/74",  alt: "Charizard VMAX Rainbow Rare, Champions Path",      tilt: "-rotate-[3deg]" },
@@ -77,9 +74,8 @@ function Hero() {
   const cardCount = CARD_CATALOG.length;
   const setCount = setIdsInCatalog().length;
   return (
-    <section className="relative isolate overflow-hidden">
-      {/* ADR-029: restrained bottom-right shimmer instead of a full-page
-          rainbow. Cards on the page are the visual interest. */}
+    <section className="relative isolate overflow-hidden bg-foil-cream">
+      {/* ADR-029: restrained bottom-right gold shimmer behind everything. */}
       <div className="absolute inset-0 -z-10">
         <BackgroundGradientAnimation
           variant="corner-shimmer"
@@ -88,47 +84,40 @@ function Hero() {
         />
       </div>
 
-      {/* Card grid backdrop — Session 46 (ADR-036) bumped opacity 0.28 →
-          0.5 and softened the blur to 0.25px (saturation back up to 0.9)
-          so the grail cards read as a real showcase, not a ghosted
-          texture. The asymmetric scrim below keeps the headline legible
-          on the left while the cards stay vivid on the right. */}
+      {/* Hero showcase — Session 47 (ADR-037). The grail row moved ABOVE
+          the headline as a full-opacity fanned showcase: real cards, no
+          blur, no desaturation, no scrim, no Card3D. The modern-grail seed
+          list finally reads as the showcase it was meant to be. Static
+          (subtle hover lift only); the globals.css reduced-motion reset
+          collapses the lift for users who ask for it. Decorative → the
+          row is aria-hidden so screen readers go straight to the pitch. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-3 px-5 pt-6 sm:px-8 sm:gap-4 sm:pt-10"
-        style={{ opacity: 0.5, filter: "blur(0.25px) saturate(0.9)" }}
+        className="mx-auto flex max-w-6xl items-center justify-center px-2 pt-8 sm:pt-12"
       >
-        {HERO_CARDS.map((c) => (
-          <div key={c.id} className={`shrink-0 ${c.tilt}`}>
-            <Card3D>
-              <div className="relative aspect-[5/7] w-20 overflow-hidden rounded-md shadow-xl shadow-foil-navy/30 ring-1 ring-foil-navy/15 sm:w-24 md:w-28">
-                <Image
-                  src={`https://images.pokemontcg.io/${c.id}_hires.png`}
-                  alt={c.alt}
-                  width={240}
-                  height={336}
-                  unoptimized
-                  className="h-full w-full object-cover"
-                  priority={false}
-                />
-              </div>
-            </Card3D>
+        {HERO_CARDS.map((c, i) => (
+          <div
+            key={c.id}
+            className={`relative ${c.tilt} ${i > 0 ? "-ml-6 sm:-ml-7 md:-ml-8" : ""} transition duration-200 ease-out hover:z-10 hover:-translate-y-2`}
+          >
+            <div className="relative aspect-[5/7] w-24 overflow-hidden rounded-lg bg-foil-cream shadow-lg shadow-foil-navy/25 ring-1 ring-foil-navy/10 sm:w-28 md:w-32 lg:w-40">
+              <Image
+                src={`https://images.pokemontcg.io/${c.id}_hires.png`}
+                alt={c.alt}
+                width={400}
+                height={560}
+                unoptimized
+                className="h-full w-full object-cover"
+                priority={false}
+              />
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Copy-area scrim — Session 46 (ADR-036) made it ASYMMETRIC.
-          Mobile: top-down cream fade so the stacked headline/lead read
-          over the cards. Desktop (sm:): a left→right linear cream wash —
-          solid on the left ~40% (headline + lead + CTA zone), fading to
-          fully transparent by ~82% so the right-hand grails (Giratina,
-          Rayquaza, Moonbreon) showcase unobscured. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-[5] bg-gradient-to-b from-foil-cream via-foil-cream/88 to-foil-cream/45 sm:bg-none sm:[background:linear-gradient(to_right,var(--color-foil-cream)_0%,var(--color-foil-cream)_38%,color-mix(in_oklab,var(--color-foil-cream)_72%,transparent)_55%,color-mix(in_oklab,var(--color-foil-cream)_35%,transparent)_70%,transparent_82%)]"
-      />
-
-      <div className="relative mx-auto w-full max-w-6xl px-5 pt-16 pb-20 sm:px-8 sm:pt-24 sm:pb-28">
+      {/* Pitch block — centered beneath the card fan. No scrim needed: the
+          cards no longer overlap the text. */}
+      <div className="relative mx-auto w-full max-w-3xl px-5 pt-10 pb-20 text-center sm:px-8 sm:pt-12 sm:pb-28">
         <p className="inline-flex items-center gap-2 rounded-full border border-foil-gold/40 bg-foil-cream/80 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">
           <span className="relative inline-flex h-1.5 w-1.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foil-gold opacity-60" />
@@ -137,32 +126,30 @@ function Hero() {
           Live · tracking {cardCount} cards across {setCount} sets
         </p>
 
-        {/* Headline — single-color navy, type-led (ADR-029). Display font
-            is Fraunces (humanist serif) as of Session 46 / ADR-036:
-            warm + considered, the "trusted concierge" voice. */}
-        <h1 className="font-display mt-6 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-[-0.01em] text-foil-navy sm:text-5xl md:text-6xl">
+        {/* Headline — single-color navy, Fraunces display (ADR-036). */}
+        <h1 className="font-display mx-auto mt-6 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-[-0.01em] text-foil-navy sm:text-5xl md:text-6xl">
           Tell me a Pokémon card. I&apos;ll find you the best live deal.
         </h1>
 
-        <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-foil-navy/10 bg-foil-cream/70 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">
+        <p className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-foil-navy/10 bg-foil-cream/70 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">
           <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
           Built by a Level-4 TCGplayer Verified Seller
         </p>
 
-        <p className="mt-5 max-w-2xl text-lg text-foil-slate sm:text-xl">
+        <p className="mx-auto mt-5 max-w-xl text-lg text-foil-slate sm:text-xl">
           Foil scans eBay&apos;s live listings, filters out the keyword-stuffed
           junk, and surfaces the single best-value listing for the card you want.
           Want it cheaper? Set a target price and we&apos;ll email you the moment
           a real listing drops to it.
         </p>
 
-        <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-          <MagneticLink
+        <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <Link
             href="/start"
-            className="rounded-xl bg-foil-navy px-6 py-3.5 text-base font-semibold text-foil-cream hover:bg-foil-coral"
+            className="rounded-xl bg-foil-navy px-6 py-3.5 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40"
           >
             Start tracking cards →
-          </MagneticLink>
+          </Link>
           <Link
             href="/cards"
             className="text-sm text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
@@ -213,6 +200,41 @@ function CardPeek({ id, side = "right" }: { id: string; side?: "left" | "right" 
   );
 }
 
+// Session 47 (ADR-037) — gold botanical pattern marking the "How it works"
+// band as the one distinct textured section. An inline SVG <pattern> of
+// vines + leaves in foil-gold; opacity is set on the wrapper (≈9% mobile,
+// ≈12% desktop) so text on top stays legible and the texture never
+// competes with the hero cards on small screens.
+function FloralPattern() {
+  return (
+    <svg
+      aria-hidden
+      className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.09] sm:opacity-[0.12]"
+    >
+      <defs>
+        <pattern id="foil-floral" patternUnits="userSpaceOnUse" width="200" height="200">
+          <g fill="none" stroke="#c9a24b" strokeWidth="1.4" strokeLinecap="round">
+            {/* primary vine + leaves */}
+            <path d="M8 198 C 44 162 32 112 84 92 C 120 78 132 44 122 10" />
+            <path d="M84 92 q -18 -3 -22 -20 q 19 1 24 17 z" fill="#c9a24b" stroke="none" />
+            <path d="M104 56 q 13 -10 30 -7 q -7 15 -27 12 z" fill="#c9a24b" stroke="none" />
+            <path d="M118 24 q -12 -8 -12 -23 q 14 5 15 20 z" fill="#c9a24b" stroke="none" />
+            {/* secondary sprig, offset for variation */}
+            <path d="M150 200 C 160 172 146 150 168 130 C 184 114 182 94 196 80" />
+            <path d="M168 130 q -13 -5 -16 -19 q 15 1 19 15 z" fill="#c9a24b" stroke="none" />
+            {/* scattered small leaves so the repeat doesn't read mechanical */}
+            <path d="M34 64 q 11 -11 28 -9 q -8 15 -28 11 z" fill="#c9a24b" stroke="none" />
+            <ellipse cx="56" cy="150" rx="3" ry="6.5" fill="#c9a24b" stroke="none" transform="rotate(35 56 150)" />
+            <ellipse cx="188" cy="44" rx="3" ry="6.5" fill="#c9a24b" stroke="none" transform="rotate(-22 188 44)" />
+            <ellipse cx="24" cy="120" rx="2.6" ry="5.5" fill="#c9a24b" stroke="none" transform="rotate(60 24 120)" />
+          </g>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#foil-floral)" />
+    </svg>
+  );
+}
+
 function HowItWorks() {
   const steps = [
     {
@@ -233,8 +255,9 @@ function HowItWorks() {
   ];
 
   return (
-    <section className="border-y border-foil-navy/10 bg-foil-cream">
-      <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
+    <section className="relative isolate overflow-hidden border-y border-foil-navy/10 bg-foil-cream">
+      <FloralPattern />
+      <div className="relative mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
         <h2 className="font-display text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">How it works</h2>
         <p className="mt-3 max-w-2xl text-foil-slate">
           Three steps. No comparing tabs, no scrolling endless listings, no

@@ -1367,7 +1367,7 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 ## ADR-036 — Home page warmth pass: Fraunces display, spark mark, pricing removal, lighter scrim
 
 **Date:** 2026-05-28 (Session 46)
-**Status:** Accepted. Partially supersedes [ADR-028](#adr-028--aceternity-ui-patterns-code-owned-no-npm-vendor-niche-visual-identity) (Bricolage display font), [ADR-032](#adr-032--brand-mark-gold-rhombus-as-foil-facet-shorthand) (rhombus mark), and [ADR-033](#adr-033--homepage-hero-card-backdrop-treatment-grail-row-behind-frosted-cream) (hero backdrop opacity/scrim). The cream/navy/gold palette + Coral-Hover-Only discipline ([ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness)) are unchanged.
+**Status:** Accepted (font + mark + pricing parts). The **hero backdrop/scrim** part is superseded by [ADR-037](#adr-037--hero-rework-cards-above-the-headline--floral-section-distinction) (Session 47 — cards moved to a full-opacity foreground showcase, scrim deleted). Partially supersedes [ADR-028](#adr-028--aceternity-ui-patterns-code-owned-no-npm-vendor-niche-visual-identity) (Bricolage display font), [ADR-032](#adr-032--brand-mark-gold-rhombus-as-foil-facet-shorthand) (rhombus mark), and [ADR-033](#adr-033--homepage-hero-card-backdrop-treatment-grail-row-behind-frosted-cream) (hero backdrop opacity/scrim). The cream/navy/gold palette + Coral-Hover-Only discipline ([ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness)) are unchanged.
 
 (ADR-034 and ADR-035 are intentionally unallocated; this session was numbered 036 by the goal that commissioned it, and the code/tests/SESSION-LOG all cite ADR-036.)
 
@@ -1388,6 +1388,31 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 - **No palette, register, or scope change.** Strictly home page. `/start`, `/upload`, `/cards/[slug]`, and blog surfaces are untouched.
 
 **Cross-refs.** [ADR-020](#adr-020--pivot-to-buyer-side-deal-finder-positioning) (pricing deferral), [SESSION-LOG Session 46](SESSION-LOG.md), `lib/__tests__/visual-regression.test.ts`, `scripts/gen-brand-assets.mjs`.
+
+---
+
+## ADR-037 — Hero rework (cards above the headline) + floral section distinction
+
+**Date:** 2026-05-28 (Session 47)
+**Status:** Accepted. Supersedes the hero-backdrop half of [ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim) and the remaining [ADR-033](#adr-033--homepage-hero-card-backdrop-treatment-grail-row-behind-frosted-cream) backdrop treatment. Fraunces display, the spark mark, the removed pricing section, and all a11y work from ADR-036 are unchanged.
+
+**Context.** Through ADR-033 → ADR-036 the grail cards lived *behind* the headline as a scrimmed backdrop. Even at the ADR-036 0.5-opacity / asymmetric-scrim treatment the cards still read as a ghosted texture rather than a showcase, and the page was a single undifferentiated cream column (sections felt the same). Two coupled complaints: "cards still look ghosted" and "sections feel undifferentiated."
+
+**Decision.**
+1. **Hero cards moved ABOVE the headline as a full-opacity foreground showcase.** A fanned row of the 8 `HERO_CARDS` (overlapping via negative margins, each keeping its tilt) sits at the top at `opacity: 1`, no blur, no desaturation, large (`w-24` mobile → `lg:w-40`). The pitch block (live pill, H1, trust pill, body, CTAs) sits **centered beneath** the fan.
+2. **Deleted the scrim entirely** — cards no longer overlap text, so there is nothing to scrim.
+3. **Removed Card3D + MagneticLink from the hero.** With cards as foreground, the constant 3D-tilt and magnetic-cursor motion were distracting; the showcase is static with a subtle CSS hover lift only (the reduced-motion reset still applies). The CTA is now a plain `Link` with a hover lift. (`Card3D` / `MagneticButton` remain in-tree, just unused on the home page.)
+4. **Floral section distinction.** An inline SVG `<pattern>` of gold (#c9a24b) vines + leaves, rendered as an absolute overlay at ~9% (mobile) / ~12% (desktop) opacity, applied to the **"How it works" section only**. It creates one deliberate textured band; the hero, "What you actually see", and the final CTA stay clean cream. Verified the text-over-pattern contrast holds (navy/slate on cream + 12% gold texture is unaffected).
+
+**Consequences.**
+- **The grail row finally does its job** — it reads as an actual showcase of the cards Foil watches, not wallpaper.
+- **One textured band, not a uniform column.** "How it works" is now visually distinct without a palette or layout change elsewhere.
+- **Hero text centered** (was left-aligned). A centered pitch pairs with the symmetric card fan; measures kept tight (H1 `max-w-3xl`, body `max-w-xl`) for readability.
+- **Cards remain `aria-hidden`** (decorative showcase); screen readers go straight to the H1.
+- **Perf note carried forward.** The 8 `unoptimized` hi-res PNGs are now above the fold; not preloaded (`priority={false}`) to avoid 8 preloads. Optimizing the card images stays an open follow-up (first raised in the Session-45 audit).
+- **No scope creep.** Strictly the home page. No palette/register/font/logo change; floral is the one section only.
+
+**Cross-refs.** [ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim), [ADR-033](#adr-033--homepage-hero-card-backdrop-treatment-grail-row-behind-frosted-cream), [SESSION-LOG Session 47](SESSION-LOG.md), `lib/__tests__/visual-regression.test.ts`.
 
 ---
 

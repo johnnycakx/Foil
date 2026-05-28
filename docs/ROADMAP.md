@@ -1,6 +1,6 @@
 # Foil Roadmap
 
-**Last updated:** 2026-05-28 (Session 46 — home page **launch-complete**: warmth pass per [ADR-036](DECISIONS.md#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim) (Fraunces display, holofoil spark mark, pricing section removed, lighter asymmetric hero, light decorative peeks) on top of the Session 45 a11y/focus pass. Tasks #2 + #28 closed. Founding-member tier dropped from the committed roadmap (stays an ADR-020-contingent revenue path, triggered at ~100 newsletter subs). Open followup: apply the Session-45 coral-error-text + `slate/60`-placeholder a11y fixes to `/start` + `/upload` when those surfaces get their impeccable pass.)
+**Last updated:** 2026-05-28 (Session 47 — home page hero rework + floral section distinction per [ADR-037](DECISIONS.md#adr-037--hero-rework-cards-above-the-headline--floral-section-distinction): grail cards moved to a full-opacity foreground showcase above the H1, scrim + Card3D/Magnetic removed, gold floral texture on "How it works" only. Builds on the Session 46 warmth pass (ADR-036) + Session 45 a11y/focus pass; home page stays launch-complete. Tasks #2 + #28 remain closed. Open followups: optimize the 8 above-the-fold hero PNGs (Session-45 audit perf item); apply the coral-error-text + `slate/60`-placeholder a11y fixes to `/start` + `/upload` when those surfaces get their impeccable pass.)
 **Owner:** John Craig (solo)
 **Cadence:** Updated at the end of every goal. See [Project Second Brain](../CLAUDE.md#project-second-brain) for the auto-maintenance contract.
 

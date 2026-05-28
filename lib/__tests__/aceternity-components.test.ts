@@ -156,24 +156,25 @@ test("Sparkles: container is aria-hidden + pointer-events:none (decorative-only)
 // Composition — homepage hero uses the components correctly
 // ---------------------------------------------------------------------------
 
-test("Homepage Hero: composes BackgroundGradientAnimation + Card3D + MagneticLink (ADR-029: no Sparkles)", () => {
+test("Homepage Hero: BackgroundGradientAnimation only — static cards, no Card3D/Magnetic/Sparkles (ADR-037)", () => {
   const src = readFile("app/(site)/page.tsx");
   assert.match(src, /<BackgroundGradientAnimation\b/);
-  // Card3D wraps the hero card grid for hover-tilt (replaces Sparkles).
-  assert.match(src, /<Card3D\b/);
-  assert.match(src, /<MagneticLink[^>]*href=["']\/start["']/);
-  // ADR-029 explicitly removed Sparkles from the hero (component still
-  // ships in-tree but is no longer rendered here).
+  // Session 47 / ADR-037: the grail showcase is a static foreground fan;
+  // Card3D + the magnetic CTA were removed. Sparkles were already gone.
+  assert.doesNotMatch(src, /<Card3D\b/);
+  assert.doesNotMatch(src, /<MagneticLink\b/);
   assert.doesNotMatch(src, /<Sparkles\b/);
+  // The primary CTA is now a plain Link to /start.
+  assert.match(src, /<Link[^>]*href=["']\/start["']/);
 });
 
-test("Homepage Hero: H1 carries font-display class (Bricolage Grotesque)", () => {
+test("Homepage Hero: H1 carries font-display class (Fraunces)", () => {
   const src = readFile("app/(site)/page.tsx");
   // The H1 must render in the display font — pinning the className token.
   assert.match(src, /<h1[^>]*font-display/);
 });
 
-test("Homepage Hero: includes the 8-card grid backdrop", () => {
+test("Homepage Hero: includes the 8-card grail showcase", () => {
   const src = readFile("app/(site)/page.tsx");
   // 8 hand-curated entries in HERO_CARDS. Count only entries with a
   // string id literal (not the type annotation's `{ id: string;`).

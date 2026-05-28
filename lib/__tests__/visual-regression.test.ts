@@ -95,11 +95,15 @@ test("Homepage: BackgroundGradientAnimation uses corner-shimmer variant (ADR-029
   assert.match(src, /variant=["']corner-shimmer["']/);
 });
 
-test("Homepage: Card3D wraps the HERO_CARDS grid (ADR-029)", () => {
+test("Homepage: hero dropped Card3D + MagneticLink (ADR-037 — static foreground showcase)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // The 8-card backdrop is the visual interest now (sparkles dropped).
-  // Card3D wraps each thumbnail for hover-tilt.
-  assert.match(src, /<Card3D\b/);
+  // Session 47 made the cards a static foreground showcase; the 3D tilt
+  // and the magnetic CTA were removed as distracting now that the cards
+  // are foreground. Subtle CSS hover lift only.
+  assert.doesNotMatch(src, /<Card3D\b/, "Card3D should not wrap the hero cards");
+  assert.doesNotMatch(src, /from ["']@\/components\/aceternity\/card-3d["']/, "Card3D import should be gone");
+  assert.doesNotMatch(src, /<MagneticLink\b/, "MagneticLink should not be used in the hero");
+  assert.doesNotMatch(src, /from ["']@\/components\/aceternity\/magnetic-button["']/, "MagneticLink import should be gone");
 });
 
 // ---------------------------------------------------------------------------
@@ -292,26 +296,25 @@ test("Site header: uses the <Logo /> brand component (ADR-032)", () => {
 // Session 43 / ADR-033 — Hero card backdrop treatment.
 // ---------------------------------------------------------------------------
 
-test("Hero: card backdrop opacity is 0.5 + softened blur+saturate filter (ADR-036)", () => {
+test("Hero: grail cards are a full-opacity foreground showcase, not a ghosted backdrop (ADR-037)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // Session 46 / ADR-036 bumped the backdrop from a ghosted 0.28 texture
-  // to a 0.5 showcase and softened the blur to 0.25px (saturation back to
-  // 0.9) so the grail cards read clearly. Pin the values; dropping back
-  // toward 0.28 / heavy blur would re-ghost the showcase.
-  assert.match(src, /opacity:\s*0\.5/);
-  assert.match(src, /filter:\s*["']blur\(0\.25px\)\s+saturate\(0\.9\)["']/);
+  // Session 47 / ADR-037 moved the cards ABOVE the headline at full
+  // opacity — no opacity ghosting, no blur, no desaturation. Pin the
+  // removal of the ADR-036 backdrop treatment so a refactor can't
+  // re-ghost the showcase.
+  assert.doesNotMatch(src, /opacity:\s*0\.(?:28|5)\b/, "hero cards must not be opacity-ghosted");
+  assert.doesNotMatch(src, /filter:\s*["']blur\(/, "hero cards must not be blurred");
+  // Cards render large (up to lg:w-40) as the hero visual.
+  assert.match(src, /lg:w-40/);
 });
 
-test("Hero: cream scrim is asymmetric — mobile vertical fade, desktop left→right (ADR-036)", () => {
+test("Hero: the copy-area scrim is gone (ADR-037 — cards no longer overlap text)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // Mobile default: top-down cream fade so the stacked headline/lead read
-  // over the cards.
-  assert.match(src, /bg-gradient-to-b\s+from-foil-cream\s+via-foil-cream\/88\s+to-foil-cream\/45/);
-  // Desktop (sm:): a left→right linear wash — solid cream on the left
-  // (headline/lead/CTA), transparent on the right so the grails showcase.
-  // This replaces the ADR-033 top-left radial.
-  assert.match(src, /linear-gradient\(to_right,var\(--color-foil-cream\)/);
-  assert.doesNotMatch(src, /radial-gradient\(ellipse_at_top_left/);
+  // Cards sit above the headline now, so there's nothing to scrim. Pin
+  // the removal of every prior scrim form.
+  assert.doesNotMatch(src, /via-foil-cream\/88/, "the ADR-036 mobile scrim should be gone");
+  assert.doesNotMatch(src, /linear-gradient\(to_right,var\(--color-foil-cream\)/, "the ADR-036 desktop scrim should be gone");
+  assert.doesNotMatch(src, /radial-gradient\(ellipse_at_top_left/, "the ADR-033 radial scrim should be gone");
 });
 
 test("Hero: HERO_CARDS array swapped to the modern-grail seed list (ADR-033)", () => {
@@ -365,4 +368,28 @@ test("Display font is Fraunces with the SOFT warmth axis (ADR-036)", () => {
   const css = readFile("app/globals.css");
   // The SOFT axis (no wght set, so font-weight utilities still compose).
   assert.match(css, /font-variation-settings:\s*["']SOFT["']\s+30/);
+});
+
+// ---------------------------------------------------------------------------
+// Session 47 / ADR-037 — hero rework + floral section distinction.
+// ---------------------------------------------------------------------------
+
+test("Hero: the grail showcase renders ABOVE the H1 (ADR-037)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  const cardsIdx = src.search(/HERO_CARDS\.map/);
+  const h1Idx = src.search(/<h1\b/);
+  assert.ok(cardsIdx > -1 && h1Idx > -1, "both the card map and the H1 must exist");
+  assert.ok(cardsIdx < h1Idx, "the HERO_CARDS showcase must render before the H1");
+});
+
+test("How it works: gold floral pattern band, that section only (ADR-037)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  assert.match(src, /function FloralPattern/, "FloralPattern component must exist");
+  assert.match(src, /<pattern id="foil-floral"/, "the SVG <pattern> tile must exist");
+  // Rendered exactly once — How it works is the only textured section.
+  const uses = (src.match(/<FloralPattern\s*\/>/g) ?? []).length;
+  assert.equal(uses, 1, "FloralPattern should render exactly once (How it works only)");
+  // Gold motif at a subtle opacity (≈9% mobile, ≈12% desktop).
+  assert.match(src, /opacity-\[0\.09\]\s+sm:opacity-\[0\.12\]/);
+  assert.match(src, /stroke="#c9a24b"/i, "the floral motif uses the foil-gold token value");
 });
