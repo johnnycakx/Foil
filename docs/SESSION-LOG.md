@@ -8,6 +8,32 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-28 — Session 44.1: impeccable as a locked devDependency (drop npx + version pin)
+
+**Why.** Session 44's `design:lint` script was `npx impeccable@latest detect ... --json || true` — works, but two flaws: (a) `@latest` re-fetches every invocation + drifts unpredictably as upstream ships, and (b) `npx` adds a 5-10s download tax on every CI/local run. The CLI **is** on npm (we just hadn't confirmed in Session 44), so pin it as a regular devDependency and use the locked binary directly.
+
+**Steps.**
+
+1. `npm install --save-dev impeccable` — added `"impeccable": "^2.1.9"` to devDependencies; 116 transitive packages added; 2 moderate-severity npm-audit warnings noted (not blocking; followup if upstream patches).
+2. `package.json` `design:lint` rewritten:
+   - **was**: `npx impeccable@latest detect app/ components/ --json || true`
+   - **now**: `impeccable detect app/ components/ --json || true`
+3. Verification run: `npm run design:lint`
+   - **Exit code**: 0
+   - **Output size**: 957 bytes (well-formed JSON antipattern report)
+   - **First findings** (full output captured to `/tmp/design-lint.out`):
+     - `flat-type-hierarchy` warning at `app/api/unsubscribe/route.ts:93` — sizes 13/15/22px ratio 1.7:1
+     - `pure-black-white` warning at `app/upload/upload-form.tsx` — `#000000` background, recommend tint toward brand hue
+
+Two follow-up notes (not Session 44.1 scope):
+
+- **Version skew.** The Session 44 install copied the `.claude/skills/impeccable/` SKILL.md frontmatter from upstream `v3.1.1`; the npm-published CLI is currently `2.1.9`. Skill prompt + CLI executable are loosely coupled (the skill mostly delegates to `Bash(npx impeccable *)` per its `allowed-tools`), so this is non-blocking — but the SKILL.md `allowed-tools` line `Bash(npx impeccable *)` may want a sweep in a future session to allow the locked binary (`Bash(impeccable *)`) too. Tracked as a Task #28 sub-followup.
+- **Real antipatterns surfaced.** The two findings above are pre-existing surfaces (auth route + scanner upload form), not Session 44 work. Don't fix them in this goal — they're inputs to Task #28 home page redo + a separate "design:lint sweep across non-home surfaces" backlog item.
+
+**Closure-gate.** 524/524 tests · tsc clean · compliance 6/6 PASS · `/security-review` no HIGH/MEDIUM findings · commit + push confirmed · Vercel deploy Ready verified.
+
+---
+
 ## 2026-05-28 — Session 44: Install three design-skill bundles + queue Task #28 home page redo
 
 **Commits:** this commit only (chore prefix)
