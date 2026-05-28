@@ -1121,7 +1121,7 @@ The decision needed to land before the Twitter pinned-post launch.
 
 **Followups (out of scope for Session 39).**
 
-1. `prefers-reduced-motion` honoring on the gradient + magnetic components (still carried from ADR-028).
+1. ~~`prefers-reduced-motion` honoring on the gradient + magnetic components (still carried from ADR-028).~~ **Partially resolved (Session 45, 2026-05-28).** A global `@media (prefers-reduced-motion: reduce)` reset in `app/globals.css` now freezes CSS animations/transitions site-wide (the live-dot `animate-ping`, the corner-shimmer keyframes), and JS event-handler guards were added to the inline-transform components a CSS reset can't catch — `MagneticButton`/`MagneticLink`, `Card3D`, and the `full`-mode `BackgroundGradientAnimation` rAF loop. `Card3D`'s `ease-linear` was also corrected to `ease-out`. The global reset covers every surface; the JS guards cover the motion components wherever they're imported. Considered honored for V1; revisit only if a new pointer-driven motion component ships without its own guard. See [SESSION-LOG Session 45](SESSION-LOG.md).
 2. Per-card thumbnail `Card3D` wrap on `/cards/[slug]` and `/cards/sets/<id>` (carried from ADR-028 — primitive already shipped, composition is thin polish).
 3. Cabinet Grotesk via `next/font/local` if the founder wants to revisit the Session-38 substitution.
 

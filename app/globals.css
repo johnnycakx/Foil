@@ -37,3 +37,22 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
+
+/*
+ * Reduced-motion safety net (ADR-029 followup, PRODUCT.md WCAG-AA bar).
+ * Neutralizes continuous CSS animations (the hero live-dot `animate-ping`,
+ * the corner-shimmer keyframes) and collapses hover/state transitions to
+ * effectively instant. Pointer-tracked JS transforms (magnetic buttons,
+ * Card3D tilt) are gated separately at the event handler — see those
+ * components — because inline transforms aren't covered by a CSS reset.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

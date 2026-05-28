@@ -48,6 +48,9 @@ export function BackgroundGradientAnimation({
 
   useEffect(() => {
     if (!interactive || variant !== "full") return;
+    // Reduced-motion: don't run the pointer-tracked blob loop (the CSS
+    // corner-shimmer is frozen separately by the globals.css reset).
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     const el = interactiveRef.current;
     if (!el) return;
     let curX = 0;

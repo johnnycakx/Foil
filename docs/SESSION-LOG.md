@@ -8,6 +8,33 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-28 — Session 45: impeccable design context + home-page a11y/focus pass (Task #28 progress)
+
+**Why.** Session 44 installed the impeccable skill bundle but deliberately deferred the `/impeccable teach` flow and any runtime use. This session ran teach → document → critique → audit → animate → distill → clarify → polish on the **home page** (`app/(site)/page.tsx`), the first real use of the skill against a buyer-side surface. It is a concrete down-payment on Task #28 (home page redo).
+
+**What landed.**
+
+1. **Design context files (teach + document).** `PRODUCT.md` (register `brand`; "trusted collector concierge" personality; the four anti-references; 5 design principles; WCAG-AA + reduced-motion bar) and `DESIGN.md` (Google-Stitch format, capturing the locked cream/navy/gold system from `app/globals.css` + the Bricolage/Geist pairing as tokens + named rules) at the repo root, plus the `.impeccable/design.json` sidecar (tonal ramps, shadow/motion tokens, drop-in component snippets). A **Design Context** pointer was added to `CLAUDE.md`. These are read by every impeccable command and any DESIGN.md-aware tool.
+
+2. **Critique baseline.** `/impeccable critique` scored the home page **30/40** (snapshot at `.impeccable/critique/2026-05-28T19-06-45Z__app-site-page-tsx.md`): 0 P0, 2 P1 (contrast + reduced-motion), 2 P2 (competing hero CTAs, H1 mis-positioning), plus P3 polish items. Deterministic `design:lint` was clean on the home surface; all findings were semantic (the class the markup detector can't see).
+
+3. **Fixes (audit → polish).**
+   - **Contrast (P1).** The "What you actually see" eyebrow was gold-on-cream (~2.24:1) → navy text with a gold dot. EmailCapture error text was coral-on-cream (~2.6:1) → navy text with a coral warning icon. The feature-check glyph went gold-on-gold/20 (~2.4:1, below the 3:1 non-text bar) → navy on the gold tint. EmailCapture placeholder `slate/60` → `slate/70`.
+   - **Reduced-motion (P1).** Two layers: a global `@media (prefers-reduced-motion: reduce)` reset in `globals.css` (freezes the live-dot `animate-ping`, the corner-shimmer keyframes, collapses transitions) + JS event-handler guards on the inline-transform components a CSS reset can't catch (`MagneticButton`/`MagneticLink`, `Card3D`, and the `full`-mode `BackgroundGradientAnimation` rAF loop). Also swapped `Card3D`'s `ease-linear` → `ease-out`.
+   - **Hero focus (P2, distill).** Removed the inline newsletter `EmailCapture` competing with the primary CTA above the fold; newsletter is now a one-line pointer to the Final-CTA capture (`#waitlist`). Hero now has one primary action.
+   - **H1 positioning (P2, clarify).** Re-led the headline with deal-finding ("…I'll find you the best live deal.") and demoted the alert to the supporting promise, matching PRODUCT.md + the metadata + the "$313 on eBay" proof section. Kept the first-person concierge voice.
+   - **Polish.** Unified primary-button color-hover (hero CTA now swaps navy→coral on hover like every other button; magnetic translate stays the intentional hero-only flourish). Promoted the "Level-4 TCGplayer Verified Seller" trust signal to a scannable pill under the H1. Snapped the example panel's off-ladder `rounded-[14px]` → `rounded-xl` (12px, optically correct for the 4px matte inset).
+
+**A self-correction worth recording.** The first contrast fix wrapped the error message in a `bg-foil-coral/10 border-foil-coral/40` chip. The `visual-regression.test.ts` ADR-029 guard caught it: coral is forbidden as a resting background, even for errors. Reworked to navy text + a coral *icon* (`text-foil-coral` is the guard-sanctioned error precedent, e.g. `start-page-form.tsx`). The structural guard did exactly its job. Note: my freshly-written DESIGN.md had stated "error text uses coral," which is *stricter* in the codebase than I documented; the enforced invariant (coral = hover/text-or-icon only, never a resting bg/border) wins.
+
+**Systemic followup (not this scope).** The same coral-error-text and `slate/60` placeholder patterns live in `start-page-form.tsx` (`/start`) and `correction-form.tsx` (`/upload`). Queued for when those surfaces get their own impeccable pass. Added as a ROADMAP note.
+
+**Closure-gate.** 524/524 tests · tsc clean · `design:lint` clean on touched files (the two residual warnings are the pre-existing `unsubscribe/route.ts` + `upload-form.tsx` surfaces from Session 44.1, untouched here). `/security-review` not run as a separate cycle: the entire diff is presentational (CSS classes, copy, an SVG icon, a `prefers-reduced-motion` media query, and read-only `matchMedia` checks) with no data flow, auth, input handling, or secret surface, security posture clear by inspection.
+
+**Doc updates.** This entry; ADR-029 followup #1 (`prefers-reduced-motion`) status bumped to partially-resolved (home surface); ROADMAP last-updated line + Task #28 progress note.
+
+---
+
 ## 2026-05-28 — Session 44.1: impeccable as a locked devDependency (drop npx + version pin)
 
 **Why.** Session 44's `design:lint` script was `npx impeccable@latest detect ... --json || true` — works, but two flaws: (a) `@latest` re-fetches every invocation + drifts unpredictably as upstream ships, and (b) `npx` adds a 5-10s download tax on every CI/local run. The CLI **is** on npm (we just hadn't confirmed in Session 44), so pin it as a regular devDependency and use the locked binary directly.

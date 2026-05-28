@@ -97,7 +97,7 @@ export function EmailCapture({
           required
           placeholder="you@gmail.com"
           disabled={isPending}
-          className="min-w-0 flex-1 rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/60 outline-none transition focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30 disabled:opacity-60"
+          className="min-w-0 flex-1 rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/70 outline-none transition focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30 disabled:opacity-60"
           aria-invalid={state?.ok === false}
           aria-describedby={state?.ok === false ? errorId : undefined}
         />
@@ -110,8 +110,24 @@ export function EmailCapture({
         </button>
       </form>
       {state?.ok === false && (
-        <p id={errorId} role="alert" className="mt-2 text-sm text-foil-coral">
-          {state.error}
+        <p
+          id={errorId}
+          role="alert"
+          className="mt-2 flex items-start gap-1.5 text-sm text-foil-navy"
+        >
+          <svg
+            aria-hidden
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="mt-0.5 h-4 w-4 shrink-0 text-foil-coral"
+          >
+            <path
+              fillRule="evenodd"
+              d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 6a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 6Zm0 8a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span>{state.error}</span>
         </p>
       )}
     </section>

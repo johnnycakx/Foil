@@ -42,6 +42,8 @@ export function MagneticButton({
   const onMouseMove: React.MouseEventHandler<HTMLButtonElement> = (e) => {
     const el = ref.current;
     if (!el) return;
+    // Reduced-motion: leave the button at rest (ADR-029 / WCAG-AA).
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     const rect = el.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
@@ -98,6 +100,8 @@ export function MagneticLink({
   const onMouseMove: React.MouseEventHandler<HTMLAnchorElement> = (e) => {
     const el = ref.current;
     if (!el) return;
+    // Reduced-motion: leave the link at rest (ADR-029 / WCAG-AA).
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     const rect = el.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;

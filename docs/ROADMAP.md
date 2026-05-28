@@ -1,6 +1,6 @@
 # Foil Roadmap
 
-**Last updated:** 2026-05-28 (Session 44 — three design-skill bundles installed under `.claude/skills/`; Task #28 home page redo queued ahead of Task #27 variant selector)
+**Last updated:** 2026-05-28 (Session 45 — impeccable `teach`/`document` design context (PRODUCT.md + DESIGN.md) + a home-page a11y/focus pass via the critique→polish flow; first chunk of Task #28. Followup: apply the same coral-error-text + `slate/60`-placeholder a11y fixes to `/start` (`start-page-form.tsx`) and `/upload` (`correction-form.tsx`) when those surfaces get their impeccable pass.)
 **Owner:** John Craig (solo)
 **Cadence:** Updated at the end of every goal. See [Project Second Brain](../CLAUDE.md#project-second-brain) for the auto-maintenance contract.
 

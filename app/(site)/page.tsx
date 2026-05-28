@@ -137,23 +137,28 @@ function Hero() {
             (ADR-029). Bricolage Grotesque variable weight at 700 with
             tight tracking to read as "editorial" rather than "SaaS". */}
         <h1 className="font-display mt-6 max-w-3xl text-4xl font-bold leading-[1.05] tracking-[-0.02em] text-foil-navy sm:text-5xl md:text-6xl">
-          Tell me a Pokémon card. I&apos;ll email you when it drops.
+          Tell me a Pokémon card. I&apos;ll find you the best live deal.
         </h1>
 
+        <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-foil-navy/10 bg-foil-cream/70 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">
+          <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
+          Built by a Level-4 TCGplayer Verified Seller
+        </p>
+
         <p className="mt-5 max-w-2xl text-lg text-foil-slate sm:text-xl">
-          Foil watches eBay&apos;s live listings, filters the keyword-stuffed
-          junk, and emails you the moment a real listing drops to your target
-          price.{" "}
+          Foil scans eBay&apos;s live listings, filters out the keyword-stuffed
+          junk, and surfaces the single best-value listing for the card you want.
+          Want it cheaper? Set a target price and we&apos;ll email you the moment
+          a real listing drops to it.{" "}
           <span className="text-foil-slate/80">
-            Built by a Level-4 TCGplayer Verified Seller who got tired of
-            comparing 20 listings to find one good one.
+            Born from comparing 20 listings just to find the one worth buying.
           </span>
         </p>
 
         <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
           <MagneticLink
             href="/start"
-            className="rounded-xl bg-foil-navy px-6 py-3.5 text-base font-semibold text-foil-cream"
+            className="rounded-xl bg-foil-navy px-6 py-3.5 text-base font-semibold text-foil-cream hover:bg-foil-coral"
           >
             Start tracking cards →
           </MagneticLink>
@@ -165,12 +170,15 @@ function Hero() {
           </Link>
         </div>
 
-        <div className="mt-10 max-w-xl">
-          <EmailCapture source="homepage_hero" variant="inline" headline="Or just get the weekly newsletter." />
-          <p className="mt-3 text-xs text-foil-slate">
-            Free. No spam — about one email a week, unsubscribe anytime.
-          </p>
-        </div>
+        <p className="mt-5 text-xs text-foil-slate">
+          Free. No spam, ever. Prefer just the weekly best-deals digest?{" "}
+          <a
+            href="#waitlist"
+            className="text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
+          >
+            Grab the newsletter below.
+          </a>
+        </p>
       </div>
     </section>
   );
@@ -227,7 +235,8 @@ function ExampleResult() {
     <section id="example" className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
       <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-foil-gold">
+          <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-foil-navy">
+            <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
             What you actually see
           </p>
           <h2 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl">
@@ -275,7 +284,7 @@ function ExampleResult() {
         </div>
 
         <div className="rounded-2xl border border-foil-gold/40 bg-foil-cream p-1 shadow-xl shadow-foil-navy/10">
-          <div className="rounded-[14px] bg-foil-cream p-5">
+          <div className="rounded-xl bg-foil-cream p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-wide text-foil-slate">
@@ -473,7 +482,7 @@ function FeatureIcon({ enabled }: { enabled: boolean }) {
     );
   }
   return (
-    <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-foil-gold/20 text-foil-gold">
+    <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-foil-gold/20 text-foil-navy">
       <svg viewBox="0 0 16 16" className="h-2.5 w-2.5" aria-hidden="true">
         <path d="M3 8.5l3 3 7-7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
       </svg>

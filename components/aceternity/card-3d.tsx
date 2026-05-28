@@ -36,6 +36,8 @@ export function Card3D({
   const onMouseMove: React.MouseEventHandler<HTMLDivElement> = (e) => {
     const el = containerRef.current;
     if (!el) return;
+    // Reduced-motion: skip the perspective tilt (ADR-029 / WCAG-AA).
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     const { left, top, width, height } = el.getBoundingClientRect();
     const x = (e.clientX - left - width / 2) / 25;
     const y = (e.clientY - top - height / 2) / 25;
@@ -60,7 +62,7 @@ export function Card3D({
           onMouseEnter={onMouseEnter}
           onMouseMove={onMouseMove}
           onMouseLeave={onMouseLeave}
-          className="relative rounded-xl shadow-lg shadow-foil-navy/10 transition-all duration-200 ease-linear hover:shadow-xl hover:shadow-foil-navy/20 hover:ring-1 hover:ring-foil-gold/30 [transform-style:preserve-3d]"
+          className="relative rounded-xl shadow-lg shadow-foil-navy/10 transition-all duration-200 ease-out hover:shadow-xl hover:shadow-foil-navy/20 hover:ring-1 hover:ring-foil-gold/30 [transform-style:preserve-3d]"
         >
           {children}
         </div>
@@ -112,7 +114,7 @@ export function Card3DItem({
     : `translateZ(0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg)`;
   return (
     <Component
-      className={`transition-transform duration-200 ease-linear ${className ?? ""}`}
+      className={`transition-transform duration-200 ease-out ${className ?? ""}`}
       style={{ transform, transformStyle: "preserve-3d" }}
     >
       {children}
