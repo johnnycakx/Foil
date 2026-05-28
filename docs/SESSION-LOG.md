@@ -8,6 +8,27 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-28 — Session 47.1: navy Pokeball brand mark + hero corner cleanup — [ADR-038](DECISIONS.md#adr-038--pokeball-as-the-brand-mark--section-pattern--bullet-accent)
+
+**Why.** Founder live-review of the Session-47 home page produced five surgical fixes + a brand call: commit to a **Pokeball** identity (reversing ADR-036's "not a Pokeball" — the founder owns the brand and reconsidered), and clean up two stray-visual complaints.
+
+**Before → after.**
+1. **Removed both orphan `CardPeek` watermarks** (flagged "weird cards in the background") — component + invocations deleted.
+2. **Brand glyph: holofoil spark → navy 8-bit pixel Pokeball** (`PokeballMark`, 7×7 grid: navy top + band, navy/75 bottom, cream button; crisp-edges). No red/white. Regenerated favicon.svg / icon.svg / apple-touch-icon.png / og-image.png (cream field so the navy mark reads). Rasterized + inspected the 16px favicon: reads as a Pokeball, not a smudge. Fraunces "Foil" wordmark unchanged.
+3. **Pill bullets: gold dots → ~11px navy Pokeball** in the Live pill (dropped the gold `animate-ping`) and the Verified-Seller pill, via the exported `PokeballMark`. Numbered 1/2/3 circles in How-it-works stay numbered.
+4. **Section pattern: gold floral → navy Pokeball.** `FloralPattern` deleted; new `PokeballPattern` (inline `<pattern>`, same Pokeball silhouette, half-drop stagger) at ~4.5% mobile / ~6% desktop on **"How it works" only**. AA contrast verified (navy/slate text over ≤6% navy texture unaffected).
+5. **Killed the hero amber glow** — removed the leftover `BackgroundGradientAnimation` corner-shimmer; hero is solid `foil-cream`, no overlays. (Component stays in-tree, unused.)
+
+**Preserved:** Session 47 hero card-fan above H1; Session 46 Fraunces + deleted pricing + trust pill + copy trims; Session 45 reduced-motion + contrast fixes; all ADRs.
+
+**Self-check.** The brand-mark, CardPeek, floral-pattern, and BackgroundGradientAnimation assertions all pinned the prior state; updated every one to ADR-038 (Pokeball mark, no CardPeek, Pokeball pattern, no gradient in hero) + added a pill-bullet assertion. One iteration: a `doesNotMatch(/corner-shimmer/)` test tripped on my own Hero comment; reworded the comment.
+
+**Closure-gate (R-011 strict).** Full suite green (incl. new ADR-038 assertions) · `tsc` clean · `npm run build` exit 0 · `compliance:check` 6/6 · `design:lint` 0 new · `/security-review` RUN (presentational, no findings) · push confirmed · Vercel deploy Ready + live-verified the hero corner is clean cream. [Detail inline at session end.]
+
+**Doc updates.** This entry; [ADR-038](DECISIONS.md) (+ ADR-036 mark & ADR-037 floral marked superseded); ROADMAP last-updated line.
+
+---
+
 ## 2026-05-28 — Session 47: hero rework (cards above headline) + floral section distinction — [ADR-037](DECISIONS.md#adr-037--hero-rework-cards-above-the-headline--floral-section-distinction)
 
 **Why.** Two coupled complaints survived the Session 46 warmth pass: the grail cards *still* read as a ghosted backdrop (even at 0.5 opacity behind the scrim), and the page was a single undifferentiated cream column. This session fixes both, planned via `/impeccable shape`, finished via `/impeccable polish`. Strictly the home page.

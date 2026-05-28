@@ -156,15 +156,16 @@ test("Sparkles: container is aria-hidden + pointer-events:none (decorative-only)
 // Composition — homepage hero uses the components correctly
 // ---------------------------------------------------------------------------
 
-test("Homepage Hero: BackgroundGradientAnimation only — static cards, no Card3D/Magnetic/Sparkles (ADR-037)", () => {
+test("Homepage Hero: solid cream — no gradient/Card3D/Magnetic/Sparkles (ADR-038)", () => {
   const src = readFile("app/(site)/page.tsx");
-  assert.match(src, /<BackgroundGradientAnimation\b/);
-  // Session 47 / ADR-037: the grail showcase is a static foreground fan;
-  // Card3D + the magnetic CTA were removed. Sparkles were already gone.
+  // Session 47.1 / ADR-038 removed the BackgroundGradientAnimation
+  // corner-shimmer (stray amber glow). The hero is solid cream; the
+  // grail fan is static (Card3D + magnetic CTA already gone in ADR-037).
+  assert.doesNotMatch(src, /BackgroundGradientAnimation/);
   assert.doesNotMatch(src, /<Card3D\b/);
   assert.doesNotMatch(src, /<MagneticLink\b/);
   assert.doesNotMatch(src, /<Sparkles\b/);
-  // The primary CTA is now a plain Link to /start.
+  // The primary CTA is a plain Link to /start.
   assert.match(src, /<Link[^>]*href=["']\/start["']/);
 });
 

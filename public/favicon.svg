@@ -1,15 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#a07d2c"/>
-      <stop offset="50%" stop-color="#e6c170"/>
-      <stop offset="100%" stop-color="#c9a24b"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="14" fill="#0f1e3a"/>
-  <g transform="translate(5.6 5.6) scale(2.2)">
-    <path d="M12 2 C 12.5 8.5, 15.5 11.5, 22 12 C 15.5 12.5, 12.5 15.5, 12 22 C 11.5 15.5, 8.5 12.5, 2 12 C 8.5 11.5, 11.5 8.5, 12 2 Z" fill="url(#g)"/>
-    <path d="M20 2.3 C 20.2 3.8, 20.7 4.3, 22.2 4.5 C 20.7 4.7, 20.2 5.2, 20 6.7 C 19.8 5.2, 19.3 4.7, 17.8 4.5 C 19.3 4.3, 19.8 3.8, 20 2.3 Z" fill="#c9a24b" opacity="0.85"/>
-    <path d="M4.7 15.9 C 4.85 17.1, 5.3 17.5, 6.5 17.6 C 5.3 17.7, 4.85 18.1, 4.7 19.3 C 4.55 18.1, 4.1 17.7, 2.9 17.6 C 4.1 17.5, 4.55 17.1, 4.7 15.9 Z" fill="#c9a24b" opacity="0.7"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" shape-rendering="crispEdges">
+  <rect width="64" height="64" rx="14" fill="#f8f5f0"/>
+  <g transform="translate(10 10) scale(6.3)">
+    <g fill="#0f1e3a">
+      <rect x="2" y="0" width="3" height="1"/><rect x="1" y="1" width="5" height="1"/><rect x="0" y="2" width="7" height="1"/><rect x="0" y="3" width="7" height="1"/>
+    </g>
+    <g fill="#0f1e3a" opacity="0.75">
+      <rect x="0" y="4" width="7" height="1"/><rect x="1" y="5" width="5" height="1"/><rect x="2" y="6" width="3" height="1"/>
+    </g>
+    <rect x="3" y="3" width="1" height="1" fill="#f8f5f0"/>
   </g>
 </svg>

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { EmailCapture } from "@/components/email-capture";
 import { CARD_CATALOG, setIdsInCatalog } from "@/lib/cards/catalog";
-import { BackgroundGradientAnimation } from "@/components/aceternity/background-gradient-animation";
+import { PokeballMark } from "@/components/brand/logo";
 
 const SITE_TITLE = "Foil — The best price on any Pokémon card";
 const SITE_DESCRIPTION =
@@ -41,12 +41,7 @@ export default async function Home() {
     <>
       <Hero />
       <HowItWorks />
-      {/* Session 46 (ADR-036): light decorative peek bridging the
-          How-it-works → What-you-see seam. ~15% opacity, desktop-only. */}
-      <CardPeek id="swsh35/74" side="right" />
       <ExampleResult />
-      {/* Second peek bridging What-you-see → footer/CTA. */}
-      <CardPeek id="swsh4/188" side="left" />
       <FinalCTA />
     </>
   );
@@ -75,14 +70,9 @@ function Hero() {
   const setCount = setIdsInCatalog().length;
   return (
     <section className="relative isolate overflow-hidden bg-foil-cream">
-      {/* ADR-029: restrained bottom-right gold shimmer behind everything. */}
-      <div className="absolute inset-0 -z-10">
-        <BackgroundGradientAnimation
-          variant="corner-shimmer"
-          interactive={false}
-          className="h-full w-full"
-        />
-      </div>
+      {/* ADR-038 (Session 47.1): the hero is solid cream. The decorative
+          bottom-right gradient glow was removed (it read as a stray amber
+          tint). No overlays, no glows. */}
 
       {/* Hero showcase — Session 47 (ADR-037). The grail row moved ABOVE
           the headline as a full-opacity fanned showcase: real cards, no
@@ -119,10 +109,7 @@ function Hero() {
           cards no longer overlap the text. */}
       <div className="relative mx-auto w-full max-w-3xl px-5 pt-10 pb-20 text-center sm:px-8 sm:pt-12 sm:pb-28">
         <p className="inline-flex items-center gap-2 rounded-full border border-foil-gold/40 bg-foil-cream/80 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">
-          <span className="relative inline-flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foil-gold opacity-60" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-gold" />
-          </span>
+          <PokeballMark px={11} />
           Live · tracking {cardCount} cards across {setCount} sets
         </p>
 
@@ -132,7 +119,7 @@ function Hero() {
         </h1>
 
         <p className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-foil-navy/10 bg-foil-cream/70 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">
-          <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
+          <PokeballMark px={11} />
           Built by a Level-4 TCGplayer Verified Seller
         </p>
 
@@ -172,65 +159,40 @@ function Hero() {
   );
 }
 
-// Session 46 (ADR-036) — light decorative card peek. A single catalog
-// card at ~15% opacity, tilted ~6°, anchored to one edge of a
-// zero-height seam between sections so it straddles the boundary as a
-// faint watermark. Desktop-only, aria-hidden, pointer-events-none, no
-// animation — moderate warmth, NOT a full-page background.
-function CardPeek({ id, side = "right" }: { id: string; side?: "left" | "right" }) {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none relative z-0 mx-auto hidden h-0 max-w-6xl px-5 sm:block sm:px-8"
-    >
-      <div
-        className={`absolute -top-20 ${side === "right" ? "right-2 rotate-6" : "left-2 -rotate-6"}`}
-        style={{ opacity: 0.15 }}
-      >
-        <Image
-          src={`https://images.pokemontcg.io/${id}_hires.png`}
-          alt=""
-          width={200}
-          height={280}
-          unoptimized
-          className="w-28 rounded-lg md:w-32"
-        />
-      </div>
-    </div>
-  );
-}
-
-// Session 47 (ADR-037) — gold botanical pattern marking the "How it works"
-// band as the one distinct textured section. An inline SVG <pattern> of
-// vines + leaves in foil-gold; opacity is set on the wrapper (≈9% mobile,
-// ≈12% desktop) so text on top stays legible and the texture never
-// competes with the hero cards on small screens.
-function FloralPattern() {
+// Session 47.1 (ADR-038) — navy Pokeball pixel pattern marking the "How
+// it works" band as the one distinct textured section. Same pixel
+// Pokeball silhouette as the brand glyph, tiled in a half-drop stagger,
+// in foil-navy. Opacity on the wrapper (≈4.5% mobile, ≈6% desktop) so the
+// texture is a faint brand watermark and text on top keeps AA contrast.
+// (Replaced the Session-47 gold floral, which clashed with the Pokeball
+// brand direction.)
+function PokeballPattern() {
   return (
     <svg
       aria-hidden
-      className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.09] sm:opacity-[0.12]"
+      className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.045] sm:opacity-[0.06]"
+      shapeRendering="crispEdges"
     >
       <defs>
-        <pattern id="foil-floral" patternUnits="userSpaceOnUse" width="200" height="200">
-          <g fill="none" stroke="#c9a24b" strokeWidth="1.4" strokeLinecap="round">
-            {/* primary vine + leaves */}
-            <path d="M8 198 C 44 162 32 112 84 92 C 120 78 132 44 122 10" />
-            <path d="M84 92 q -18 -3 -22 -20 q 19 1 24 17 z" fill="#c9a24b" stroke="none" />
-            <path d="M104 56 q 13 -10 30 -7 q -7 15 -27 12 z" fill="#c9a24b" stroke="none" />
-            <path d="M118 24 q -12 -8 -12 -23 q 14 5 15 20 z" fill="#c9a24b" stroke="none" />
-            {/* secondary sprig, offset for variation */}
-            <path d="M150 200 C 160 172 146 150 168 130 C 184 114 182 94 196 80" />
-            <path d="M168 130 q -13 -5 -16 -19 q 15 1 19 15 z" fill="#c9a24b" stroke="none" />
-            {/* scattered small leaves so the repeat doesn't read mechanical */}
-            <path d="M34 64 q 11 -11 28 -9 q -8 15 -28 11 z" fill="#c9a24b" stroke="none" />
-            <ellipse cx="56" cy="150" rx="3" ry="6.5" fill="#c9a24b" stroke="none" transform="rotate(35 56 150)" />
-            <ellipse cx="188" cy="44" rx="3" ry="6.5" fill="#c9a24b" stroke="none" transform="rotate(-22 188 44)" />
-            <ellipse cx="24" cy="120" rx="2.6" ry="5.5" fill="#c9a24b" stroke="none" transform="rotate(60 24 120)" />
+        <g id="foil-pb-tile">
+          <g fill="#0f1e3a">
+            <rect x="2" y="0" width="3" height="1" />
+            <rect x="1" y="1" width="5" height="1" />
+            <rect x="0" y="2" width="7" height="1" />
+            <rect x="0" y="3" width="7" height="1" />
           </g>
+          <g fill="#0f1e3a" opacity="0.75">
+            <rect x="0" y="4" width="7" height="1" />
+            <rect x="1" y="5" width="5" height="1" />
+            <rect x="2" y="6" width="3" height="1" />
+          </g>
+        </g>
+        <pattern id="foil-pokeball" patternUnits="userSpaceOnUse" width="84" height="84">
+          <use href="#foil-pb-tile" transform="translate(11 9) scale(3.1)" />
+          <use href="#foil-pb-tile" transform="translate(53 51) scale(3.1)" />
         </pattern>
       </defs>
-      <rect width="100%" height="100%" fill="url(#foil-floral)" />
+      <rect width="100%" height="100%" fill="url(#foil-pokeball)" />
     </svg>
   );
 }
@@ -256,7 +218,7 @@ function HowItWorks() {
 
   return (
     <section className="relative isolate overflow-hidden border-y border-foil-navy/10 bg-foil-cream">
-      <FloralPattern />
+      <PokeballPattern />
       <div className="relative mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
         <h2 className="font-display text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">How it works</h2>
         <p className="mt-3 max-w-2xl text-foil-slate">

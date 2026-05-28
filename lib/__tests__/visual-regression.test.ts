@@ -88,11 +88,13 @@ test("Homepage: H1 is single-color navy with no inline coral split (ADR-029)", (
   assert.doesNotMatch(h1Block![0], /<span\b[^>]*text-[^>]*>/);
 });
 
-test("Homepage: BackgroundGradientAnimation uses corner-shimmer variant (ADR-029)", () => {
+test("Homepage: hero has no BackgroundGradientAnimation / corner-shimmer (ADR-038 — solid cream)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // Explicit variant prop OR no variant prop at all (component defaults
-  // to corner-shimmer). Pin to the explicit form for clarity.
-  assert.match(src, /variant=["']corner-shimmer["']/);
+  // Session 47.1 removed the corner-shimmer gradient — it read as a stray
+  // amber glow in the bottom-right. The hero must be solid cream with no
+  // gradient overlay.
+  assert.doesNotMatch(src, /BackgroundGradientAnimation/, "BackgroundGradientAnimation should be gone from the hero");
+  assert.doesNotMatch(src, /corner-shimmer/, "corner-shimmer variant should be gone");
 });
 
 test("Homepage: hero dropped Card3D + MagneticLink (ADR-037 — static foreground showcase)", () => {
@@ -260,19 +262,18 @@ test("CardScannerEmbed + TopicLink: cream palette, no pre-cream coral defaults",
 // Session 43 / ADR-032 — Brand mark: gold rhombus glyph + Foil wordmark.
 // ---------------------------------------------------------------------------
 
-test("Logo component: glyph is the holofoil spark mark (ADR-036, replaces the rhombus)", () => {
+test("Logo component: glyph is the navy pixel Pokeball mark (ADR-038, replaces the spark)", () => {
   const src = readFile("components/brand/logo.tsx");
-  // Session 46 / ADR-036 retired the rotated rhombus (read as a folder/
-  // square at favicon size) for a four-point sparkle. Pin the new
-  // anchors and the removal of the old ones so a refactor can't drift
-  // back to the square.
-  assert.doesNotMatch(src, /foil-rhombus-gradient/, "old rhombus gradient id should be gone");
-  assert.doesNotMatch(src, /rotate\(15deg\)/, "old 15deg rhombus rotation should be gone");
-  // Three-stop holofoil gradient on the canonical foil-gold hex (#c9a24b).
-  assert.match(src, /<linearGradient\s+id="foil-spark-gradient"/);
-  assert.match(src, /#c9a24b/i);
-  // The main four-point sparkle path (distinctive start atom).
-  assert.match(src, /M12 2 C/);
+  // Session 47.1 / ADR-038 replaced the holofoil spark with an 8-bit
+  // navy pixel Pokeball. Pin the new anchors + the removal of the old
+  // spark so a refactor can't drift back.
+  assert.doesNotMatch(src, /foil-spark-gradient/, "old spark gradient id should be gone");
+  assert.doesNotMatch(src, /#c9a24b/i, "no gold in the Pokeball mark — it's navy");
+  assert.match(src, /function PokeballMark/, "PokeballMark must exist + be exported for bullet reuse");
+  assert.match(src, /shapeRendering="crispEdges"/, "pixel mark uses crispEdges");
+  assert.match(src, /#0f1e3a/i, "the Pokeball is foil-navy");
+  // The cream center button (clasp).
+  assert.match(src, /<rect x="3" y="3" width="1" height="1" fill="#f8f5f0"/);
 });
 
 test("Logo component: wordmark uses font-display + foil-navy tokens", () => {
@@ -351,13 +352,20 @@ test("Home page: Founding Member pricing section removed (ADR-036, deferred per 
   assert.doesNotMatch(src, /Lock in lifetime/, "the lifetime CTA should be gone");
 });
 
-test("Home page: two decorative CardPeek bridges, light touch (ADR-036)", () => {
+test("Home page: orphan CardPeek decorations removed (ADR-038)", () => {
   const src = readFile("app/(site)/page.tsx");
-  assert.match(src, /function CardPeek/, "CardPeek decorative component must exist");
-  const peeks = (src.match(/<CardPeek\b/g) ?? []).length;
-  assert.equal(peeks, 2, "expected exactly two decorative CardPeek instances");
-  // Light touch: ~15% opacity, aria-hidden — never a full-page background.
-  assert.match(src, /opacity:\s*0\.15/);
+  // Session 47.1 deleted both floating card peek-throughs (flagged as
+  // "weird cards in the background"). Component + invocations all gone.
+  assert.doesNotMatch(src, /CardPeek/, "CardPeek (component + invocations) should be gone");
+});
+
+test("Hero pills: gold-dot bullets swapped to navy Pokeball marks (ADR-038)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  // The Live pill + the Verified-Seller pill use <PokeballMark /> as the
+  // bullet now (gold animate-ping dot removed). At least two instances.
+  const marks = (src.match(/<PokeballMark\b/g) ?? []).length;
+  assert.ok(marks >= 2, "expected >=2 PokeballMark bullets (Live + trust pills)");
+  assert.match(src, /import \{ PokeballMark \} from "@\/components\/brand\/logo"/);
 });
 
 test("Display font is Fraunces with the SOFT warmth axis (ADR-036)", () => {
@@ -382,14 +390,17 @@ test("Hero: the grail showcase renders ABOVE the H1 (ADR-037)", () => {
   assert.ok(cardsIdx < h1Idx, "the HERO_CARDS showcase must render before the H1");
 });
 
-test("How it works: gold floral pattern band, that section only (ADR-037)", () => {
+test("How it works: navy Pokeball pattern band, that section only (ADR-038)", () => {
   const src = readFile("app/(site)/page.tsx");
-  assert.match(src, /function FloralPattern/, "FloralPattern component must exist");
-  assert.match(src, /<pattern id="foil-floral"/, "the SVG <pattern> tile must exist");
+  // Session 47.1 replaced the gold floral with a navy Pokeball pattern.
+  assert.doesNotMatch(src, /function FloralPattern/, "FloralPattern should be gone");
+  assert.doesNotMatch(src, /foil-floral/, "the floral pattern id should be gone");
+  assert.match(src, /function PokeballPattern/, "PokeballPattern component must exist");
+  assert.match(src, /<pattern id="foil-pokeball"/, "the Pokeball <pattern> tile must exist");
   // Rendered exactly once — How it works is the only textured section.
-  const uses = (src.match(/<FloralPattern\s*\/>/g) ?? []).length;
-  assert.equal(uses, 1, "FloralPattern should render exactly once (How it works only)");
-  // Gold motif at a subtle opacity (≈9% mobile, ≈12% desktop).
-  assert.match(src, /opacity-\[0\.09\]\s+sm:opacity-\[0\.12\]/);
-  assert.match(src, /stroke="#c9a24b"/i, "the floral motif uses the foil-gold token value");
+  const uses = (src.match(/<PokeballPattern\s*\/>/g) ?? []).length;
+  assert.equal(uses, 1, "PokeballPattern should render exactly once (How it works only)");
+  // Navy motif at a subtle opacity (≈4.5% mobile, ≈6% desktop) for AA contrast.
+  assert.match(src, /opacity-\[0\.045\]\s+sm:opacity-\[0\.06\]/);
+  assert.match(src, /fill="#0f1e3a"/i, "the Pokeball motif uses the foil-navy token value");
 });

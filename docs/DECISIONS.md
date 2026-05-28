@@ -1367,7 +1367,7 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 ## ADR-036 — Home page warmth pass: Fraunces display, spark mark, pricing removal, lighter scrim
 
 **Date:** 2026-05-28 (Session 46)
-**Status:** Accepted (font + mark + pricing parts). The **hero backdrop/scrim** part is superseded by [ADR-037](#adr-037--hero-rework-cards-above-the-headline--floral-section-distinction) (Session 47 — cards moved to a full-opacity foreground showcase, scrim deleted). Partially supersedes [ADR-028](#adr-028--aceternity-ui-patterns-code-owned-no-npm-vendor-niche-visual-identity) (Bricolage display font), [ADR-032](#adr-032--brand-mark-gold-rhombus-as-foil-facet-shorthand) (rhombus mark), and [ADR-033](#adr-033--homepage-hero-card-backdrop-treatment-grail-row-behind-frosted-cream) (hero backdrop opacity/scrim). The cream/navy/gold palette + Coral-Hover-Only discipline ([ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness)) are unchanged.
+**Status:** Accepted (font + pricing parts). The **mark** (holofoil spark) is superseded by [ADR-038](#adr-038--pokeball-as-the-brand-mark--section-pattern--bullet-accent) (Session 47.1 — navy pixel Pokeball). The **hero backdrop/scrim** part is superseded by [ADR-037](#adr-037--hero-rework-cards-above-the-headline--floral-section-distinction) (Session 47 — cards moved to a full-opacity foreground showcase, scrim deleted). Partially supersedes [ADR-028](#adr-028--aceternity-ui-patterns-code-owned-no-npm-vendor-niche-visual-identity) (Bricolage display font), [ADR-032](#adr-032--brand-mark-gold-rhombus-as-foil-facet-shorthand) (rhombus mark), and [ADR-033](#adr-033--homepage-hero-card-backdrop-treatment-grail-row-behind-frosted-cream) (hero backdrop opacity/scrim). The cream/navy/gold palette + Coral-Hover-Only discipline ([ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness)) are unchanged.
 
 (ADR-034 and ADR-035 are intentionally unallocated; this session was numbered 036 by the goal that commissioned it, and the code/tests/SESSION-LOG all cite ADR-036.)
 
@@ -1394,7 +1394,7 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 ## ADR-037 — Hero rework (cards above the headline) + floral section distinction
 
 **Date:** 2026-05-28 (Session 47)
-**Status:** Accepted. Supersedes the hero-backdrop half of [ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim) and the remaining [ADR-033](#adr-033--homepage-hero-card-backdrop-treatment-grail-row-behind-frosted-cream) backdrop treatment. Fraunces display, the spark mark, the removed pricing section, and all a11y work from ADR-036 are unchanged.
+**Status:** Accepted (hero card-fan layout). The **floral section pattern** is superseded by [ADR-038](#adr-038--pokeball-as-the-brand-mark--section-pattern--bullet-accent) (Session 47.1 — navy Pokeball pattern). Supersedes the hero-backdrop half of [ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim) and the remaining [ADR-033](#adr-033--homepage-hero-card-backdrop-treatment-grail-row-behind-frosted-cream) backdrop treatment. Fraunces display, the removed pricing section, and all a11y work from ADR-036 are unchanged.
 
 **Context.** Through ADR-033 → ADR-036 the grail cards lived *behind* the headline as a scrimmed backdrop. Even at the ADR-036 0.5-opacity / asymmetric-scrim treatment the cards still read as a ghosted texture rather than a showcase, and the page was a single undifferentiated cream column (sections felt the same). Two coupled complaints: "cards still look ghosted" and "sections feel undifferentiated."
 
@@ -1413,6 +1413,30 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 - **No scope creep.** Strictly the home page. No palette/register/font/logo change; floral is the one section only.
 
 **Cross-refs.** [ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim), [ADR-033](#adr-033--homepage-hero-card-backdrop-treatment-grail-row-behind-frosted-cream), [SESSION-LOG Session 47](SESSION-LOG.md), `lib/__tests__/visual-regression.test.ts`.
+
+---
+
+## ADR-038 — Pokeball as the brand mark + section pattern + bullet accent
+
+**Date:** 2026-05-28 (Session 47.1)
+**Status:** Accepted. Supersedes the **mark** of [ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim) (holofoil spark) and the **floral** of [ADR-037](#adr-037--hero-rework-cards-above-the-headline--floral-section-distinction), and removes the [ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness) corner-shimmer gradient from the hero. Fraunces display, the ADR-037 hero card-fan layout, the deleted pricing, and the cream/navy/gold palette are unchanged.
+
+**Context.** Live-reviewing the Session-47 home page, the founder made a brand call and flagged three issues: (a) the two Session-46 floating card "peek" watermarks read as "weird cards in the background"; (b) the brand should commit to a **Pokeball** identity (this reverses ADR-036's explicit "NOT a Pokeball" — that call was mine; the founder owns the brand and reconsidered); (c) a stray amber glow sat in the hero's bottom-right (the leftover ADR-029 corner-shimmer `BackgroundGradientAnimation`).
+
+**Decision.**
+1. **Deleted both orphan `CardPeek` watermarks** (component + invocations).
+2. **Brand glyph → navy 8-bit pixel Pokeball** (`components/brand/logo.tsx`, `PokeballMark` on a 7×7 grid: navy top + band, navy/75 bottom, cream center button; crisp-edges rendering). No red, no white (the cream button is the only non-navy, reading as the clasp). Regenerated `favicon.svg`, `icon.svg`, `apple-touch-icon.png`, `og-image.png` (cream field so the navy mark reads). Verified the 16px favicon reads as a Pokeball, not a smudge. Fraunces "Foil" wordmark unchanged.
+3. **Pill bullets → ~11px navy Pokeball.** The Live pill (lost its gold `animate-ping` dot) and the Verified-Seller pill now use `<PokeballMark px={11} />`. The numbered "1/2/3" circles in How-it-works stay numbered.
+4. **Section pattern: gold floral → navy Pokeball.** New `PokeballPattern` (inline SVG `<pattern>`, same pixel Pokeball silhouette, half-drop stagger) at ~4.5% mobile / ~6% desktop on the **"How it works" section only**. Floral component deleted. AA contrast verified (navy/slate text over ≤6% navy texture is unaffected).
+5. **Removed the hero corner-shimmer gradient.** Hero is solid `foil-cream`, no overlays, no glow. (The `BackgroundGradientAnimation` component stays in-tree, unused on the home page.)
+
+**Consequences.**
+- **Single committed brand symbol.** Logo, favicon, bullets, and section texture are now one Pokeball motif — coherent and unmistakably Pokémon-niche.
+- **ADR-036's "not a Pokeball" reasoning is explicitly reversed.** Recording it plainly: the rhombus→spark progression was avoiding the obvious category symbol; the founder decided the obvious symbol is the right brand call. The spark's "reads at 16px" requirement still governed the Pokeball design (hence the coarse 7×7 pixel grid + cream button).
+- **Hero is genuinely clean cream** — the amber-tint complaint is resolved at the source (the gradient is gone, not masked).
+- **No scope creep.** Home page only; no Pokeball on other sections, no extra accents (footer/dividers), no palette/font/register change.
+
+**Cross-refs.** [ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim), [ADR-037](#adr-037--hero-rework-cards-above-the-headline--floral-section-distinction), [SESSION-LOG Session 47.1](SESSION-LOG.md), `components/brand/logo.tsx`, `scripts/gen-brand-assets.mjs`, `lib/__tests__/visual-regression.test.ts`.
 
 ---
 
