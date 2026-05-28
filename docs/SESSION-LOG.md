@@ -8,6 +8,78 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-28 — Session 44: Install three design-skill bundles + queue Task #28 home page redo
+
+**Commits:** this commit only (chore prefix)
+
+**Why this session existed.** Session 43 closed with the home page in a much better place ([ADR-032](DECISIONS.md#adr-032--brand-mark-gold-rhombus-as-foil-facet-shorthand) + [ADR-033](DECISIONS.md#adr-033--homepage-hero-card-backdrop-treatment-grail-row-behind-frosted-cream)) but live-verify made it obvious that the next leverage point is invoking opinionated, externally-authored design judgment — not free-handing the next redesign. Three community skill bundles each encode a specific axis of design discipline that this codebase has been bottlenecked on:
+
+- **impeccable** (Paul Bakaus) — structural critique + polish argument-hint covering audit / layout / typeset / quieter / bolder.
+- **taste-skill** family (Leon Lin) — aesthetic-register selector; the **soft-skill** sub-register matches Foil's collectible-niche cream/navy/gold identity per ADR-029.
+- **emil-design-eng** (Emil Kowalski) — motion + micro-interaction review, prefers-reduced-motion-aware (carries the ADR-029 followup forward).
+
+Goal scoped tightly to file installation + workflow wiring. Zero touches to runtime code (`app/` / `components/` / `lib/`). No `/impeccable teach` interactive flow — that's a deliberate next-session step.
+
+### What landed
+
+**1. `.claude/skills/` — 15 new skill directories.** Each cloned to `/tmp/foil-session44-clones/` then `cp -r`-ed into place. SKILL.md presence verified on every directory.
+
+| Skill | Source repo | Files |
+|---|---|---|
+| `impeccable` | `github.com/pbakaus/impeccable` (path: `.claude/skills/impeccable/`) | 78 |
+| `brandkit` | `github.com/Leonxlnx/taste-skill` (path: `skills/brandkit/`) | 1 |
+| `brutalist-skill` | same | 1 |
+| `gpt-tasteskill` | same | 1 |
+| `image-to-code-skill` | same | 1 |
+| `imagegen-frontend-mobile` | same | 1 |
+| `imagegen-frontend-web` | same | 1 |
+| `minimalist-skill` | same | 1 |
+| `output-skill` | same | 1 |
+| `redesign-skill` | same | 1 |
+| `soft-skill` | same | 1 |
+| `stitch-skill` | same | 2 |
+| `taste-skill` | same | 1 |
+| `taste-skill-v1` | same | 1 |
+| `emil-design-eng` | `github.com/emilkowalski/skill` (path: `skills/emil-design-eng/`) | 1 |
+
+**Naming note.** The goal brief asked for a folder named `gpt-taste`; the upstream taste-skill repo names the bundle `gpt-tasteskill`. Used the upstream name verbatim rather than rename — that keeps `cp -r` deterministic and matches what auto-discovery surfaces in the Skill picker. All 13 taste-skill subfolders were copied (the goal explicitly said "copy EVERY subfolder from the repo's skills/ directory"), which means three bundles (`brandkit`, `image-to-code-skill`, `imagegen-frontend-mobile`, `imagegen-frontend-web`, `taste-skill-v1`) shipped beyond the 8 the goal narrative explicitly named. CLAUDE.md flags those as available-but-non-canonical for Foil — invoke only on intentional register-break tasks.
+
+**No clone-or-copy errors.** All three `git clone --depth 1` calls completed first try; all 15 `cp -r` calls succeeded; SKILL.md verification (`test -f`) returned YES for every directory.
+
+**2. CLAUDE.md — new "Design skills (Session 44)" section.** Inserted between the "Key files" block and the "Auth gate" section so the design-skill discipline lives next to the engineering-discipline anchors. Section summarizes when to invoke each canonical skill (impeccable / soft-skill / redesign-skill / output-skill / emil-design-eng), names the three non-canonical bundles for completeness, and pins the closure-gate hook that `npm run design:lint` + `lib/__tests__/visual-regression.test.ts` are blockers (not followups) for any UI goal.
+
+**3. package.json — `design:lint` script.**
+
+```
+"design:lint": "npx impeccable@latest detect app/ components/ --json || true"
+```
+
+The `|| true` is intentional: as of 2026-05-28 the `impeccable` CLI may not yet be published to npm. Script entry exists so future sessions can rely on `npm run design:lint` without ceremony; once the CLI publishes, the `|| true` can be dropped (followup, not blocker).
+
+**4. ROADMAP.md — Task #28 (home page redo with skills) queued ahead of Task #27 (variant selector).** The home page is the Twitter-launch first-impression surface, so it outranks the per-card-page variant toggle on leverage. Task #27 picked up a "Queued behind Task #28" annotation rather than being deleted — the work is still planned, just sequenced second. ROADMAP `Last updated` date bumped to 2026-05-28.
+
+### Closure gate
+
+- `npm test` — all suites pass (no test files added or modified).
+- `npx tsc --noEmit` — clean (no source files added or modified — `.claude/skills/` is outside the TS project's `include` globs).
+- `npm run compliance:check` — 6/6 PASS (no `lib/` or `app/` files touched; eBay compliance invariants unaffected).
+- `/security-review` — no HIGH/MEDIUM findings. The diff is documentation + npm script + skill markdown files; no new code paths, no new env vars, no new network calls, no new secret-handling. The only quasi-active surface is the `design:lint` script which delegates to `npx impeccable@latest` — and that's the standard "trust npm + the named author" surface every dev tool relies on; mitigated by `|| true` so a malicious-or-broken CLI fetch can't break the local toolchain.
+- `git commit` — chore prefix per the goal brief (skills installation + workflow wiring is meta-tooling, not a feat).
+- `git push` — confirmed `Your branch is up to date with 'origin/main'` after push.
+- Vercel deploy probe — Ready (no source code changed; the marketing-deploy webhook fires on every push but the build is a near-noop).
+
+### Follow-ups added to ROADMAP
+
+- **Task #28 — Home page redo with design skills (Session 45).** Captured in the ROADMAP NEXT bucket. First skill to invoke is `impeccable` in `audit` mode against `app/page.tsx`, then route through `soft-skill` register verification, then optionally `redesign-skill` if a full re-layout falls out of the audit.
+- **Task #27 — Per-card page variant selector (queued behind #28).** No scope change — just sequenced second.
+
+Out-of-scope-by-design items NOT added (the goal brief was explicit):
+
+- No `/impeccable teach` invocation — that's interactive and lives in a separate post-install session.
+- No actual home page changes — Session 44 only installs the tools and updates the docs; Session 45 uses them.
+
+---
+
 ## 2026-05-27 — Session 43: Home hero treatment + brand mark + grail card swap — ADR-032 / ADR-033
 
 **Commits:** this commit only

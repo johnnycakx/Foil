@@ -152,6 +152,20 @@ lib/detect-filter.ts — Bounding-box filtering + IoU dedup
 app/upload/actions.ts — Pipeline orchestrator (detectScan, identifyScan)
 app/upload/upload-form.tsx — UI: PokeTrace reference images + condition picker + live total
 
+Design skills (Session 44)
+
+Three design-skill bundles installed under `.claude/skills/` from upstream community authors (Paul Bakaus, Leon Lin, Emil Kowalski). Each ships its own SKILL.md frontmatter; the Skill tool auto-discovers them. When a UI/design task hits one of the triggers below, invoke the matching skill BEFORE writing the code — the prompts encode opinionated design judgment that prevents the generic-AI-template aesthetic we've been actively de-risking since ADR-028 / ADR-029 / ADR-032 / ADR-033.
+
+- **impeccable** (Paul Bakaus, `.claude/skills/impeccable/`) — Structural critique + polish. Invoke when an existing surface needs an audit, hierarchy-fix, typography pass, or "make this feel intentional rather than templated" sweep. Argument-hint covers craft/shape/audit/critique/animate/bolder/colorize/delight/layout/quieter/typeset/clarify/distill/harden/optimize/polish/teach/live. Pair with `npm run design:lint` for the structural drift detector.
+- **taste-skill / soft-skill** (Leon Lin, `.claude/skills/{taste-skill,soft-skill}/`) — Aesthetic register selector. Foil's collectible-niche identity (cream + navy + gold per ADR-029) lives in the **soft-skill** register specifically; the other register skills (`brutalist-skill`, `minimalist-skill`) are installed too but should be invoked only when an intentional register break is the goal (e.g. an admin-only debugging view that benefits from brutalism's information density).
+- **redesign-skill** (Leon Lin, `.claude/skills/redesign-skill/`) — Repair an existing page that's drifted off-brand or off-purpose. Use this on `/start`, `/cards/[slug]`, or any older surface that pre-dates the Session 39 cream/navy/gold migration when a complete re-layout is on the table (vs. impeccable's polish-in-place).
+- **output-skill** (Leon Lin, `.claude/skills/output-skill/`) — Discipline layer that catches placeholder outputs: "lorem ipsum," `<Card>...</Card>` stubs, TODO comments shipped as production text, the AI-template "Subheading goes here" anti-pattern. Run during the closure gate of any goal that touched a public surface.
+- **emil-design-eng** (Emil Kowalski, `.claude/skills/emil-design-eng/`) — Motion + micro-interaction review. Invoke on hover states, scroll-triggered reveals, page transitions, and modal/drawer choreography. Pairs with the `prefers-reduced-motion` followup tracked in ADR-029.
+
+The other taste-skill register bundles (`gpt-tasteskill`, `image-to-code-skill`, `imagegen-frontend-mobile`, `imagegen-frontend-web`, `stitch-skill`, `taste-skill-v1`, `brandkit`, `brutalist-skill`, `minimalist-skill`) ship for completeness — the auto-discovery surfaces them in the Skill picker when an explicit register break makes them the right call. Avoid invoking them on the buyer-side deal-finder surfaces; the soft-skill register is canonical for V1.
+
+Closure-gate hook (R-011-adjacent discipline): before claiming a UI goal closed, run `npm run design:lint` AND check that the structural drift guards in `lib/__tests__/visual-regression.test.ts` extended for the new surface still pass. Lint failures or unguarded surfaces are a goal-blocker, not a followup.
+
 Auth gate (lib/supabase/proxy.ts)
 
 The proxy is default-deny — every request redirects unauthenticated users to /login unless its path is in the PUBLIC_ROUTES allowlist. When you add a new route under app/, decide which list it belongs on:
