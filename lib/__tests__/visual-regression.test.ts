@@ -256,24 +256,25 @@ test("CardScannerEmbed + TopicLink: cream palette, no pre-cream coral defaults",
 // Session 43 / ADR-032 — Brand mark: gold rhombus glyph + Foil wordmark.
 // ---------------------------------------------------------------------------
 
-test("Logo component: glyph is a 15deg-rotated rhombus with a foil-gold gradient", () => {
+test("Logo component: glyph is the holofoil spark mark (ADR-036, replaces the rhombus)", () => {
   const src = readFile("components/brand/logo.tsx");
-  // The glyph wrapper is rotated 15deg — encoded as an inline style so a
-  // refactor can't silently drop the tilt and turn the rhombus back
-  // into a square.
-  assert.match(src, /transform:\s*["']rotate\(15deg\)["']/);
-  // Three-stop linear gradient suggests holofoil shimmer. Anchor on the
-  // canonical foil-gold hex (#c9a24b — the same value globals.css
-  // exposes via --color-foil-gold).
+  // Session 46 / ADR-036 retired the rotated rhombus (read as a folder/
+  // square at favicon size) for a four-point sparkle. Pin the new
+  // anchors and the removal of the old ones so a refactor can't drift
+  // back to the square.
+  assert.doesNotMatch(src, /foil-rhombus-gradient/, "old rhombus gradient id should be gone");
+  assert.doesNotMatch(src, /rotate\(15deg\)/, "old 15deg rhombus rotation should be gone");
+  // Three-stop holofoil gradient on the canonical foil-gold hex (#c9a24b).
+  assert.match(src, /<linearGradient\s+id="foil-spark-gradient"/);
   assert.match(src, /#c9a24b/i);
-  // Defs declare the linear-gradient ID we reuse.
-  assert.match(src, /<linearGradient\s+id="foil-rhombus-gradient"/);
+  // The main four-point sparkle path (distinctive start atom).
+  assert.match(src, /M12 2 C/);
 });
 
 test("Logo component: wordmark uses font-display + foil-navy tokens", () => {
   const src = readFile("components/brand/logo.tsx");
-  // The wordmark stays type-led (Bricolage Grotesque via the
-  // --font-display variable) and navy — only the glyph changed.
+  // The wordmark stays type-led (now Fraunces via the --font-display
+  // variable, ADR-036) and navy — only the glyph + display font changed.
   assert.match(src, /font-display/);
   assert.match(src, /text-foil-navy/);
 });
@@ -291,27 +292,26 @@ test("Site header: uses the <Logo /> brand component (ADR-032)", () => {
 // Session 43 / ADR-033 — Hero card backdrop treatment.
 // ---------------------------------------------------------------------------
 
-test("Hero: card backdrop opacity is 0.28 + blur+saturate filter (ADR-033)", () => {
+test("Hero: card backdrop opacity is 0.5 + softened blur+saturate filter (ADR-036)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // Anchor on the inline-style atom — Tailwind has no arbitrary-filter
-  // chain shorthand for `blur(0.5px) saturate(0.65)`, so we set it as
-  // an inline style. Pin the exact values; a refactor that bumps
-  // opacity back above 0.5 (or drops the filter) would re-elevate the
-  // cards into competing-for-attention territory.
-  assert.match(src, /opacity:\s*0\.28/);
-  assert.match(src, /filter:\s*["']blur\(0\.5px\)\s+saturate\(0\.65\)["']/);
+  // Session 46 / ADR-036 bumped the backdrop from a ghosted 0.28 texture
+  // to a 0.5 showcase and softened the blur to 0.25px (saturation back to
+  // 0.9) so the grail cards read clearly. Pin the values; dropping back
+  // toward 0.28 / heavy blur would re-ghost the showcase.
+  assert.match(src, /opacity:\s*0\.5/);
+  assert.match(src, /filter:\s*["']blur\(0\.25px\)\s+saturate\(0\.9\)["']/);
 });
 
-test("Hero: cream scrim covers the headline zone — mobile linear, desktop radial (ADR-033)", () => {
+test("Hero: cream scrim is asymmetric — mobile vertical fade, desktop left→right (ADR-036)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // Mobile default: bg-gradient-to-b from cream → cream/85 → cream/40,
-  // so the H1+lead paragraph zone (the top half) is opaque cream and
-  // the cards fade in below it.
-  assert.match(src, /bg-gradient-to-b\s+from-foil-cream\s+via-foil-cream\/85\s+to-foil-cream\/40/);
-  // Desktop (sm:): radial-gradient anchored at top-left so the
-  // headline+CTA region is fully scrimmed while the cards stay visible
-  // bottom-right. Anchored on the canonical token reference.
-  assert.match(src, /radial-gradient\(ellipse_at_top_left,var\(--color-foil-cream\)/);
+  // Mobile default: top-down cream fade so the stacked headline/lead read
+  // over the cards.
+  assert.match(src, /bg-gradient-to-b\s+from-foil-cream\s+via-foil-cream\/88\s+to-foil-cream\/45/);
+  // Desktop (sm:): a left→right linear wash — solid cream on the left
+  // (headline/lead/CTA), transparent on the right so the grails showcase.
+  // This replaces the ADR-033 top-left radial.
+  assert.match(src, /linear-gradient\(to_right,var\(--color-foil-cream\)/);
+  assert.doesNotMatch(src, /radial-gradient\(ellipse_at_top_left/);
 });
 
 test("Hero: HERO_CARDS array swapped to the modern-grail seed list (ADR-033)", () => {
@@ -331,4 +331,38 @@ test("Hero: HERO_CARDS array swapped to the modern-grail seed list (ADR-033)", (
   ]) {
     assert.match(src, new RegExp(id.replace("/", "\\/")), `HERO_CARDS missing ${id}`);
   }
+});
+
+// ---------------------------------------------------------------------------
+// Session 46 / ADR-036 — home page warmth pass.
+// ---------------------------------------------------------------------------
+
+test("Home page: Founding Member pricing section removed (ADR-036, deferred per ADR-020)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  // The pricing section was always deferred until the newsletter crosses
+  // ~100 subs (ADR-020). Session 46 removed it entirely; pin the negative
+  // so a refactor doesn't reintroduce a price the product can't take yet.
+  assert.doesNotMatch(src, /FoundingMember/, "FoundingMember component should be gone");
+  assert.doesNotMatch(src, /Founding Member/, "Founding Member copy should be gone");
+  assert.doesNotMatch(src, /\$59/, "the $59 price should be gone from the home page");
+  assert.doesNotMatch(src, /Lock in lifetime/, "the lifetime CTA should be gone");
+});
+
+test("Home page: two decorative CardPeek bridges, light touch (ADR-036)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  assert.match(src, /function CardPeek/, "CardPeek decorative component must exist");
+  const peeks = (src.match(/<CardPeek\b/g) ?? []).length;
+  assert.equal(peeks, 2, "expected exactly two decorative CardPeek instances");
+  // Light touch: ~15% opacity, aria-hidden — never a full-page background.
+  assert.match(src, /opacity:\s*0\.15/);
+});
+
+test("Display font is Fraunces with the SOFT warmth axis (ADR-036)", () => {
+  const layout = readFile("app/layout.tsx");
+  assert.match(layout, /Fraunces/, "layout must import Fraunces");
+  assert.doesNotMatch(layout, /Bricolage_Grotesque/, "Bricolage import should be gone");
+  assert.match(layout, /variable:\s*["']--font-display["']/, "Fraunces must back the --font-display token");
+  const css = readFile("app/globals.css");
+  // The SOFT axis (no wght set, so font-weight utilities still compose).
+  assert.match(css, /font-variation-settings:\s*["']SOFT["']\s+30/);
 });

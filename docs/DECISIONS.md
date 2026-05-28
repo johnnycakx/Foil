@@ -1229,7 +1229,7 @@ The `loadBakedSnapshot()` normalizer fills these defaults into pre-Session-41 ba
 ## ADR-032 — Brand mark: gold rhombus as foil-facet shorthand
 
 **Date:** 2026-05-27
-**Status:** Accepted
+**Status:** Superseded by [ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim) (Session 46) — the rhombus read as a folder/square at favicon size; replaced by the holofoil "spark" mark. The foil-facet *intent* (a holographic glint) carries forward into the spark.
 
 **Context.** Between Sessions 39-42 the SiteHeader rendered the wordmark "Foil" preceded by a 8px gold round dot with a ping animation. The dot read as the generic SaaS-template "live-status indicator" pattern — exactly the visual cliché [ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness) named as the failure mode the cream/navy/gold palette was supposed to defuse. A round dot is also semantically null: it doesn't say "this brand is about Pokemon TCG," "this brand is about deals," or anything specific to Foil. With the Twitter launch hitting the homepage as the first impression surface, the brand mark needed to do work the dot wasn't doing.
 
@@ -1290,7 +1290,7 @@ The `loadBakedSnapshot()` normalizer fills these defaults into pre-Session-41 ba
 ## ADR-033 — Homepage hero card backdrop treatment: grail row behind frosted cream
 
 **Date:** 2026-05-27
-**Status:** Accepted
+**Status:** Partially superseded by [ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim) (Session 46) — opacity bumped 0.28 → 0.5, blur softened, and the scrim made asymmetric so the grails showcase rather than ghost. The grail-seed-list rationale and the headline-protection principle carry forward.
 
 **Context.** Sessions 38-40 evolved the homepage hero through three iterations. Session 38 ([ADR-028](#adr-028--aceternity-ui-patterns-code-owned-no-npm-vendor-niche-visual-identity)) introduced the 8-card binder backdrop. Session 40 added depth (shadow + opacity tuning + scrim) to fix a "gray placeholder" failure mode. Session 42 ([ADR-031](#adr-031--mdx-component-palette-discipline-tokens-only-contrast-tested-at-the-component-layer)) shipped MDX-component cream-palette parity. By Session 43 the hero card grid was visible but **competing for attention** with the H1 — first-time visitors' eye went to the cards first, the headline second. With the Twitter launch hitting the homepage as the first-impression surface, the hero needed the H1+CTA to win the visual hierarchy unambiguously.
 
@@ -1361,6 +1361,33 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 1. **`prefers-reduced-motion`** — the corner-shimmer + the Card3D hover-tilt remain. They were already on the radar from ADR-028 / ADR-029. Adding a `@media (prefers-reduced-motion: reduce)` block to disable both will land in a later session.
 2. **Variant selector** — Task #27 (Session 44). A "Normal / Holofoil / Reverse Holo / 1st Edition" toggle on `/cards/[slug]` so the variant grail-row implies you can drill into. Scoped out of Session 43 to keep the change ALL-VISUAL.
 3. **Twitter share image refresh** — `/public/og-image.png` currently shows glyph + wordmark + tagline. Future iteration: a 1200×630 variant that includes the grail row in the background, so a Twitter share previews the hero rather than a wordmark slab.
+
+---
+
+## ADR-036 — Home page warmth pass: Fraunces display, spark mark, pricing removal, lighter scrim
+
+**Date:** 2026-05-28 (Session 46)
+**Status:** Accepted. Partially supersedes [ADR-028](#adr-028--aceternity-ui-patterns-code-owned-no-npm-vendor-niche-visual-identity) (Bricolage display font), [ADR-032](#adr-032--brand-mark-gold-rhombus-as-foil-facet-shorthand) (rhombus mark), and [ADR-033](#adr-033--homepage-hero-card-backdrop-treatment-grail-row-behind-frosted-cream) (hero backdrop opacity/scrim). The cream/navy/gold palette + Coral-Hover-Only discipline ([ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness)) are unchanged.
+
+(ADR-034 and ADR-035 are intentionally unallocated; this session was numbered 036 by the goal that commissioned it, and the code/tests/SESSION-LOG all cite ADR-036.)
+
+**Context.** Session 45 closed the home page at 34/40 on the impeccable critique — accessible and focused, but the surface still read a touch cool/templated. The "trusted collector concierge" personality (PRODUCT.md) wanted *warmth* without a redesign or a palette change. Four specific frictions: (1) the deferred Founding Member pricing section (ADR-020 defers it until the newsletter crosses ~100 subs) was shipping a $59 price the product can't yet take; (2) the Bricolage Grotesque display font (ADR-028) read as geometric/SaaS, not warm; (3) the gold rhombus mark (ADR-032) read as a folder/square at 16px favicon size; (4) the 0.28-opacity heavily-blurred hero backdrop (ADR-033) ghosted the grail cards that are the surface's best asset.
+
+**Decision.**
+1. **Deleted the Founding Member pricing section** (the `FoundingMember`/`PlanCard`/`FeatureIcon` block + the $59 H2, paragraph, and footnote), plus the orphaned "Founding" references in the example bullets and final CTA. Pricing returns when ADR-020's newsletter threshold is met. Pinned removed via `visual-regression.test.ts`.
+2. **Swapped the display font Bricolage Grotesque → Fraunces** (variable humanist serif; `opsz` + `SOFT` axes). `font-optical-sizing: auto` adapts the cut across sizes; a `SOFT 30` value (set in `globals.css` without `wght`, so font-weight utilities still compose) warms the terminals. Display weight dropped 700 → 600 and tracking loosened −0.02em → −0.01em so the serif feels warm, not heavy. Body stays Geist Sans.
+3. **Replaced the rhombus brand glyph with a holofoil "spark"** — a four-point sparkle + two shimmer accents (`components/brand/logo.tsx`), gold gradient retained. Favicon/app-icon get a navy field for 16px legibility (the old cream-bg gold mark was ~2.2:1). Raster assets regenerated from `scripts/gen-brand-assets.mjs` (sharp): `favicon.svg`, `icon.svg`, `apple-touch-icon.png`, `og-image.png`.
+4. **Hero backdrop: opacity 0.28 → 0.5, blur 0.5px → 0.25px, saturate 0.65 → 0.9**, and the scrim made **asymmetric** (solid cream left, transparent right) so the grails showcase. HERO_CARDS reordered so Moonbreon/Rayquaza/Giratina land on the right (the clear zone).
+5. **Light decorative card peeks** — two single-card watermarks (~15% opacity, ~6° tilt, desktop-only, aria-hidden) bridging the section seams. Moderate warmth, explicitly NOT a full-page background or border.
+
+**Consequences.**
+- **Home page is launch-complete.** The warmth pass + Session-45 a11y/focus pass close the home-page track for V1; ROADMAP marks it done and drops the founding-member-tier home dependency.
+- **Fraunces composes weight + SOFT.** The `.font-display` rule sets `font-variation-settings: "SOFT" 30` without `wght`, relying on modern-browser composition so `font-semibold`/`font-bold` still drive weight. Verified at build.
+- **One scoped asymmetry vs ADR-033.** ADR-033 pinned a 0.28 ghosted backdrop "so cards don't compete for attention." ADR-036 deliberately reverses that for the showcase, but keeps the headline protected via the left-heavy scrim — text legibility is unchanged, the cards just earn their visibility.
+- **prefers-reduced-motion still honored** (ADR-029 / Session 45): the decorative peeks are static, and the hero Card3D/animate-ping guards are untouched.
+- **No palette, register, or scope change.** Strictly home page. `/start`, `/upload`, `/cards/[slug]`, and blog surfaces are untouched.
+
+**Cross-refs.** [ADR-020](#adr-020--pivot-to-buyer-side-deal-finder-positioning) (pricing deferral), [SESSION-LOG Session 46](SESSION-LOG.md), `lib/__tests__/visual-regression.test.ts`, `scripts/gen-brand-assets.mjs`.
 
 ---
 

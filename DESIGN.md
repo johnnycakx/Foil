@@ -11,21 +11,21 @@ colors:
   gold-light: "#e6c170"
 typography:
   display:
-    fontFamily: "Bricolage Grotesque, system-ui, sans-serif"
+    fontFamily: "Fraunces, Georgia, serif"
     fontSize: "clamp(2.25rem, 5vw, 3.75rem)"
-    fontWeight: 700
+    fontWeight: 600
     lineHeight: 1.05
-    letterSpacing: "-0.02em"
+    letterSpacing: "-0.01em"
   headline:
-    fontFamily: "Bricolage Grotesque, system-ui, sans-serif"
+    fontFamily: "Fraunces, Georgia, serif"
     fontSize: "clamp(1.875rem, 3vw, 2.25rem)"
-    fontWeight: 700
+    fontWeight: 600
     lineHeight: 1.1
-    letterSpacing: "-0.02em"
+    letterSpacing: "-0.01em"
   title:
-    fontFamily: "Bricolage Grotesque, system-ui, sans-serif"
+    fontFamily: "Fraunces, Georgia, serif"
     fontSize: "1.125rem"
-    fontWeight: 700
+    fontWeight: 600
     lineHeight: 1.3
     letterSpacing: "normal"
   body:
@@ -115,7 +115,7 @@ that actually matter. It reads as collector-niche and expert, the relief of
 someone reliable having done the scrubbing for you, never the adrenaline of a
 flash sale.
 
-The system is type-led and restraint-driven. Bricolage Grotesque carries the
+The system is type-led and restraint-driven. Fraunces (a warm humanist serif) carries the
 headlines with tight, editorial tracking so the page reads like a considered
 publication, not a SaaS template. Color is the discipline: the entire surface
 lives on cream and navy, and gold is rationed so hard that its appearance is a
@@ -133,7 +133,7 @@ curates; it does not shout.
 
 **Key Characteristics:**
 - Cream paper surface, navy ink, gold rationed to ≤10% of any screen.
-- Type-led hierarchy in Bricolage Grotesque with −0.02em display tracking.
+- Type-led hierarchy in Fraunces (humanist serif) with tight display tracking.
 - Navy-tinted shadows and hairline borders; flat at rest, a gentle lift on touch.
 - Coral is a hover-only response, never a resting color.
 - Mobile-first: thumb-sized targets, one best answer over a wall of results.
@@ -150,7 +150,7 @@ gold and a coral that only ever appears under a cursor.
 
 ### Secondary
 - **Concierge Gold** (#c9a24b): The premium signal. Live-status dots, "good deal"
-  badges, the brand rhombus, focus rings, hairlines on the premium plan card, and
+  badges, the brand spark mark, focus rings, hairlines on premium surfaces, and
   link-hover underlines. Never a background fill for large areas, never decorative.
   Its scarcity is the entire point. Two siblings exist only inside the brand
   glyph's holofoil gradient: **Gold Deep** (#a07d2c) and **Gold Light** (#e6c170).
@@ -182,21 +182,24 @@ neutral is tinted toward the brand.
 
 ## 3. Typography
 
-**Display Font:** Bricolage Grotesque (variable, `wdth` axis), with system-ui /
-sans-serif fallback. Substituted for Cabinet Grotesk per ADR-028.
+**Display Font:** Fraunces (variable humanist serif; `opsz` optical-size +
+`SOFT` axes), with Georgia / serif fallback. Swapped from Bricolage Grotesque in
+Session 46 / ADR-036, the serif reads "trusted concierge", warm but considered,
+where the grotesque read closer to "indie SaaS".
 **Body Font:** Geist (with Arial / Helvetica fallback).
 **Label / Mono Font:** Geist Mono, for prices, codes, and inline technical strings
 (always paired with `tabular-nums`).
 
-**Character:** A geometric, slightly condensed grotesque display over a clean,
-neutral humanist body. The pairing reads "editorial publication" rather than "app
-chrome." The tight −0.02em tracking on display sizes is what keeps headlines from
-looking like a default Tailwind hero.
+**Character:** A warm humanist serif display over a clean, neutral sans body. The
+`opsz` axis (via `font-optical-sizing: auto`) lets the cut grow more elegant as
+the headline grows; a touch of `SOFT` (30) rounds the terminals. The serif/sans
+pairing reads "considered editorial" rather than "app chrome". Display weight is
+600 (semibold), not 700, so the serif feels warm rather than heavy.
 
 ### Hierarchy
-- **Display** (700, clamp 2.25–3.75rem, line-height 1.05, −0.02em): Hero H1 only.
-  One per page. Bricolage Grotesque.
-- **Headline** (700, clamp 1.875–2.25rem, line-height 1.1, −0.02em): Section H2s.
+- **Display** (600, clamp 2.25–3.75rem, line-height 1.05, −0.01em): Hero H1 only.
+  One per page. Fraunces.
+- **Headline** (600, clamp 1.875–2.25rem, line-height 1.1, −0.01em): Section H2s.
 - **Title** (700, 1.125–1.25rem): Card titles, plan names, form section labels.
 - **Body** (400, 1.0625–1.25rem, line-height 1.6): Lead and supporting copy in
   slate or navy. Cap measure at 65–75ch (the `max-w-2xl` / `max-w-3xl` containers).
@@ -206,7 +209,7 @@ looking like a default Tailwind hero.
   `code` chips on a navy/10 background.
 
 ### Named Rules
-**The Display-for-Headlines Rule.** Bricolage Grotesque is for H1/H2/H3, the
+**The Display-for-Headlines Rule.** Fraunces is for H1/H2/H3, the
 wordmark, and stat figures only. It is forbidden in body copy, captions, and form
 help text. Crossing display into running text reads as template noise.
 
@@ -280,23 +283,25 @@ already lifted before you point at it, drop it back down.
 - **Numeric (price) fields:** Right-aligned, narrow, prefixed with a slate `$`.
 
 ### Navigation
-- **Brand:** The Logo, rhombus glyph + "Foil" wordmark, in display font, navy.
+- **Brand:** The Logo, spark glyph + "Foil" wordmark, in display font, navy.
 - **Links:** Body/label scale, navy, gold-underline on hover, matching the text
   link pattern above.
 
-### Signature Component: The Foil Rhombus (brand glyph)
-A single 15°-rotated gold rhombus reading as a tilted card corner / holofoil facet
-/ refracted glint. Filled with a three-stop holofoil gradient (Gold Deep → Gold
-Light → Concierge Gold), inlined as SVG so it doubles as the favicon. It ladders
-sm/md/lg for footer / header / hero. This glyph is the *only* sanctioned gradient
-in the system (see Don'ts), it is a small mark, not a background.
+### Signature Component: The Foil Spark (brand glyph)
+A four-point gold sparkle with two smaller shimmer accents, the "spark of
+holofoil" collectors chase (ADR-036, replaced the rhombus, which read as a
+folder/square at favicon size). Filled with a three-stop holofoil gradient (Gold
+Deep → Gold Light → Concierge Gold), inlined as SVG so it doubles as the favicon
+(navy field at app-icon sizes for 16px legibility). It ladders sm/md/lg for footer
+/ header / hero. This mark is the *only* sanctioned gradient in the system (see
+Don'ts), it is a small mark, not a background. NOT a Pokeball.
 
 ## 6. Do's and Don'ts
 
 ### Do:
 - **Do** keep the surface on cream (#f8f5f0) and the ink on navy (#0f1e3a); reach
   for gold (#c9a24b) only to mark the single most important signal on a screen.
-- **Do** use Bricolage Grotesque for headlines with −0.02em tracking, and Geist
+- **Do** use Fraunces for headlines (semibold, optical-sizing on), and Geist
   for everything you actually read.
 - **Do** render every price with `tabular-nums` in Geist Mono.
 - **Do** tint shadows with `foil-navy` alpha and keep surfaces flat until hover.
@@ -321,7 +326,7 @@ in the system (see Don'ts), it is a small mark, not a background.
   a bug.
 - **Don't** let gold spread past ~10% of a screen, the moment it becomes a section
   background or a second button fill, it stops meaning anything.
-- **Don't** use `background-clip: text` gradients. The brand rhombus is the only
+- **Don't** use `background-clip: text` gradients. The brand spark mark is the only
   sanctioned gradient, and it is a small SVG mark, not text and not a panel.
 - **Don't** use side-stripe accents (`border-left`/`border-right` > 1px as a color
   bar) or default to a modal when an inline or progressive reveal would do.

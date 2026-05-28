@@ -168,7 +168,9 @@
       "Bash(cp -r /tmp/foil-session44-clones/taste-skill/skills/__TRACKED_VAR__ ./.claude/skills/__TRACKED_VAR__)",
       "Bash([ -f \"./.claude/skills/$d/SKILL.md\" ])",
       "Bash(echo \"EXIT:$?\")",
-      "Bash(echo \"---EXIT:$?---\")"
+      "Bash(echo \"---EXIT:$?---\")",
+      "WebFetch(domain:foiltcg.com)",
+      "Bash(awk 'NR>=1290' docs/DECISIONS.md)"
     ]
   },
   "enableAllProjectMcpServers": true,

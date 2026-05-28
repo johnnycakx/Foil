@@ -28,7 +28,9 @@
   --color-foil-coral: #ff6b5c;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  /* Display font for hero headlines + onboarding surfaces — Session 38. */
+  /* Display font for hero headlines + brand surfaces. Fraunces (variable
+     humanist serif) as of Session 46 / ADR-036 — see the .font-display
+     rule below for the optical-sizing + SOFT warmth axes. */
   --font-display: var(--font-display);
 }
 
@@ -55,4 +57,16 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/*
+ * Fraunces display cut (ADR-036). `font-optical-sizing: auto` lets the
+ * opsz axis adapt the serif contrast from card-title sizes up to the
+ * hero H1, and a gentle SOFT value rounds the terminals for warmth.
+ * No `wght` is set here, so the font-weight utilities (font-semibold /
+ * font-bold) still drive the weight axis and compose with SOFT.
+ */
+.font-display {
+  font-optical-sizing: auto;
+  font-variation-settings: "SOFT" 30;
 }

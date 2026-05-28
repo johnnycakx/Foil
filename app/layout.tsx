@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Bricolage_Grotesque } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,14 +12,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Display font for hero headlines + onboarding surfaces (Session 38 /
-// Task #20). Bricolage Grotesque is variable, geometric, distinctive
-// — substituted for Cabinet Grotesk (which isn't on Google Fonts and
-// would require a self-hosted file). Documented in ADR-028.
-const bricolage = Bricolage_Grotesque({
+// Display font for hero headlines + brand surfaces. Session 46 (ADR-036)
+// swapped Bricolage Grotesque (geometric grotesque) for Fraunces — a
+// variable humanist serif. The opsz axis lets the cut adapt from text
+// to display sizes; the SOFT axis (applied in globals.css) warms the
+// terminals so headlines read "trusted concierge", warm but considered,
+// rather than "indie SaaS". Body stays Geist Sans.
+const fraunces = Fraunces({
   variable: "--font-display",
   subsets: ["latin"],
-  axes: ["wdth"],
+  axes: ["opsz", "SOFT"],
 });
 
 // ADR-032 — brand metadata aligned with the deal-finder positioning
@@ -70,7 +72,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {/* Impact.com affiliate program site verification - see ADR-020 once landed. */}

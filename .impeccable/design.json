@@ -36,8 +36,8 @@
       }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Hero H1 only, one per page. Bricolage Grotesque, -0.02em tracking." },
-      "headline": { "displayName": "Headline", "purpose": "Section H2s. Bricolage Grotesque." },
+      "display": { "displayName": "Display", "purpose": "Hero H1 only, one per page. Fraunces, -0.01em tracking." },
+      "headline": { "displayName": "Headline", "purpose": "Section H2s. Fraunces." },
       "title": { "displayName": "Title", "purpose": "Card titles, plan names, form section labels." },
       "body": { "displayName": "Body", "purpose": "Lead and supporting copy. Geist. Measure capped 65-75ch." },
       "label": { "displayName": "Label", "purpose": "Eyebrows, meta tags, pill text. Often uppercase, +0.05em." },
@@ -114,7 +114,7 @@
       "refersTo": "card",
       "description": "Standard container. Cream fill, hairline navy border, flat at rest, lifts on hover.",
       "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Search any Pokémon card</h3><p class=\"ds-card-body\">Type the name, set, or just 'Charizard Base Set.'</p></div>",
-      "css": ".ds-card { background: #f8f5f0; border: 1px solid rgba(15,30,58,0.10); border-radius: 16px; padding: 24px; box-shadow: 0 1px 2px rgba(15,30,58,0.05); transition: box-shadow 200ms cubic-bezier(0.22,1,0.36,1); } .ds-card:hover { box-shadow: 0 4px 6px rgba(15,30,58,0.10); } .ds-card-title { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 1.125rem; color: #0f1e3a; margin: 0; } .ds-card-body { font-family: 'Geist', Arial, sans-serif; font-size: 0.875rem; line-height: 1.6; color: #4a5568; margin: 8px 0 0; }"
+      "css": ".ds-card { background: #f8f5f0; border: 1px solid rgba(15,30,58,0.10); border-radius: 16px; padding: 24px; box-shadow: 0 1px 2px rgba(15,30,58,0.05); transition: box-shadow 200ms cubic-bezier(0.22,1,0.36,1); } .ds-card:hover { box-shadow: 0 4px 6px rgba(15,30,58,0.10); } .ds-card-title { font-family: 'Fraunces', system-ui, sans-serif; font-weight: 700; font-size: 1.125rem; color: #0f1e3a; margin: 0; } .ds-card-body { font-family: 'Geist', Arial, sans-serif; font-size: 0.875rem; line-height: 1.6; color: #4a5568; margin: 8px 0 0; }"
     },
     {
       "name": "Premium Card",
@@ -122,15 +122,15 @@
       "refersTo": "card-premium",
       "description": "The 'this one is special' container. Same cream fill, but framed in gold with a ring and the Feature shadow. Special is said with gold framing, never a different fill.",
       "html": "<div class=\"ds-card-premium\"><h3 class=\"ds-card-title\">Founding Member</h3><p class=\"ds-price\">$59</p></div>",
-      "css": ".ds-card-premium { background: #f8f5f0; border: 1px solid rgba(201,162,75,0.50); border-radius: 16px; padding: 24px; box-shadow: 0 20px 25px rgba(15,30,58,0.10), 0 0 0 1px rgba(201,162,75,0.30); } .ds-card-title { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 1.25rem; color: #0f1e3a; margin: 0; } .ds-price { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 2.25rem; color: #0f1e3a; font-variant-numeric: tabular-nums; margin: 16px 0 0; }"
+      "css": ".ds-card-premium { background: #f8f5f0; border: 1px solid rgba(201,162,75,0.50); border-radius: 16px; padding: 24px; box-shadow: 0 20px 25px rgba(15,30,58,0.10), 0 0 0 1px rgba(201,162,75,0.30); } .ds-card-title { font-family: 'Fraunces', system-ui, sans-serif; font-weight: 700; font-size: 1.25rem; color: #0f1e3a; margin: 0; } .ds-price { font-family: 'Fraunces', system-ui, sans-serif; font-weight: 700; font-size: 2.25rem; color: #0f1e3a; font-variant-numeric: tabular-nums; margin: 16px 0 0; }"
     }
   ],
   "narrative": {
     "northStar": "The Dealer's Quiet Backroom",
-    "overview": "Foil should feel like stepping behind the counter of a reputable card shop and having the owner slide one sleeve across the glass: 'This is the one. I already checked the rest.' The surface is warm and unhurried, cream paper rather than screen-white, with navy ink and a single thread of gold reserved for the things that actually matter. The system is type-led and restraint-driven: Bricolage Grotesque carries the headlines with tight editorial tracking, color is the discipline, and depth is whispered through navy-tinted shadow and hairline borders. It rejects the generic AI SaaS template, the loud crypto/hype marketplace, the sterile enterprise dashboard, and the bargain-bin coupon site. Foil curates; it does not shout.",
+    "overview": "Foil should feel like stepping behind the counter of a reputable card shop and having the owner slide one sleeve across the glass: 'This is the one. I already checked the rest.' The surface is warm and unhurried, cream paper rather than screen-white, with navy ink and a single thread of gold reserved for the things that actually matter. The system is type-led and restraint-driven: Fraunces carries the headlines with tight editorial tracking, color is the discipline, and depth is whispered through navy-tinted shadow and hairline borders. It rejects the generic AI SaaS template, the loud crypto/hype marketplace, the sterile enterprise dashboard, and the bargain-bin coupon site. Foil curates; it does not shout.",
     "keyCharacteristics": [
       "Cream paper surface, navy ink, gold rationed to ≤10% of any screen.",
-      "Type-led hierarchy in Bricolage Grotesque with -0.02em display tracking.",
+      "Type-led hierarchy in Fraunces with -0.01em display tracking.",
       "Navy-tinted shadows and hairline borders; flat at rest, a gentle lift on touch.",
       "Coral is a hover-only response, never a resting color.",
       "Mobile-first: thumb-sized targets, one best answer over a wall of results."
@@ -139,14 +139,14 @@
       { "name": "The Coral-Hover-Only Rule", "body": "Coral (#ff6b5c) is forbidden as a resting color. It appears only as a hover/active response or in an error message. A coral element sitting still on the page is a bug.", "section": "colors" },
       { "name": "The Scarce Gold Rule", "body": "Gold covers ≤10% of any screen. It marks one thing per view. The moment gold becomes a section background or a second button fill, it stops meaning anything and the design has failed.", "section": "colors" },
       { "name": "The No-Pure-Black-Or-White Rule", "body": "#000 and #fff are prohibited. Navy (#0f1e3a) is the darkest ink; cream (#f8f5f0) is the lightest surface. Every neutral is tinted toward the brand.", "section": "colors" },
-      { "name": "The Display-for-Headlines Rule", "body": "Bricolage Grotesque is for H1/H2/H3, the wordmark, and stat figures only. It is forbidden in body copy, captions, and form help text.", "section": "typography" },
+      { "name": "The Display-for-Headlines Rule", "body": "Fraunces is for H1/H2/H3, the wordmark, and stat figures only. It is forbidden in body copy, captions, and form help text.", "section": "typography" },
       { "name": "The Tabular-Price Rule", "body": "Every dollar figure renders with tabular-nums so prices align and never jitter on update. Money is the product; it must sit still.", "section": "typography" },
       { "name": "The Navy-Tinted Shadow Rule", "body": "Every shadow carries foil-navy alpha, never rgba(0,0,0,...). A neutral-black shadow on the cream surface looks dirty and breaks the warmth.", "section": "elevation" },
       { "name": "The Flat-At-Rest Rule", "body": "Surfaces are flat until touched. Shadow growth and a -2px translate are a response to hover, not a resting decoration.", "section": "elevation" }
     ],
     "dos": [
       "Do keep the surface on cream (#f8f5f0) and the ink on navy (#0f1e3a); reach for gold (#c9a24b) only to mark the single most important signal on a screen.",
-      "Do use Bricolage Grotesque for headlines with -0.02em tracking, and Geist for everything you actually read.",
+      "Do use Fraunces for headlines with -0.01em tracking, and Geist for everything you actually read.",
       "Do render every price with tabular-nums in Geist Mono.",
       "Do tint shadows with foil-navy alpha and keep surfaces flat until hover.",
       "Do swap navy to coral on hover for primary buttons; it is the one place coral belongs.",
@@ -161,7 +161,7 @@
       "Don't use #000 or #fff anywhere; navy and cream are the true black/white.",
       "Don't let coral rest. If coral is visible without a hover or an error, it is a bug.",
       "Don't let gold spread past ~10% of a screen.",
-      "Don't use background-clip: text gradients. The brand rhombus is the only sanctioned gradient, and it is a small SVG mark.",
+      "Don't use background-clip: text gradients. The brand spark mark is the only sanctioned gradient, and it is a small SVG mark.",
       "Don't use side-stripe accents (border-left/border-right > 1px as a color bar) or default to a modal when an inline or progressive reveal would do."
     ]
   }

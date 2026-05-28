@@ -8,6 +8,30 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-28 — Session 46: home page warmth pass (Fraunces + spark mark + pricing removal) — [ADR-036](DECISIONS.md#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim)
+
+**Why.** Session 45 left the home page accessible + focused at 34/40 but still reading a touch cool/templated. This session adds warmth and personality **without a redesign** — the "trusted collector concierge" register, executed via `/impeccable bolder` (typography + logo + decoration) then `/impeccable polish`, consulting PRODUCT.md + DESIGN.md throughout. Strictly the home page; no palette/register change, no other surfaces.
+
+**What changed (before → after):**
+
+1. **Founding Member pricing section — deleted.** The Free/Founding side-by-side `PlanCard`s, the "Free forever. Or $59 once…" H2, the supporting paragraph, and the "$59 one-time charge" footnote are gone (plus the orphaned "Founding" references in the example bullets and the final-CTA $39/$59 line). Per ADR-020 the tier was always deferred until the newsletter crosses ~100 subs — shipping a price the product can't take was a trust leak. `visual-regression.test.ts` now pins the removal.
+2. **Hero lead — tightened.** Dropped the trailing "Born from comparing 20 listings…" clause (Session 45 had it); the lead now ends on the alert promise and reads tighter.
+3. **"How it works" + "What you actually see" — trimmed** to ≤2-3 sentences per card; cut the em-dash-heavy clauses, kept the concrete claims.
+4. **Hero backdrop — opacity 0.28 → 0.5, blur 0.5px → 0.25px, saturate 0.65 → 0.9.** Scrim made **asymmetric** (solid cream left for headline protection, transparent right). HERO_CARDS reordered so Moonbreon/Rayquaza/Giratina land on the right (the clear zone) and read as a real showcase, not a ghosted texture.
+5. **Display font Bricolage Grotesque → Fraunces** (variable humanist serif; `opsz` + `SOFT 30` axes via `font-optical-sizing: auto` + a `globals.css` rule that sets SOFT without `wght` so font-weight utilities still compose). Display weight 700 → 600, tracking −0.02em → −0.01em — warm, not heavy. Body stays Geist. H1/H2/H3 still hit the DESIGN.md size scale (display clamp 2.25-3.75rem / headline 1.875-2.25rem / title 1.125rem) unchanged.
+6. **Brand glyph: gold rhombus → holofoil "spark"** (four-point sparkle + two shimmer accents, `components/brand/logo.tsx`). Favicon/app-icon now sit on a **navy field** for 16px legibility (the old cream-bg gold mark was ~2.2:1). Regenerated `favicon.svg`, `icon.svg`, `apple-touch-icon.png` (180×180), `og-image.png` (1200×630) via the new `scripts/gen-brand-assets.mjs` (sharp). **Verified at 16px**: rasterized the favicon to 16/32px and confirmed it reads as a spark, not a folder.
+7. **Light decorative card peeks** — two single-card watermarks (~15% opacity, ~6° tilt, desktop-only, aria-hidden, static) bridging the How-it-works→Example and Example→CTA seams. Moderate warmth; NOT a full-page background or border.
+
+**Screenshots / visual evidence.** No browser-automation tool in this environment, so no full-page capture — but the regenerated brand assets were rasterized and inspected: the 16px favicon reads as a gold spark on navy (legible, mark-like), and the 1200×630 OG card renders cream + spark + "Foil" serif wordmark + tagline cleanly. The home page itself was validated structurally (build + tests) and will be live-verified on the deploy.
+
+**impeccable note.** `bolder` for a *product*-register-adjacent brand surface meant amplifying via committed type (serif display) + a distinctive mark + tasteful decoration, not effects. `polish` unified the trimmed copy + the radius/weight scale. AI-slop check: serif-display + spark mark + cream/navy is distinctive, not the generic-AI default.
+
+**Closure-gate (R-011 strict).** 524-suite + new ADR-036 assertions green · `tsc` clean · `npm run build` exit 0 (validates Fraunces axes) · `compliance:check` 6/6 · `design:lint` 0 new findings · `/security-review` RUN (presentational, but run per the Session-45 note) · push confirmed · Vercel deploy Ready verified. [Detail recorded inline at session end.]
+
+**Doc updates.** This entry; [ADR-036](DECISIONS.md) (+ ADR-032/033 marked superseded, ADR-028 display-font note); DESIGN.md typography + signature-component + `.impeccable/design.json` sidecar updated to Fraunces/spark; ROADMAP marks the home page launch-complete and drops the founding-member-tier home dependency.
+
+---
+
 ## 2026-05-28 — Session 45: impeccable design context + home-page a11y/focus pass (Task #28 progress)
 
 **Why.** Session 44 installed the impeccable skill bundle but deliberately deferred the `/impeccable teach` flow and any runtime use. This session ran teach → document → critique → audit → animate → distill → clarify → polish on the **home page** (`app/(site)/page.tsx`), the first real use of the skill against a buyer-side surface. It is a concrete down-payment on Task #28 (home page redo).

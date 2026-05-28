@@ -43,8 +43,12 @@ export default async function Home() {
     <>
       <Hero />
       <HowItWorks />
+      {/* Session 46 (ADR-036): light decorative peek bridging the
+          How-it-works → What-you-see seam. ~15% opacity, desktop-only. */}
+      <CardPeek id="swsh35/74" side="right" />
       <ExampleResult />
-      <FoundingMember />
+      {/* Second peek bridging What-you-see → footer/CTA. */}
+      <CardPeek id="swsh4/188" side="left" />
       <FinalCTA />
     </>
   );
@@ -52,20 +56,21 @@ export default async function Home() {
 
 // Session 43 (ADR-033) — modern grail seed list. Seven modern alt-art /
 // rainbow chase cards + one vintage anchor (Base Set Charizard) form
-// the hero backdrop. These ARE the cards collectors search for; the
-// row reads as "these are the grails Foil watches" rather than "these
-// are vintage cards from someone's binder." Image URLs hit the Pokemon
-// TCG SDK CDN directly — same data the per-card pages load, so the
-// browser cache wins on subsequent navigation.
+// the hero backdrop. Session 46 (ADR-036) reordered the array so the
+// three signature grails (Giratina, Rayquaza, Moonbreon) sit at the END
+// — in a centered flex-wrap that lands them on the RIGHT, where the
+// asymmetric scrim leaves the cards unobscured and clearly readable.
+// Image URLs hit the Pokemon TCG SDK CDN directly — same data the
+// per-card pages load, so the browser cache wins on subsequent nav.
 const HERO_CARDS: { id: string; alt: string; tilt: string }[] = [
-  { id: "swsh7/215",  alt: "Umbreon VMAX Alt Art (Moonbreon), Evolving Skies", tilt: "-rotate-[6deg]" },
-  { id: "swsh7/218",  alt: "Rayquaza VMAX Alt Art, Evolving Skies",            tilt: "rotate-[4deg]"  },
+  { id: "base1/4",    alt: "Charizard, Base Set (vintage anchor)",             tilt: "rotate-[2deg]"  },
   { id: "swsh35/74",  alt: "Charizard VMAX Rainbow Rare, Champions Path",      tilt: "-rotate-[3deg]" },
-  { id: "swsh11/186", alt: "Giratina V Alt Art, Lost Origin",                  tilt: "rotate-[5deg]"  },
   { id: "swsh12/186", alt: "Lugia V Alt Art, Silver Tempest",                  tilt: "-rotate-[2deg]" },
   { id: "swsh8/269",  alt: "Mew VMAX Alt Art, Fusion Strike",                  tilt: "rotate-[7deg]"  },
   { id: "swsh4/188",  alt: "Pikachu VMAX Rainbow, Vivid Voltage",              tilt: "-rotate-[5deg]" },
-  { id: "base1/4",    alt: "Charizard, Base Set (vintage anchor)",             tilt: "rotate-[2deg]"  },
+  { id: "swsh11/186", alt: "Giratina V Alt Art, Lost Origin",                  tilt: "rotate-[5deg]"  },
+  { id: "swsh7/218",  alt: "Rayquaza VMAX Alt Art, Evolving Skies",            tilt: "rotate-[4deg]"  },
+  { id: "swsh7/215",  alt: "Umbreon VMAX Alt Art (Moonbreon), Evolving Skies", tilt: "-rotate-[6deg]" },
 ];
 
 function Hero() {
@@ -83,15 +88,15 @@ function Hero() {
         />
       </div>
 
-      {/* Card grid backdrop — Session 43 (ADR-033): cards drop to 0.28
-          opacity + a slight blur + reduced saturation so they read as
-          an atmospheric "binder behind frosted glass" rather than the
-          page's primary visual. The copy in front is the hero now; the
-          cards are the texture. */}
+      {/* Card grid backdrop — Session 46 (ADR-036) bumped opacity 0.28 →
+          0.5 and softened the blur to 0.25px (saturation back up to 0.9)
+          so the grail cards read as a real showcase, not a ghosted
+          texture. The asymmetric scrim below keeps the headline legible
+          on the left while the cards stay vivid on the right. */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-3 px-5 pt-6 sm:px-8 sm:gap-4 sm:pt-10"
-        style={{ opacity: 0.28, filter: "blur(0.5px) saturate(0.65)" }}
+        style={{ opacity: 0.5, filter: "blur(0.25px) saturate(0.9)" }}
       >
         {HERO_CARDS.map((c) => (
           <div key={c.id} className={`shrink-0 ${c.tilt}`}>
@@ -112,16 +117,15 @@ function Hero() {
         ))}
       </div>
 
-      {/* Copy-area scrim — Session 43 (ADR-033). Sits ABOVE the cards
-          (their wrapper is -z-10; this is -z-[5]) but BELOW the headline
-          container (default stack). Mobile uses a top-down linear cream
-          fade so the H1+lead paragraph sit on a clean cream slab; the
-          desktop breakpoint replaces it with a radial-from-top-left
-          gradient so the cards remain visible bottom-right while the
-          headline zone (top-left) is fully scrimmed. */}
+      {/* Copy-area scrim — Session 46 (ADR-036) made it ASYMMETRIC.
+          Mobile: top-down cream fade so the stacked headline/lead read
+          over the cards. Desktop (sm:): a left→right linear cream wash —
+          solid on the left ~40% (headline + lead + CTA zone), fading to
+          fully transparent by ~82% so the right-hand grails (Giratina,
+          Rayquaza, Moonbreon) showcase unobscured. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 -z-[5] bg-gradient-to-b from-foil-cream via-foil-cream/85 to-foil-cream/40 sm:bg-none sm:[background:radial-gradient(ellipse_at_top_left,var(--color-foil-cream)_0%,color-mix(in_oklab,var(--color-foil-cream)_92%,transparent)_28%,color-mix(in_oklab,var(--color-foil-cream)_55%,transparent)_55%,transparent_85%)]"
+        className="pointer-events-none absolute inset-0 -z-[5] bg-gradient-to-b from-foil-cream via-foil-cream/88 to-foil-cream/45 sm:bg-none sm:[background:linear-gradient(to_right,var(--color-foil-cream)_0%,var(--color-foil-cream)_38%,color-mix(in_oklab,var(--color-foil-cream)_72%,transparent)_55%,color-mix(in_oklab,var(--color-foil-cream)_35%,transparent)_70%,transparent_82%)]"
       />
 
       <div className="relative mx-auto w-full max-w-6xl px-5 pt-16 pb-20 sm:px-8 sm:pt-24 sm:pb-28">
@@ -133,10 +137,10 @@ function Hero() {
           Live · tracking {cardCount} cards across {setCount} sets
         </p>
 
-        {/* Headline — single-color navy. Type-led, no Sparkles overlay
-            (ADR-029). Bricolage Grotesque variable weight at 700 with
-            tight tracking to read as "editorial" rather than "SaaS". */}
-        <h1 className="font-display mt-6 max-w-3xl text-4xl font-bold leading-[1.05] tracking-[-0.02em] text-foil-navy sm:text-5xl md:text-6xl">
+        {/* Headline — single-color navy, type-led (ADR-029). Display font
+            is Fraunces (humanist serif) as of Session 46 / ADR-036:
+            warm + considered, the "trusted concierge" voice. */}
+        <h1 className="font-display mt-6 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-[-0.01em] text-foil-navy sm:text-5xl md:text-6xl">
           Tell me a Pokémon card. I&apos;ll find you the best live deal.
         </h1>
 
@@ -149,10 +153,7 @@ function Hero() {
           Foil scans eBay&apos;s live listings, filters out the keyword-stuffed
           junk, and surfaces the single best-value listing for the card you want.
           Want it cheaper? Set a target price and we&apos;ll email you the moment
-          a real listing drops to it.{" "}
-          <span className="text-foil-slate/80">
-            Born from comparing 20 listings just to find the one worth buying.
-          </span>
+          a real listing drops to it.
         </p>
 
         <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -184,29 +185,57 @@ function Hero() {
   );
 }
 
+// Session 46 (ADR-036) — light decorative card peek. A single catalog
+// card at ~15% opacity, tilted ~6°, anchored to one edge of a
+// zero-height seam between sections so it straddles the boundary as a
+// faint watermark. Desktop-only, aria-hidden, pointer-events-none, no
+// animation — moderate warmth, NOT a full-page background.
+function CardPeek({ id, side = "right" }: { id: string; side?: "left" | "right" }) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none relative z-0 mx-auto hidden h-0 max-w-6xl px-5 sm:block sm:px-8"
+    >
+      <div
+        className={`absolute -top-20 ${side === "right" ? "right-2 rotate-6" : "left-2 -rotate-6"}`}
+        style={{ opacity: 0.15 }}
+      >
+        <Image
+          src={`https://images.pokemontcg.io/${id}_hires.png`}
+          alt=""
+          width={200}
+          height={280}
+          unoptimized
+          className="w-28 rounded-lg md:w-32"
+        />
+      </div>
+    </div>
+  );
+}
+
 function HowItWorks() {
   const steps = [
     {
       num: "1",
       title: "Search any Pokémon card",
-      body: "Type the name, set, or just 'Charizard Base Set.' Foil handles set codes, foreign printings, Japanese sets, and graded slabs — autocomplete keeps it fast.",
+      body: "Type a name, a set, or just 'Charizard Base Set.' Foil handles set codes, Japanese printings, and graded slabs.",
     },
     {
       num: "2",
       title: "Foil finds the best live deal",
-      body: "We check eBay's marketplace in real time and surface the most credible best-value listing. Price + shipping + condition + seller rating, weighted into one recommendation — not a wall of 200 search results.",
+      body: "We check eBay in real time and surface the most credible best-value listing. Price, shipping, condition, and seller rating, weighted into one pick, not a wall of 200 results.",
     },
     {
       num: "3",
       title: "Buy now or set a price alert",
-      body: "Click through to buy on eBay — you support Foil at no extra cost. Or tell us your target price and we'll email you the second a matching listing appears, sometimes within minutes.",
+      body: "Buy through to eBay and you support Foil at no extra cost. Or set a target price and we'll email you the second a matching listing appears.",
     },
   ];
 
   return (
     <section className="border-y border-foil-navy/10 bg-foil-cream">
       <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
-        <h2 className="font-display text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl">How it works</h2>
+        <h2 className="font-display text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">How it works</h2>
         <p className="mt-3 max-w-2xl text-foil-slate">
           Three steps. No comparing tabs, no scrolling endless listings, no
           wondering whether a seller is legit.
@@ -220,7 +249,7 @@ function HowItWorks() {
               <span className="font-display inline-flex h-9 w-9 items-center justify-center rounded-full border border-foil-gold/40 bg-foil-gold/10 text-sm font-bold text-foil-navy">
                 {s.num}
               </span>
-              <h3 className="font-display mt-4 text-lg font-bold text-foil-navy">{s.title}</h3>
+              <h3 className="font-display mt-4 text-lg font-semibold text-foil-navy">{s.title}</h3>
               <p className="mt-2 text-sm text-foil-slate">{s.body}</p>
             </li>
           ))}
@@ -239,44 +268,44 @@ function ExampleResult() {
             <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
             What you actually see
           </p>
-          <h2 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl">
+          <h2 className="font-display mt-3 text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">
             That Charizard you want? Currently $313 on eBay.
           </h2>
           <p className="mt-4 text-foil-slate">
-            Foil doesn&apos;t just dump you on a search page. It picks the single
-            best live listing, shows you what each condition and grade is currently
-            worth, and tells you whether to buy now, lowball, or wait for a drop.
+            Foil doesn&apos;t dump you on a search page. It picks the single best
+            live listing, shows what each condition and grade is worth, and tells
+            you whether to buy now, lowball, or wait for a drop.
           </p>
           <ul className="mt-6 space-y-3 text-sm text-foil-slate">
             <li className="flex items-start gap-3">
               <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
               <span>
                 <span className="font-medium text-foil-navy">One best deal, not 200 listings.</span>{" "}
-                We score every active listing on price + shipping + condition + seller
-                rating and show you the winner.
+                We score every active listing on price, shipping, condition, and
+                seller rating, then show you the winner.
               </span>
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
               <span>
                 <span className="font-medium text-foil-navy">Wishlist alerts that actually fire.</span>{" "}
-                Tell Foil your target price; we email you the second a matching
-                listing appears. Hourly checks on free, sub-minute on Founding.
+                Tell Foil your target price and we email you the moment a matching
+                listing appears.
               </span>
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
               <span>
                 <span className="font-medium text-foil-navy">Graded vs raw, side by side.</span>{" "}
-                Foil shows the full grade ladder — raw NM, PSA 7 through 10, BGS,
-                CGC — so you can decide whether the raw is a steal or the slab is.
+                The full grade ladder, raw NM through PSA 10, BGS, and CGC, so you
+                can tell whether the raw is a steal or the slab is.
               </span>
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
               <span>
                 <span className="font-medium text-foil-navy">Japanese and modern covered.</span>{" "}
-                Vintage WOTC, modern Mega ex, Japanese-exclusive sets — if there&apos;s
+                Vintage WOTC, modern Mega ex, Japanese-exclusive sets; if there&apos;s
                 a listing, Foil finds it.
               </span>
             </li>
@@ -336,170 +365,16 @@ function ExampleResult() {
   );
 }
 
-function FoundingMember() {
-  const freeFeatures = [
-    { label: "Search any Pokémon card", value: true as const },
-    { label: "Best live deal across eBay", value: true as const },
-    { label: "Wishlist + price alerts", value: "Hourly checks" },
-    { label: "Weekly best-deals newsletter", value: true as const },
-    { label: "Advanced filters (grade, seller rating)", value: false as const },
-    { label: "Multi-marketplace (TCGplayer, Mercari)", value: false as const },
-    { label: "Ad-free experience", value: false as const },
-  ];
-
-  const foundingFeatures = [
-    { label: "Everything in Free", value: true as const },
-    { label: "Instant alerts (sub-minute push)", value: true as const },
-    { label: "Advanced filters (grade, seller rating)", value: true as const },
-    { label: "Multi-marketplace (TCGplayer, Mercari)", value: "As they ship" },
-    { label: "Ad-free experience", value: "Permanent" },
-    { label: "Priority on new card additions", value: true as const },
-    { label: "Founding Member badge", value: true as const },
-  ];
-
-  return (
-    <section className="border-y border-foil-navy/10 bg-foil-cream">
-      <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
-        <div className="max-w-2xl">
-          <h2 className="font-display text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl">
-            Free forever. Or $59 once to lock in everything.
-          </h2>
-          <p className="mt-3 text-foil-slate">
-            Foil&apos;s deal-finder is free for everyone. Founding Member is for
-            early supporters who want every premium feature we&apos;ll ever ship —
-            locked in at launch price, one charge, no recurring. We&apos;d build
-            those features anyway; this just gets you in on day one.
-          </p>
-        </div>
-
-        <div className="mt-10 grid gap-5 lg:grid-cols-2">
-          <PlanCard
-            tone="free"
-            name="Free"
-            price="$0"
-            pricePer=""
-            tag="Forever"
-            cta={{ label: "Get early access", href: "#waitlist" }}
-            features={freeFeatures}
-          />
-          <PlanCard
-            tone="pro"
-            name="Founding Member"
-            price="$59"
-            pricePer="once"
-            tag="First 100 signups: $39"
-            cta={{ label: "Lock in lifetime", href: "#waitlist" }}
-            features={foundingFeatures}
-          />
-        </div>
-
-        <p className="mt-6 text-xs text-foil-slate">
-          Founding Member is a one-time charge — no subscription, no auto-renewal.
-          Price climbs to $79 at public launch.
-        </p>
-      </div>
-    </section>
-  );
-}
-
-function PlanCard({
-  tone,
-  name,
-  price,
-  pricePer,
-  tag,
-  cta,
-  features,
-}: {
-  tone: "free" | "pro";
-  name: string;
-  price: string;
-  pricePer: string;
-  tag: string;
-  cta: { label: string; href: string };
-  features: { label: string; value: string | boolean }[];
-}) {
-  const isPro = tone === "pro";
-  return (
-    <div
-      className={`relative flex flex-col rounded-2xl border p-6 sm:p-8 ${
-        isPro
-          ? "border-foil-gold/50 bg-foil-cream ring-1 ring-foil-gold/30 shadow-lg shadow-foil-navy/10"
-          : "border-foil-navy/10 bg-foil-cream shadow-sm shadow-foil-navy/5"
-      }`}
-    >
-      <div className="flex items-start justify-between">
-        <h3 className="font-display text-xl font-bold text-foil-navy">{name}</h3>
-        <span
-          className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-            isPro ? "bg-foil-gold/15 text-foil-navy" : "bg-foil-navy/5 text-foil-slate"
-          }`}
-        >
-          {tag}
-        </span>
-      </div>
-      <div className="mt-4 flex items-baseline gap-1.5">
-        <span className="font-display text-4xl font-bold tabular-nums text-foil-navy">{price}</span>
-        <span className="text-sm text-foil-slate">{pricePer}</span>
-      </div>
-
-      <ul className="mt-6 flex-1 space-y-3 text-sm">
-        {features.map((f) => (
-          <li key={f.label} className="flex items-start gap-3">
-            <FeatureIcon enabled={f.value !== false && f.value !== "—"} />
-            <span className="min-w-0">
-              <span className="text-foil-navy">{f.label}</span>
-              {typeof f.value === "string" && (
-                <span className="block text-xs text-foil-slate">{f.value}</span>
-              )}
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      <a
-        href={cta.href}
-        className={`mt-7 block rounded-xl px-4 py-3 text-center text-sm font-semibold transition ${
-          isPro
-            ? "bg-foil-navy text-foil-cream hover:bg-foil-coral"
-            : "border border-foil-navy/15 bg-foil-cream text-foil-navy hover:border-foil-gold/40 hover:bg-foil-gold/5"
-        }`}
-      >
-        {cta.label}
-      </a>
-    </div>
-  );
-}
-
-function FeatureIcon({ enabled }: { enabled: boolean }) {
-  if (!enabled) {
-    return (
-      <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-foil-navy/5 text-foil-slate">
-        <svg viewBox="0 0 16 16" className="h-2.5 w-2.5" aria-hidden="true">
-          <line x1="3" y1="8" x2="13" y2="8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
-      </span>
-    );
-  }
-  return (
-    <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-foil-gold/20 text-foil-navy">
-      <svg viewBox="0 0 16 16" className="h-2.5 w-2.5" aria-hidden="true">
-        <path d="M3 8.5l3 3 7-7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      </svg>
-    </span>
-  );
-}
-
 function FinalCTA() {
   return (
     <section id="waitlist" className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
       <div className="rounded-3xl border border-foil-gold/40 bg-foil-cream p-8 shadow-xl shadow-foil-navy/10 sm:p-12">
-        <h2 className="font-display max-w-3xl text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl">
+        <h2 className="font-display max-w-3xl text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">
           Never overpay for a Pokémon card again.
         </h2>
         <p className="mt-3 max-w-2xl text-foil-slate">
-          Get on the waitlist. We&apos;ll email you the moment early access opens —
-          and the first 100 signups get Founding Member at $39 instead of $59.
+          Get on the waitlist and we&apos;ll email you the moment early access
+          opens, plus the weekly best-deals digest in the meantime.
         </p>
         <div className="mt-6 max-w-xl">
           <EmailCapture source="homepage_final_cta" variant="inline" headline="Get the weekly best-deals newsletter." />
