@@ -262,18 +262,20 @@ test("CardScannerEmbed + TopicLink: cream palette, no pre-cream coral defaults",
 // Session 43 / ADR-032 — Brand mark: gold rhombus glyph + Foil wordmark.
 // ---------------------------------------------------------------------------
 
-test("Logo component: glyph is the navy pixel Pokeball mark (ADR-038, replaces the spark)", () => {
+test("Logo component: glyph is the classic red/white pixel Pokeball mark (ADR-040)", () => {
   const src = readFile("components/brand/logo.tsx");
-  // Session 47.1 / ADR-038 replaced the holofoil spark with an 8-bit
-  // navy pixel Pokeball. Pin the new anchors + the removal of the old
-  // spark so a refactor can't drift back.
+  // Session 47.3 / ADR-040: the brand glyph is the classic Pokémon
+  // red/white Pokeball (palette discipline relaxed for the glyph only).
   assert.doesNotMatch(src, /foil-spark-gradient/, "old spark gradient id should be gone");
-  assert.doesNotMatch(src, /#c9a24b/i, "no gold in the Pokeball mark — it's navy");
+  assert.doesNotMatch(src, /#c9a24b/i, "no gold in the Pokeball mark");
   assert.match(src, /function PokeballMark/, "PokeballMark must exist + be exported for bullet reuse");
   assert.match(src, /shapeRendering="crispEdges"/, "pixel mark uses crispEdges");
-  assert.match(src, /#0f1e3a/i, "the Pokeball is foil-navy");
-  // The cream center button (clasp).
-  assert.match(src, /<rect x="3" y="3" width="1" height="1" fill="#f8f5f0"/);
+  assert.match(src, /#e63946/i, "classic Pokémon red top");
+  assert.match(src, /#ffffff/i, "white bottom + button");
+  assert.match(src, /#0f1e3a/i, "navy 'black' outline + band");
+  // The logo glyph renders the classic tone; bullets stay navy (default).
+  assert.match(src, /<PokeballMark px=\{px\} tone="classic"/, "LogoGlyph uses the classic red/white tone");
+  assert.match(src, /tone = "navy"/, "PokeballMark defaults to navy (the pill bullets stay navy)");
 });
 
 test("Logo component: wordmark uses font-display + foil-navy tokens", () => {
@@ -403,8 +405,8 @@ test("How it works: navy+white Pokeball pattern band, that section only (ADR-039
   assert.match(src, /fill="#0f1e3a"/i, "navy dome/band/outline");
   assert.match(src, /fill="#ffffff"/i, "white bottom half — the classic two-tone read");
   assert.match(src, /<rect x="7" y="7" width="2" height="2" fill="#ffffff"/i, "white center button");
-  // ADR-039: density up + opacity up (≈14% mobile, ≈20% desktop). Pin both
-  // the bumped opacity and the tight half-drop tile (34×68, ball pitch 34).
+  // ADR-039 opacity (≈14% mobile, ≈20% desktop) kept; ADR-040 loosened the
+  // tile to 48×96 (ball pitch 48, ~1.4× ball width) — ~50% fewer balls.
   assert.match(src, /opacity-\[0\.14\]\s+sm:opacity-\[0\.2\]/);
-  assert.match(src, /<pattern id="foil-pokeball" patternUnits="userSpaceOnUse" width="34" height="68"/);
+  assert.match(src, /<pattern id="foil-pokeball" patternUnits="userSpaceOnUse" width="48" height="96"/);
 });

@@ -8,6 +8,27 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-29 — Session 47.3: classic red/white Pokeball logo + looser section pattern — [ADR-040](DECISIONS.md#adr-040--brand-glyph-is-the-classic-redwhite-pokeball-section-pattern-density-reduced)
+
+**Why.** Founder calls after 47.2: (1) the brand mark should be the **classic Pokémon red/white Pokeball**, not navy monochrome; (2) the "How it works" pattern was still "too many pokeballs."
+
+**Before → after.**
+1. **Logo glyph: navy → classic red/white Pokeball.** `PokeballMark` gained a `tone` prop — `"classic"` (red #e63946 top, white bottom, navy "black" outline + band, white button) and `"navy"` (default). `LogoGlyph` uses `tone="classic"`; same 16×16 pixel geometry as the section pattern, at brand-mark scale. Regenerated `favicon.svg`, `icon.svg`, `apple-touch-icon.png`, `og-image.png`. Rendered + inspected the 16px favicon: reads as a tri-color Pokeball (red dome / dark band / white bottom + button). Fraunces "Foil" wordmark + color unchanged.
+2. **Pill bullets stay navy.** They call `PokeballMark` with the default `tone="navy"` — separate design layer, untouched color.
+3. **Pattern density reduced ~50%.** `<pattern>` tile 34×68 (near-touching) → **48×96** (~1.4× ball-width pitch). Opacity kept (14% mobile / 20% desktop) — density was the noise, not opacity. Navy/white, "How it works" only. Rendered the looser pattern + text: balls breathe, slate/navy text legible, AA holds.
+
+**Palette note (ADR-040).** The brand glyph is the one sanctioned break from the cream/navy/gold discipline — a Pokeball only reads in red/white, so the mark carries red (#e63946); nothing else (chrome, text, UI, bullets, pattern) does. "Black" on the glyph is foil-navy (#0f1e3a) to stay coherent + avoid a pure-#000 lint flag.
+
+**Preserved:** Session 47.2 pattern geometry; 47.1 hero cleanup; 47 hero card fan; 46 Fraunces + pricing removal + trust pill + copy trims; 45 reduced-motion + contrast; all ADRs.
+
+**Self-check.** Updated the logo test (classic red/white tri-color + `tone="classic"` on LogoGlyph + navy default) and the pattern test (tile 48×96). `#e63946` added no design:lint finding.
+
+**Closure-gate (R-011 strict).** Full suite green · `tsc` clean · `npm run build` exit 0 · `compliance:check` 6/6 · `design:lint` 0 new · `/security-review` RUN (presentational, no findings) · push confirmed · Vercel deploy Ready. [Detail inline at session end.]
+
+**Doc updates.** This entry; [ADR-040](DECISIONS.md) (+ ADR-038 glyph-color & ADR-039 density marked iterated); ROADMAP last-updated line. Untracked `docs/CAPITAL-DEPLOYMENT-PLAN.md` (unrelated, pre-existing) left alone again.
+
+---
+
 ## 2026-05-29 — Session 47.2: Pokeball section pattern — shape/density/opacity fix — [ADR-039](DECISIONS.md#adr-039--pokeball-section-pattern-shape--density--opacity-iteration)
 
 **Why.** Session 47.1's "How it works" Pokeball pattern (coarse 7×7 silhouette, single navy tone, 5-7% opacity) read as **polka dots, not Pokeballs**. Founder feedback: keep navy+white, but match a reference's tightly-packed pixel Pokeball line work (visible top/bottom halves, center band, white button, blocky 8-bit grid). Shape/density/opacity fix, not color.

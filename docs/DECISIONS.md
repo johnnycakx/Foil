@@ -1419,7 +1419,7 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 ## ADR-038 — Pokeball as the brand mark + section pattern + bullet accent
 
 **Date:** 2026-05-28 (Session 47.1)
-**Status:** Accepted. Supersedes the **mark** of [ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim) (holofoil spark) and the **floral** of [ADR-037](#adr-037--hero-rework-cards-above-the-headline--floral-section-distinction), and removes the [ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness) corner-shimmer gradient from the hero. The **section pattern's shape/density/opacity were iterated by [ADR-039](#adr-039--pokeball-section-pattern-shape--density--opacity-iteration)** (Session 47.2 — it read as polka dots; same navy+white). Fraunces display, the ADR-037 hero card-fan layout, the deleted pricing, and the cream/navy/gold palette are unchanged.
+**Status:** Accepted. Supersedes the **mark** of [ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim) (holofoil spark) and the **floral** of [ADR-037](#adr-037--hero-rework-cards-above-the-headline--floral-section-distinction), and removes the [ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness) corner-shimmer gradient from the hero. The **section pattern's shape/density/opacity were iterated by [ADR-039](#adr-039--pokeball-section-pattern-shape--density--opacity-iteration)** (Session 47.2) then [ADR-040](#adr-040--brand-glyph-is-the-classic-redwhite-pokeball-section-pattern-density-reduced) (Session 47.3, density). The **brand glyph color** (navy monochrome) is superseded by [ADR-040](#adr-040--brand-glyph-is-the-classic-redwhite-pokeball-section-pattern-density-reduced) (classic red/white). Fraunces display, the ADR-037 hero card-fan layout, the deleted pricing, and the cream/navy/gold palette for chrome+text are unchanged.
 
 **Context.** Live-reviewing the Session-47 home page, the founder made a brand call and flagged three issues: (a) the two Session-46 floating card "peek" watermarks read as "weird cards in the background"; (b) the brand should commit to a **Pokeball** identity (this reverses ADR-036's explicit "NOT a Pokeball" — that call was mine; the founder owns the brand and reconsidered); (c) a stray amber glow sat in the hero's bottom-right (the leftover ADR-029 corner-shimmer `BackgroundGradientAnimation`).
 
@@ -1443,7 +1443,7 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 ## ADR-039 — Pokeball section pattern: shape + density + opacity iteration
 
 **Date:** 2026-05-29 (Session 47.2)
-**Status:** Accepted. Iterates the **section pattern** of [ADR-038](#adr-038--pokeball-as-the-brand-mark--section-pattern--bullet-accent) (the rest of ADR-038 — logo glyph, pill bullets, hero cleanup — is unchanged). Same navy + white palette; this is a shape/density/opacity fix, not a color change.
+**Status:** Accepted (shape). The **density** was further loosened by [ADR-040](#adr-040--brand-glyph-is-the-classic-redwhite-pokeball-section-pattern-density-reduced) (Session 47.3 — "too many pokeballs"). Iterates the **section pattern** of [ADR-038](#adr-038--pokeball-as-the-brand-mark--section-pattern--bullet-accent) (the rest of ADR-038 — logo glyph, pill bullets, hero cleanup — is unchanged). Same navy + white palette; this is a shape/density/opacity fix, not a color change.
 
 **Context.** ADR-038's "How it works" Pokeball pattern used a coarse 7×7 silhouette (single navy tone, no visible button or two-tone) at 5-7% opacity. At that size and opacity it read as **polka dots, not Pokeballs**. The founder shared a reference: a tightly-packed pixel Pokeball with visible top/bottom halves, a distinct center band, a white center button, and blocky 8-bit line work — and asked to match the *line work*, keeping navy + white.
 
@@ -1459,6 +1459,29 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 - **No scope creep.** No classic-red, no logo/bullet recolor, no palette change.
 
 **Cross-refs.** [ADR-038](#adr-038--pokeball-as-the-brand-mark--section-pattern--bullet-accent), [SESSION-LOG Session 47.2](SESSION-LOG.md), `app/(site)/page.tsx`, `lib/__tests__/visual-regression.test.ts`.
+
+---
+
+## ADR-040 — Brand glyph is the classic red/white Pokeball; section pattern density reduced
+
+**Date:** 2026-05-29 (Session 47.3)
+**Status:** Accepted. Supersedes the **brand-glyph color** of [ADR-038](#adr-038--pokeball-as-the-brand-mark--section-pattern--bullet-accent) (navy monochrome → classic red/white) and iterates the **section-pattern density** of [ADR-039](#adr-039--pokeball-section-pattern-shape--density--opacity-iteration) (denser → looser). The Pokeball *geometry* (ADR-038/039), Fraunces wordmark, navy pill bullets, and the cream/navy/gold palette for chrome + text are unchanged.
+
+**Context.** Two pieces of founder feedback after Session 47.2: (a) the brand mark should be the **classic Pokémon red/white Pokeball**, not navy monochrome — the obvious, recognizable symbol; and (b) the "How it works" Pokeball pattern was still "too many pokeballs" at near-touching density.
+
+**Decision.**
+1. **Brand glyph → classic tri-color Pokeball.** `PokeballMark` gained a `tone` prop: `"classic"` = red top (#e63946), white bottom, navy "black" outline + center band, white center button; `"navy"` (default) = the prior navy monochrome. `LogoGlyph` (header / footer / favicon / app icons) uses `tone="classic"`. Regenerated `favicon.svg`, `icon.svg`, `apple-touch-icon.png`, `og-image.png`. Verified the 16px favicon reads as a red/white Pokeball.
+2. **Palette exception, scoped to the glyph.** ADR-029's cream/navy/gold discipline holds for all chrome, text, and UI. The brand glyph is the **one** sanctioned exception: a Pokeball only reads as a Pokeball in red/white, so the mark carries red (#e63946) — but nothing else does. "Black" on the glyph is rendered as foil-navy (#0f1e3a), the brand's near-black, to stay coherent and avoid a pure-#000 lint flag.
+3. **Pill bullets stay navy.** The Live + Verified-Seller pill bullets call `PokeballMark` with the default `tone="navy"` — small inline text accents, a separate design layer from the brand mark, kept on-palette.
+4. **Section pattern density reduced ~50%.** The `<pattern>` tile went from 34×68 (ball diameter = pitch, near-touching) to **48×96** (~1.4× ball-width pitch), so the balls breathe. Opacity unchanged (14% mobile / 20% desktop) — it was density, not opacity, that was loud. Pattern stays navy/white, "How it works" only. WCAG AA still holds (fewer navy pixels = same-or-better worst case; slate-over-navy ≈4.6:1).
+
+**Consequences.**
+- **Instantly recognizable brand mark.** The red/white Pokeball is unmistakable at favicon size; the wordmark + chrome stay restrained cream/navy.
+- **One documented palette break.** Red lives only in the glyph (logo/favicon/og). A visual-regression assertion pins the classic tone on the glyph and the navy default for bullets, so a refactor can't bleed red into chrome or recolor the bullets.
+- **Calmer section.** ~50% fewer Pokeballs in the "How it works" band; the texture reads as a light brand watermark, not wallpaper.
+- **No scope creep.** No pill-bullet recolor, no pattern on other sections, no chrome/text/UI palette change.
+
+**Cross-refs.** [ADR-038](#adr-038--pokeball-as-the-brand-mark--section-pattern--bullet-accent), [ADR-039](#adr-039--pokeball-section-pattern-shape--density--opacity-iteration), [ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness), [SESSION-LOG Session 47.3](SESSION-LOG.md), `components/brand/logo.tsx`, `scripts/gen-brand-assets.mjs`.
 
 ---
 

@@ -212,13 +212,15 @@ function PokeballPattern() {
           {/* white center button (clasp), ringed by the navy band */}
           <rect x="7" y="7" width="2" height="2" fill="#ffffff" />
         </g>
-        {/* half-drop stagger; ball diameter 34 = pitch, so balls near-touch.
-            The second row's ball is drawn on both vertical edges so it
-            reads whole across the tile seam. */}
-        <pattern id="foil-pokeball" patternUnits="userSpaceOnUse" width="34" height="68">
-          <use href="#foil-pb" transform="translate(0 0) scale(2.125)" />
-          <use href="#foil-pb" transform="translate(-17 34) scale(2.125)" />
-          <use href="#foil-pb" transform="translate(17 34) scale(2.125)" />
+        {/* half-drop stagger; ADR-040 (Session 47.3) loosened the spacing —
+            ball diameter 34 on a 48px pitch (~1.4× ball width) so the
+            balls breathe ("too many pokeballs" feedback), ~50% fewer than
+            the near-touching 47.2 packing. The second row's ball is drawn
+            on both vertical edges so it reads whole across the tile seam. */}
+        <pattern id="foil-pokeball" patternUnits="userSpaceOnUse" width="48" height="96">
+          <use href="#foil-pb" transform="translate(7 7) scale(2.125)" />
+          <use href="#foil-pb" transform="translate(-17 55) scale(2.125)" />
+          <use href="#foil-pb" transform="translate(31 55) scale(2.125)" />
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#foil-pokeball)" />

@@ -1,18 +1,21 @@
-// ADR-038 — navy pixel Pokeball brand glyph + "Foil" wordmark.
+// ADR-040 — Pokeball brand glyph + "Foil" wordmark.
 //
-// Session 47.1 replaced the holofoil "spark" (ADR-036) with an 8-bit
-// pixel Pokeball rendered entirely in foil-navy: top half + center band
-// (with a cream button) at full navy, bottom half at 75% navy for a
-// two-tone read. No red, no white — it stays on the cream/navy/gold
-// palette (the only non-navy is the cream button, which reads as the
-// Pokeball's clasp). `shape-rendering: crispEdges` keeps the pixels sharp
-// at every size, including the 16px favicon.
-//
-// Sizes ladder (sm/md/lg) so the same glyph serves footer (sm), header
-// (md), and hero/marquee (lg). PokeballMark is exported standalone for
-// reuse as an inline bullet (the hero pills) at an arbitrary px size.
+// The glyph is an 8-bit pixel Pokeball on a 16×16 grid (same geometry as
+// the "How it works" section pattern, just at brand-mark scale). It has
+// two tones:
+//   - "classic" (the brand mark / favicon / app icons): classic Pokémon
+//     red top (#e63946), white bottom, navy "black" outline + center band,
+//     white center button. Per ADR-040 the brand glyph is the one place
+//     the cream/navy/gold palette discipline is relaxed — the Pokeball
+//     reads as a Pokeball only in red/white.
+//   - "navy" (default; the inline pill bullets): navy dome + white bottom,
+//     monochrome, so the small text accents stay on-palette.
+// navy (#0f1e3a) stands in for "black" (the brand's near-black) on the
+// outline/band/button-ring. `shape-rendering: crispEdges` keeps the
+// pixels sharp at every size, including the 16px favicon.
 
 type Size = "sm" | "md" | "lg";
+type Tone = "navy" | "classic";
 
 const GLYPH_PX: Record<Size, number> = {
   sm: 12,
@@ -32,11 +35,15 @@ const GAP_CLASS: Record<Size, string> = {
   lg: "gap-2.5",
 };
 
-/** The pixel Pokeball, drawn on a 7×7 grid. Reusable at any px size. */
-export function PokeballMark({ px = 14 }: { px?: number }) {
+/**
+ * The pixel Pokeball, on a 16×16 grid. `tone="classic"` = red/white brand
+ * mark; `tone="navy"` (default) = navy monochrome for inline bullets.
+ */
+export function PokeballMark({ px = 14, tone = "navy" }: { px?: number; tone?: Tone }) {
+  const topFill = tone === "classic" ? "#e63946" : "#0f1e3a";
   return (
     <svg
-      viewBox="0 0 7 7"
+      viewBox="0 0 16 16"
       width={px}
       height={px}
       role="presentation"
@@ -44,21 +51,44 @@ export function PokeballMark({ px = 14 }: { px?: number }) {
       shapeRendering="crispEdges"
       className="inline-block shrink-0"
     >
-      {/* top half + center band — full navy */}
+      {/* navy disc = outline + center band ("black") */}
       <g fill="#0f1e3a">
-        <rect x="2" y="0" width="3" height="1" />
-        <rect x="1" y="1" width="5" height="1" />
-        <rect x="0" y="2" width="7" height="1" />
-        <rect x="0" y="3" width="7" height="1" />
+        <rect x="6" y="0" width="4" height="1" />
+        <rect x="4" y="1" width="8" height="1" />
+        <rect x="3" y="2" width="10" height="1" />
+        <rect x="2" y="3" width="12" height="1" />
+        <rect x="2" y="4" width="12" height="1" />
+        <rect x="1" y="5" width="14" height="1" />
+        <rect x="1" y="6" width="14" height="1" />
+        <rect x="0" y="7" width="16" height="1" />
+        <rect x="0" y="8" width="16" height="1" />
+        <rect x="1" y="9" width="14" height="1" />
+        <rect x="1" y="10" width="14" height="1" />
+        <rect x="2" y="11" width="12" height="1" />
+        <rect x="2" y="12" width="12" height="1" />
+        <rect x="3" y="13" width="10" height="1" />
+        <rect x="4" y="14" width="8" height="1" />
+        <rect x="6" y="15" width="4" height="1" />
       </g>
-      {/* bottom half — navy at 75% for the two-tone read */}
-      <g fill="#0f1e3a" opacity="0.75">
-        <rect x="0" y="4" width="7" height="1" />
-        <rect x="1" y="5" width="5" height="1" />
-        <rect x="2" y="6" width="3" height="1" />
+      {/* top dome interior — red (classic) or navy (navy tone) */}
+      <g fill={topFill}>
+        <rect x="5" y="1" width="6" height="1" />
+        <rect x="4" y="2" width="8" height="1" />
+        <rect x="3" y="3" width="10" height="1" />
+        <rect x="3" y="4" width="10" height="1" />
+        <rect x="2" y="5" width="12" height="1" />
+        <rect x="2" y="6" width="12" height="1" />
       </g>
-      {/* center button (clasp) */}
-      <rect x="3" y="3" width="1" height="1" fill="#f8f5f0" />
+      {/* white bottom interior — inset 1px so the navy outline survives */}
+      <g fill="#ffffff">
+        <rect x="3" y="11" width="10" height="1" />
+        <rect x="3" y="12" width="10" height="1" />
+        <rect x="4" y="13" width="8" height="1" />
+        <rect x="5" y="14" width="6" height="1" />
+        <rect x="7" y="15" width="2" height="1" />
+      </g>
+      {/* white center button (clasp), ringed by the navy band */}
+      <rect x="7" y="8" width="2" height="2" fill="#ffffff" />
     </svg>
   );
 }
@@ -67,7 +97,7 @@ export function LogoGlyph({ size = "md" }: { size?: Size }) {
   const px = GLYPH_PX[size];
   return (
     <span aria-hidden className="inline-block shrink-0" style={{ width: px, height: px }}>
-      <PokeballMark px={px} />
+      <PokeballMark px={px} tone="classic" />
     </span>
   );
 }
