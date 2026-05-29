@@ -8,6 +8,27 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-29 — Session 49.2: PokeTrace UUID gap fully closed (205 → 207/207) via market=EU fallback + cardmarket render — [ADR-042](DECISIONS.md#adr-042--poketrace-per-variant-uuid-caching-search-then-bake--variant-aware-sold-history)
+
+**Why.** The 2 cards I called "vendor gaps" in 49.1 weren't — the founder's catalog browse showed both exist in PokeTrace, EU-only. My 49.1 matcher always queried `market=US`, which filtered them out.
+
+**Verified-before-building (AGENTS.md).** Probed `market=EU`: both exist (`eu_274781_holo` = LC Muk Holo #16; `eu_576756` = Celebrations Mew #11). **But** their prices are **cardmarket-only, single `AGGREGATED` tier, no eBay/TCGplayer, no per-condition tiers, no saleCount** (LC Muk avg30d €61.25; Mew €2.33). Since the panel + `getSoldHistory` read only eBay/TCGplayer per-condition tiers, baking the UUID alone would NOT render them — the panel would still degrade. This contradicted the goal's "no panel changes" fence (the success criterion was unachievable without a render-path change), so I surfaced the evidence and the user chose **"extend the render path to cardmarket."** Also verified the cardmarket `AGGREGATED` block is returned under `?market=US`, so no per-variant market needs storing.
+
+**What landed.**
+- **`lib/poketrace/by-uuid.ts`**: `cardmarket` added as a third `SoldSource`; `parseSoldHistory` reads it.
+- **`components/cards/sold-history-panel.tsx`**: `cardmarket` in `SOURCES`; headline falls back to the `AGGREGATED` tier when no per-condition tier exists; table renders a single "Market average" row for such cards; the "n= sales" omits cleanly when saleCount is absent.
+- **`scripts/bake-poketrace-uuids.ts`**: `searchCards` gained a market param + JSDoc; the miss-retry walks a **US → EU → no-market** fallback ladder.
+- **`lib/cards/poketrace-overrides.json`**: added the 2 EU UUIDs (`base6-16` → `eu_274781_holo`, `cel25-11` → `eu_576756`), both `holofoil`.
+- Re-ran `--refresh`: **207/207 matched, 0 misses** (351 variants). `docs/poketrace-bake-misses.md` updated (note: resolved via market=EU fallback).
+
+**Per-card live verification** (deploy + foiltcg.com): _[filled in below after Vercel Ready]_
+
+**Closure-gate (R-011 strict).** Full suite green · `tsc` clean · `npm run build` exit 0 · `compliance:check` 6/6 · `design:lint` 0 new · `/security-review` RUN · push confirmed · Vercel Ready before live-verify.
+
+**Correction to 49.1:** my "PokeTrace catalog gap" conclusion was wrong — it was a market-partitioning artifact of always querying US. Lesson folded into ADR-042 (the matcher must fall back across markets).
+
+---
+
 ## 2026-05-29 — Session 49.1: close the PokeTrace UUID gap (199 → 205/207; 2 documented vendor gaps) — [ADR-042](DECISIONS.md#adr-042--poketrace-per-variant-uuid-caching-search-then-bake--variant-aware-sold-history)
 
 **Why.** Session 49 left 8 cards unmatched. (Note: the goal framed 5 of them as hero alt-arts — that was stale; the slug-suffix fix in Session 49 already matched Moonbreon/Rayquaza/Giratina/Lugia/CZ-Charizards, and Moonbreon was live-verified showing sold data. The actual 8 were 6× SV-151 special/illustration rares + LC Muk + Celebrations Mew.)

@@ -1,5 +1,5 @@
 {
-  "bakedAt": "2026-05-29T22:18:20.711Z",
+  "bakedAt": "2026-05-29T22:46:42.873Z",
   "cards": {
     "base1-2": {
       "id": "base1-2",
@@ -2997,7 +2997,18 @@
       "number": "16",
       "image": "https://images.pokemontcg.io/base6/16_hires.png",
       "rarity": "Rare Holo",
-      "releaseDate": "2002/05/24"
+      "releaseDate": "2002/05/24",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "eu_274781_holo",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "base6-18": {
       "id": "base6-18",
@@ -4798,7 +4809,18 @@
       "number": "11",
       "image": "https://images.pokemontcg.io/cel25/11_hires.png",
       "rarity": "Rare Holo",
-      "releaseDate": "2021/10/08"
+      "releaseDate": "2021/10/08",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "eu_576756",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "cel25-16": {
       "id": "cel25-16",

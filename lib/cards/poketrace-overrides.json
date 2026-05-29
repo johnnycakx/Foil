@@ -17,5 +17,11 @@
   ],
   "sv3pt5-205-mew-ex": [
     { "variantKey": "holofoil", "poketraceId": "019bffab-58b9-77cf-912b-c5d8699e7d18", "variantLabel": "Holofoil", "isHolo": true, "isFirstEdition": false, "isShadowless": false, "isUnlimited": false }
+  ],
+  "base6-16-muk": [
+    { "variantKey": "holofoil", "poketraceId": "eu_274781_holo", "variantLabel": "Holofoil", "isHolo": true, "isFirstEdition": false, "isShadowless": false, "isUnlimited": false }
+  ],
+  "cel25-11-mew": [
+    { "variantKey": "holofoil", "poketraceId": "eu_576756", "variantLabel": "Holofoil", "isHolo": true, "isFirstEdition": false, "isShadowless": false, "isUnlimited": false }
   ]
 }

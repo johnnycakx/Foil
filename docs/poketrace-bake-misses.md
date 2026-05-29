@@ -1,6 +1,6 @@
 # PokeTrace UUID bake — unmatched / ambiguous cards
 
-_Last bake: 2026-05-29T22:18:20.713Z_
+_Last bake: 2026-05-29T22:46:42.875Z_
 
 - `base1-1` (Alakazam / Base) — AMBIGUOUS: 2 duplicate variantKey(s) collapsed by saleCount; kept [holofoil, shadowless-holofoil]
 - `base1-4` (Charizard / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil, shadowless-holofoil]
@@ -13,5 +13,9 @@ _Last bake: 2026-05-29T22:18:20.713Z_
 - `gym2-4` (Erika's Venusaur / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
 - `gym2-14` (Rocket's Mewtwo / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
 - `gym2-15` (Rocket's Zapdos / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
-- `base6-16` (Muk / Legendary Collection #16) — **PokeTrace catalog gap**: PokeTrace has no Legendary Collection Muk in its catalog (set-scoped search returns 0). Graceful degradation accepted.
-- `cel25-11` (Mew / Celebrations #11) — **PokeTrace catalog gap**: PokeTrace's Celebrations set only carries Mew at #025/025 (secret), not the #11 base printing — number mismatch, not the same card. Graceful degradation accepted.
+
+---
+
+**207/207 catalog cards matched.** No true misses remain — every entry above is an AMBIGUOUS-but-matched case (two PokeTrace UUIDs derived the same variantKey; the higher-saleCount one was kept).
+
+_Resolved Session 49.2 via market=EU fallback:_ `base6-16` (Legendary Collection Muk → `eu_274781_holo`) and `cel25-11` (Celebrations Mew #11 → `eu_576756`) were not vendor gaps after all — PokeTrace's catalog is market-partitioned and these printings are EU-only (cardmarket-priced). The search ladder now falls back US → EU → no-market, and both are pinned in `lib/cards/poketrace-overrides.json`.

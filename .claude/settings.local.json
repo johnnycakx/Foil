@@ -170,7 +170,10 @@
       "Bash(echo \"EXIT:$?\")",
       "Bash(echo \"---EXIT:$?---\")",
       "WebFetch(domain:foiltcg.com)",
-      "Bash(awk 'NR>=1290' docs/DECISIONS.md)"
+      "Bash(awk 'NR>=1290' docs/DECISIONS.md)",
+      "Bash(grep -q BAKE_DONE /tmp/bakedone)",
+      "Bash(grep -q \"matched:\" \"C:\\\\Users\\\\John\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-John-dev-foil\\\\d0ff7c20-4968-477c-a199-5c7f5ac1b9a4\\\\tasks\\\\b5bom561i.output\")",
+      "Bash(break)"
     ]
   },
   "enableAllProjectMcpServers": true,

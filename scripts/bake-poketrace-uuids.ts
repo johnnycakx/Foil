@@ -95,8 +95,21 @@ async function sleep(ms: number): Promise<void> {
   await new Promise((r) => setTimeout(r, ms));
 }
 
-async function searchCards(name: string, setSlug?: string): Promise<PtCardLite[]> {
-  let url = `${BASE_URL}/cards?search=${encodeURIComponent(name)}&market=US&limit=50`;
+/**
+ * PokeTrace card search.
+ *
+ * Market fallback ladder (Session 49.2): PokeTrace's catalog is
+ * market-partitioned — some cards (vintage holos, Classic Collection) are
+ * systematically EU-only and never surface under `market=US`. The caller
+ * walks the ladder when a US search yields no match:
+ *   1. `market=US`  (default; the bulk of the catalog)
+ *   2. `market=EU`  (vintage / EU-only printings — `cardmarket`-priced)
+ *   3. no market filter (broadest possible search)
+ * Pass `market = null` for the no-filter rung.
+ */
+async function searchCards(name: string, setSlug?: string, market: string | null = "US"): Promise<PtCardLite[]> {
+  let url = `${BASE_URL}/cards?search=${encodeURIComponent(name)}&limit=50`;
+  if (market) url += `&market=${encodeURIComponent(market)}`;
   if (setSlug) url += `&set=${encodeURIComponent(setSlug)}`;
   const res = await fetch(url, { headers: { "X-API-Key": KEY, Accept: "application/json" } });
   if (!res.ok) throw new Error(`PokeTrace ${res.status}: ${(await res.text().catch(() => "")).slice(0, 160)}`);
@@ -182,15 +195,24 @@ async function main(): Promise<void> {
     // slugify(setName): Jungle→jungle, Neo Genesis→neo-genesis, …) and
     // re-match the merged candidate pool.
     if (result.status === "miss" || result.variants.length === 0) {
-      const setSlug = slugifyName(setName);
-      if (setSlug) {
+      const setSlug = slugifyName(setName) || undefined;
+      // Market fallback ladder: US set-scoped → EU set-scoped → no-market.
+      // Vintage / Classic-Collection cards are EU-only (cardmarket-priced).
+      const rungs: Array<[setSlug: string | undefined, market: string | null]> = [
+        [setSlug, "US"],
+        [setSlug, "EU"],
+        [undefined, "EU"],
+        [undefined, null],
+      ];
+      for (const [rungSet, rungMarket] of rungs) {
+        if (result.status !== "miss" && result.variants.length > 0) break;
         try {
           await sleep(REQ_INTERVAL_MS);
-          const setScoped = await searchCards(name, setSlug);
-          candidates = mergeCandidates(candidates, setScoped);
+          const more = await searchCards(name, rungSet, rungMarket);
+          candidates = mergeCandidates(candidates, more);
           result = matchCatalogCard({ name, setName, setTotal, number }, candidates);
         } catch {
-          /* keep the name-only miss */
+          /* keep the prior miss; try the next rung */
         }
       }
     }

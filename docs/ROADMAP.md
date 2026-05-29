@@ -1,6 +1,6 @@
 # Foil Roadmap
 
-**Last updated:** 2026-05-29 (Session 49.1 — closed the PokeTrace UUID gap to **205/207** via `lib/cards/poketrace-overrides.json` (6 SV-151 SIRs hand-resolved; bake consults overrides before search). Remaining 2 = documented PokeTrace catalog gaps (LC Muk, Celebrations Mew), graceful degradation. Builds on Session 49 (ADR-042). **Session 49b followup (NEXT):** per-variant watchlist write path — DB migration + eBay query-per-variant + alert-email update. Other open followups: optimize the 8 above-the-fold hero PNGs (Session-45 audit); coral-error-text + `slate/60`-placeholder a11y fixes on `/start` + `/upload`.)
+**Last updated:** 2026-05-29 (Session 49.2 — PokeTrace UUID coverage now **207/207**. The last 2 (LC Muk, Celebrations Mew) were EU-only, not vendor gaps: bake `searchCards` now falls back US → EU → no-market, the read path reads `cardmarket`/`AGGREGATED` (PokeTrace is market-partitioned), and both EU UUIDs are pinned in `poketrace-overrides.json`. Builds on 49/49.1 (ADR-042). **Session 49b followup (NEXT):** per-variant watchlist write path — DB migration + eBay query-per-variant + alert-email update. Other open followups: optimize the 8 above-the-fold hero PNGs (Session-45 audit); coral-error-text + `slate/60`-placeholder a11y fixes on `/start` + `/upload`.)
 **Owner:** John Craig (solo)
 **Cadence:** Updated at the end of every goal. See [Project Second Brain](../CLAUDE.md#project-second-brain) for the auto-maintenance contract.
 

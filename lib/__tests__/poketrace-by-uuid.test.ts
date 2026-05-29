@@ -28,16 +28,27 @@ function badFetch(status: number): typeof fetch {
   return (async () => ({ ok: false, status, json: async () => ({}) }) as unknown as Response) as unknown as typeof fetch;
 }
 
-test("parseSoldHistory builds bySource for ebay + tcgplayer only", () => {
+test("parseSoldHistory builds bySource for ebay + tcgplayer + cardmarket (Session 49.2)", () => {
   const h = parseSoldHistory("uuid-1", SAMPLE_CARD);
   assert.equal(h.uuid, "uuid-1");
   assert.ok(h.bySource.ebay);
   assert.ok(h.bySource.tcgplayer);
-  // cardmarket is not a SoldSource → excluded.
-  assert.equal((h.bySource as Record<string, unknown>).cardmarket, undefined);
+  // cardmarket is now a SoldSource (EU-only cards surface only here).
+  assert.ok(h.bySource.cardmarket, "cardmarket source must be parsed");
+  assert.equal(h.bySource.cardmarket!.NEAR_MINT.avg, 290);
   assert.equal(h.bySource.ebay!.NEAR_MINT.avg30d, 508.15);
   assert.equal(h.bySource.ebay!.NEAR_MINT.saleCount, 34);
   assert.equal(h.bySource.ebay!.PSA_10.avg30d, 30100);
+});
+
+test("parseSoldHistory: EU/cardmarket-only card surfaces its AGGREGATED tier", () => {
+  const euCard = { prices: { cardmarket: { AGGREGATED: { avg: 82.41, low: 25, high: null, avg1d: 73, avg7d: 86.5, avg30d: 61.25 } } } };
+  const h = parseSoldHistory("eu_274781_holo", euCard);
+  assert.equal(h.bySource.ebay, undefined);
+  assert.equal(h.bySource.tcgplayer, undefined);
+  assert.ok(h.bySource.cardmarket);
+  assert.equal(h.bySource.cardmarket!.AGGREGATED.avg30d, 61.25);
+  assert.equal(h.bySource.cardmarket!.AGGREGATED.saleCount, null);
 });
 
 test("parseSoldHistory tolerates missing prices", () => {

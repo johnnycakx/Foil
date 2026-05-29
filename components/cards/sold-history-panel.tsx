@@ -25,7 +25,9 @@ const RAW_TIERS: ReadonlyArray<[key: string, label: string]> = [
   ["DAMAGED", "Damaged"],
 ];
 const GRADED_PREFERENCE = ["PSA_10", "PSA_9", "BGS_10", "CGC_10"] as const;
-const SOURCES: readonly SoldSource[] = ["ebay", "tcgplayer"];
+// ebay/tcgplayer first (per-condition US tiers); cardmarket last — it carries
+// the EU "AGGREGATED" roll-up for market-partitioned cards (Session 49.2).
+const SOURCES: readonly SoldSource[] = ["ebay", "tcgplayer", "cardmarket"];
 
 function money(n: number | null | undefined): string {
   if (typeof n !== "number" || !Number.isFinite(n)) return "—";
@@ -105,8 +107,10 @@ export async function SoldHistoryPanel({
   const selected = explicit ?? ranked[0];
 
   const sel = selected.history;
-  // Headline raw tier: first raw tier the selected variant has (NM-first).
-  const headlineTierKey = RAW_TIERS.find(([k]) => statFor(sel, k))?.[0] ?? null;
+  // Headline tier: first per-condition raw tier (NM-first); else fall back to
+  // the cardmarket AGGREGATED roll-up (EU-only cards have only that).
+  const hasRawTier = RAW_TIERS.some(([k]) => statFor(sel, k));
+  const headlineTierKey = RAW_TIERS.find(([k]) => statFor(sel, k))?.[0] ?? (statFor(sel, "AGGREGATED") ? "AGGREGATED" : null);
   const headline = headlineTierKey ? statFor(sel, headlineTierKey) : null;
   const trend =
     headline && headline.avg7d != null && headline.avg30d != null
@@ -198,6 +202,19 @@ export async function SoldHistoryPanel({
                     </tr>
                   );
                 })}
+                {/* EU/cardmarket-only cards have no per-condition tiers — show
+                    the AGGREGATED market roll-up as a single row instead. */}
+                {!hasRawTier && (() => {
+                  const s = statFor(sel, "AGGREGATED");
+                  if (!s) return null;
+                  return (
+                    <tr key="AGGREGATED" className="border-b border-foil-navy/5">
+                      <td className="py-2 text-foil-navy">Market average</td>
+                      <td className="py-2 text-right font-mono tabular-nums text-foil-navy">{money(s.avg30d ?? s.avg)}</td>
+                      <td className="py-2 text-right font-mono tabular-nums text-foil-slate">{s.saleCount ?? "—"}</td>
+                    </tr>
+                  );
+                })()}
                 {gradedTierKey && (() => {
                   const s = statFor(sel, gradedTierKey);
                   if (!s) return null;

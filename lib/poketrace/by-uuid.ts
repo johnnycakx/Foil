@@ -26,7 +26,12 @@ export type SoldStat = {
   saleCount: number | null;
 };
 
-export type SoldSource = "ebay" | "tcgplayer";
+// ebay/tcgplayer carry per-condition US sold tiers; cardmarket carries the
+// EU "AGGREGATED" roll-up. Session 49.2: PokeTrace's catalog is
+// market-partitioned — some cards (vintage / Classic Collection) are EU-only
+// and surface only under `cardmarket`, so the read path must include it.
+export type SoldSource = "ebay" | "tcgplayer" | "cardmarket";
+const SOLD_SOURCES: readonly SoldSource[] = ["ebay", "tcgplayer", "cardmarket"];
 
 export type SoldHistory = {
   uuid: string;
@@ -59,7 +64,7 @@ export function parseSoldHistory(uuid: string, card: unknown): SoldHistory {
   const out: SoldHistory = { uuid, fetchedAt: Date.now(), bySource: {} };
   const prices = (card as { prices?: Record<string, Record<string, RawSnap>> } | null)?.prices;
   if (!prices || typeof prices !== "object") return out;
-  for (const source of ["ebay", "tcgplayer"] as const) {
+  for (const source of SOLD_SOURCES) {
     const tiers = prices[source];
     if (!tiers || typeof tiers !== "object") continue;
     const parsed: Record<string, SoldStat> = {};
