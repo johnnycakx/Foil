@@ -20,6 +20,7 @@ import { Breadcrumb, type BreadcrumbItem } from "@/components/breadcrumb";
 import { CardMetadataBlock } from "@/components/card-metadata-block";
 import { CardVariantsSection } from "@/components/card-variants-section";
 import { LiveTimestamp } from "@/components/live-timestamp";
+import { SoldHistoryPanel } from "@/components/cards/sold-history-panel";
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = false;
@@ -105,10 +106,13 @@ export async function generateMetadata({
 
 export default async function CardPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ v?: string }>;
 }) {
   const { slug } = await params;
+  const { v: selectedVariant } = await searchParams;
   const entry = getCatalogEntry(slug);
   if (!entry) notFound();
 
@@ -235,6 +239,16 @@ export default async function CardPage({
 
         {/* Variants + market range (TCGplayer) — Session 41 / ADR-030. */}
         <CardVariantsSection card={card} currentBestPriceUsd={best?.price ?? null} />
+
+        {/* Sold-history (PokeTrace) — Session 49 / ADR-042. Variant-aware
+            30-day sold averages, between the variants section and the
+            buy-now CTA. SSR-only; the ?v= chip links re-render the page. */}
+        <SoldHistoryPanel
+          slug={slug}
+          cardName={card.name}
+          variants={card.variants}
+          selectedKey={selectedVariant}
+        />
 
         {/* Live timestamp chip — sits above the Best Listing block as a
             data-freshness affordance. Client-side ticks every 10s. */}

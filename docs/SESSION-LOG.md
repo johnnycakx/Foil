@@ -8,6 +8,28 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-29 — Session 49: PokeTrace per-variant UUID bake + variant-aware sold-history on /cards/[slug] — [ADR-042](DECISIONS.md#adr-042--poketrace-per-variant-uuid-caching-search-then-bake--variant-aware-sold-history)
+
+**Why.** Per-card pages showed live eBay listings but no "what's it actually been selling for" reference. PokeTrace has 30-day sold averages, but keys cards by UUID (not our SDK ids) and splits print editions into separate UUIDs. This session bakes the UUIDs and renders the sold-history.
+
+**API verification first (AGENTS.md).** Probed the live API before writing any matching logic. The revised goal assumed a per-edition `isFirstEdition`/`isShadowless` field — **it doesn't exist**. Editions are encoded as distinct set slugs (`base-set` vs `base-set-shadowless`) + the `variant` string (`Holofoil`/`Unlimited_Holofoil`/`Reverse_Holofoil`). Surfaced this to the user with evidence; confirmed deriving variantKey from slug+variant and resolving set families empirically. Each `prices[source][tier]` carries `avg/low/high/avg1d/avg7d/avg30d/median*/saleCount` (validated the time-windowed fields the panel needs).
+
+**What landed.**
+- **`lib/poketrace/variant.ts`** (pure, unit-tested): `deriveVariant` (slug+variant → canonical variantKey + edition booleans; slug wins) and `matchCatalogCard` (accept = numerator match AND (denom==SDK total OR exact set name OR slug-suffix)). The denom gate disambiguates Base Set (102) from Base Set 2 (130) and groups Shadowless (also 004/102); slug-suffix rescues modern alt-arts (215/203 vs SDK total 237).
+- **`scripts/bake-poketrace-uuids.ts`** (`npm run bake:poketrace-uuids`): search-then-match per catalog card, writes `variants[]` to `lib/cards/baked-metadata.json`, set-scoped retry on miss, idempotent (`--refresh`), ~200ms/req, misses → `docs/poketrace-bake-misses.md`. **Ran it: 199/207 matched (227 variants).** 8 misses = 151 special-illustration-rares (SDK# ≠ PokeTrace#) + 2 promo edge cases, logged. Flagships all matched (Charizard incl. Shadowless, Moonbreon, Rayquaza, Giratina, Lugia, CZ Charizards).
+- **`lib/poketrace/by-uuid.ts`**: `getSoldHistory(uuid)` → simplified `SoldHistory`, 1h stale-while-revalidate cache, soft-fails to null. `CardMetadata.variants` exposed (baked-only field; attached from baked snapshot even on the live pokemontcg.io path).
+- **`components/cards/sold-history-panel.tsx`** (Server Component, SSR-only): variant selector (`?v=` chip links, default = most-traded), 30-day sold-avg headline + 7d trend arrow + per-tier table (raw NM→DMG + top graded), cream/navy/gold + Pokeball bullet, graceful degradation. Mounted between the Session-41 variants section and the buy-now CTA on `/cards/[slug]` (added `searchParams` to the page).
+
+**Preserved:** hero card fan, navy/red Pokeball logo + pattern, Fraunces, reduced-motion + contrast fixes.
+
+**Closure-gate (R-011 strict).** Full suite green (incl. 18 new tests: matcher, by-uuid, panel/baked-data) · `tsc` clean · `npm run build` exit 0 · `compliance:check` 6/6 · `design:lint` 0 new · `/security-review` RUN · push confirmed · Vercel deploy Ready. [Detail inline at session end.]
+
+**Doc updates.** This entry; [ADR-042](DECISIONS.md); `docs/poketrace-bake-misses.md`; ROADMAP. **Session 49b followup:** watchlist write path — per-variant DB migration + eBay query-per-variant + alert-email update (explicitly out of scope here).
+
+**Note:** the untracked `docs/CAPITAL-DEPLOYMENT-PLAN.md` (unrelated, pre-existing) remains uncommitted.
+
+---
+
 ## 2026-05-29 — Session 47.3: classic red/white Pokeball logo + looser section pattern — [ADR-040](DECISIONS.md#adr-040--brand-glyph-is-the-classic-redwhite-pokeball-section-pattern-density-reduced)
 
 **Why.** Founder calls after 47.2: (1) the brand mark should be the **classic Pokémon red/white Pokeball**, not navy monochrome; (2) the "How it works" pattern was still "too many pokeballs."

@@ -30,6 +30,7 @@ const CACHE_TTL_SECONDS = 86_400; // 24h — metadata is stable, no need to refe
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { PoketraceVariant } from "../poketrace/variant.ts";
 
 type BakedSnapshot = {
   bakedAt: string;
@@ -68,6 +69,10 @@ function loadBakedSnapshot(): BakedSnapshot {
         weaknesses: Array.isArray(c.weaknesses) ? c.weaknesses : [],
         tcgplayerPrices: c.tcgplayerPrices && typeof c.tcgplayerPrices === "object" ? c.tcgplayerPrices : {},
         tcgplayerUpdatedAt: typeof c.tcgplayerUpdatedAt === "string" ? c.tcgplayerUpdatedAt : "",
+        // Session 49 / ADR-042: baked PokeTrace per-variant UUIDs. Default
+        // [] for pre-Session-49 snapshot entries so component null-checks
+        // treat them as "no sold-history data".
+        variants: Array.isArray(c.variants) ? (c.variants as PoketraceVariant[]) : [],
       };
     }
     return {
@@ -207,6 +212,12 @@ export type CardMetadata = {
   /** ISO date when tcgplayerPrices was last refreshed upstream (e.g.
    *  "2026/05/26"). Empty when missing. */
   tcgplayerUpdatedAt: string;
+  /** Baked PokeTrace per-variant UUIDs (Session 49 / ADR-042). One entry per
+   *  print edition/finish PokeTrace knows about (Holofoil, Shadowless, etc.).
+   *  Optional on the type so older CardMetadata literals (tests) stay valid;
+   *  the baked-snapshot normalizer / live-attach path always populate it, and
+   *  consumers should treat `undefined` as `[]`. */
+  variants?: PoketraceVariant[];
   /** True when the record was built from the soft-fail fallback path. */
   fallback?: true;
 };
@@ -266,7 +277,11 @@ export async function getCardMetadata(input: GetCardMetadataInput): Promise<Card
     if (usingDefaultFetch && BAKED.cards[id]) return BAKED.cards[id];
     return minimalRecord(id);
   }
-  return parseCard(raw, id);
+  const parsed = parseCard(raw, id);
+  // PokeTrace variants are a baked-only field (live pokemontcg.io doesn't
+  // carry them), so attach from the baked snapshot on the default path.
+  if (usingDefaultFetch) parsed.variants = BAKED.cards[id]?.variants ?? [];
+  return parsed;
 }
 
 type RawCard = {
@@ -378,6 +393,9 @@ function parseCard(raw: RawCard, requestedId: string): CardMetadata {
     weaknesses,
     tcgplayerPrices,
     tcgplayerUpdatedAt: typeof raw.tcgplayer?.updatedAt === "string" ? raw.tcgplayer.updatedAt : "",
+    // Live pokemontcg.io has no PokeTrace data; getCardMetadata attaches the
+    // baked variants from BAKED on the default-fetch path.
+    variants: [],
   };
 }
 
@@ -400,6 +418,7 @@ function minimalRecord(id: string): CardMetadata {
     weaknesses: [],
     tcgplayerPrices: {},
     tcgplayerUpdatedAt: "",
+    variants: [],
     fallback: true,
   };
 }

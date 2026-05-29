@@ -1483,6 +1483,27 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 
 **Cross-refs.** [ADR-038](#adr-038--pokeball-as-the-brand-mark--section-pattern--bullet-accent), [ADR-039](#adr-039--pokeball-section-pattern-shape--density--opacity-iteration), [ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness), [SESSION-LOG Session 47.3](SESSION-LOG.md), `components/brand/logo.tsx`, `scripts/gen-brand-assets.mjs`.
 
+## ADR-042 — PokeTrace per-variant UUID caching (search-then-bake) + variant-aware sold-history
+
+**Date:** 2026-05-29 (Session 49)
+**Status:** Accepted. New surface (per-card sold-history reference layer). Doesn't supersede prior ADRs.
+
+**Context.** PokeTrace (sold-price source) identifies cards by **UUID** (`019bff77-…`), not by Pokemon TCG SDK id, so there's no direct lookup from our catalog. Worse, a single Foil catalog card maps to **several** PokeTrace UUIDs — one per print edition/finish (Base Set Charizard = Unlimited Holo + Shadowless Holo + … ; Gym/Neo holos = 1st Edition + Unlimited). Empirically verified against the live API (Session 49): PokeTrace has **no edition field**; card keys are exactly `id, name, cardNumber, set, variant, rarity, productType, productFamily, image, game, market, currency, refs, prices, lastUpdated`. Editions are encoded as (a) distinct **set slugs** (`base-set` vs `base-set-shadowless`) and (b) the **`variant` string** (`Holofoil` / `Unlimited_Holofoil` / `Reverse_Holofoil` / `Normal`). Each `prices[source][tier]` snapshot carries `avg / low / high / avg1d / avg7d / avg30d / median3d/7d/30d / saleCount`.
+
+**Decision.**
+1. **Search-then-bake.** `scripts/bake-poketrace-uuids.ts` (npm `bake:poketrace-uuids`) searches PokeTrace by name per catalog card and writes a `variants[]` array onto the card in `lib/cards/baked-metadata.json`. Idempotent (`--refresh` re-bakes); misses + ambiguous matches logged to `docs/poketrace-bake-misses.md`; paced ~200ms/req (under the 60/10s Scale burst).
+2. **Matcher (`lib/poketrace/variant.ts`, pure + unit-tested).** Accept a candidate when its **numerator** matches AND (its **denominator == our SDK set total** OR its **set name matches exactly** OR its **set slug ends with our slugified set name**). The denominator gate disambiguates vintage reprints (Base Set 102 vs Base Set 2 130) and naturally groups editions (Shadowless is also 004/102); the exact-name / slug-suffix gates rescue modern alt-arts whose printed denominator diverges from the SDK total (215/203 vs SDK 237). `deriveVariant` parses `set.slug` + `variant` into a canonical `variantKey` + `{isHolo,isFirstEdition,isShadowless,isUnlimited}` (slug-based edition wins over the variant string — PokeTrace's shadowless card mislabels its variant "Unlimited_Holofoil").
+3. **Read layer.** `lib/poketrace/by-uuid.ts::getSoldHistory(uuid)` fetches `/v1/cards/{uuid}`, returns a simplified `SoldHistory` (per source per tier: avg/low/high/avg1d/avg7d/avg30d/saleCount), with **1h stale-while-revalidate** in-process cache. Sold averages don't move minute-to-minute; live *listings* stay eBay-Browse-rendered (R-008) — this is the "what it's been selling for" layer, not a listing cache. `CardMetadata.variants` is a baked-only field; `getCardMetadata` attaches it from the baked snapshot even on the live-pokemontcg.io path.
+4. **Render.** `components/cards/sold-history-panel.tsx` (Server Component, SSR-only) shows a variant selector (chips are `?v=<key>` links that re-render the page; default = most-traded by saleCount×avg), a 30-day sold-avg headline + 7-day trend arrow, and a per-tier table (raw NM→DMG + top graded). Cream/navy/gold tokens, Pokeball pill bullet. Graceful degradation: no variants → muted "Live sold data not yet available"; a variant with no data → "—". Mounted between the Session-41 variants section and the buy-now CTA on `/cards/[slug]`.
+
+**Consequences.**
+- **Coverage: 199/207 catalog cards baked** (227+ variants). The 8 misses are 151 special-illustration-rares (SDK number 199/200/… diverges from PokeTrace's 006/182 — unmatchable by number) + a couple of promo edge cases, logged for manual follow-up. Flagships (Moonbreon, Rayquaza, Giratina, Lugia, Crown Zenith Charizards, Base Set Charizard incl. Shadowless) all matched.
+- **AGENTS.md discipline.** The goal's original premise (a per-edition `isFirstEdition`/`isShadowless` field) did not exist; the schema was verified by live probe before any baking, and the derivation was adapted to the real fields (confirmed with the user).
+- **Re-bake cadence.** UUIDs are stable; re-run `bake:poketrace-uuids --refresh` only when the catalog grows or PokeTrace re-IDs a card.
+- **Out of scope (Session 49b):** the watchlist write path — per-variant DB migration, eBay query augmentation per variant, and alert-email update — is deferred.
+
+**Cross-refs.** `lib/poketrace/variant.ts`, `lib/poketrace/by-uuid.ts`, `scripts/bake-poketrace-uuids.ts`, `components/cards/sold-history-panel.tsx`, `lib/cards/baked-metadata.json`, `docs/poketrace-bake-misses.md`, [SESSION-LOG Session 49](SESSION-LOG.md), [ADR-021](#adr-021--epn-as-v1-live-listing-source-browse-api-deferred) (R-008 no-cache for listings — sold averages are distinct).
+
 ---
 
 ## How to add an ADR
