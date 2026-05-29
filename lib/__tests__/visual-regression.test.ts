@@ -390,9 +390,8 @@ test("Hero: the grail showcase renders ABOVE the H1 (ADR-037)", () => {
   assert.ok(cardsIdx < h1Idx, "the HERO_CARDS showcase must render before the H1");
 });
 
-test("How it works: navy Pokeball pattern band, that section only (ADR-038)", () => {
+test("How it works: navy+white Pokeball pattern band, that section only (ADR-039)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // Session 47.1 replaced the gold floral with a navy Pokeball pattern.
   assert.doesNotMatch(src, /function FloralPattern/, "FloralPattern should be gone");
   assert.doesNotMatch(src, /foil-floral/, "the floral pattern id should be gone");
   assert.match(src, /function PokeballPattern/, "PokeballPattern component must exist");
@@ -400,7 +399,12 @@ test("How it works: navy Pokeball pattern band, that section only (ADR-038)", ()
   // Rendered exactly once — How it works is the only textured section.
   const uses = (src.match(/<PokeballPattern\s*\/>/g) ?? []).length;
   assert.equal(uses, 1, "PokeballPattern should render exactly once (How it works only)");
-  // Navy motif at a subtle opacity (≈4.5% mobile, ≈6% desktop) for AA contrast.
-  assert.match(src, /opacity-\[0\.045\]\s+sm:opacity-\[0\.06\]/);
-  assert.match(src, /fill="#0f1e3a"/i, "the Pokeball motif uses the foil-navy token value");
+  // ADR-039: two-tone (navy dome + white bottom) detailed pixel line work.
+  assert.match(src, /fill="#0f1e3a"/i, "navy dome/band/outline");
+  assert.match(src, /fill="#ffffff"/i, "white bottom half — the classic two-tone read");
+  assert.match(src, /<rect x="7" y="7" width="2" height="2" fill="#ffffff"/i, "white center button");
+  // ADR-039: density up + opacity up (≈14% mobile, ≈20% desktop). Pin both
+  // the bumped opacity and the tight half-drop tile (34×68, ball pitch 34).
+  assert.match(src, /opacity-\[0\.14\]\s+sm:opacity-\[0\.2\]/);
+  assert.match(src, /<pattern id="foil-pokeball" patternUnits="userSpaceOnUse" width="34" height="68"/);
 });

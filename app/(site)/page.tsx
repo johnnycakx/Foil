@@ -167,29 +167,58 @@ function Hero() {
 // (Replaced the Session-47 gold floral, which clashed with the Pokeball
 // brand direction.)
 function PokeballPattern() {
+  // Detailed 8-bit pixel Pokeball on a 16×16 grid (ADR-039): navy dome +
+  // navy center band, white bottom half (navy outline preserved by a 1px
+  // inset), and a white center button ringed in navy. On the cream
+  // surface the navy carries the line work and the white reads as the
+  // light lower half — the classic two-tone Pokeball. Tightly packed in a
+  // half-drop stagger (balls near-touching) at 14% mobile / 20% desktop.
   return (
     <svg
       aria-hidden
-      className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.045] sm:opacity-[0.06]"
+      className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.14] sm:opacity-[0.2]"
       shapeRendering="crispEdges"
     >
       <defs>
-        <g id="foil-pb-tile">
+        <g id="foil-pb">
+          {/* navy disc (full silhouette + outline + dome + band) */}
           <g fill="#0f1e3a">
-            <rect x="2" y="0" width="3" height="1" />
-            <rect x="1" y="1" width="5" height="1" />
-            <rect x="0" y="2" width="7" height="1" />
-            <rect x="0" y="3" width="7" height="1" />
+            <rect x="6" y="0" width="4" height="1" />
+            <rect x="4" y="1" width="8" height="1" />
+            <rect x="3" y="2" width="10" height="1" />
+            <rect x="2" y="3" width="12" height="1" />
+            <rect x="2" y="4" width="12" height="1" />
+            <rect x="1" y="5" width="14" height="1" />
+            <rect x="1" y="6" width="14" height="1" />
+            <rect x="0" y="7" width="16" height="1" />
+            <rect x="0" y="8" width="16" height="1" />
+            <rect x="1" y="9" width="14" height="1" />
+            <rect x="1" y="10" width="14" height="1" />
+            <rect x="2" y="11" width="12" height="1" />
+            <rect x="2" y="12" width="12" height="1" />
+            <rect x="3" y="13" width="10" height="1" />
+            <rect x="4" y="14" width="8" height="1" />
+            <rect x="6" y="15" width="4" height="1" />
           </g>
-          <g fill="#0f1e3a" opacity="0.75">
-            <rect x="0" y="4" width="7" height="1" />
-            <rect x="1" y="5" width="5" height="1" />
-            <rect x="2" y="6" width="3" height="1" />
+          {/* white bottom half — inset 1px so the navy outline survives */}
+          <g fill="#ffffff">
+            <rect x="2" y="10" width="12" height="1" />
+            <rect x="3" y="11" width="10" height="1" />
+            <rect x="3" y="12" width="10" height="1" />
+            <rect x="4" y="13" width="8" height="1" />
+            <rect x="5" y="14" width="6" height="1" />
+            <rect x="7" y="15" width="2" height="1" />
           </g>
+          {/* white center button (clasp), ringed by the navy band */}
+          <rect x="7" y="7" width="2" height="2" fill="#ffffff" />
         </g>
-        <pattern id="foil-pokeball" patternUnits="userSpaceOnUse" width="84" height="84">
-          <use href="#foil-pb-tile" transform="translate(11 9) scale(3.1)" />
-          <use href="#foil-pb-tile" transform="translate(53 51) scale(3.1)" />
+        {/* half-drop stagger; ball diameter 34 = pitch, so balls near-touch.
+            The second row's ball is drawn on both vertical edges so it
+            reads whole across the tile seam. */}
+        <pattern id="foil-pokeball" patternUnits="userSpaceOnUse" width="34" height="68">
+          <use href="#foil-pb" transform="translate(0 0) scale(2.125)" />
+          <use href="#foil-pb" transform="translate(-17 34) scale(2.125)" />
+          <use href="#foil-pb" transform="translate(17 34) scale(2.125)" />
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#foil-pokeball)" />

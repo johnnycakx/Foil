@@ -8,6 +8,28 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-29 — Session 47.2: Pokeball section pattern — shape/density/opacity fix — [ADR-039](DECISIONS.md#adr-039--pokeball-section-pattern-shape--density--opacity-iteration)
+
+**Why.** Session 47.1's "How it works" Pokeball pattern (coarse 7×7 silhouette, single navy tone, 5-7% opacity) read as **polka dots, not Pokeballs**. Founder feedback: keep navy+white, but match a reference's tightly-packed pixel Pokeball line work (visible top/bottom halves, center band, white button, blocky 8-bit grid). Shape/density/opacity fix, not color.
+
+**Before → after.**
+- **Shape:** coarse 7×7 single-tone silhouette → detailed **16×16 pixel Pokeball**: navy dome + center band + 1px outline, **white bottom half** (inset 1px to keep the navy outline), **white center button** (`<rect x=7 y=7 w=2 h=2>`) ringed by the navy band. Two-tone navy/white, classic Pokeball.
+- **Density:** sparse → tightly packed half-drop stagger, ball diameter = tile pitch (34px) so balls near-touch; the second-row ball is drawn on both vertical edges to read whole across the tile seam.
+- **Opacity:** 5-7% → **14% mobile / 20% desktop**.
+- Pattern still **"How it works" only**; hero / example / final CTA stay clean cream. Logo glyph + pill bullets untouched (brand chrome, separate layer).
+
+**Verification.** Rendered the tile + a single ball at 4× via sharp: the dome/band/button/outline all read; the field is recognizable Pokeballs, not dots. **WCAG AA:** worst case (slate body over a solid-navy pixel at 20%) computes ~4.6:1 (> 4.5 floor); capped desktop at 20% (not 25%) to keep the slate intro safe; heading is large navy (far above 3:1).
+
+**Preserved:** Session 47.1 (orphan peeks removed, navy logo glyph, navy pill bullets, hero amber-glow removal); Session 47 hero card fan; Session 46 Fraunces + pricing removal + trust pill + copy trims; Session 45 reduced-motion + contrast; all ADRs.
+
+**Self-check.** The pattern test pinned the old shape/opacity; updated to ADR-039 (two-tone navy+white, white button, opacity 0.14/0.2, tight 34×68 half-drop tile). `#ffffff` in the SVG did NOT add a design:lint finding.
+
+**Closure-gate (R-011 strict).** Full suite green · `tsc` clean · `npm run build` exit 0 · `compliance:check` 6/6 · `design:lint` 0 new · `/security-review` RUN (presentational, no findings) · push confirmed · Vercel deploy Ready. [Detail inline at session end.]
+
+**Doc updates.** This entry; [ADR-039](DECISIONS.md) (+ ADR-038 pattern marked iterated); ROADMAP last-updated line.
+
+---
+
 ## 2026-05-28 — Session 47.1: navy Pokeball brand mark + hero corner cleanup — [ADR-038](DECISIONS.md#adr-038--pokeball-as-the-brand-mark--section-pattern--bullet-accent)
 
 **Why.** Founder live-review of the Session-47 home page produced five surgical fixes + a brand call: commit to a **Pokeball** identity (reversing ADR-036's "not a Pokeball" — the founder owns the brand and reconsidered), and clean up two stray-visual complaints.

@@ -1419,7 +1419,7 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 ## ADR-038 — Pokeball as the brand mark + section pattern + bullet accent
 
 **Date:** 2026-05-28 (Session 47.1)
-**Status:** Accepted. Supersedes the **mark** of [ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim) (holofoil spark) and the **floral** of [ADR-037](#adr-037--hero-rework-cards-above-the-headline--floral-section-distinction), and removes the [ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness) corner-shimmer gradient from the hero. Fraunces display, the ADR-037 hero card-fan layout, the deleted pricing, and the cream/navy/gold palette are unchanged.
+**Status:** Accepted. Supersedes the **mark** of [ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim) (holofoil spark) and the **floral** of [ADR-037](#adr-037--hero-rework-cards-above-the-headline--floral-section-distinction), and removes the [ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness) corner-shimmer gradient from the hero. The **section pattern's shape/density/opacity were iterated by [ADR-039](#adr-039--pokeball-section-pattern-shape--density--opacity-iteration)** (Session 47.2 — it read as polka dots; same navy+white). Fraunces display, the ADR-037 hero card-fan layout, the deleted pricing, and the cream/navy/gold palette are unchanged.
 
 **Context.** Live-reviewing the Session-47 home page, the founder made a brand call and flagged three issues: (a) the two Session-46 floating card "peek" watermarks read as "weird cards in the background"; (b) the brand should commit to a **Pokeball** identity (this reverses ADR-036's explicit "NOT a Pokeball" — that call was mine; the founder owns the brand and reconsidered); (c) a stray amber glow sat in the hero's bottom-right (the leftover ADR-029 corner-shimmer `BackgroundGradientAnimation`).
 
@@ -1437,6 +1437,28 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 - **No scope creep.** Home page only; no Pokeball on other sections, no extra accents (footer/dividers), no palette/font/register change.
 
 **Cross-refs.** [ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim), [ADR-037](#adr-037--hero-rework-cards-above-the-headline--floral-section-distinction), [SESSION-LOG Session 47.1](SESSION-LOG.md), `components/brand/logo.tsx`, `scripts/gen-brand-assets.mjs`, `lib/__tests__/visual-regression.test.ts`.
+
+---
+
+## ADR-039 — Pokeball section pattern: shape + density + opacity iteration
+
+**Date:** 2026-05-29 (Session 47.2)
+**Status:** Accepted. Iterates the **section pattern** of [ADR-038](#adr-038--pokeball-as-the-brand-mark--section-pattern--bullet-accent) (the rest of ADR-038 — logo glyph, pill bullets, hero cleanup — is unchanged). Same navy + white palette; this is a shape/density/opacity fix, not a color change.
+
+**Context.** ADR-038's "How it works" Pokeball pattern used a coarse 7×7 silhouette (single navy tone, no visible button or two-tone) at 5-7% opacity. At that size and opacity it read as **polka dots, not Pokeballs**. The founder shared a reference: a tightly-packed pixel Pokeball with visible top/bottom halves, a distinct center band, a white center button, and blocky 8-bit line work — and asked to match the *line work*, keeping navy + white.
+
+**Decision.**
+1. **Redrew the pixel Pokeball on a 16×16 grid** (`PokeballPattern` in `app/(site)/page.tsx`): navy (#0f1e3a) dome + center band + 1px outline, **white (#ffffff) bottom half** inset 1px so the navy outline survives, and a **white center button** (`<rect x=7 y=7 w=2 h=2>`) ringed by the navy band. On the cream surface the navy carries the line work and the white reads as the light lower half — the classic two-tone Pokeball, now identifiable at every size.
+2. **Density up**: tightly packed half-drop stagger, ball diameter = tile pitch (34px) so balls near-touch. The second-row ball is drawn on both vertical tile edges so it reads whole across the seam.
+3. **Opacity up**: 14% mobile / 20% desktop (from 5-7%). Verified WCAG AA holds — worst case (slate body directly over a solid-navy pixel at 20%) computes to ~4.6:1, above the 4.5 AA floor; the section heading is large navy (far above 3:1). Capped at 20% (not the 25% top of the requested range) to keep the slate intro safely AA.
+
+**Consequences.**
+- **Reads as Pokeballs.** Rendered the tile + a single ball at 4× and confirmed the dome/band/button/outline all read; the pattern is a recognizable Pokeball field, not dots.
+- **Still "How it works" only.** Hero / "What you actually see" / final CTA stay clean cream. Logo glyph + pill bullets unchanged (different design layer — brand chrome, not section decoration).
+- **White on cream is faint by design.** At ≤20% the white bottom ≈ cream, so the navy line work dominates; that's the intended two-tone read on a cream page, and it keeps text contrast safe.
+- **No scope creep.** No classic-red, no logo/bullet recolor, no palette change.
+
+**Cross-refs.** [ADR-038](#adr-038--pokeball-as-the-brand-mark--section-pattern--bullet-accent), [SESSION-LOG Session 47.2](SESSION-LOG.md), `app/(site)/page.tsx`, `lib/__tests__/visual-regression.test.ts`.
 
 ---
 
