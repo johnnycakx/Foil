@@ -21,7 +21,14 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 - **`lib/cards/poketrace-overrides.json`**: added the 2 EU UUIDs (`base6-16` → `eu_274781_holo`, `cel25-11` → `eu_576756`), both `holofoil`.
 - Re-ran `--refresh`: **207/207 matched, 0 misses** (351 variants). `docs/poketrace-bake-misses.md` updated (note: resolved via market=EU fallback).
 
-**Per-card live verification** (deploy + foiltcg.com): _[filled in below after Vercel Ready]_
+**Per-card live verification** (deploy `foil-frbwqfvs2-foilapp` ● Ready, commit `72151e0`, fetched live from foiltcg.com):
+
+| Card | Slug | Rendered | 30-day sold avg | 7d trend |
+|---|---|---|---|---|
+| Legendary Collection Muk #16 | `/cards/base6-16-muk` | "Market average" (AGGREGATED) row — not the degraded footer | **$61.25** | ↑ |
+| Celebrations Mew #11 | `/cards/cel25-11-mew` | "Market average" (AGGREGATED) row — not the degraded footer | **$2.33** | ↓ |
+
+Both show the gold "Live · Just now" badge and "Sold averages via PokeTrace · refreshed hourly"; the per-condition "Sales" count is correctly blank (cardmarket AGGREGATED carries no saleCount). Neither shows "Live sold data not yet available." Gap is **207/207, fully closed.**
 
 **Closure-gate (R-011 strict).** Full suite green · `tsc` clean · `npm run build` exit 0 · `compliance:check` 6/6 · `design:lint` 0 new · `/security-review` RUN · push confirmed · Vercel Ready before live-verify.
 
