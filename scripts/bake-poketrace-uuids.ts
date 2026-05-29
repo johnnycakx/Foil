@@ -63,6 +63,34 @@ function loadKey(): string {
 
 const KEY = loadKey();
 
+const OVERRIDES_PATH = "lib/cards/poketrace-overrides.json";
+
+// Manual UUID overrides (Session 49.1) — keyed by catalog slug. Consulted
+// BEFORE the search heuristic; win unconditionally. For cards whose SDK
+// collector number doesn't line up with PokeTrace's numbering.
+function loadOverrides(): Record<string, PoketraceVariant[]> {
+  try {
+    const raw = JSON.parse(readFileSync(join(process.cwd(), OVERRIDES_PATH), "utf8")) as Record<string, unknown>;
+    const out: Record<string, PoketraceVariant[]> = {};
+    for (const [k, v] of Object.entries(raw)) {
+      if (k.startsWith("_")) continue; // skip _comment
+      if (Array.isArray(v)) out[k] = v as PoketraceVariant[];
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+const OVERRIDES = loadOverrides();
+
+// Cards PokeTrace genuinely has no usable catalog entry for (vendor data
+// gap, not a matching-logic failure). Tagged in the misses doc; the panel
+// degrades gracefully. Keyed by catalog slug.
+const KNOWN_VENDOR_GAPS: Record<string, string> = {
+  "base6-16-muk": "PokeTrace has no Legendary Collection Muk in its catalog (set-scoped search returns 0).",
+  "cel25-11-mew": "PokeTrace's Celebrations set only carries Mew at #025/025 (secret), not the #11 base printing — number mismatch, not the same card.",
+};
+
 async function sleep(ms: number): Promise<void> {
   await new Promise((r) => setTimeout(r, ms));
 }
@@ -114,6 +142,18 @@ async function main(): Promise<void> {
       missed++;
       continue;
     }
+
+    // Manual override wins unconditionally (Session 49.1), even over an
+    // existing search-baked value and regardless of --refresh.
+    const override = OVERRIDES[entry.slug];
+    if (override && override.length > 0) {
+      card.variants = override;
+      matched++;
+      totalVariants += override.length;
+      console.log(`  [${i}/${CARD_CATALOG.length}] ${id} -> OVERRIDE ${override.length} variant(s): ${override.map((v) => v.variantKey).join(", ")}`);
+      continue;
+    }
+
     if (!REFRESH && Array.isArray(card.variants) && card.variants.length > 0) {
       skipped++;
       continue;
@@ -155,7 +195,12 @@ async function main(): Promise<void> {
       }
     }
     if (result.status === "miss" || result.variants.length === 0) {
-      misses.push(`- \`${id}\` (${name} / ${setName} #${number}, total ${setTotal}) — ${result.note}`);
+      const gap = KNOWN_VENDOR_GAPS[entry.slug];
+      misses.push(
+        gap
+          ? `- \`${id}\` (${name} / ${setName} #${number}) — **PokeTrace catalog gap**: ${gap} Graceful degradation accepted.`
+          : `- \`${id}\` (${name} / ${setName} #${number}, total ${setTotal}) — ${result.note}`,
+      );
       missed++;
     } else {
       card.variants = result.variants;

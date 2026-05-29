@@ -8,6 +8,23 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-29 — Session 49.1: close the PokeTrace UUID gap (199 → 205/207; 2 documented vendor gaps) — [ADR-042](DECISIONS.md#adr-042--poketrace-per-variant-uuid-caching-search-then-bake--variant-aware-sold-history)
+
+**Why.** Session 49 left 8 cards unmatched. (Note: the goal framed 5 of them as hero alt-arts — that was stale; the slug-suffix fix in Session 49 already matched Moonbreon/Rayquaza/Giratina/Lugia/CZ-Charizards, and Moonbreon was live-verified showing sold data. The actual 8 were 6× SV-151 special/illustration rares + LC Muk + Celebrations Mew.)
+
+**Root cause of the 6 SV-151 misses.** Their SDK collector numbers (173, 198–201, 205) DO equal PokeTrace's numerator (e.g. Charizard ex #199 → `199/165` Special Illustration Rare), but they missed because (a) PokeTrace's denominator (165) ≠ the SDK set total (207), and (b) the set name "151" is 3 chars, below the Session-49 slug-suffix gate's `>3` threshold. Rather than loosen the matcher (risking vintage false-positives), I hand-resolved them via an overrides file.
+
+**What landed.**
+- **`lib/cards/poketrace-overrides.json`** (keyed by catalog slug; same variant shape as baked-metadata): the 6 SV-151 UUIDs, each verified against the live API (set `sv-scarlet-and-violet-151`, numerator == SDK number, rarity Special-Illustration / Hyper / Illustration Rare). All `holofoil`.
+- **`scripts/bake-poketrace-uuids.ts`**: consults overrides **before** the search heuristic (win unconditionally, even over an existing value / without `--refresh`); plus a `KNOWN_VENDOR_GAPS` map that tags genuine vendor gaps in the misses doc. Re-ran `--refresh`: **205/207 matched** (6 via override).
+- **2 documented PokeTrace catalog gaps** (graceful degradation, per goal — vendor gap, not a matching failure): `base6-16` (LC Muk — PokeTrace has no Legendary Collection Muk) and `cel25-11` (Celebrations Mew — PokeTrace only carries `#025/025`, a different printing than the SDK `#11`; not force-matched to avoid wrong data).
+
+**Per-card live verification (against the deployed build):** _[filled in below after Vercel Ready]_
+
+**Closure-gate (R-011 strict).** Full suite green · `tsc` clean · `npm run build` exit 0 · `compliance:check` 6/6 · `design:lint` 0 new · `/security-review` RUN · push confirmed · Vercel deploy Ready before live-verify.
+
+---
+
 ## 2026-05-29 — Session 49: PokeTrace per-variant UUID bake + variant-aware sold-history on /cards/[slug] — [ADR-042](DECISIONS.md#adr-042--poketrace-per-variant-uuid-caching-search-then-bake--variant-aware-sold-history)
 
 **Why.** Per-card pages showed live eBay listings but no "what's it actually been selling for" reference. PokeTrace has 30-day sold averages, but keys cards by UUID (not our SDK ids) and splits print editions into separate UUIDs. This session bakes the UUIDs and renders the sold-history.

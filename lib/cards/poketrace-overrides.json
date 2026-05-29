@@ -1,0 +1,21 @@
+{
+  "_comment": "Session 49.1 (ADR-042) — hand-resolved PokeTrace UUIDs for catalog cards whose SDK collector number doesn't line up with PokeTrace's numbering (151 special-illustration / illustration rares). Keyed by Foil catalog slug. The bake script (scripts/bake-poketrace-uuids.ts) consults this BEFORE the search heuristic; overrides win unconditionally. Each entry uses the same shape + deriveVariant tokens as baked-metadata.json variants. Verified against the live PokeTrace /v1/cards search (set sv-scarlet-and-violet-151, numerator == SDK number, rarity Special Illustration / Hyper / Illustration Rare).",
+  "sv3pt5-173-pikachu": [
+    { "variantKey": "holofoil", "poketraceId": "019bffaa-1a45-759c-ad81-09a7881c5ab9", "variantLabel": "Holofoil", "isHolo": true, "isFirstEdition": false, "isShadowless": false, "isUnlimited": false }
+  ],
+  "sv3pt5-198-venusaur-ex": [
+    { "variantKey": "holofoil", "poketraceId": "019bffab-58b9-77cf-912b-ab2dd3a12a07", "variantLabel": "Holofoil", "isHolo": true, "isFirstEdition": false, "isShadowless": false, "isUnlimited": false }
+  ],
+  "sv3pt5-199-charizard-ex": [
+    { "variantKey": "holofoil", "poketraceId": "019bffab-58b9-77cf-912b-acdfb23b0a46", "variantLabel": "Holofoil", "isHolo": true, "isFirstEdition": false, "isShadowless": false, "isUnlimited": false }
+  ],
+  "sv3pt5-200-blastoise-ex": [
+    { "variantKey": "holofoil", "poketraceId": "019bffab-58b9-77cf-912b-b20ca9d1ce55", "variantLabel": "Holofoil", "isHolo": true, "isFirstEdition": false, "isShadowless": false, "isUnlimited": false }
+  ],
+  "sv3pt5-201-alakazam-ex": [
+    { "variantKey": "holofoil", "poketraceId": "019bffab-58b9-77cf-912b-b4cb57a7ddb5", "variantLabel": "Holofoil", "isHolo": true, "isFirstEdition": false, "isShadowless": false, "isUnlimited": false }
+  ],
+  "sv3pt5-205-mew-ex": [
+    { "variantKey": "holofoil", "poketraceId": "019bffab-58b9-77cf-912b-c5d8699e7d18", "variantLabel": "Holofoil", "isHolo": true, "isFirstEdition": false, "isShadowless": false, "isUnlimited": false }
+  ]
+}

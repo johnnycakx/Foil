@@ -1,5 +1,5 @@
 {
-  "bakedAt": "2026-05-29T21:48:56.079Z",
+  "bakedAt": "2026-05-29T22:18:20.711Z",
   "cards": {
     "base1-2": {
       "id": "base1-2",
@@ -5027,7 +5027,18 @@
       "number": "173",
       "image": "https://images.pokemontcg.io/sv3pt5/173_hires.png",
       "rarity": "Illustration Rare",
-      "releaseDate": "2023/09/22"
+      "releaseDate": "2023/09/22",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bffaa-1a45-759c-ad81-09a7881c5ab9",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "swsh9-65": {
       "id": "swsh9-65",
@@ -5163,7 +5174,18 @@
       "number": "199",
       "image": "https://images.pokemontcg.io/sv3pt5/199_hires.png",
       "rarity": "Special Illustration Rare",
-      "releaseDate": "2023/09/22"
+      "releaseDate": "2023/09/22",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bffab-58b9-77cf-912b-acdfb23b0a46",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "sm115-31": {
       "id": "sm115-31",
@@ -5194,7 +5216,18 @@
       "number": "205",
       "image": "https://images.pokemontcg.io/sv3pt5/205_hires.png",
       "rarity": "Hyper Rare",
-      "releaseDate": "2023/09/22"
+      "releaseDate": "2023/09/22",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bffab-58b9-77cf-912b-c5d8699e7d18",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "sv3pt5-201": {
       "id": "sv3pt5-201",
@@ -5204,7 +5237,18 @@
       "number": "201",
       "image": "https://images.pokemontcg.io/sv3pt5/201_hires.png",
       "rarity": "Special Illustration Rare",
-      "releaseDate": "2023/09/22"
+      "releaseDate": "2023/09/22",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bffab-58b9-77cf-912b-b4cb57a7ddb5",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "sv3pt5-200": {
       "id": "sv3pt5-200",
@@ -5214,7 +5258,18 @@
       "number": "200",
       "image": "https://images.pokemontcg.io/sv3pt5/200_hires.png",
       "rarity": "Special Illustration Rare",
-      "releaseDate": "2023/09/22"
+      "releaseDate": "2023/09/22",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bffab-58b9-77cf-912b-b20ca9d1ce55",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "sv3pt5-198": {
       "id": "sv3pt5-198",
@@ -5224,7 +5279,18 @@
       "number": "198",
       "image": "https://images.pokemontcg.io/sv3pt5/198_hires.png",
       "rarity": "Special Illustration Rare",
-      "releaseDate": "2023/09/22"
+      "releaseDate": "2023/09/22",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bffab-58b9-77cf-912b-ab2dd3a12a07",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "base4-4": {
       "id": "base4-4",

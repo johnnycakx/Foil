@@ -1,12 +1,17 @@
 # PokeTrace UUID bake — unmatched / ambiguous cards
 
-_Last bake: 2026-05-29T21:48:56.082Z_
+_Last bake: 2026-05-29T22:18:20.713Z_
 
-- `base6-16` (Muk / Legendary Collection #16, total 110) — no candidate matched; saw: swsh03-darkness-ablaze#101/189(Reverse_Holofoil), swsh03-darkness-ablaze#101/189(Normal), swsh09-brilliant-stars#085/172(Reverse_Holofoil), swsh09-brilliant-stars#085/172(Normal), sv01-scarlet-and-violet-base-set#127/198(Reverse_Holofoil), sv01-scarlet-and-violet-base-set#127/198(Normal)
-- `cel25-11` (Mew / Celebrations #11, total 25) — no candidate matched; saw: deck-exclusives#053/108(Normal), miscellaneous-cards-and-products#111/110(Normal), league-and-championship-cards#053/108(Holofoil), league-and-championship-cards#053/108(Holofoil), league-and-championship-cards#053/108(Holofoil), league-and-championship-cards#053/108(Holofoil)
-- `sv3pt5-173` (Pikachu / 151 #173, total 207) — no candidate matched; saw: base-set#058/102(Normal), base-set-2#087/130(Normal), jungle#60/64(Unlimited), neo-genesis#070/111(Unlimited), sandstorm#72/100(Reverse_Holofoil), skyridge#084/144(Reverse_Holofoil)
-- `sv3pt5-198` (Venusaur ex / 151 #198, total 207) — no candidate matched; saw: firered-and-leafgreen#112/112(Normal), xy-base-set#1/146(Holofoil), generations#1/83(Holofoil), xy-evolutions#1/108(Holofoil), sv-scarlet-and-violet-151#003/165(Holofoil), sv-scarlet-and-violet-151#182/165(Holofoil)
-- `sv3pt5-199` (Charizard ex / 151 #199, total 207) — no candidate matched; saw: firered-and-leafgreen#105/112(Holofoil), generations#11/83(Holofoil), xy-evolutions#12/108(Holofoil), jumbo-cards#011/106(Holofoil), sv-scarlet-and-violet-151#006/165(Holofoil), sv03-obsidian-flames#125/197(Holofoil)
-- `sv3pt5-200` (Blastoise ex / 151 #200, total 207) — no candidate matched; saw: firered-and-leafgreen#104/112(Normal), xy-base-set#29/146(Holofoil), generations#17/83(Holofoil), xy-evolutions#21/108(Holofoil), sv-scarlet-and-violet-151#009/165(Holofoil), sv-scarlet-and-violet-151#184/165(Holofoil)
-- `sv3pt5-201` (Alakazam ex / 151 #201, total 207) — no candidate matched; saw: xy-fates-collide#25/124(Holofoil), sv-scarlet-and-violet-151#065/165(Holofoil), sv-scarlet-and-violet-151#188/165(Holofoil), sv-scarlet-and-violet-151#201/165(Holofoil), sv-paldean-fates#215/091(Holofoil), xy-fates-collide#117/124(Holofoil)
-- `sv3pt5-205` (Mew ex / 151 #205, total 207) — no candidate matched; saw: legend-maker#88/92(Holofoil), holon-phantoms#100/110(Holofoil), dragons-exalted#46/124(Holofoil), celebrations-classic-collection#88/92(Holofoil), sv-scarlet-and-violet-151#151/165(Holofoil), sv-scarlet-and-violet-151#193/165(Holofoil)
+- `base1-1` (Alakazam / Base) — AMBIGUOUS: 2 duplicate variantKey(s) collapsed by saleCount; kept [holofoil, shadowless-holofoil]
+- `base1-4` (Charizard / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil, shadowless-holofoil]
+- `base1-8` (Machamp / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil]
+- `base1-15` (Venusaur / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil, shadowless-holofoil]
+- `gym1-1` (Blaine's Moltres / Gym Heroes) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
+- `gym1-9` (Misty's Seadra / Gym Heroes) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
+- `gym1-11` (Rocket's Hitmonchan / Gym Heroes) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
+- `gym2-1` (Blaine's Arcanine / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
+- `gym2-4` (Erika's Venusaur / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
+- `gym2-14` (Rocket's Mewtwo / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
+- `gym2-15` (Rocket's Zapdos / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
+- `base6-16` (Muk / Legendary Collection #16) — **PokeTrace catalog gap**: PokeTrace has no Legendary Collection Muk in its catalog (set-scoped search returns 0). Graceful degradation accepted.
+- `cel25-11` (Mew / Celebrations #11) — **PokeTrace catalog gap**: PokeTrace's Celebrations set only carries Mew at #025/025 (secret), not the #11 base printing — number mismatch, not the same card. Graceful degradation accepted.
