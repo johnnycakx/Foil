@@ -19,7 +19,18 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 - **`scripts/bake-poketrace-uuids.ts`**: consults overrides **before** the search heuristic (win unconditionally, even over an existing value / without `--refresh`); plus a `KNOWN_VENDOR_GAPS` map that tags genuine vendor gaps in the misses doc. Re-ran `--refresh`: **205/207 matched** (6 via override).
 - **2 documented PokeTrace catalog gaps** (graceful degradation, per goal — vendor gap, not a matching failure): `base6-16` (LC Muk — PokeTrace has no Legendary Collection Muk) and `cel25-11` (Celebrations Mew — PokeTrace only carries `#025/025`, a different printing than the SDK `#11`; not force-matched to avoid wrong data).
 
-**Per-card live verification (against the deployed build):** _[filled in below after Vercel Ready]_
+**Per-card live verification** (deploy `foil-ej3hic4ie`, foiltcg.com): 6/6 override cards render real sold data; 2/2 gaps degrade gracefully (exactly as designed, no bug):
+
+| Card | Result |
+|---|---|
+| `sv3pt5-173-pikachu` | ✅ 30-day sold avg **$82.34** (n=527, ↑ 7d) |
+| `sv3pt5-198-venusaur-ex` | ✅ **$123** (n=386, ↓ 7d) |
+| `sv3pt5-199-charizard-ex` | ✅ **$419** (n=403, ↓ 7d) |
+| `sv3pt5-200-blastoise-ex` | ✅ **$151** (n=483) |
+| `sv3pt5-201-alakazam-ex` | ✅ **$77.58** (n=412, ↑ 7d) |
+| `sv3pt5-205-mew-ex` | ✅ **$31.31** (n=545, ↑ 7d) |
+| `base6-16-muk` | ⚠️ "Live sold data not yet available" — PokeTrace catalog gap (expected) |
+| `cel25-11-mew` | ⚠️ "Live sold data not yet available" — PokeTrace catalog gap (expected) |
 
 **Closure-gate (R-011 strict).** Full suite green · `tsc` clean · `npm run build` exit 0 · `compliance:check` 6/6 · `design:lint` 0 new · `/security-review` RUN · push confirmed · Vercel deploy Ready before live-verify.
 
