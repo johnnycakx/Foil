@@ -8,24 +8,27 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
-## 2026-05-30 — Session 47.4: fix autonomous content-engine deploy (two BLOCKED, no Ready) — [ADR-045](DECISIONS.md#adr-045--remove-the-author-ignore-build-command-content-bot-commits-deploy-via-git-integration)
+## 2026-05-30 — Session 47.4: fix autonomous content-engine deploy (two BLOCKED, no Ready) — [ADR-045](DECISIONS.md#adr-045--autonomous-commits-use-a-team-associated-author-email-so-vercel-doesnt-block-the-deploy)
 
 **Symptom.** The 2026-05-28 autonomous post (`677adeb`) landed on `main` (workflow green) but showed **two BLOCKED Vercel deploys and no Ready** — production never updated.
 
-**Diagnosis (empirical, before touching anything).**
-- The workflow run (`26591567269`) **succeeded**; its "Trigger Vercel deploy" step returned **HTTP 201** — so the secret + hook were valid. The failure was downstream in Vercel, not in CI.
-- Vercel REST API: the project's `commandForIgnoringBuildStep` was `if [ "$VERCEL_GIT_COMMIT_AUTHOR_EMAIL" = "bot+content@foil.app" ]; then exit 0; else exit 1; fi` (ADR-008's author-ignore rule; `exit 0` = skip build).
-- Both `677adeb` deployments were `state=BLOCKED, src=git` at 17:41 (one from the `git push`, one from the hook ~2s later). Every `johnnycakx`-authored commit deploys `READY` via the same git integration.
-- **Root cause:** the ignore command runs on the HEAD commit for **every** deploy of that commit — including the deploy hook's own build (a hook builds the branch tip = the bot commit). So the command blocked *both* the git-integration deploy and the hook deploy. ADR-008 was self-defeating; its premise ("git integration *rejects* bot commits, author not on team") was wrong — Vercel targets production by branch (`main`), not author, and was happily *creating + building* the bot deploys until the command skipped them.
+**Diagnosis — including a corrected first hypothesis (the honest version).**
+- The workflow run (`26591567269`) **succeeded**; its deploy-hook step returned **HTTP 201** — the failure was downstream in Vercel, not CI.
+- **First hypothesis (WRONG):** the project's `commandForIgnoringBuildStep` (`exit 0` for `bot+content@foil.app`) was blocking both the git-integration and the hook builds. I removed it + removed the redundant hook step + shipped (`d594544`) and ran the smoke test.
+- **The smoke test disproved it:** the new autonomous commit (`1dc2cca`) was *still* BLOCKED with the command already cleared. Pulling the deployment detail gave the unambiguous reason: `readyStateReason = "GitHub could not associate the committer with a GitHub user"`, `seatBlock.blockCode = COMMIT_AUTHOR_REQUIRED`.
+- **Real root cause:** Vercel blocks deployments whose Git committer isn't a GitHub user on the team. The workflow committed as `foil-content-bot <bot+content@foil.app>` — an email tied to **no GitHub account** — so every autonomous deploy was blocked. (Contrast: all ~19 `john.c.craig24@gmail.com` commits deploy `READY`.) This was ADR-008's original premise; neither its ignore command nor its deploy hook ever addressed it (the hook builds the same unassociated-committer commit).
 
 **Fix (at source).**
-- Removed `commandForIgnoringBuildStep` from the Vercel project via REST API (verified cleared). Bot commits now build like any other `main` push.
-- Removed the now-redundant "Trigger Vercel deploy" step from `.github/workflows/weekly-content.yml` (git integration deploys the push; the hook would only double-build). `VERCEL_DEPLOY_HOOK_URL` is now inert (ENV-VARS.md updated; can be revoked).
-- Docs: ADR-008 marked superseded; **ADR-045** added (diagnosis + fix + deferred self-healing); **RISKS R-011** added (publish-pipeline success signal ≠ live-deploy confirmation; status `resolved`/monitoring).
+- **Workflow "Configure git author": committer email → `john.c.craig24@gmail.com`** (the team owner's GitHub email; name stays `foil-content-bot`). The committer now associates with `johnnycakx` → Vercel authorizes the deploy. **This is the actual fix.**
+- Removed the redundant "Trigger Vercel deploy" hook step; `VERCEL_DEPLOY_HOOK_URL` is now inert (ENV-VARS.md).
+- Removed the (not-causal but now-moot) `commandForIgnoringBuildStep` from the Vercel project.
+- Docs: ADR-008 superseded; **ADR-045** rewritten with the true cause + the corrected-hypothesis lesson; **RISKS R-011** (publish success signal ≠ live-deploy confirmation).
 
-**Before → after.** Before: bot commit → 2× BLOCKED, 0 Ready, production stale. After: bot commit → 1 Ready production deploy via git integration. _[Smoke-test deploy URL + state filled in below after the live `gh workflow run`.]_
+**Before → after (live).** Before: bot commit (`bot+content@foil.app`) → BLOCKED `COMMIT_AUTHOR_REQUIRED`, 0 Ready, production stale. After: bot commit (committer email = John's) → Ready production deploy via git integration. _[Re-smoke-test deploy URL + Ready state filled in below.]_
 
-**Closure gate (R-011-label strict).** Full suite green · `tsc` clean · `compliance:check` 6/6 · `design:lint` 0 new · `/security-review` RUN (Vercel project-setting change is infra-security-relevant) · push confirmed · **smoke-test deploy CONFIRMED Ready on Vercel (not Blocked)** · commit prefix `fix:`.
+**Lesson (AGENTS.md).** "BLOCKED" isn't self-explanatory — query `readyStateReason` / `seatBlock` from the Vercel API before theorizing. My first fix shipped on an unverified hypothesis; the smoke test caught it before closure. The deployment-detail field gave the real cause in one call.
+
+**Closure gate (R-011-label strict).** Full suite green · `tsc` clean · `compliance:check` 6/6 · `design:lint` 0 new · `/security-review` RUN · push confirmed · **smoke-test deploy CONFIRMED Ready on Vercel (not Blocked)** · commit prefix `fix:`.
 
 ---
 

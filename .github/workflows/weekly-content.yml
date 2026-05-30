@@ -39,9 +39,18 @@ jobs:
       - run: npm ci
 
       - name: Configure git author
+        # Commit with John's GitHub-associated email. Vercel BLOCKS deployments
+        # whose committer can't be associated with a GitHub user on the team
+        # (readyStateReason "GitHub could not associate the committer with a
+        # GitHub user", seatBlock COMMIT_AUTHOR_REQUIRED). The previous
+        # bot+content@foil.app email maps to no GitHub user, so every
+        # autonomous post deployed BLOCKED. john.c.craig24@gmail.com is the
+        # team owner's GitHub email — his commits deploy Ready. The committer
+        # NAME stays "foil-content-bot" so the history still marks these as
+        # autonomous. See docs/DECISIONS.md ADR-045 (Session 47.4).
         run: |
           git config user.name  "foil-content-bot"
-          git config user.email "bot+content@foil.app"
+          git config user.email "john.c.craig24@gmail.com"
 
       - name: Generate post (autonomous)
         id: generate
@@ -109,14 +118,13 @@ jobs:
 
       # NOTE (Session 47.4 / ADR-045): no explicit deploy step. The push above
       # is deployed by Vercel's standard GitHub integration like every other
-      # commit to main. The previous "Trigger Vercel deploy" hook step (ADR-008)
-      # was removed: it existed to work around a Vercel "Ignored Build Step"
-      # command that skipped builds for bot+content@foil.app commits — but that
-      # command ALSO blocked the hook's own build (same HEAD commit), so every
-      # autonomous post produced two BLOCKED deploys and no Ready one. The fix
-      # was to remove that ignore command at source (Vercel project setting),
-      # which lets the bot's commits deploy via the git integration normally.
-      # See docs/DECISIONS.md ADR-045 (supersedes ADR-008's hook approach).
+      # commit to main — now that the committer email associates with a GitHub
+      # user on the team (see "Configure git author" above). The previous
+      # "Trigger Vercel deploy" hook step (ADR-008) was removed: it deployed the
+      # same bot-authored commit and so hit the same COMMIT_AUTHOR_REQUIRED
+      # block. An obsolete Vercel "Ignored Build Step" command (skip builds for
+      # bot+content@foil.app) was also removed at source — it's moot now that
+      # commits are authored with John's email. See docs/DECISIONS.md ADR-045.
 
       # On workflow failure (e.g. npm ci, checkout, env-loading failures the
       # script itself can't catch), ping #errors with the run URL so John
