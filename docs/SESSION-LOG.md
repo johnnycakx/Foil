@@ -24,7 +24,11 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 - Removed the (not-causal but now-moot) `commandForIgnoringBuildStep` from the Vercel project.
 - Docs: ADR-008 superseded; **ADR-045** rewritten with the true cause + the corrected-hypothesis lesson; **RISKS R-011** (publish success signal ≠ live-deploy confirmation).
 
-**Before → after (live).** Before: bot commit (`bot+content@foil.app`) → BLOCKED `COMMIT_AUTHOR_REQUIRED`, 0 Ready, production stale. After: bot commit (committer email = John's) → Ready production deploy via git integration. _[Re-smoke-test deploy URL + Ready state filled in below.]_
+**Before → after (live, confirmed via Vercel API).**
+- _Before:_ bot commit `bot+content@foil.app` (`1dc2cca`) → `state=BLOCKED`, `seatBlock=COMMIT_AUTHOR_REQUIRED`, 0 Ready, production stale.
+- _After:_ re-smoke-test (`gh workflow run`, run `26679833631`) generated autonomous post `c91b794`, committed `foil-content-bot <john.c.craig24@gmail.com>` → **`state=READY, target=production, count=1`** (`foil-iimhqa75h-foilapp.vercel.app`). One deploy, Ready, not Blocked — the author block is gone and the hook removal eliminated the double-deploy. **Engine unblocked.**
+
+**Follow-ups.** The two smoke-test runs each shipped a real autonomous post (`1dc2cca` pre-fix + `c91b794` post-fix; both now live on production via `c91b794`) — these want the usual newsletter-draft review (the workflow's Resend/Beehiiv draft step runs on publish; check `docs/newsletter-drafts/`). Noted in ROADMAP.
 
 **Lesson (AGENTS.md).** "BLOCKED" isn't self-explanatory — query `readyStateReason` / `seatBlock` from the Vercel API before theorizing. My first fix shipped on an unverified hypothesis; the smoke test caught it before closure. The deployment-detail field gave the real cause in one call.
 
