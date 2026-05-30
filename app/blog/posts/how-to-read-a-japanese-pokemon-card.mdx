@@ -81,7 +81,7 @@ Why does this matter for valuation? Cards rotating out of Standard format typica
 
 ## How Foil Reads a Japanese Card
 
-Foil's scanner reads name, set code, and collector number directly from the card image — including Japanese-language prints. Foil's scan data: across 25 Japanese cards processed in the last 30 days, the most common identification failure in manual lookups was using artwork description instead of collector number, which caused mismatches on secret rares where two cards share art but carry different numbers.
+Foil's scanner reads name, set code, and collector number directly from the card image — including Japanese-language prints. The most common manual-lookup mistake is identifying a card by its artwork instead of its collector number, which causes mismatches on secret rares where two cards share the same art but carry different numbers.
 
 Once the three fields are confirmed, Foil pulls pricing from eBay sold listings (Japanese-specific), TCGplayer market data where available, and PriceCharting's graded ladder — so you see the PSA 10 multiplier on a Japanese SAR next to the raw price, not just one data point.
 
@@ -122,3 +122,7 @@ Playbite's result (rank #4 on this SERP) recommends Google Translate as the prim
 2. **Translation doesn't resolve ambiguity between printings.** If a Charizard appears in three different sets with three different collector numbers, translating the attack text tells you nothing about which $40, $130, or $420 version you're holding.
 
 The correct workflow: read collector number and set code visually (they're always in the same position), enter them into a database or scanner, and let the pricing layer handle the rest. That's the three-field framework — and it works in any language.
+
+---
+
+_Updated 2026-05-30: removed an unsupported internal-data claim._
