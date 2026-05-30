@@ -100,7 +100,9 @@ Add new ADRs at the bottom. Don't edit historic ADRs except to flip their status
 ## ADR-008 — Vercel Deploy Hook for autonomous content, not GitHub-integration auto-deploys
 
 **Date:** 2026-05-21
-**Status:** Accepted — rollout complete 2026-05-21 (Deploy Hook created, `VERCEL_DEPLOY_HOOK_URL` stored as GitHub secret, Ignored Build Step configured to skip `foil-content-bot` commits)
+**Status:** **Superseded by [ADR-045](#adr-045--remove-the-author-ignore-build-command-content-bot-commits-deploy-via-git-integration) (2026-05-30).** The deploy-hook + author-ignore-build-step combination shipped here was self-defeating: the Ignored Build Step command (skip builds for `bot+content@foil.app`) ran on the HEAD commit for the hook's own build too, so every autonomous post produced two BLOCKED deploys and no Ready one. ADR-045 removes the ignore command (the real fix) and the now-redundant hook step; bot commits deploy via the standard git integration. Original entry retained below for history.
+
+~~**Status:** Accepted — rollout complete 2026-05-21 (Deploy Hook created, `VERCEL_DEPLOY_HOOK_URL` stored as GitHub secret, Ignored Build Step configured to skip `foil-content-bot` commits)~~
 
 **Context.** The autonomous content workflow (see [ADR-006](#adr-006--full-autonomy-no-human-review-step-gates-as-the-safety-net)) commits as `bot+content@foil.app` via the workflow's configured git identity. Vercel's GitHub integration auto-deploys commits to `main` only when the commit author is on the Vercel team — and the bot identity isn't. The first Thursday cron (2026-05-21) shipped a commit fine but Vercel rejected the deploy and sent a rejection email. Same outcome guaranteed every Monday + Thursday.
 
@@ -1557,6 +1559,36 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 **Cross-refs.** `lib/poketrace/price-history.ts`, `components/cards/sold-history-chart.tsx`, `components/cards/sold-history-panel.tsx`, `lib/cards/conditions.ts` (`conditionToTier`), [ADR-042](#adr-042--poketrace-per-variant-uuid-caching-search-then-bake--variant-aware-sold-history), [ADR-043](#adr-043--variant--condition-watchlist-data-model--ebay-query-augmentation).
 
 ---
+
+## ADR-045 — Remove the author-ignore build command; content-bot commits deploy via git integration
+
+**Date:** 2026-05-30 (Session 47.4)
+**Status:** Accepted. Supersedes the deploy-hook + ignore-command mechanism of [ADR-008](#adr-008--vercel-deploy-hook-for-autonomous-content-not-github-integration-auto-deploys).
+
+**Context.** Per ADR-008, the autonomous content workflow committed posts as `bot+content@foil.app` and then POSTed a Vercel Deploy Hook to trigger production, while a Vercel "Ignored Build Step" command was added to stop the GitHub integration from deploying bot commits:
+
+```
+if [ "$VERCEL_GIT_COMMIT_AUTHOR_EMAIL" = "bot+content@foil.app" ]; then exit 0; else exit 1; fi
+```
+
+`exit 0` tells Vercel to skip the build. The flaw: **this command runs on the HEAD commit for *every* deployment of that commit — including the deploy hook's own build.** A deploy hook builds the current branch tip, which is the bot commit, so the command returns `exit 0` and the hook's deploy is BLOCKED too. Net effect on the 2026-05-28 autonomous post (`677adeb`): the `git push` created one deployment and the hook created a second, **both BLOCKED, zero Ready** — the exact symptom reported.
+
+**Diagnosis (Session 47.4, empirical).** The workflow run (`26591567269`) succeeded; the deploy-hook step returned **HTTP 201** (the secret + hook are valid). The Vercel REST API confirmed the project's `commandForIgnoringBuildStep` was the author-match command above, and that both `677adeb` deployments were `state=BLOCKED, src=git`. Every other commit (author `johnnycakx`) deploys `READY` via the same git integration — only the bot author was blocked, and the block hit the hook as well. So ADR-008's premise ("the git integration *rejects* bot commits because the author isn't on the Vercel team") was effectively wrong: the integration happily *creates and builds* bot-authored deployments to the production branch; the ignore command is the only thing that ever blocked them. (Vercel targets production by **branch** = `main`, not by commit author.)
+
+**Decision.**
+1. **Remove `commandForIgnoringBuildStep`** from the Vercel project (set to null via the REST API). Bot commits now build like any other `main` push.
+2. **Remove the "Trigger Vercel deploy" hook step** from `.github/workflows/weekly-content.yml`. With the ignore command gone, the `git push origin main` is deployed by the standard git integration; the hook would only create a redundant second build. `VERCEL_DEPLOY_HOOK_URL` is now unused (retained inert; can be revoked — see ENV-VARS.md).
+
+**Consequences.**
+- **Pro:** One deploy path for all commits (manual + bot), identical to every other push — far less to misfire. No author-coupling, no hook secret on the hot path.
+- **Pro:** Eliminates the two-BLOCKED-deploys failure mode entirely at its source.
+- **Con / watch:** ADR-008 claimed the integration sent "rejection emails" for bot commits pre-command. The BLOCKED-not-rejected evidence contradicts that, but if rejection emails reappear they're cosmetic (the deploy still ships) — handle by adding the bot to the Vercel team or muting the notification, not by re-introducing an ignore command that blocks the build.
+- **Kill-switch** (`AUTO_PUBLISH_WEEKLY_POSTS=false`) still works: no commit → no push → no deploy.
+- **Self-healing (considered, deferred):** a workflow step could poll the Vercel API post-push and ping `#errors` if the deploy lands non-Ready. Deferred — it needs a Vercel read token in CI (new secret surface) and the root cause is now removed. Tracked in [RISKS R-011](RISKS.md#r-011--autonomous-deploy-plumbing-fails-silently) instead.
+
+**Verification.** Smoke-tested via `gh workflow run weekly-content.yml`: the autonomous bot commit produced a **Ready** production deploy via git integration (not Blocked). See [SESSION-LOG Session 47.4](SESSION-LOG.md).
+
+**Cross-refs.** `.github/workflows/weekly-content.yml`, Vercel project `commandForIgnoringBuildStep` (removed), [ADR-008](#adr-008--vercel-deploy-hook-for-autonomous-content-not-github-integration-auto-deploys), [ADR-006](#adr-006--full-autonomy-no-human-review-step-gates-as-the-safety-net), [RISKS R-011](RISKS.md).
 
 ## How to add an ADR
 

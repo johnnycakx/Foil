@@ -177,7 +177,12 @@
       "Bash(echo \"TEST_EXIT:$?\")",
       "Bash(echo \"BUILD_EXIT:$?\")",
       "Bash(tail -10 /tmp/full49c.out)",
-      "Bash(tail -2 /tmp/build49c.out)"
+      "Bash(tail -2 /tmp/build49c.out)",
+      "Read(//c/Users/John/AppData/Roaming/com.vercel.cli/**)",
+      "Read(//c/Users/John/.vercel/**)",
+      "Read(//c/Users/John/AppData/Roaming/**)",
+      "PowerShell(Test-Path *)",
+      "PowerShell(Get-ChildItem *)"
     ]
   },
   "enableAllProjectMcpServers": true,

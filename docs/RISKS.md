@@ -173,6 +173,23 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 ---
 
+## R-011 — Autonomous deploy plumbing fails silently
+
+**Severity:** Medium
+**Status:** `resolved` — root cause removed in Session 47.4 ([ADR-045](DECISIONS.md#adr-045--remove-the-author-ignore-build-command-content-bot-commits-deploy-via-git-integration)); monitoring the next scheduled cron.
+
+**The risk.** The autonomous content workflow commits + pushes a post, but the *deploy* of that commit is a separate concern that can fail without failing the workflow. From 2026-05-21 to 2026-05-28, every autonomous post landed on `main` (workflow green) but **never reached production**: a Vercel "Ignored Build Step" command (`exit 0` for `bot+content@foil.app`) added by [ADR-008](DECISIONS.md#adr-008--vercel-deploy-hook-for-autonomous-content-not-github-integration-auto-deploys) to suppress the git-integration build *also* blocked the deploy hook's build (same HEAD commit), so each post produced two BLOCKED deploys and zero Ready. The workflow's deploy step even returned HTTP 201 — the failure was entirely downstream in Vercel's project config, invisible to the Actions tab. **Class of risk:** a "publish" pipeline whose success signal (green workflow / 201 response) doesn't actually confirm the end state (live deploy).
+
+**Why resolved.** ADR-045 deleted the self-defeating ignore command (the sole blocker) and removed the redundant hook step. Bot commits now deploy via the standard git integration exactly like every other `main` push — the same path that has produced `READY` production deploys for ~200 `johnnycakx` commits. Smoke-tested live (Session 47.4): an autonomous bot commit reached `READY` production, not `BLOCKED`.
+
+**Trigger to escalate.** Next Monday/Thursday cron commits a post but Vercel shows no new `Ready` production deploy at that commit (re-check the project's `commandForIgnoringBuildStep` is still null and that the git integration is connected).
+
+**Mitigation candidates** (deferred — root cause is gone):
+1. **In-CI deploy verification.** After `git push`, poll the Vercel API for a `READY` deployment at the pushed SHA; ping `#errors` if it's `BLOCKED`/`ERROR` after N minutes. Cost: a Vercel read token in CI (new secret surface). Worth it only if this class recurs.
+2. **Vercel deployment webhook → `#deploys`** already exists ([ADR-016](DECISIONS.md)); extend its consumer to flag a BLOCKED/ERROR state on a `bot+content` commit specifically.
+
+---
+
 ## How to log a new risk
 
 1. Next available ID (`R-NNN`, monotonically increasing).

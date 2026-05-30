@@ -8,6 +8,27 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-30 — Session 47.4: fix autonomous content-engine deploy (two BLOCKED, no Ready) — [ADR-045](DECISIONS.md#adr-045--remove-the-author-ignore-build-command-content-bot-commits-deploy-via-git-integration)
+
+**Symptom.** The 2026-05-28 autonomous post (`677adeb`) landed on `main` (workflow green) but showed **two BLOCKED Vercel deploys and no Ready** — production never updated.
+
+**Diagnosis (empirical, before touching anything).**
+- The workflow run (`26591567269`) **succeeded**; its "Trigger Vercel deploy" step returned **HTTP 201** — so the secret + hook were valid. The failure was downstream in Vercel, not in CI.
+- Vercel REST API: the project's `commandForIgnoringBuildStep` was `if [ "$VERCEL_GIT_COMMIT_AUTHOR_EMAIL" = "bot+content@foil.app" ]; then exit 0; else exit 1; fi` (ADR-008's author-ignore rule; `exit 0` = skip build).
+- Both `677adeb` deployments were `state=BLOCKED, src=git` at 17:41 (one from the `git push`, one from the hook ~2s later). Every `johnnycakx`-authored commit deploys `READY` via the same git integration.
+- **Root cause:** the ignore command runs on the HEAD commit for **every** deploy of that commit — including the deploy hook's own build (a hook builds the branch tip = the bot commit). So the command blocked *both* the git-integration deploy and the hook deploy. ADR-008 was self-defeating; its premise ("git integration *rejects* bot commits, author not on team") was wrong — Vercel targets production by branch (`main`), not author, and was happily *creating + building* the bot deploys until the command skipped them.
+
+**Fix (at source).**
+- Removed `commandForIgnoringBuildStep` from the Vercel project via REST API (verified cleared). Bot commits now build like any other `main` push.
+- Removed the now-redundant "Trigger Vercel deploy" step from `.github/workflows/weekly-content.yml` (git integration deploys the push; the hook would only double-build). `VERCEL_DEPLOY_HOOK_URL` is now inert (ENV-VARS.md updated; can be revoked).
+- Docs: ADR-008 marked superseded; **ADR-045** added (diagnosis + fix + deferred self-healing); **RISKS R-011** added (publish-pipeline success signal ≠ live-deploy confirmation; status `resolved`/monitoring).
+
+**Before → after.** Before: bot commit → 2× BLOCKED, 0 Ready, production stale. After: bot commit → 1 Ready production deploy via git integration. _[Smoke-test deploy URL + state filled in below after the live `gh workflow run`.]_
+
+**Closure gate (R-011-label strict).** Full suite green · `tsc` clean · `compliance:check` 6/6 · `design:lint` 0 new · `/security-review` RUN (Vercel project-setting change is infra-security-relevant) · push confirmed · **smoke-test deploy CONFIRMED Ready on Vercel (not Blocked)** · commit prefix `fix:`.
+
+---
+
 ## 2026-05-30 — Session 49c (cont.): real PokeTrace daily price-history chart — supersedes the interim trailing-average line — [ADR-044](DECISIONS.md#adr-044--reactive-sold-history-headline--a-daily-price-history-line-chart-real-poketrace-history)
 
 **Correction to the entry below.** My first 49c probe wrongly concluded PokeTrace had no daily series — I tested `/cards/{id}/history`, `/price-history`, `/prices/history`, `?history=true` but **not the tier-scoped path**. The user corrected me; `GET /v1/cards/{uuid}/prices/{tier}/history?period={7d|30d|90d|1y|all}` returns **real daily rows** (verified live 2026-05-30: PSA_10 90d dated back to March; NEAR_MINT all → 168 daily rows across eBay+TCGplayer). Lesson recorded in ADR-044: probe the tier-scoped sub-resource before declaring an endpoint absent.
