@@ -8,6 +8,26 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-29 — Session 49c: reactive sold-history headline (bug fix) + trailing-average line chart — [ADR-044](DECISIONS.md#adr-044--reactive-sold-history-headline--a-trailing-average-line-chart-poketrace-has-no-daily-series)
+
+**Two parts: a bug fix + a charting feature with a documented data-reality adaptation.**
+
+**Bug fix (headline reactive to the condition picker).** Session 49's panel headline was locked to the variant's NM raw tier regardless of the 49b `?c=` picker — pick PSA 10 and you still saw the NM value. Fixed: `conditions.ts::conditionToTier` maps each token to a PokeTrace tier (`PSA_10`, `BGS_9_5`, `CGC_9_5`, …) or an aggregate (`raw-agg` / `graded-agg`); the panel resolves the headline stat + 30d value + sale count + label from the selected condition (e.g. "30-day sold avg · Holofoil · PSA 10"). The per-condition table now renders whenever the variant has *any* data (decoupled from the selected condition), so picking a grade the card lacks can't blank it.
+
+**Load-bearing data finding (AGENTS.md probe, before building the chart).** The feature asked for a Robinhood-style **daily** chart with 7D/30D/90D/ALL. I probed PokeTrace empirically: **no daily series exists** — `/history`, `/price-history`, `/sales` all 404; `?history=true` returns the same object; per tier only `avg1d/avg7d/avg30d` (+ medians), nothing past 30 days. PriceCharting (the other source) is current-snapshot only. A smooth daily line from 3 windowed averages would be fabrication → violates PRODUCT.md #1 ("never fabricate"). I surfaced this with three options (honest 3-point line / bug-fix-only / build a daily-snapshot pipeline); the user deferred without redirecting, and with the goal hook requiring completion I proceeded with the only honest, fully-buildable path.
+
+**Chart (honest adaptation).** `getPriceHistory(uuid, tier, days)` returns the **real trailing-average points** `{windowDays: 30|7|1, avg, saleCount}` (reusing the 1h SWR cache; soft-fail null). New `components/cards/sold-history-chart.tsx` — inline SVG line + navy area-fill gradient + trend-coloured endpoint dot (gold up / coral down) + hover guide; **no charting library**. Replaces the static "↑ 7d" arrow with the actual 30d→7d→24h trajectory. Range pills 7D/30D active (`?r=` URL state, default 30D); **90D/ALL visibly disabled** (no data past 30d — the UI never implies history we lack). X-axis labelled by window ("30d/7d/24h avg"), not fabricated dates.
+
+**Before/after (Charizard Holofoil, PSA 10 selected).**
+- _Before:_ headline showed NM raw ≈ $127 (locked); static "↑ 7d" arrow.
+- _After:_ headline shows the PSA 10 value + "n= sales", label "· PSA 10"; the arrow is replaced by a real trailing-average line (30d→7d→24h) with a gold/coral endpoint.
+
+**Closure gate (R-011 strict).** 595/595 tests (+12) · `tsc` clean · `npm run build` exit 0 · `compliance:check` 6/6 · `design:lint` 0 new (same 2 pre-existing warnings) · `/security-review` RUN · push confirmed · Vercel Ready + live-verify before claiming closed. Commit prefix `fix:`.
+
+**Deferred → Session 49d candidate.** A genuine daily series via a `price_snapshots` table + daily PokeTrace-snapshot cron (the only path to a true daily / 90D / ALL chart; accrues over weeks). Tracked in ADR-044.
+
+---
+
 ## 2026-05-29 — Session 49b: per-variant + per-condition watchlist write path — [ADR-043](DECISIONS.md#adr-043--variant--condition-watchlist-data-model--ebay-query-augmentation)
 
 **Why.** Session 49 (ADR-042) shipped the per-variant sold-history *display*; a watch still couldn't *target* a printing or grade. This closes the write side end-to-end: DB → form → eBay query → alert email.

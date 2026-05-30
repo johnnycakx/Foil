@@ -14,9 +14,17 @@
 // PokeTrace data → "—" cells.
 
 import { PokeballMark } from "@/components/brand/logo";
-import { getSoldHistory, type SoldHistory, type SoldSource } from "@/lib/poketrace/by-uuid";
+import {
+  getSoldHistory,
+  priceSeriesFromStat,
+  type SoldHistory,
+  type SoldSource,
+  type SoldStat,
+} from "@/lib/poketrace/by-uuid";
 import type { PoketraceVariant } from "@/lib/poketrace/variant";
 import { ConditionPicker } from "@/components/cards/condition-picker";
+import { SoldHistoryChart } from "@/components/cards/sold-history-chart";
+import { conditionToTier, conditionLabel, RAW_POKETRACE_TIERS, DEFAULT_CONDITION } from "@/lib/cards/conditions";
 
 const RAW_TIERS: ReadonlyArray<[key: string, label: string]> = [
   ["NEAR_MINT", "Near Mint"],
@@ -73,16 +81,88 @@ function pickGradedTier(history: SoldHistory | null): string | null {
   return null;
 }
 
+/** All distinct tier keys present across sources. */
+function allTierKeys(history: SoldHistory | null): string[] {
+  if (!history) return [];
+  const keys = new Set<string>();
+  for (const src of SOURCES) {
+    for (const k of Object.keys(history.bySource[src] ?? {})) keys.add(k);
+  }
+  return [...keys];
+}
+
+/** saleCount-weighted aggregate across `tierKeys` (Session 49c). Weighted means
+ *  NM dominates the raw aggregate naturally (it carries the most sales). Falls
+ *  back to a simple mean when no sale counts are present. Returns null when no
+ *  tier in the set has data. */
+function aggregateStat(history: SoldHistory | null, tierKeys: readonly string[]): SoldStat | null {
+  const stats = tierKeys.map((t) => statFor(history, t)).filter((s): s is SoldStat => s != null);
+  if (stats.length === 0) return null;
+  if (stats.length === 1) return stats[0];
+
+  const weight = (s: SoldStat) => (s.saleCount && s.saleCount > 0 ? s.saleCount : 0);
+  const totalW = stats.reduce((a, s) => a + weight(s), 0);
+
+  const wavg = (pick: (s: SoldStat) => number | null): number | null => {
+    let num = 0;
+    let den = 0;
+    for (const s of stats) {
+      const v = pick(s);
+      if (v == null) continue;
+      const w = totalW > 0 ? weight(s) : 1; // unweighted fallback
+      num += v * w;
+      den += w;
+    }
+    return den > 0 ? num / den : null;
+  };
+
+  return {
+    avg: wavg((s) => s.avg),
+    low: Math.min(...stats.map((s) => s.low ?? Infinity).filter(Number.isFinite)) || null,
+    high: Math.max(...stats.map((s) => s.high ?? -Infinity).filter(Number.isFinite)) || null,
+    avg1d: wavg((s) => s.avg1d),
+    avg7d: wavg((s) => s.avg7d),
+    avg30d: wavg((s) => s.avg30d),
+    saleCount: stats.reduce((a, s) => a + (s.saleCount ?? 0), 0) || null,
+  };
+}
+
+/** Resolve the headline stat + a human suffix for the selected condition
+ *  (the Session 49c bug fix: headline now reacts to ?c=). */
+function resolveHeadline(
+  history: SoldHistory | null,
+  condition: string,
+): { stat: SoldStat | null; suffix: string | null } {
+  const res = conditionToTier(condition);
+  if (res.kind === "tier") {
+    return { stat: statFor(history, res.tier), suffix: conditionLabel(condition) };
+  }
+  if (res.kind === "graded-agg") {
+    const graded = allTierKeys(history).filter(
+      (k) => k !== "AGGREGATED" && !(RAW_POKETRACE_TIERS as readonly string[]).includes(k),
+    );
+    return { stat: aggregateStat(history, graded), suffix: "Graded" };
+  }
+  // raw-agg (default). EU/cardmarket-only cards have no raw tiers — fall back
+  // to the AGGREGATED market roll-up so those still show a headline.
+  const raw = aggregateStat(history, RAW_POKETRACE_TIERS);
+  return { stat: raw ?? statFor(history, "AGGREGATED"), suffix: null };
+}
+
 export async function SoldHistoryPanel({
   slug,
   cardName,
   variants,
   selectedKey,
+  selectedCondition,
 }: {
   slug: string;
   cardName: string;
   variants: PoketraceVariant[] | undefined;
   selectedKey?: string;
+  /** ?c= condition token (Session 49b plumbing) — drives the reactive headline
+   *  + chart series (Session 49c bug fix). */
+  selectedCondition?: string;
 }) {
   if (!variants || variants.length === 0) {
     return (
@@ -108,19 +188,15 @@ export async function SoldHistoryPanel({
   const selected = explicit ?? ranked[0];
 
   const sel = selected.history;
-  // Headline tier: first per-condition raw tier (NM-first); else fall back to
-  // the cardmarket AGGREGATED roll-up (EU-only cards have only that).
   const hasRawTier = RAW_TIERS.some(([k]) => statFor(sel, k));
-  const headlineTierKey = RAW_TIERS.find(([k]) => statFor(sel, k))?.[0] ?? (statFor(sel, "AGGREGATED") ? "AGGREGATED" : null);
-  const headline = headlineTierKey ? statFor(sel, headlineTierKey) : null;
-  const trend =
-    headline && headline.avg7d != null && headline.avg30d != null
-      ? headline.avg7d > headline.avg30d
-        ? "up"
-        : headline.avg7d < headline.avg30d
-          ? "down"
-          : "flat"
-      : null;
+  const anyData = allTierKeys(sel).length > 0;
+  // Session 49c bug fix: the headline + chart now REACT to the ?c= condition
+  // picker (previously locked to NM regardless of selection).
+  const condition = selectedCondition ?? DEFAULT_CONDITION;
+  const { stat: headline, suffix: conditionSuffix } = resolveHeadline(sel, condition);
+  // Trend series for the chart — the real trailing-average points (30d/7d/24h)
+  // for the selected condition. Replaces Session 49's static "↑ 7d" arrow.
+  const chartSeries = priceSeriesFromStat(headline);
   const gradedTierKey = pickGradedTier(sel);
 
   return (
@@ -140,7 +216,7 @@ export async function SoldHistoryPanel({
               return (
                 <a
                   key={variant.variantKey}
-                  href={`/cards/${slug}?v=${encodeURIComponent(variant.variantKey)}#sold-history-heading`}
+                  href={`/cards/${slug}?v=${encodeURIComponent(variant.variantKey)}${selectedCondition ? `&c=${encodeURIComponent(selectedCondition)}` : ""}#sold-history-heading`}
                   role="radio"
                   aria-checked={isSel}
                   className={`flex flex-col rounded-xl border px-3 py-2 text-left transition ${
@@ -163,28 +239,36 @@ export async function SoldHistoryPanel({
             ADR-043). URL state (?c=), in sync with the form below. */}
         <ConditionPicker />
 
-        {/* Headline */}
-        {headline ? (
+        {/* Headline — reactive to the selected variant + condition (Session 49c).
+            The table renders whenever the variant has ANY data; only the
+            headline + chart depend on the SELECTED condition having data. */}
+        {anyData ? (
           <div className={variants.length > 1 ? "mt-6" : ""}>
             <p className="text-xs uppercase tracking-wide text-foil-slate">
               30-day sold avg · {selected.variant.variantLabel}
+              {conditionSuffix ? ` · ${conditionSuffix}` : ""}
             </p>
-            <p className="mt-1 flex items-baseline gap-3">
-              <span className="font-display text-4xl font-semibold tabular-nums text-foil-navy">
-                {money(headline.avg30d ?? headline.avg)}
-              </span>
-              {headline.saleCount != null && (
-                <span className="text-sm text-foil-slate">n={headline.saleCount} sales</span>
-              )}
-              {trend && trend !== "flat" && (
-                <span
-                  className={`text-sm font-medium ${trend === "up" ? "text-foil-navy" : "text-foil-coral"}`}
-                  title={`7-day avg ${money(headline.avg7d)} vs 30-day ${money(headline.avg30d)}`}
-                >
-                  {trend === "up" ? "↑" : "↓"} 7d
-                </span>
-              )}
-            </p>
+            {headline ? (
+              <>
+                <p className="mt-1 flex items-baseline gap-3">
+                  <span className="font-display text-4xl font-semibold tabular-nums text-foil-navy">
+                    {money(headline.avg30d ?? headline.avg)}
+                  </span>
+                  {headline.saleCount != null && (
+                    <span className="text-sm text-foil-slate">n={headline.saleCount} sales</span>
+                  )}
+                </p>
+
+                {/* Stock-chart-style trend line for the selected condition. Built
+                    from real trailing-average windows (PokeTrace has no daily
+                    series — ADR-044); replaces Session 49's static "↑ 7d" arrow. */}
+                <SoldHistoryChart series={chartSeries} />
+              </>
+            ) : (
+              <p className="mt-1 text-sm text-foil-slate">
+                No recent sales recorded for {conditionSuffix ?? "this condition"} — see all conditions below.
+              </p>
+            )}
 
             {/* Per-tier table */}
             <table className="mt-5 w-full border-collapse text-sm">

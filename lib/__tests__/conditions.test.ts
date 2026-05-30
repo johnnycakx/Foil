@@ -19,6 +19,8 @@ import {
   conditionLabel,
   ebayKeywordsForCondition,
   conditionRelaxesJunkGate,
+  conditionToTier,
+  RAW_POKETRACE_TIERS,
 } from "../cards/conditions.ts";
 
 test("token set: 17 tokens, raw + graded partition with no overlap", () => {
@@ -68,6 +70,29 @@ test("substring-collision guards: BGS 9 excludes 9.5/10; CGC 9 excludes 9.5/10",
   assert.ok(CONDITION_EBAY_KEYWORDS["cgc-9"].exclude.includes("CGC 9.5"));
   assert.ok(CONDITION_EBAY_KEYWORDS["cgc-9"].exclude.includes("CGC 10"));
   assert.ok(!CONDITION_EBAY_KEYWORDS["cgc-9-5"].exclude.includes("CGC 9"));
+});
+
+test("conditionToTier: maps every token to a PokeTrace tier or an aggregate (Session 49c)", () => {
+  // Raw aggregate.
+  assert.deepEqual(conditionToTier("any-raw"), { kind: "raw-agg" });
+  assert.deepEqual(conditionToTier("any-graded"), { kind: "graded-agg" });
+  // Specific raw tiers.
+  assert.deepEqual(conditionToTier("nm"), { kind: "tier", tier: "NEAR_MINT" });
+  assert.deepEqual(conditionToTier("dmg"), { kind: "tier", tier: "DAMAGED" });
+  // Specific graded tiers (PokeTrace AUTHORITY_GRADE shape, half-grades with _5).
+  assert.deepEqual(conditionToTier("psa-10"), { kind: "tier", tier: "PSA_10" });
+  assert.deepEqual(conditionToTier("bgs-9-5"), { kind: "tier", tier: "BGS_9_5" });
+  assert.deepEqual(conditionToTier("cgc-9-5"), { kind: "tier", tier: "CGC_9_5" });
+  assert.deepEqual(conditionToTier("bgs-10-bl"), { kind: "tier", tier: "BGS_10" });
+  // Unknown / empty → safe raw-agg default.
+  assert.deepEqual(conditionToTier(undefined), { kind: "raw-agg" });
+  assert.deepEqual(conditionToTier("bogus"), { kind: "raw-agg" });
+  // Every token resolves to something.
+  for (const tok of CONDITION_TOKENS) {
+    const r = conditionToTier(tok);
+    assert.ok(r.kind === "tier" || r.kind === "raw-agg" || r.kind === "graded-agg");
+  }
+  assert.equal(RAW_POKETRACE_TIERS.length, 5);
 });
 
 test("helpers: conditionLabel, ebayKeywordsForCondition, conditionRelaxesJunkGate", () => {

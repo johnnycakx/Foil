@@ -111,10 +111,10 @@ export default async function CardPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ v?: string }>;
+  searchParams: Promise<{ v?: string; c?: string }>;
 }) {
   const { slug } = await params;
-  const { v: selectedVariant } = await searchParams;
+  const { v: selectedVariant, c: selectedCondition } = await searchParams;
   const entry = getCatalogEntry(slug);
   if (!entry) notFound();
 
@@ -250,6 +250,7 @@ export default async function CardPage({
           cardName={card.name}
           variants={card.variants}
           selectedKey={selectedVariant}
+          selectedCondition={selectedCondition}
         />
 
         {/* Live timestamp chip — sits above the Best Listing block as a

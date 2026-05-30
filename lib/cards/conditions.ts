@@ -103,6 +103,51 @@ export const CONDITION_EBAY_KEYWORDS: Record<ConditionToken, KeywordSet> = {
   "cgc-9": { include: ["CGC 9"], exclude: ["CGC 9.5", "CGC 10", "PSA", "BGS", "SGC"] },
 };
 
+// PokeTrace per-tier keys for the raw conditions, NM→DMG (Session 49c). The
+// graded keys follow PokeTrace's `<AUTHORITY>_<GRADE>` shape (PSA_10, BGS_9_5,
+// CGC_9_5, …) — verified against the live /v1/cards response.
+export const RAW_POKETRACE_TIERS = [
+  "NEAR_MINT",
+  "LIGHTLY_PLAYED",
+  "MODERATELY_PLAYED",
+  "HEAVILY_PLAYED",
+  "DAMAGED",
+] as const;
+
+/** How a condition token resolves against PokeTrace's tiers (Session 49c). */
+export type TierResolution =
+  | { kind: "tier"; tier: string }
+  | { kind: "raw-agg" }
+  | { kind: "graded-agg" };
+
+const TOKEN_TO_TIER: Record<ConditionToken, TierResolution> = {
+  "any-raw": { kind: "raw-agg" },
+  nm: { kind: "tier", tier: "NEAR_MINT" },
+  lp: { kind: "tier", tier: "LIGHTLY_PLAYED" },
+  mp: { kind: "tier", tier: "MODERATELY_PLAYED" },
+  hp: { kind: "tier", tier: "HEAVILY_PLAYED" },
+  dmg: { kind: "tier", tier: "DAMAGED" },
+  "any-graded": { kind: "graded-agg" },
+  "psa-10": { kind: "tier", tier: "PSA_10" },
+  "psa-9": { kind: "tier", tier: "PSA_9" },
+  "psa-8": { kind: "tier", tier: "PSA_8" },
+  "psa-7": { kind: "tier", tier: "PSA_7" },
+  // PokeTrace had no BGS_10 tier on the cards probed (grades top out at 9.5);
+  // when the tier is absent the panel/chart soft-fall to "—" / unavailable.
+  "bgs-10-bl": { kind: "tier", tier: "BGS_10" },
+  "bgs-9-5": { kind: "tier", tier: "BGS_9_5" },
+  "bgs-9": { kind: "tier", tier: "BGS_9" },
+  "cgc-10": { kind: "tier", tier: "CGC_10" },
+  "cgc-9-5": { kind: "tier", tier: "CGC_9_5" },
+  "cgc-9": { kind: "tier", tier: "CGC_9" },
+};
+
+/** Resolve a condition token to a PokeTrace tier (or an aggregate marker).
+ *  Unknown tokens fall back to the raw aggregate (the safe default headline). */
+export function conditionToTier(token: string | null | undefined): TierResolution {
+  return token && isValidConditionToken(token) ? TOKEN_TO_TIER[token] : { kind: "raw-agg" };
+}
+
 const TOKEN_SET = new Set<string>(CONDITION_TOKENS);
 
 /** Type guard: is `value` a known condition token? */

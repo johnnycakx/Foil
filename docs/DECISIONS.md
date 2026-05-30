@@ -1534,6 +1534,31 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 
 ---
 
+## ADR-044 — Reactive sold-history headline + a trailing-average line chart (PokeTrace has no daily series)
+
+**Date:** 2026-05-29 (Session 49c)
+**Status:** Accepted, with a documented data-reality adaptation (below). Builds on ADR-042/043.
+
+**Context — the bug.** Session 49's `SoldHistoryPanel` headline + trend were locked to the variant's first raw tier (NM) regardless of the Session 49b condition picker. Picking PSA 10 / BGS 10 / CGC 9.5 left the headline showing the NM raw value while only the per-condition table reacted.
+
+**Context — the load-bearing data finding (AGENTS.md probe).** The feature half asked for a Robinhood/S&P-style **daily** price-history line with **7D/30D/90D/ALL** ranges, via a new `getPriceHistory(uuid, tier, days) → {date, avg, saleCount}[]`. Before building, I probed PokeTrace empirically and found **no daily price-history series exists**: `/history`, `/price-history`, `/sales` all 404; `?history=true` returns the same object with no history field; per tier the only time-resolved fields are `avg1d`, `avg7d`, `avg30d` (+ `median3d/7d/30d`) — at most ~3 trailing-average points, **nothing past 30 days**. PriceCharting (the other in-stack source) returns current-snapshot tier prices only, no series. So a true daily chart is impossible from real data, and a smooth daily line synthesized from 3 windowed averages would be **fabrication** — a direct violation of PRODUCT.md principle #1 ("show the real price… never fabricate, never oversell").
+
+**Decision.**
+1. **Bug fix (reactive headline).** `conditions.ts::conditionToTier` maps each token to a PokeTrace tier or an aggregate marker (`raw-agg` / `graded-agg`). The panel takes `selectedCondition` (the `?c=` already plumbed in 49b) and resolves the headline stat: a specific tier → that tier's stat; `any-raw` → a saleCount-weighted aggregate over the 5 raw tiers (NM-dominated, falling back to the EU `AGGREGATED` roll-up); `any-graded` → a weighted aggregate over the graded tiers present. The headline label gains the condition suffix ("30-day sold avg · Holofoil · PSA 10"). The table now renders whenever the variant has **any** data (decoupled from the selected condition), so picking a grade the card lacks can't hide it.
+2. **Honest chart (the adaptation).** `getPriceHistory` returns the **real trailing-average points** (`{windowDays: 30|7|1, avg, saleCount}`) — labelled by window, never by fabricated dates — reusing `getSoldHistory`'s 1h SWR cache (no extra network). `components/cards/sold-history-chart.tsx` is an inline-SVG line + area-fill + trend-coloured endpoint dot (gold up / coral down) + hover guide; **no charting library**. It replaces Session 49's static "↑ 7d" arrow with the actual 30d-avg → 7d-avg → 24h-avg trajectory. The range selector (7D/30D/90D/ALL, `?r=` URL state, default 30D) keeps **90D/ALL visibly disabled** because no data exists past 30 days — the UI never implies history we don't have.
+
+**Why this adaptation, and the process note.** Fabrication was off the table (brand). I surfaced the finding and offered the user three paths (honest 3-point line / bug-fix-only / build a daily-snapshot pipeline) via a clarifying question; the user deferred without redirecting and the session's goal hook required completion, so I proceeded with the only honest, fully-buildable interpretation — the bug fix + a trailing-average line clearly labelled as such. This is the AGENTS.md mandate in practice: adapt to what the platform actually provides and document it, rather than assert daily data that doesn't exist.
+
+**Consequences.**
+- The "chart" is sparse (2–3 real points) and is a **trailing-average trend**, not daily prices. Labelled honestly ("Recent trend · trailing averages", x-axis "30d/7d/24h avg").
+- **90D/ALL are permanently disabled** until a real daily source exists.
+- **Deferred (Session 49d candidate): a genuine daily series.** Stand up a `price_snapshots(uuid, tier, date, avg, saleCount)` table + a daily cron snapshotting PokeTrace per tier; the chart then accrues true daily history (and real 90D/ALL) over time. This is the only path to the originally-envisioned chart; it's sizeable (new table + cron + weeks to accumulate) and was out of scope here.
+- Existing condition table (Session 49) preserved unchanged; variant selector, condition picker, and the 49b write path untouched.
+
+**Cross-refs.** `components/cards/sold-history-chart.tsx`, `components/cards/sold-history-panel.tsx`, `lib/poketrace/by-uuid.ts` (`getPriceHistory`, `priceSeriesFromStat`), `lib/cards/conditions.ts` (`conditionToTier`), [ADR-042](#adr-042--poketrace-per-variant-uuid-caching-search-then-bake--variant-aware-sold-history), [ADR-043](#adr-043--variant--condition-watchlist-data-model--ebay-query-augmentation), [PRODUCT.md](../PRODUCT.md) principle 1 (never fabricate).
+
+---
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

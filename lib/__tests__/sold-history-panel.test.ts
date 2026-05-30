@@ -41,6 +41,37 @@ test("SoldHistoryPanel: falls back to the cardmarket AGGREGATED tier (Session 49
   assert.match(src, /Market average/, "aggregated row labelled");
 });
 
+test("SoldHistoryPanel: headline reacts to the selected condition (Session 49c bug fix)", () => {
+  const src = read("components/cards/sold-history-panel.tsx");
+  // The panel must accept the condition + resolve it to a tier/aggregate
+  // rather than locking the headline to NM.
+  assert.match(src, /selectedCondition/, "accepts the ?c= condition");
+  assert.match(src, /conditionToTier|resolveHeadline/, "resolves the condition to a tier/aggregate");
+  // Headline label appends the condition suffix ("· PSA 10").
+  assert.match(src, /conditionSuffix/);
+  // Old static-NM headline bug is gone: the headline tier is no longer the
+  // hard-coded "first raw tier" pick.
+  assert.doesNotMatch(src, /headlineTierKey\s*=\s*RAW_TIERS\.find/, "must not relock headline to first raw tier");
+});
+
+test("SoldHistoryPanel: mounts the chart with the selected-condition series; table is condition-independent", () => {
+  const src = read("components/cards/sold-history-panel.tsx");
+  assert.match(src, /<SoldHistoryChart\b/, "mounts the line chart");
+  assert.match(src, /series=\{chartSeries\}/, "passes the selected condition's trailing-avg series");
+  assert.match(src, /priceSeriesFromStat/);
+  // The static "↑ 7d" arrow render-ternary is replaced by the chart.
+  assert.doesNotMatch(src, /trend === "up" \? "↑"/, "static trend-arrow ternary removed");
+  // Table renders whenever the variant has ANY data (not gated on the selected
+  // condition having a headline) so picking an empty grade can't hide it.
+  assert.match(src, /anyData/);
+});
+
+test("page passes selectedCondition (?c) into the panel", () => {
+  const src = read("app/(site)/cards/[slug]/page.tsx");
+  assert.match(src, /selectedCondition=\{selectedCondition\}/);
+  assert.match(src, /c:\s*selectedCondition/);
+});
+
 test("/cards/[slug]: mounts SoldHistoryPanel between variants and the buy CTA", () => {
   const src = read("app/(site)/cards/[slug]/page.tsx");
   assert.match(src, /<SoldHistoryPanel\b/);
