@@ -21,6 +21,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { subscribeEmail } from "@/lib/beehiiv";
+import { getCatalogEntry } from "@/lib/cards/catalog";
+import { getCardMetadata } from "@/lib/cards/sdk";
+import { deriveAvailableVariants, DEFAULT_VARIANT_KEY } from "@/lib/poketrace/variant";
+import { isValidConditionToken, DEFAULT_CONDITION } from "@/lib/cards/conditions";
+import { upsertWatchlist } from "@/lib/wishlist/upsert";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -33,6 +38,12 @@ const watchlistSchema = z.object({
     .max(120)
     .regex(/^[a-z0-9-]+$/, "card_slug must be lowercase kebab-case"),
   target_price_cents: z.number().int().min(1).max(10_000_000),
+  /** Variant + condition tokens (Session 49b / ADR-043). Optional on the wire
+   *  so older clients keep working; default to the "any printing / any raw"
+   *  sentinels. Validated against the card's real variants + the token set
+   *  below before the upsert. */
+  variant: z.string().max(60).optional(),
+  condition: z.string().max(20).optional(),
   /** Newsletter opt-in checkbox state. Default-checked in the UI per
    *  ADR-027; defaults to false on the wire when the field is absent. */
   opt_in_newsletter: z.boolean().optional().default(false),
@@ -54,6 +65,22 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
+  // Variant + condition validation (Session 49b / ADR-043). Default to the
+  // sentinels; validate a supplied variant against the card's real baked
+  // variants and a supplied condition against the token set.
+  const variant = parsed.data.variant && parsed.data.variant.length > 0 ? parsed.data.variant : DEFAULT_VARIANT_KEY;
+  const condition = parsed.data.condition && parsed.data.condition.length > 0 ? parsed.data.condition : DEFAULT_CONDITION;
+  if (!isValidConditionToken(condition)) {
+    return NextResponse.json({ ok: false, error: "invalid_payload" }, { status: 400 });
+  }
+  if (variant !== DEFAULT_VARIANT_KEY) {
+    const entry = getCatalogEntry(parsed.data.card_slug);
+    const card = entry ? await getCardMetadata({ id: entry.pokemonTcgId }) : null;
+    if (!deriveAvailableVariants(card).includes(variant)) {
+      return NextResponse.json({ ok: false, error: "invalid_payload" }, { status: 400 });
+    }
+  }
+
   let admin: ReturnType<typeof supabaseAdmin>;
   try {
     admin = supabaseAdmin();
@@ -63,14 +90,16 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ ok: false, error: "unavailable" }, { status: 503 });
   }
 
-  const { error } = await admin.from("watchlists").insert({
+  const { ok: saved, error } = await upsertWatchlist(admin, {
     email: parsed.data.email,
     card_slug: parsed.data.card_slug,
+    variant,
+    condition,
     target_price_cents: parsed.data.target_price_cents,
   });
 
-  if (error) {
-    console.warn("[watchlist] insert failed:", error.message);
+  if (!saved) {
+    console.warn("[watchlist] upsert failed:", error);
     return NextResponse.json({ ok: false, error: "insert_failed" }, { status: 500 });
   }
 

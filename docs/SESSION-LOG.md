@@ -8,6 +8,32 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-29 — Session 49b: per-variant + per-condition watchlist write path — [ADR-043](DECISIONS.md#adr-043--variant--condition-watchlist-data-model--ebay-query-augmentation)
+
+**Why.** Session 49 (ADR-042) shipped the per-variant sold-history *display*; a watch still couldn't *target* a printing or grade. This closes the write side end-to-end: DB → form → eBay query → alert email.
+
+**Schema adaptation (ADR-043).** The goal spec assumed a `user_id`-keyed table + a `UNIQUE (user_id, card_slug)` to drop. The live `watchlists` table is **email-anchored** (no `user_id`, no V1 auth per ADR-020). Adapted the migration to `UNIQUE (email, card_slug, variant, condition)` — the natural identity of a watch in an auth-free product (confirmed against the live schema + ROADMAP NOW #7).
+
+**What landed.**
+- **Migration `20260529120000_watchlist_variant_condition.sql`** (applied via `supabase db push` → remote `cayzmikutgcwsqvagvzv`, verified columns + constraint via SQL): `variant TEXT NOT NULL DEFAULT 'default'`, `condition TEXT NOT NULL DEFAULT 'any-raw'`, pre-dedup, then `UNIQUE (email, card_slug, variant, condition)`. Types hand-updated in `lib/supabase/types.ts`.
+- **`lib/cards/conditions.ts`** (new): 17-token closed set (6 raw + 11 graded), labels, eBay include/exclude keyword maps, `isValidConditionToken`, played-tier junk-gate relaxer.
+- **`lib/poketrace/variant.ts`**: `deriveAvailableVariants(card)` + `variantEbayKeywords(variantKey)`.
+- **`lib/affiliate/ebay-browse.ts`**: `buildEbayQuery({cardName,setName,variant,condition})` (biases `q` with include phrases). **5th picker gate** in `listing-picker.ts` (`rejectByKeywords`: ≥1 include AND no exclude; excludes enforced post-fetch, not in `q`). Played/damaged target relaxes the ADR-026 condition-junk gate. `GetBestListingInput` gains `variant`/`condition`.
+- **Write path**: `app/actions/create-watchlist.ts` (Server Action) + `components/cards/watchlist-form.tsx` (Client, `useActionState`, reads `?v`/`?c`) + `components/cards/condition-picker.tsx` (Client, `?c=` URL state via soft `router.replace`, mounted in the sold-history panel). Shared `lib/wishlist/{upsert,validate}.ts`; legacy `/api/watchlist` route kept + upgraded to the same helpers (UPSERT, variant/condition validation).
+- **Alert path**: `scan-batch.ts` groups by **(slug, variant, condition)** — Browse once per combo, metadata once per slug, under the cap; `alert-email.ts` injects the variant/condition qualifier into subject + a "Tracking:" body line, omitted for the all-defaults watch.
+
+**Before/after sample alert email (subject line).**
+- _Before (all-defaults watch, unchanged):_ `Charizard (Base) dropped to $38.50 — you wanted ≤ $40.00`
+- _After (targeted watch, variant=1st-edition-holofoil, condition=psa-10):_ `Charizard 1st Edition Holofoil (PSA 10) (Base) dropped to $4,200.00 — you wanted ≤ $4,500.00` — body adds `Tracking: 1st Edition Holofoil (PSA 10)`.
+
+**Behaviour change (documented).** Backfilled rows default to `condition='any-raw'`, which now excludes graded slabs from alerts. Aligned with the feature (a raw buyer shouldn't get a graded slab as "their" deal); noted in ADR-043.
+
+**Closure gate (R-011 strict).** Full suite green · `tsc` clean · `npm run build` exit 0 · `compliance:check` 6/6 · `design:lint` 0 new (2 pre-existing warnings in `unsubscribe/route.ts` + `upload-form.tsx`, untouched) · `/security-review` RUN · push confirmed · Vercel Ready before claiming closed. 4 new test files (conditions, ebay-browse-variant-condition-filter [the 6 named scenarios], create-watchlist, condition-picker) + extended wishlist-scan-batch / wishlist-alert-email / email-capture.
+
+**Followups.** Per-facet AND gate (vs the current ≥1-include bias); mobile sheet polish on the condition picker; structured eBay condition field if/when the Browse surface exposes one.
+
+---
+
 ## 2026-05-29 — Session 49.2: PokeTrace UUID gap fully closed (205 → 207/207) via market=EU fallback + cardmarket render — [ADR-042](DECISIONS.md#adr-042--poketrace-per-variant-uuid-caching-search-then-bake--variant-aware-sold-history)
 
 **Why.** The 2 cards I called "vendor gaps" in 49.1 weren't — the founder's catalog browse showed both exist in PokeTrace, EU-only. My 49.1 matcher always queried `market=US`, which filtered them out.

@@ -201,6 +201,13 @@ export type GetBestListingInput = {
    *  Browse client logs every call to browse_calls keyed on this; see
    *  ADR-025. Consumed by lib/affiliate/ebay-browse.ts; EPN ignores it. */
   surface?: "page_render" | "wishlist_cron" | "manual";
+  /** Watchlist variant token (PoketraceVariant.variantKey or "default").
+   *  Biases the Browse query + gates listing titles per Session 49b /
+   *  ADR-043. Consumed by lib/affiliate/ebay-browse.ts; EPN ignores it. */
+  variant?: string;
+  /** Watchlist condition token (lib/cards/conditions.ts). Same handling as
+   *  `variant`. Consumed by lib/affiliate/ebay-browse.ts; EPN ignores it. */
+  condition?: string;
 };
 
 /**

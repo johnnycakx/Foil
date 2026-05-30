@@ -143,30 +143,43 @@ test("(site) layout: footer surfaces Privacy + Terms + Newsletter links", () => 
 // WatchlistForm UI — opt-in checkbox + correct label phrasing
 // ---------------------------------------------------------------------------
 
+// Session 49b moved the inline form to components/cards/watchlist-form.tsx, a
+// Client Component submitting via the createWatchlist Server Action (the
+// inline-script fetch is gone). The opt-in invariants now live there.
+
 test("WatchlistForm: renders opt_in_newsletter checkbox, default-checked", () => {
-  const src = readFile("app/(site)/cards/[slug]/page.tsx");
-  // The form must include the named checkbox with defaultChecked.
-  const formStart = src.indexOf("function WatchlistForm(");
-  assert.ok(formStart > 0, "WatchlistForm must be defined");
-  const formText = src.slice(formStart);
-  assert.match(formText, /name=["']opt_in_newsletter["']/);
-  assert.match(formText, /defaultChecked/);
+  const src = readFile("components/cards/watchlist-form.tsx");
+  assert.match(src, /name=["']opt_in_newsletter["']/);
+  assert.match(src, /defaultChecked/);
 });
 
 test("WatchlistForm: label includes the goal's required honest framing", () => {
-  const src = readFile("app/(site)/cards/[slug]/page.tsx");
+  const src = readFile("components/cards/watchlist-form.tsx");
   // The label must set explicit expectations: cadence + unsubscribe path.
-  // The goal text mandated specific phrasing — pinning the substring "weekly
-  // deals newsletter" and "unsubscribe anytime" catches drift from that
-  // framing without being overly literal on punctuation.
   assert.match(src, /weekly deals newsletter/i);
   assert.match(src, /unsubscribe anytime/i);
 });
 
-test("WatchlistForm: client script forwards opt_in_newsletter to the POST body", () => {
-  const src = readFile("app/(site)/cards/[slug]/page.tsx");
-  // The inline-script POST body must include the opt_in_newsletter key, OR
-  // the route's zod schema would never receive it. Catch the literal in the
-  // JSON.stringify({...}) call.
-  assert.match(src, /opt_in_newsletter\s*:\s*optInNewsletter/);
+test("WatchlistForm: submits via the createWatchlist Server Action with the opt-in field", () => {
+  const src = readFile("components/cards/watchlist-form.tsx");
+  // FormData carries opt_in_newsletter to the action (the action gates the
+  // Beehiiv subscribe on its presence). Pin the action wiring + the field.
+  assert.match(src, /createWatchlist/);
+  assert.match(src, /useActionState/);
+  assert.match(src, /name=["']opt_in_newsletter["']/);
+});
+
+test("createWatchlist action: gates the Beehiiv subscribe on opt_in_newsletter, soft-fails", () => {
+  const src = readFile("app/actions/create-watchlist.ts");
+  assert.match(src, /source:\s*["']watchlist-form["']/, "subscribe tagged source=watchlist-form");
+  const optInIdx = src.indexOf("opt_in_newsletter");
+  const subscribeIdx = src.search(/subscribeEmail\s*\(/);
+  assert.ok(optInIdx >= 0 && subscribeIdx >= 0);
+  assert.ok(
+    src.slice(0, subscribeIdx).lastIndexOf("opt_in_newsletter") >= 0,
+    "subscribe must be gated on a textually-prior opt_in_newsletter check",
+  );
+  // Soft-fail: subscribe wrapped in try/catch.
+  const before = src.slice(Math.max(0, subscribeIdx - 400), subscribeIdx);
+  assert.match(before, /\btry\s*\{/);
 });

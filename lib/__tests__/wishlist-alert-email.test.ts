@@ -91,3 +91,40 @@ test("emailBody: includes the per-card page link for after-the-fact browsing", (
   const html = emailBody(inputs());
   assert.match(html, /href="https:\/\/foiltcg\.com\/cards\/base1-4-charizard"/);
 });
+
+// --- Session 49b: variant + condition labels -------------------------------
+
+test("subjectLine: injects variant + condition qualifier when present", () => {
+  const subject = subjectLine(
+    inputs({ variantLabel: "1st Edition Holofoil", conditionLabel: "PSA 10" }),
+  );
+  assert.equal(
+    subject,
+    "Charizard 1st Edition Holofoil (PSA 10) (Base) dropped to $38.50 — you wanted ≤ $40.00",
+  );
+});
+
+test("subjectLine: variant only (no condition) still reads cleanly", () => {
+  const subject = subjectLine(inputs({ variantLabel: "Shadowless Holofoil" }));
+  assert.match(subject, /^Charizard Shadowless Holofoil \(Base\) dropped to/);
+});
+
+test("subjectLine: omitting both labels is byte-identical to the pre-49b format", () => {
+  // Guards the all-defaults watch (variant 'default' / condition 'any-raw' →
+  // the cron passes undefined labels) against any regression.
+  assert.equal(
+    subjectLine(inputs()),
+    "Charizard (Base) dropped to $38.50 — you wanted ≤ $40.00",
+  );
+});
+
+test("emailBody: renders a 'Tracking: …' line with the qualifier, HTML-escaped", () => {
+  const html = emailBody(inputs({ variantLabel: "1st Edition Holofoil", conditionLabel: "PSA 10" }));
+  assert.match(html, /Tracking:/);
+  assert.match(html, /1st Edition Holofoil \(PSA 10\)/);
+});
+
+test("emailBody: no 'Tracking:' line when labels are absent", () => {
+  const html = emailBody(inputs());
+  assert.ok(!html.includes("Tracking:"));
+});

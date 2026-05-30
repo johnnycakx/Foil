@@ -16,6 +16,7 @@
 import { PokeballMark } from "@/components/brand/logo";
 import { getSoldHistory, type SoldHistory, type SoldSource } from "@/lib/poketrace/by-uuid";
 import type { PoketraceVariant } from "@/lib/poketrace/variant";
+import { ConditionPicker } from "@/components/cards/condition-picker";
 
 const RAW_TIERS: ReadonlyArray<[key: string, label: string]> = [
   ["NEAR_MINT", "Near Mint"],
@@ -157,6 +158,10 @@ export async function SoldHistoryPanel({
             })}
           </div>
         )}
+
+        {/* Condition picker — drives the watchlist alert target (Session 49b /
+            ADR-043). URL state (?c=), in sync with the form below. */}
+        <ConditionPicker />
 
         {/* Headline */}
         {headline ? (

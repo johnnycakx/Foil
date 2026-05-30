@@ -21,6 +21,8 @@ import { CardMetadataBlock } from "@/components/card-metadata-block";
 import { CardVariantsSection } from "@/components/card-variants-section";
 import { LiveTimestamp } from "@/components/live-timestamp";
 import { SoldHistoryPanel } from "@/components/cards/sold-history-panel";
+import { WatchlistForm } from "@/components/cards/watchlist-form";
+import { deriveAvailableVariants } from "@/lib/poketrace/variant";
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = false;
@@ -340,7 +342,11 @@ export default async function CardPage({
             Set a target price; we&apos;ll email you the moment a {card.name}{" "}
             listing meets it. No account required.
           </p>
-          <WatchlistForm cardSlug={slug} cardName={card.name} />
+          <WatchlistForm
+            cardSlug={slug}
+            cardName={card.name}
+            availableVariantKeys={deriveAvailableVariants(card)}
+          />
           <p className="mt-3 text-[11px] uppercase tracking-wider text-foil-slate">
             One-shot email · No spam · Unsubscribe by clicking the link in any email we send.
           </p>
@@ -416,98 +422,4 @@ function formatReleaseYear(release: string): string {
   // Pokemon TCG SDK uses "YYYY/MM/DD" — pull the year for a casual mention.
   const m = release.match(/^(\d{4})/);
   return m ? m[1] : release;
-}
-
-function WatchlistForm({ cardSlug, cardName }: { cardSlug: string; cardName: string }) {
-  // Inline POST-as-JSON via a tiny script — keeps the page a Server Component
-  // while still hitting /api/watchlist with the right shape.
-  //
-  // Task #18 (Session 37): newsletter opt-in checkbox below the price target.
-  // Default-checked per STRATEGY-AUDIENCE-MOAT.md (US CAN-SPAM, visible +
-  // uncheckable before submit). Field name `opt_in_newsletter`. The route
-  // soft-fails the Beehiiv call so a Beehiiv outage can never block the
-  // watchlist insert.
-  return (
-    <form
-      className="mt-4 flex flex-col gap-3"
-      data-card-slug={cardSlug}
-      data-card-name={cardName}
-      action={`/api/watchlist`}
-      method="post"
-    >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
-        <input
-          type="email"
-          name="email"
-          required
-          placeholder="you@example.com"
-          className="flex-1 rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-sm text-foil-navy placeholder-foil-slate/60 outline-none focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30"
-        />
-        <input
-          type="number"
-          name="target_price"
-          required
-          min={1}
-          step={1}
-          placeholder="Target ($)"
-          className="w-full rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-sm text-foil-navy placeholder-foil-slate/60 outline-none focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30 sm:w-32"
-        />
-        <button
-          type="submit"
-          className="rounded-xl bg-foil-navy px-6 py-3 text-sm font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40"
-        >
-          Notify me
-        </button>
-      </div>
-      <label className="flex items-start gap-3 text-xs text-foil-slate">
-        <input
-          type="checkbox"
-          name="opt_in_newsletter"
-          defaultChecked
-          className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-foil-navy/20 bg-foil-cream text-foil-gold focus:ring-foil-gold focus:ring-offset-0"
-        />
-        <span>
-          Also send me Foil&apos;s weekly deals newsletter (~1 email/week, unsubscribe anytime)
-        </span>
-      </label>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            (function () {
-              var form = document.currentScript.parentElement;
-              form.addEventListener('submit', function (e) {
-                e.preventDefault();
-                var email = form.elements.email.value;
-                var targetDollars = parseFloat(form.elements.target_price.value || '0');
-                var optInEl = form.elements.opt_in_newsletter;
-                var optInNewsletter = optInEl ? !!optInEl.checked : false;
-                var btn = form.querySelector('button[type=submit]');
-                if (btn) btn.disabled = true;
-                fetch('/api/watchlist', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    email: email,
-                    card_slug: form.dataset.cardSlug,
-                    target_price_cents: Math.round(targetDollars * 100),
-                    opt_in_newsletter: optInNewsletter,
-                  }),
-                })
-                  .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
-                  .then(function (res) {
-                    if (res.ok && res.body && res.body.ok) {
-                      form.outerHTML = '<div class="mt-4 rounded-xl border border-foil-gold/40 bg-foil-gold/10 p-4 text-sm text-foil-navy"><p class="font-medium text-foil-navy">You\\'re on the list.</p><p class="mt-1 text-foil-slate">We\\'ll email you the moment ' + (form.dataset.cardName || 'this card') + ' hits your target price.</p></div>';
-                    } else if (btn) {
-                      btn.disabled = false;
-                      btn.textContent = 'Try again';
-                    }
-                  })
-                  .catch(function () { if (btn) { btn.disabled = false; btn.textContent = 'Try again'; } });
-              });
-            })();
-          `,
-        }}
-      />
-    </form>
-  );
 }

@@ -43,7 +43,7 @@ export async function GET(request: Request): Promise<NextResponse> {
       const admin = supabaseAdmin();
       const { data, error } = await admin
         .from("watchlists")
-        .select("id, email, card_slug, target_price_cents, last_notified_at")
+        .select("id, email, card_slug, target_price_cents, variant, condition, last_notified_at")
         .or(`last_notified_at.is.null,last_notified_at.lt.${cutoffIso}`);
       if (error) {
         return { rows: [], error: error.message };
@@ -53,6 +53,8 @@ export async function GET(request: Request): Promise<NextResponse> {
         email: r.email as string,
         card_slug: r.card_slug as string,
         target_price_cents: r.target_price_cents as number,
+        variant: (r.variant as string | null) ?? "default",
+        condition: (r.condition as string | null) ?? "any-raw",
         last_notified_at: (r.last_notified_at as string | null) ?? null,
       })) satisfies WatchlistRow[];
       return { rows, error: null };

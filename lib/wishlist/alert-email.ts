@@ -29,7 +29,20 @@ export type WishlistEmailInputs = {
    *  visible body link falls back to a mailto, but the email still sends.
    *  Caller is responsible for minting via lib/unsubscribe-token. */
   unsubscribeUrl: string | null;
+  /** Human variant label ("1st Edition Holofoil") when the watch targets a
+   *  specific printing. Omitted for the "any printing" default (Session 49b /
+   *  ADR-043) so a generic alert reads exactly as it did pre-49b. */
+  variantLabel?: string;
+  /** Human condition label ("PSA 10"). Omitted for the "any raw" default. */
+  conditionLabel?: string;
 };
+
+/** "1st Edition Holofoil (PSA 10)" / "1st Edition Holofoil" / "(PSA 10)" / "". */
+function trackingQualifier(input: WishlistEmailInputs): string {
+  return [input.variantLabel, input.conditionLabel ? `(${input.conditionLabel})` : null]
+    .filter(Boolean)
+    .join(" ");
+}
 
 export function formatUsd(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -52,7 +65,11 @@ function formatPriceFromListing(listing: EpnBestListing): string {
 export function subjectLine(input: WishlistEmailInputs): string {
   const currentPrice = formatPriceFromListing(input.listing);
   const targetPrice = formatUsd(input.targetPriceCents);
-  return `${input.cardName} (${input.setName}) dropped to ${currentPrice} — you wanted ≤ ${targetPrice}`;
+  // Variant + condition qualifier (Session 49b / ADR-043). Empty for the
+  // any-printing / any-raw default, so the line is byte-identical to pre-49b.
+  const qualifier = trackingQualifier(input);
+  const namePart = qualifier ? `${input.cardName} ${qualifier}` : input.cardName;
+  return `${namePart} (${input.setName}) dropped to ${currentPrice} — you wanted ≤ ${targetPrice}`;
 }
 
 function escapeHtml(s: string): string {
@@ -80,6 +97,13 @@ export function emailBody(input: WishlistEmailInputs): string {
   const safeAffiliateUrl = escapeHtml(input.listing.affiliateUrl);
   const safeCardPageUrl = escapeHtml(input.cardPageUrl);
 
+  // What exactly is being tracked — variant + condition. Builds trust ("this
+  // is the printing/grade I asked for"). Empty for the all-defaults watch.
+  const qualifier = trackingQualifier(input);
+  const trackingLine = qualifier
+    ? `<p style="color: #777; font-size: 13px; margin: 0 0 24px;">Tracking: <strong style="color: #555;">${escapeHtml(qualifier)}</strong></p>`
+    : "";
+
   const imageBlock = input.cardImage
     ? `<img src="${escapeHtml(input.cardImage)}" alt="${safeName} (${safeSet})" width="160" style="border-radius: 12px; display: block; margin: 0 auto 16px;" />`
     : "";
@@ -92,7 +116,8 @@ export function emailBody(input: WishlistEmailInputs): string {
     `<!doctype html>`,
     `<html><body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; line-height: 1.55; color: #1a1a1a; background: #fff;">`,
     `<h1 style="font-size: 22px; margin: 0 0 8px; color: #FF6B5C;">A card you're watching just dropped.</h1>`,
-    `<p style="color: #555; font-size: 14px; margin: 0 0 24px;">${safeName} (${safeSet}) is now <strong>${currentPrice}</strong> — you opted in for alerts when it hit ≤ ${targetPrice}.</p>`,
+    `<p style="color: #555; font-size: 14px; margin: 0 0 ${trackingLine ? "8px" : "24px"};">${safeName} (${safeSet}) is now <strong>${currentPrice}</strong> — you opted in for alerts when it hit ≤ ${targetPrice}.</p>`,
+    trackingLine,
 
     imageBlock,
 

@@ -31,6 +31,8 @@ import type {
 import { getAccessToken } from "./ebay-oauth.ts";
 import { pickBestListing } from "./listing-picker.ts";
 import { logBrowseCall, type BrowseSurface } from "../telemetry/browse-calls.ts";
+import { variantEbayKeywords } from "../poketrace/variant.ts";
+import { ebayKeywordsForCondition, conditionRelaxesJunkGate } from "../cards/conditions.ts";
 
 const BROWSE_SEARCH_ENDPOINT = "https://api.ebay.com/buy/browse/v1/item_summary/search";
 const MARKETPLACE_ID = "EBAY_US";
@@ -163,6 +165,53 @@ function parseItemSummaries(body: unknown): EpnProductHit[] {
   return out;
 }
 
+export type BuildEbayQueryInput = {
+  cardName: string;
+  setName?: string;
+  /** Watchlist variant token (variantKey or "default"). */
+  variant?: string;
+  /** Watchlist condition token (lib/cards/conditions.ts). */
+  condition?: string;
+};
+
+export type BuiltEbayQuery = {
+  /** The `q` string for the Browse search — card name + set + quoted include
+   *  phrases that bias eBay toward the targeted printing/condition. */
+  query: string;
+  /** Merged include keywords for the picker's title gate (≥1 must appear). */
+  include: string[];
+  /** Merged exclude keywords for the picker's title gate (none may appear). */
+  exclude: string[];
+};
+
+/**
+ * Build the Browse search query + the variant/condition keyword sets for the
+ * picker gate (Session 49b / ADR-043).
+ *
+ * The include phrases are appended (quoted) to the `q` string so eBay biases
+ * toward the targeted printing/condition; the exclude keywords are NOT put in
+ * `q` — they're enforced post-fetch by the picker's title gate, which is
+ * authoritative and avoids relying on eBay `q` negation semantics we haven't
+ * verified against the docs. An un-targeted call (no variant/condition, or
+ * variant="default"/condition omitted) returns just the bare card query with
+ * empty keyword sets, so the page-render path is unchanged.
+ */
+export function buildEbayQuery(input: BuildEbayQueryInput): BuiltEbayQuery {
+  const base = [input.cardName, input.setName].filter(Boolean).join(" ").trim();
+
+  const vk = variantEbayKeywords(input.variant);
+  const ck = ebayKeywordsForCondition(input.condition);
+
+  const include = [...new Set([...vk.include, ...ck.include])];
+  const exclude = [...new Set([...vk.exclude, ...ck.exclude])];
+
+  // Append include phrases (quoted) to bias the search. Skip excludes here —
+  // the picker gate enforces them.
+  const query = include.length > 0 ? `${base} ${include.map((k) => `"${k}"`).join(" ")}`.trim() : base;
+
+  return { query, include, exclude };
+}
+
 /**
  * Convenience: search Browse for a card, pick the cheapest credible
  * listing via `pickBestListing` (see ADR-026), and return the affiliate-
@@ -183,7 +232,12 @@ function parseItemSummaries(body: unknown): EpnProductHit[] {
  * call lands in browse_calls with the call-site tag.
  */
 export async function getBestListing(input: GetBestListingInput): Promise<EpnBestListing | null> {
-  const query = [input.cardName, input.setName].filter(Boolean).join(" ").trim();
+  const { query, include, exclude } = buildEbayQuery({
+    cardName: input.cardName,
+    setName: input.setName,
+    variant: input.variant,
+    condition: input.condition,
+  });
   if (!query) return null;
 
   const result = await searchItems({
@@ -194,7 +248,14 @@ export async function getBestListing(input: GetBestListingInput): Promise<EpnBes
   });
   if (!result.ok || result.hits.length === 0) return null;
 
-  const best: EpnProductHit | null = pickBestListing(result.hits);
+  const best: EpnProductHit | null = pickBestListing(result.hits, {
+    include,
+    exclude,
+    // A "Damaged"/"Heavily Played" target would otherwise be filtered out by
+    // the picker's condition-junk gate (ADR-026) — relax it when the buyer
+    // explicitly asked for a played/damaged condition.
+    skipConditionJunk: conditionRelaxesJunkGate(input.condition),
+  });
   if (!best) return null;
 
   const customId = input.customId ?? "foil-card-page";

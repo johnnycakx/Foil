@@ -203,6 +203,8 @@ export type Database = {
           email: string;
           card_slug: string;
           target_price_cents: number;
+          variant: string;
+          condition: string;
           created_at: string;
           last_notified_at: string | null;
         };
@@ -211,6 +213,8 @@ export type Database = {
           email: string;
           card_slug: string;
           target_price_cents: number;
+          variant?: string;
+          condition?: string;
           created_at?: string;
           last_notified_at?: string | null;
         };
@@ -219,6 +223,8 @@ export type Database = {
           email: string;
           card_slug: string;
           target_price_cents: number;
+          variant: string;
+          condition: string;
           created_at: string;
           last_notified_at: string | null;
         }>;

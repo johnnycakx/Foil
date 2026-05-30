@@ -28,6 +28,8 @@ function rows(extra: Partial<WatchlistRow>[]): WatchlistRow[] {
     email: r.email ?? `user${i}@example.com`,
     card_slug: r.card_slug ?? "base1-4-charizard",
     target_price_cents: r.target_price_cents ?? 4000,
+    variant: r.variant ?? "default",
+    condition: r.condition ?? "any-raw",
     last_notified_at: r.last_notified_at ?? null,
   }));
 }
@@ -115,6 +117,30 @@ test("dedups Browse calls by card_slug — one Browse call per slug regardless o
   assert.equal(browseCalls, 1);
 });
 
+test("splits Browse calls per (variant, condition) — same slug, different variant → 2 calls (Session 49b)", async () => {
+  // Two rows watch the same card but different printings — each is a distinct
+  // eBay query, so they CANNOT dedup the way two default rows do.
+  const { supabase } = fakeSupabase(
+    rows([
+      { id: "a", email: "a@x.com", variant: "1st-edition-holofoil", condition: "psa-10" },
+      { id: "b", email: "b@x.com", variant: "unlimited-holofoil", condition: "any-raw" },
+    ]),
+  );
+  const seen: Array<{ variant?: string; condition?: string }> = [];
+  const getBestListing = (async (input: { variant?: string; condition?: string }) => {
+    seen.push({ variant: input.variant, condition: input.condition });
+    return fakeListing(1)();
+  }) as ScanWatchlistsInput["getBestListing"];
+
+  const out = await scanWatchlists(baseInput({ supabase, getBestListing }));
+  assert.equal(out.slugsConsidered, 1, "still one distinct slug");
+  assert.equal(out.browseCalls, 2, "but two Browse calls — one per variant/condition combo");
+  assert.equal(out.slugsWithListing, 1, "slug counted once even across combos");
+  // The variant + condition were forwarded to the query builder.
+  assert.ok(seen.some((s) => s.variant === "1st-edition-holofoil" && s.condition === "psa-10"));
+  assert.ok(seen.some((s) => s.variant === "unlimited-holofoil" && s.condition === "any-raw"));
+});
+
 test("alerts only the rows whose target meets the current price", async () => {
   // Two rows watching same slug at $40 and $30 targets; current price = $35
   // → only the $40 row alerts.
@@ -181,6 +207,8 @@ test("respects the Browse-call cap and reports capHit=true", async () => {
     email: `u${i}@x.com`,
     card_slug: slug,
     target_price_cents: 100_000_000, // any price meets this
+    variant: "default",
+    condition: "any-raw",
     last_notified_at: null,
   }));
   const { supabase } = fakeSupabase(inputRows);

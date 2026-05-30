@@ -102,6 +102,76 @@ export function deriveVariant(card: PtCardLite): PoketraceVariant {
   };
 }
 
+/** The watchlist sentinel meaning "any printing of this card". Stored in the
+ *  `variant` column for rows that didn't pin a specific variant. */
+export const DEFAULT_VARIANT_KEY = "default";
+
+/**
+ * Valid watchlist variant tokens for a card: the sentinel "default" plus every
+ * baked PokeTrace variantKey the card actually has. The write path validates a
+ * submitted variant against this list so a row can only target a printing that
+ * exists (Session 49b / ADR-043). Takes the structural `{ variants }` shape
+ * (not the full CardMetadata) to avoid a lib/cards ↔ lib/poketrace import cycle.
+ */
+export function deriveAvailableVariants(card: { variants?: PoketraceVariant[] } | null | undefined): string[] {
+  const keys = (card?.variants ?? []).map((v) => v.variantKey);
+  return [DEFAULT_VARIANT_KEY, ...new Set(keys)];
+}
+
+export type KeywordSet = { include: string[]; exclude: string[] };
+
+/**
+ * eBay include/exclude keyword set derived from a variantKey, for biasing the
+ * Browse search + gating listing titles (Session 49b / ADR-043). The key
+ * encodes edition + finish (e.g. "1st-edition-holofoil"), so we parse it
+ * directly rather than needing the full PoketraceVariant (the cron only has the
+ * stored token). Matching is case-insensitive substring on the listing title.
+ *
+ * Examples:
+ *   "1st-edition-holofoil" → include ["1st Edition","Holo"]
+ *   "shadowless-holofoil"  → include ["Shadowless","Holo"], exclude ["1st Edition", …]
+ *   "unlimited-holofoil"   → include ["Holo"], exclude ["1st Edition","Shadowless", …]
+ *   "default"              → no keywords (matches any printing)
+ */
+export function variantEbayKeywords(variantKey: string | null | undefined): KeywordSet {
+  const include: string[] = [];
+  const exclude: string[] = [];
+  if (!variantKey || variantKey === DEFAULT_VARIANT_KEY) return { include, exclude };
+
+  const k = variantKey.toLowerCase();
+  const isReverse = k.includes("reverse");
+  const isNonHolo = k.includes("non-holo");
+  const isHolo = !isReverse && k.includes("holofoil");
+  const isShadowless = k.includes("shadowless");
+  const isFirstEdition = k.includes("1st-edition") || k.includes("first-edition");
+  const isUnlimited = k.includes("unlimited");
+
+  // Edition first.
+  if (isShadowless) {
+    include.push("Shadowless");
+    exclude.push("1st Edition");
+  } else if (isFirstEdition) {
+    include.push("1st Edition");
+  } else if (isUnlimited) {
+    exclude.push("1st Edition", "Shadowless");
+  }
+
+  // Finish.
+  if (isReverse) {
+    include.push("Reverse Holo");
+  } else if (isHolo) {
+    include.push("Holo");
+    exclude.push("Reverse");
+  } else if (isNonHolo) {
+    exclude.push("Holo");
+  }
+
+  return {
+    include: [...new Set(include)],
+    exclude: [...new Set(exclude)],
+  };
+}
+
 /** Human-readable label from a variantKey ("1st-edition-holofoil" → "1st Edition Holofoil"). */
 export function labelForVariantKey(key: string): string {
   return key

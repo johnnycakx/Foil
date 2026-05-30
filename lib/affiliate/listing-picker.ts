@@ -182,7 +182,35 @@ export function rejectConditionJunk(hits: readonly EpnProductHit[]): EpnProductH
   });
 }
 
-/** Stage 4: lowest-price among survivors. */
+/**
+ * Stage 4 (Session 49b / ADR-043): variant + condition keyword gate. Keeps a
+ * hit only when its title carries ≥1 `include` keyword (when any are given)
+ * AND none of the `exclude` keywords. Case-insensitive substring match — eBay
+ * Browse exposes no structured variant/condition field, so the title is the
+ * only signal (same constraint as the condition-junk gate above).
+ *
+ * When `include` is empty the positive gate is a no-op (e.g. the "any-raw"
+ * condition contributes only exclusions); when both are empty the whole gate
+ * is a pass-through, so an un-targeted call (page render with no watchlist
+ * variant/condition) behaves exactly as before.
+ */
+export function rejectByKeywords(
+  hits: readonly EpnProductHit[],
+  include: readonly string[],
+  exclude: readonly string[],
+): EpnProductHit[] {
+  if (include.length === 0 && exclude.length === 0) return [...hits];
+  const inc = include.map((k) => k.toLowerCase());
+  const exc = exclude.map((k) => k.toLowerCase());
+  return hits.filter((h) => {
+    const t = lowered(h.title);
+    if (exc.some((k) => t.includes(k))) return false;
+    if (inc.length > 0 && !inc.some((k) => t.includes(k))) return false;
+    return true;
+  });
+}
+
+/** Stage 5: lowest-price among survivors. */
 function lowestPrice(hits: readonly EpnProductHit[]): EpnProductHit | null {
   if (hits.length === 0) return null;
   let best = hits[0];
@@ -197,14 +225,35 @@ function lowestPrice(hits: readonly EpnProductHit[]): EpnProductHit | null {
 // ---------------------------------------------------------------------------
 
 /**
+ * Optional variant/condition keyword gate (Session 49b / ADR-043).
+ *   - include / exclude: keyword sets from variantEbayKeywords +
+ *     ebayKeywordsForCondition (merged by the caller).
+ *   - skipConditionJunk: when the buyer explicitly targets a played/damaged
+ *     condition, bypass stage 3 so the listings they actually want aren't
+ *     pre-filtered out.
+ */
+export type PickOptions = {
+  include?: readonly string[];
+  exclude?: readonly string[];
+  skipConditionJunk?: boolean;
+};
+
+/**
  * Pick the best (lowest-priced credible) listing from a Browse search.
  * Returns null when every hit fails the filter chain — caller falls back
  * to the sponsored search CTA per the existing soft-fail pattern.
+ *
+ * `opts` is omitted on the un-targeted page-render path (behaviour unchanged);
+ * the wishlist cron passes the watched row's variant/condition keyword sets.
  */
-export function pickBestListing(hits: readonly EpnProductHit[]): EpnProductHit | null {
+export function pickBestListing(
+  hits: readonly EpnProductHit[],
+  opts: PickOptions = {},
+): EpnProductHit | null {
   if (hits.length === 0) return null;
   const a = rejectPriceOutliers(hits);
   const b = rejectTitleJunk(a);
-  const c = rejectConditionJunk(b);
-  return lowestPrice(c);
+  const c = opts.skipConditionJunk ? b : rejectConditionJunk(b);
+  const d = rejectByKeywords(c, opts.include ?? [], opts.exclude ?? []);
+  return lowestPrice(d);
 }

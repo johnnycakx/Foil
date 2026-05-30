@@ -1508,6 +1508,32 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 
 ---
 
+## ADR-043 — Variant + condition watchlist data model + eBay query augmentation
+
+**Date:** 2026-05-29 (Session 49b)
+**Status:** Accepted. Completes the write side of ADR-042's per-variant read layer.
+
+**Context.** Session 49 (ADR-042) shipped the per-variant sold-history *display* (one PokeTrace UUID per print edition/finish, variant selector on `/cards/[slug]`). But a watchlist row could still only say "alert me on this card at $X" — no way to target a *printing* ("1st Edition Holofoil") or a *grade* ("PSA 10"). The alert cron queried a bare `cardName + setName` and the alert email named only the card. So a collector watching a $4,000 PSA-10 Charizard and one watching a $90 raw Unlimited copy got the same undifferentiated alert off the same query.
+
+**Schema-shape reality.** The goal spec assumed a `user_id`-keyed table and a `UNIQUE (user_id, card_slug)` to drop. The live `watchlists` table is **email-anchored** — no `user_id`, no auth in V1 ([ADR-020](#adr-020--pivot-to-buyer-side-deal-finder-positioning)), and the only pre-existing index was `watchlists_card_target_idx`. Adapted accordingly (confirmed against the live schema + the ROADMAP NOW #7 note "Email-anchored (no auth in V1)").
+
+**Decision.**
+1. **Data model.** Migration `20260529120000_watchlist_variant_condition.sql` adds `variant TEXT NOT NULL DEFAULT 'default'` + `condition TEXT NOT NULL DEFAULT 'any-raw'` (existing rows backfill via the defaults), de-dupes any pre-existing `(email, card_slug, 'default', 'any-raw')` collisions (keep the lowest target), then adds `UNIQUE (email, card_slug, variant, condition)` — the natural identity of a watch in an auth-free product. A repeat submit **UPSERTs** the `target_price_cents` (shared `lib/wishlist/upsert.ts`, `onConflict` byte-identical to the migration).
+2. **Tokens.** `lib/cards/conditions.ts` is the single source of truth for the 17-token closed set (6 raw + 11 graded), human labels, and per-token eBay include/exclude keyword maps. `variant.ts` gains `deriveAvailableVariants(card)` (the "default" sentinel + the card's real baked variantKeys) and `variantEbayKeywords(variantKey)` (parses the key into include/exclude phrases). Both validators run before any DB write.
+3. **eBay query augmentation.** `buildEbayQuery({cardName,setName,variant,condition})` merges the two keyword maps, appends the **include** phrases (quoted) to the Browse `q` to bias the search, and returns the merged include/exclude sets. The picker (`listing-picker.ts`) gains a **5th gate** (`rejectByKeywords`): a hit survives only if its title carries ≥1 include keyword (when any) AND no exclude keyword. Excludes are enforced *post-fetch* in the gate, not injected into `q` — the title gate is authoritative and avoids relying on eBay `q` negation semantics we haven't verified. A played/damaged target relaxes the ADR-026 condition-junk gate (else "Damaged" would self-filter to zero). An un-targeted call (page render, no variant/condition) is a pure pass-through — page behaviour unchanged.
+4. **Write path.** Per the coding conventions ("Server Actions for mutations"), the per-card form now posts via `app/actions/create-watchlist.ts` (a Client Component `watchlist-form.tsx` using `useActionState`). Variant + condition are **URL state** (`?v=` / `?c=`), the same pattern as the variant selector — `components/cards/condition-picker.tsx` (mounted in the sold-history panel) writes `?c=` via a soft `router.replace` so the typed email survives a condition switch; the form reads both params. The legacy `/api/watchlist` JSON route is kept for backward compat and shares the same validator + upsert helper.
+5. **Alert path.** `scan-batch.ts` groups rows by **(slug, variant, condition)** — each combo is a distinct query, so it can't dedup the way two default rows do; metadata is still fetched once per slug, Browse once per combo, all under `MAX_BROWSE_CALLS`. The alert email (`alert-email.ts`) injects a `variant (condition)` qualifier into the subject + a "Tracking: …" body line; both are **omitted for the all-defaults watch**, so a generic alert is byte-identical to pre-49b.
+
+**Consequences.**
+- **Behaviour change for backfilled rows.** Existing rows default to `condition='any-raw'`, which now **excludes graded slabs** from their alerts (a raw buyer shouldn't get a $4k PSA-10 surfaced as "their" deal). Defensible and aligned with the feature, but it is a change from the prior "match any listing" behaviour. Documented here deliberately.
+- **Browse-call volume can rise** when many rows watch the same slug across different variant/conditions — bounded by `MAX_BROWSE_CALLS` (200) + the per-row 24h cooldown.
+- **Known limitation.** The merged include set is an OR (≥1) bias, not a strict per-facet AND; discrimination comes mainly from the exclude gate + the biased `q`. The keyword maps are conservative (substring collisions like `BGS 9` ⊂ `BGS 9.5` are handled in `conditions.ts`), but title-only matching is inherently fuzzy — eBay exposes no structured condition field on the V1 Browse surface (same constraint as ADR-026). A future tightening (per-facet AND, structured condition once available) is a followup.
+- **R-008 reconfirmed.** No new eBay persistence; every Browse fetch stays `cache: "no-store"`; compliance invariants 6/6.
+
+**Cross-refs.** `lib/cards/conditions.ts`, `lib/poketrace/variant.ts`, `lib/affiliate/ebay-browse.ts`, `lib/affiliate/listing-picker.ts`, `lib/wishlist/{upsert,validate,scan-batch,alert-email}.ts`, `app/actions/create-watchlist.ts`, `components/cards/{condition-picker,watchlist-form}.tsx`, `supabase/migrations/20260529120000_watchlist_variant_condition.sql`, [ADR-042](#adr-042--poketrace-per-variant-uuid-caching-search-then-bake--variant-aware-sold-history), [ADR-026](#adr-026--quality-aware-listing-picker-replaces-lowest-price-wins), [ADR-020](#adr-020--pivot-to-buyer-side-deal-finder-positioning).
+
+---
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).
