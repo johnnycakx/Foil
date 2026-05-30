@@ -12,6 +12,9 @@ import {
   recentDateMatches,
   runQualityGates,
   uniqueDollarFigures,
+  deadInternalLinks,
+  checkFoilDataProvenance,
+  buildFoilDataAllowedValues,
 } from "../seo/quality-gates.ts";
 import type { GeneratedDraft } from "../seo/content-engine-types.ts";
 
@@ -231,4 +234,100 @@ test("multiple gate failures all surface in one report (no early-exit)", () => {
   // Expect ALL the major gate violations, not just the first one — that's
   // what lets the retry prompt fix everything in one round-trip.
   assert.ok(result.failures.length >= 4);
+});
+
+// ---------------------------------------------------------------------------
+// Gate 9 — internal-link existence (Session 47.4). Anchored on the real dead
+// links the three Session-47.4 smoke-test posts shipped (R-010).
+// ---------------------------------------------------------------------------
+
+test("deadInternalLinks: flags hrefs that don't resolve, passes ones that do", () => {
+  const exists = (href: string) =>
+    href === "/pokemon-card-value-calculator" || href === "/cards/base1-4-charizard";
+  const body =
+    "See [calc](/pokemon-card-value-calculator) and [charizard](/cards/base1-4-charizard) " +
+    "but [dead](/blog/reading-pokemon-card-price-data) and [also dead](/cards/nonexistent-slug).";
+  const dead = deadInternalLinks(body, exists);
+  assert.deepEqual(dead.sort(), ["/blog/reading-pokemon-card-price-data", "/cards/nonexistent-slug"].sort());
+});
+
+test("deadInternalLinks: R-010 anchors — the exact links the fabricated posts shipped are dead", () => {
+  // None of these three blog posts exist; the resolver only knows the pillars.
+  const exists = (href: string) => href.startsWith("/pokemon-card-") || href.startsWith("/japanese-");
+  const body =
+    "[a](/blog/reading-pokemon-card-price-data) [b](/blog/how-to-read-pokemon-card-collector-numbers) " +
+    "[c](/blog/how-to-price-pokemon-cards-from-photo)";
+  assert.equal(deadInternalLinks(body, exists).length, 3);
+});
+
+test("gate 9 fires through runQualityGates when a resolver is supplied", () => {
+  const draft = passingDraft();
+  draft.body += "\n\nBonus: [dead link](/blog/this-post-does-not-exist).";
+  const ctx = { internalLinkExists: (h: string) => !h.includes("does-not-exist") };
+  const result = runQualityGates(draft, "/blog/test-slug", undefined, ctx);
+  assert.ok(result.failures.some((f) => f.includes("Dead internal link")));
+});
+
+test("gate 9 stays silent without a resolver (back-compat)", () => {
+  const draft = passingDraft();
+  draft.body += "\n\n[dead](/blog/this-post-does-not-exist).";
+  const result = runQualityGates(draft, "/blog/test-slug"); // no ctx
+  assert.ok(!result.failures.some((f) => f.includes("Dead internal link")));
+});
+
+// ---------------------------------------------------------------------------
+// Gate 10 — Foil-data provenance (Session 47.4). Anchored on the exact
+// fabricated sentences from the live posts (R-010).
+// ---------------------------------------------------------------------------
+
+const SNAPSHOT_25_30 = buildFoilDataAllowedValues({
+  totalScans: { count: 25, days: 30 },
+  waitlistTotal: null,
+  waitlistBySource: null,
+});
+
+test("buildFoilDataAllowedValues: includes raw counts + days", () => {
+  assert.ok(SNAPSHOT_25_30.has("25"));
+  assert.ok(SNAPSHOT_25_30.has("30"));
+  assert.ok(!SNAPSHOT_25_30.has("18"));
+});
+
+test("checkFoilDataProvenance: R-010 anchor — the '~18% spread' fabrication is flagged", () => {
+  const body =
+    "Foil's scan data shows that across 25 cards processed in the last 30 days, the spread " +
+    "between a card's TCGplayer market price and its 30-day eBay sold median averaged roughly 18%.";
+  const offenders = checkFoilDataProvenance(body, SNAPSHOT_25_30);
+  assert.ok(offenders.some((o) => o.includes("18")), `expected 18% flagged, got ${JSON.stringify(offenders)}`);
+});
+
+test("checkFoilDataProvenance: R-010 anchor — the '2× grading rate' fabrication is flagged", () => {
+  const body =
+    "Foil's scan data — across 25 cards processed in the last 30 days — shows users submitting " +
+    "English SIRs for grading at roughly 2× the rate of JP SARs of equivalent cards.";
+  const offenders = checkFoilDataProvenance(body, SNAPSHOT_25_30);
+  assert.ok(offenders.some((o) => o.includes("2")), `expected 2x flagged, got ${JSON.stringify(offenders)}`);
+});
+
+test("checkFoilDataProvenance: legit snapshot-backed sentence passes", () => {
+  const body = "Foil's scan data: across 25 cards processed in the last 30 days.";
+  assert.deepEqual(checkFoilDataProvenance(body, SNAPSHOT_25_30), []);
+});
+
+test("checkFoilDataProvenance: null snapshot → any number in a Foil-data sentence is a fabrication", () => {
+  const body = "Foil's scan data shows a 42% spread across 25 cards processed.";
+  const offenders = checkFoilDataProvenance(body, null);
+  assert.ok(offenders.length > 0);
+});
+
+test("checkFoilDataProvenance: numbers OUTSIDE a Foil-data sentence are ignored", () => {
+  const body = "A PSA 10 Charizard sold for $30,100 in 2026. Market spreads can hit 40% on chase cards.";
+  assert.deepEqual(checkFoilDataProvenance(body, SNAPSHOT_25_30), []);
+});
+
+test("gate 10 fires through runQualityGates when allowed-values supplied", () => {
+  const draft = passingDraft();
+  draft.body += "\n\nFoil's scan data shows a wild 73% premium across our scans.";
+  const ctx = { foilDataAllowedValues: SNAPSHOT_25_30 };
+  const result = runQualityGates(draft, "/blog/test-slug", undefined, ctx);
+  assert.ok(result.failures.some((f) => f.includes("Unverifiable Foil-data claim")));
 });

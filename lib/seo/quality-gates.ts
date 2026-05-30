@@ -57,6 +57,37 @@ const INTERNAL_LINK_HOSTS: readonly string[] = [
 export type GateResult = { passed: boolean; failures: string[] };
 
 /**
+ * Context for the gates that need to resolve against the real world (Session
+ * 47.4 fact-check work). Both are optional so the existing 3-arg callers + the
+ * pure structural tests still work; the orchestrator supplies them in
+ * production so gates 9 + 10 actually run.
+ */
+export type QualityGateContext = {
+  /** Gate 9: returns true if an internal href resolves to a real post/route.
+   *  Built by the orchestrator from the blog-post dir + CARD_CATALOG + the
+   *  known-route allowlist. When omitted, gate 9 is skipped. */
+  internalLinkExists?: (href: string) => boolean;
+  /** Gate 10: the verbatim numeric strings the Foil-data snapshot actually
+   *  contains (counts, days, waitlist total, source %s). A number in a
+   *  "Foil's scan data" sentence must be in this set. Pass `null` to run the
+   *  gate with NO snapshot (any such number is then a fabrication). Omit
+   *  (`undefined`) to skip the gate entirely. */
+  foilDataAllowedValues?: Set<string> | null;
+};
+
+/** Sentence triggers that assert a Foil-proprietary data claim (gate 10). */
+export const PROVENANCE_TRIGGERS: readonly string[] = [
+  "foil's scan data",
+  "foil's data",
+  "our pipeline",
+  "users on foil",
+  "across our scans",
+  "our scan data",
+  "foil scanned",
+  "cards processed",
+] as const;
+
+/**
  * Run every gate against a generated draft. Returns the full failure list so
  * the retry prompt can ask Claude to fix everything at once instead of
  * playing whack-a-mole one gate at a time.
@@ -65,6 +96,7 @@ export function runQualityGates(
   draft: GeneratedDraft,
   urlPath: string,
   siteUrl = "https://foil-rosy.vercel.app",
+  ctx: QualityGateContext = {},
 ): GateResult {
   const failures: string[] = [];
   const body = draft.body ?? "";
@@ -136,7 +168,119 @@ export function runQualityGates(
     );
   }
 
+  // Gate 9 (link existence): every internal link must resolve to a real post
+  // or route. The count gate (h) above checks quantity; this checks targets —
+  // a well-formed href to a non-existent /blog/ post or /cards/ slug is a live
+  // 404 the structural gates never caught (Session 47.4 — three such links
+  // shipped). Runs only when the orchestrator supplies the resolver.
+  if (ctx.internalLinkExists) {
+    const dead = deadInternalLinks(`${body}\n${faqBody}`, ctx.internalLinkExists);
+    if (dead.length > 0) {
+      failures.push(
+        `Dead internal link(s): ${dead.join(", ")}. Every /blog/, /cards/, or pillar link must resolve to an existing post or route — repoint to a real page or remove the link.`,
+      );
+    }
+  }
+
+  // Gate 10 (Foil-data provenance): any numeric claim (%, $, n=, ×, or
+  // N-cards/days/collectors) inside a "Foil's scan data" / "our pipeline"
+  // sentence must trace verbatim to a value the data snapshot actually returns
+  // (lib/seo/data-injection.ts). This is the R-001 fabrication guard — it
+  // would have caught the invented "~18% spread" and "2× grading rate" claims.
+  if (ctx.foilDataAllowedValues !== undefined) {
+    const offenders = checkFoilDataProvenance(body, ctx.foilDataAllowedValues);
+    if (offenders.length > 0) {
+      failures.push(
+        `Unverifiable Foil-data claim(s): ${offenders.join(", ")}. A number in a "Foil's scan data"/"our pipeline" sentence must come from the actual data snapshot — drop the figure or move it out of the Foil-data citation.`,
+      );
+    }
+  }
+
   return { passed: failures.length === 0, failures };
+}
+
+/**
+ * Internal links in `body` that DON'T resolve via `exists`. Dedupes; only
+ * considers root-relative + foil-host hrefs (external links aren't ours to
+ * validate). Gate 9 helper — exported for tests.
+ */
+export function deadInternalLinks(body: string, exists: (href: string) => boolean): string[] {
+  const seen = new Set<string>();
+  const dead: string[] = [];
+  const consider = (href: string) => {
+    if (!isInternalHref(href) || seen.has(href)) return;
+    seen.add(href);
+    if (!exists(href)) dead.push(href);
+  };
+  for (const m of body.matchAll(/\]\(([^)]+)\)/g)) consider(m[1]);
+  for (const m of body.matchAll(/href=["']([^"']+)["']/g)) consider(m[1]);
+  return dead;
+}
+
+function splitSentences(text: string): string[] {
+  return text
+    .split(/(?<=[.!?:])\s+|\n+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/** Numeric "stat" tokens in a sentence: percentages, dollars, n=, multipliers,
+ *  and N-cards/days/scans/collectors. Excludes 4-digit years (2025/2026). */
+function extractStatNumbers(s: string): string[] {
+  const out: string[] = [];
+  for (const m of s.matchAll(/(\d+(?:\.\d+)?)%/g)) {
+    out.push(`${m[1]}%`, m[1]);
+  }
+  for (const m of s.matchAll(/\$[\d,]+(?:\.\d+)?/g)) out.push(m[0]);
+  for (const m of s.matchAll(/\bn\s*=\s*(\d[\d,]*)/gi)) out.push(m[1].replace(/,/g, ""));
+  for (const m of s.matchAll(/(\d+(?:\.\d+)?)\s*[×x](?![a-z0-9])/gi)) out.push(m[1]);
+  for (const m of s.matchAll(/\b(\d[\d,]*)\s+(?:cards?|days?|scans?|collectors?)\b/gi)) out.push(m[1]);
+  return out.filter((n) => !/^20\d\d$/.test(n));
+}
+
+/**
+ * Gate 10 core: numeric claims in Foil-data sentences that aren't backed by
+ * the snapshot. `allowed === null` means "no snapshot this run" → any such
+ * number is a fabrication. Exported for tests.
+ */
+export function checkFoilDataProvenance(body: string, allowed: Set<string> | null): string[] {
+  const offenders = new Set<string>();
+  for (const sentence of splitSentences(body)) {
+    const low = sentence.toLowerCase();
+    if (!PROVENANCE_TRIGGERS.some((t) => low.includes(t))) continue;
+    for (const n of extractStatNumbers(sentence)) {
+      const ok = allowed != null && (allowed.has(n) || allowed.has(n.replace(/,/g, "")));
+      if (!ok) offenders.add(`"${n}"`);
+    }
+  }
+  return [...offenders];
+}
+
+/**
+ * Build the gate-10 allow-set from a data snapshot (structural shape so this
+ * module doesn't depend on data-injection.ts). Includes raw + comma-formatted
+ * forms of counts/totals and both "NN" and "NN%" for source percentages.
+ */
+export function buildFoilDataAllowedValues(snapshot: {
+  totalScans: { count: number; days: number } | null;
+  waitlistTotal: number | null;
+  waitlistBySource: { pct: number }[] | null;
+}): Set<string> {
+  const out = new Set<string>();
+  const add = (n: number) => {
+    out.add(String(n));
+    out.add(n.toLocaleString("en-US"));
+  };
+  if (snapshot.totalScans) {
+    add(snapshot.totalScans.count);
+    add(snapshot.totalScans.days);
+  }
+  if (snapshot.waitlistTotal != null) add(snapshot.waitlistTotal);
+  for (const b of snapshot.waitlistBySource ?? []) {
+    out.add(String(b.pct));
+    out.add(`${b.pct}%`);
+  }
+  return out;
 }
 
 function countWords(text: string): number {

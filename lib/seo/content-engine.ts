@@ -38,7 +38,64 @@ import {
   type Cache as SerpCache,
   type SerpContext,
 } from "./serp-fetch.ts";
-import { runQualityGates, type GateResult } from "./quality-gates.ts";
+import {
+  runQualityGates,
+  buildFoilDataAllowedValues,
+  type GateResult,
+  type QualityGateContext,
+} from "./quality-gates.ts";
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
+import { CARD_CATALOG } from "../cards/catalog.ts";
+
+// Known non-blog/non-card internal routes for gate 9 (link existence). Pillars
+// + the static app routes a post might legitimately link to.
+const KNOWN_INTERNAL_ROUTES: ReadonlySet<string> = new Set([
+  "/",
+  "/blog",
+  "/cards",
+  "/start",
+  "/newsletter",
+  "/account",
+  "/upload",
+  "/pokemon-card-value-calculator",
+  "/japanese-pokemon-cards-value",
+  "/pokemon-card-condition-guide",
+  "/legal/privacy",
+  "/legal/terms",
+]);
+
+/**
+ * Build the gate-9 internal-link resolver from the live blog-post directory +
+ * CARD_CATALOG + the known-route allowlist. Soft-fails open (returns a
+ * resolver that approves everything) if the posts dir can't be read — a gate
+ * infrastructure hiccup must not block an otherwise-good publish.
+ */
+function buildInternalLinkResolver(): (href: string) => boolean {
+  let blogSlugs: Set<string>;
+  try {
+    blogSlugs = new Set(
+      readdirSync(join(process.cwd(), "app/blog/posts"))
+        .filter((f) => f.endsWith(".mdx"))
+        .map((f) => f.replace(/\.mdx$/, "")),
+    );
+  } catch {
+    return () => true;
+  }
+  const cardSlugs = new Set(CARD_CATALOG.map((c) => c.slug));
+  return (href: string) => {
+    let p = href;
+    for (const host of ["www.foiltcg.com", "foiltcg.com", "foil-rosy.vercel.app"]) {
+      const i = p.indexOf(host);
+      if (i >= 0) p = p.slice(i + host.length);
+    }
+    p = (p.split("#")[0].split("?")[0].replace(/\/+$/, "")) || "/";
+    if (!p.startsWith("/")) return true; // external/unresolvable — not ours to fail
+    if (p.startsWith("/blog/")) return blogSlugs.has(p.slice("/blog/".length));
+    if (p.startsWith("/cards/")) return cardSlugs.has(p.slice("/cards/".length));
+    return KNOWN_INTERNAL_ROUTES.has(p);
+  };
+}
 import type { GeneratedDraft } from "./content-engine-types.ts";
 
 export const CONTENT_MODEL = "claude-sonnet-4-6";
@@ -166,6 +223,13 @@ export async function generateWeeklyPost(opts: GenerateOptions): Promise<EngineR
     ? await collectFoilData(opts.dataClient).catch(() => emptySnapshot())
     : emptySnapshot();
 
+  // Gate 9 + 10 context (Session 47.4): resolve internal links against the
+  // real post dir + catalog, and pin Foil-data numeric claims to the snapshot.
+  const gateCtx: QualityGateContext = {
+    internalLinkExists: buildInternalLinkResolver(),
+    foilDataAllowedValues: buildFoilDataAllowedValues(dataSnapshot),
+  };
+
   // 4-6. Generate + gate + retry
   const client = anthropic();
   const history: Array<{ role: "user" | "assistant"; content: string }> = [];
@@ -212,7 +276,7 @@ export async function generateWeeklyPost(opts: GenerateOptions): Promise<EngineR
     };
 
     lastDraft = draft;
-    lastGate = runQualityGates(draft, urlPath, siteUrl);
+    lastGate = runQualityGates(draft, urlPath, siteUrl, gateCtx);
 
     console.log(
       `[engine] attempt ${attempt}/${MAX_RETRIES}: ${lastGate.passed ? "PASS" : `FAIL (${lastGate.failures.length} gate violations)`}`,
