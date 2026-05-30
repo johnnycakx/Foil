@@ -1,6 +1,6 @@
 # Competitive topic gaps
 
-_Generated against 80 known Foil topics._
+_Generated against 81 known Foil topics._
 
 ## https://pokescope.app/blog
 
