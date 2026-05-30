@@ -22,11 +22,19 @@
 //   - Modern chase: Hidden Fates GX (5) + Celebrations (5) + Evolving Skies
 //     VMAX (5) + Brilliant Stars (4) + Crown Zenith (5) + 151 (5) = 29
 
+/** Render tier (ADR-046). "curated" cards fetch a live eBay best-listing on
+ *  every render; "longtail" cards skip that Browse call (to respect the eBay
+ *  quota at scale) and render the PokeTrace sold-history + an affiliate search
+ *  CTA instead. Absent = "curated" (the hand-curated 208 are all curated). */
+export type CardTier = "curated" | "longtail";
+
 export type CatalogEntry = {
   /** Pokemon TCG SDK id — e.g. "base1-4". */
   pokemonTcgId: string;
   /** Foil page slug — `<set-id>-<number>-<kebab-name>`. */
   slug: string;
+  /** Render tier (ADR-046). Optional; defaults to "curated". */
+  tier?: CardTier;
 };
 
 export const CARD_CATALOG: readonly CatalogEntry[] = [
@@ -291,6 +299,12 @@ const BY_SLUG: Map<string, CatalogEntry> = new Map(
 
 export function getCatalogEntry(slug: string): CatalogEntry | undefined {
   return BY_SLUG.get(slug);
+}
+
+/** Render tier for a slug (ADR-046). Defaults to "curated" when unset or
+ *  unknown — the safe default (live eBay listing). */
+export function cardTier(slug: string): CardTier {
+  return BY_SLUG.get(slug)?.tier ?? "curated";
 }
 
 /**

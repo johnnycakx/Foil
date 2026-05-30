@@ -1,0 +1,69 @@
+// Tiered per-card rendering guards (Session 47.4 / ADR-046).
+//
+// `curated` cards fetch a live eBay best-listing every render; `longtail`
+// cards skip that Browse call (to bound the quota at 1,000+ routes) and render
+// the PokeTrace sold-history + an affiliate search CTA. These pin the tier
+// plumbing (catalog field + helper) and the page's tier branch structurally
+// (the page is an async Server Component — same source-assertion approach as
+// sold-history-panel.test.ts).
+
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { cardTier, CARD_CATALOG, getCatalogEntry } from "../cards/catalog.ts";
+
+const ROOT = new URL("../..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
+const read = (rel: string) => readFileSync(join(ROOT, rel), "utf8");
+
+test("cardTier: defaults to 'curated' for unset entries + unknown slugs", () => {
+  // The hand-curated 208 have no explicit tier → all curated by default.
+  assert.equal(cardTier("base1-4-charizard"), "curated");
+  assert.equal(cardTier("totally-unknown-slug"), "curated");
+  // Every catalog entry resolves to a valid tier.
+  for (const e of CARD_CATALOG) {
+    const t = cardTier(e.slug);
+    assert.ok(t === "curated" || t === "longtail", `bad tier for ${e.slug}: ${t}`);
+  }
+});
+
+test("cardTier: honors an explicit longtail tier when present", () => {
+  // Find any longtail entry (present after the expansion wave); if none yet,
+  // the default-curated invariant above is the live guard.
+  const longtail = CARD_CATALOG.find((e) => e.tier === "longtail");
+  if (longtail) {
+    assert.equal(cardTier(longtail.slug), "longtail");
+    assert.ok(getCatalogEntry(longtail.slug)?.tier === "longtail");
+  }
+});
+
+test("/cards/[slug]: skips the Browse call on the longtail tier", () => {
+  const src = read("app/(site)/cards/[slug]/page.tsx");
+  assert.match(src, /const\s+tier\s*=\s*cardTier\(slug\)/);
+  // getBestListing is gated behind the curated tier — not called for longtail.
+  assert.match(src, /tier === "curated"\s*\?\s*await getBestListing/);
+});
+
+test("/cards/[slug]: longtail renders the fallback; curated renders the live block", () => {
+  const src = read("app/(site)/cards/[slug]/page.tsx");
+  assert.match(src, /import \{ LongTailListingFallback \}/);
+  assert.match(src, /tier === "longtail" \? \(\s*<LongTailListingFallback/);
+});
+
+test("/cards/[slug]: longtail schema omits Offer, keeps AggregateOffer when priced", () => {
+  const src = read("app/(site)/cards/[slug]/page.tsx");
+  assert.match(src, /else if \(tier === "longtail"\)/);
+  assert.match(src, /aggregateOfferFromTcgplayer/);
+  assert.match(src, /"@type": "AggregateOffer"/);
+});
+
+test("LongTailListingFallback: server component, affiliate search CTA, palette-clean", () => {
+  const src = read("components/cards/long-tail-listing-fallback.tsx");
+  assert.doesNotMatch(src, /^"use client"/m, "server component (no Browse, no client JS)");
+  assert.match(src, /searchUrl/, "takes an affiliate search URL (no Browse call)");
+  assert.match(src, /rel="sponsored noopener noreferrer"/);
+  assert.match(src, /text-foil-navy/);
+  assert.doesNotMatch(src, /#[0-9a-fA-F]{6}/, "no raw hex — DESIGN.md tokens only");
+  // Coral never rests (DESIGN.md): only as a hover, if at all.
+  assert.doesNotMatch(src, /(?<!hover:)(bg|text|border)-foil-coral\b/);
+});

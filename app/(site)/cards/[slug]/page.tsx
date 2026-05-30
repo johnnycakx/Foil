@@ -13,7 +13,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { affiliateSearchUrl, type EpnBestListing } from "@/lib/affiliate/epn";
 import { getBestListing } from "@/lib/affiliate/ebay-browse";
-import { CARD_CATALOG, getCatalogEntry, relatedCardsForSlug } from "@/lib/cards/catalog";
+import { CARD_CATALOG, getCatalogEntry, relatedCardsForSlug, cardTier } from "@/lib/cards/catalog";
+import { LongTailListingFallback } from "@/components/cards/long-tail-listing-fallback";
 import { getCardMetadata, type CardMetadata } from "@/lib/cards/sdk";
 import { breadcrumbListSchema, schemaGraph, serializeJsonLd } from "@/lib/seo/schema-helpers";
 import { Breadcrumb, type BreadcrumbItem } from "@/components/breadcrumb";
@@ -68,6 +69,33 @@ function inferConditionLabel(title: string | undefined): { label: string; tone: 
   return null;
 }
 
+// Build an AggregateOffer from the baked TCGplayer price ranges (ADR-046).
+// Long-tail pages have no live eBay Offer, but the baked TCGplayer low/high
+// (no network, R-008-safe — not eBay listing data) still gives a price signal
+// for Product rich results. Returns null when no usable price range exists.
+function aggregateOfferFromTcgplayer(
+  prices: Record<string, { low: number | null; high: number | null }> | undefined,
+  url: string,
+): Record<string, unknown> | null {
+  const lows: number[] = [];
+  const highs: number[] = [];
+  for (const p of Object.values(prices ?? {})) {
+    if (typeof p.low === "number" && p.low > 0) lows.push(p.low);
+    if (typeof p.high === "number" && p.high > 0) highs.push(p.high);
+  }
+  if (lows.length === 0 && highs.length === 0) return null;
+  const low = lows.length ? Math.min(...lows) : Math.min(...highs);
+  const high = highs.length ? Math.max(...highs) : Math.max(...lows);
+  return {
+    "@type": "AggregateOffer",
+    priceCurrency: "USD",
+    lowPrice: low.toFixed(2),
+    highPrice: high.toFixed(2),
+    offerCount: lows.length + highs.length,
+    url,
+  };
+}
+
 function titleFor(card: CardMetadata): string {
   return `${card.name} (${card.setName}) — Best deals on eBay | Foil`;
 }
@@ -119,14 +147,21 @@ export default async function CardPage({
   if (!entry) notFound();
 
   const card = await getCardMetadata({ id: entry.pokemonTcgId });
+  const tier = cardTier(slug);
 
-  // Render-time Browse fetch — no caching. Soft-fails to null on any error.
-  const best: EpnBestListing | null = await getBestListing({
-    cardName: card.name,
-    setName: card.setName,
-    customId: "foil-card-page",
-    surface: "page_render",
-  });
+  // Render-time Browse fetch — curated tier only (ADR-046). Long-tail cards
+  // skip the eBay Browse call to bound the per-render Browse quota at scale;
+  // they render the PokeTrace sold-history + an affiliate search CTA instead.
+  // No-caching / soft-fails to null on any error (R-008).
+  const best: EpnBestListing | null =
+    tier === "curated"
+      ? await getBestListing({
+          cardName: card.name,
+          setName: card.setName,
+          customId: "foil-card-page",
+          surface: "page_render",
+        })
+      : null;
 
   const fallbackUrl = affiliateSearchUrl(`${card.name} ${card.setName}`, "foil-card-page");
   const condition = best ? inferConditionLabel(best.title) : null;
@@ -151,6 +186,12 @@ export default async function CardPage({
         seller: { "@type": "Organization", name: "eBay" },
       },
     ];
+  } else if (tier === "longtail") {
+    // Long-tail pages omit the live Offer (no Browse call) but keep an
+    // AggregateOffer when the baked TCGplayer price range is available
+    // (ADR-046) — Product still carries a price signal for rich results.
+    const agg = aggregateOfferFromTcgplayer(card.tcgplayerPrices, canonical);
+    if (agg) productSchema.offers = agg;
   }
 
   // Session 41 / ADR-030: Breadcrumb (visual + BreadcrumbList JSON-LD).
@@ -253,6 +294,13 @@ export default async function CardPage({
           selectedCondition={selectedCondition}
         />
 
+        {/* Listing block. Curated tier → live eBay best-listing (with the
+            Live freshness chip). Long-tail tier → no Browse call; render the
+            affiliate search fallback instead (ADR-046). */}
+        {tier === "longtail" ? (
+          <LongTailListingFallback cardName={card.name} searchUrl={fallbackUrl} />
+        ) : (
+        <>
         {/* Live timestamp chip — sits above the Best Listing block as a
             data-freshness affordance. Client-side ticks every 10s. */}
         <div className="mt-8 flex items-center justify-between gap-3">
@@ -331,6 +379,8 @@ export default async function CardPage({
             </>
           )}
         </section>
+        </>
+        )}
 
         <section
           className="mt-10 rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-8"

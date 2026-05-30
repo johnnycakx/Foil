@@ -44,6 +44,9 @@ const PUBLIC_SURFACES: readonly string[] = [
   // applies — the gold rhombus is the brand mark, coral has no place
   // in the brand surface.
   "components/brand/logo.tsx",
+  // Session 47.4 / ADR-046: long-tail listing fallback rendered on
+  // longtail-tier /cards/[slug] pages in place of the live best-listing.
+  "components/cards/long-tail-listing-fallback.tsx",
 ];
 
 // ---------------------------------------------------------------------------
