@@ -14,13 +14,8 @@
 // PokeTrace data → "—" cells.
 
 import { PokeballMark } from "@/components/brand/logo";
-import {
-  getSoldHistory,
-  priceSeriesFromStat,
-  type SoldHistory,
-  type SoldSource,
-  type SoldStat,
-} from "@/lib/poketrace/by-uuid";
+import { getSoldHistory, type SoldHistory, type SoldSource, type SoldStat } from "@/lib/poketrace/by-uuid";
+import { getPriceHistory, chartTierForCondition } from "@/lib/poketrace/price-history";
 import type { PoketraceVariant } from "@/lib/poketrace/variant";
 import { ConditionPicker } from "@/components/cards/condition-picker";
 import { SoldHistoryChart } from "@/components/cards/sold-history-chart";
@@ -194,10 +189,15 @@ export async function SoldHistoryPanel({
   // picker (previously locked to NM regardless of selection).
   const condition = selectedCondition ?? DEFAULT_CONDITION;
   const { stat: headline, suffix: conditionSuffix } = resolveHeadline(sel, condition);
-  // Trend series for the chart — the real trailing-average points (30d/7d/24h)
-  // for the selected condition. Replaces Session 49's static "↑ 7d" arrow.
-  const chartSeries = priceSeriesFromStat(headline);
   const gradedTierKey = pickGradedTier(sel);
+  // Real daily price history for the chart (Session 49c / ADR-044) — the
+  // tier-scoped /prices/{tier}/history endpoint. Specific condition → its tier;
+  // any-raw → NEAR_MINT; any-graded → the card's top graded tier. Fetch the
+  // full series once; the chart slices it per range client-side. Soft-fails null.
+  const chartTier = chartTierForCondition(condition, gradedTierKey);
+  const chartSeries = chartTier
+    ? await getPriceHistory({ uuid: selected.variant.poketraceId, tier: chartTier, period: "all" })
+    : null;
 
   return (
     <section className="mt-10" aria-labelledby="sold-history-heading">
@@ -259,9 +259,9 @@ export async function SoldHistoryPanel({
                   )}
                 </p>
 
-                {/* Stock-chart-style trend line for the selected condition. Built
-                    from real trailing-average windows (PokeTrace has no daily
-                    series — ADR-044); replaces Session 49's static "↑ 7d" arrow. */}
+                {/* Robinhood-style daily sold-price line for the selected
+                    condition — real PokeTrace /prices/{tier}/history (ADR-044).
+                    Replaces Session 49's static "↑ 7d" arrow. */}
                 <SoldHistoryChart series={chartSeries} />
               </>
             ) : (

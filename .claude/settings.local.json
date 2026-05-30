@@ -173,7 +173,11 @@
       "Bash(awk 'NR>=1290' docs/DECISIONS.md)",
       "Bash(grep -q BAKE_DONE /tmp/bakedone)",
       "Bash(grep -q \"matched:\" \"C:\\\\Users\\\\John\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-John-dev-foil\\\\d0ff7c20-4968-477c-a199-5c7f5ac1b9a4\\\\tasks\\\\b5bom561i.output\")",
-      "Bash(break)"
+      "Bash(break)",
+      "Bash(echo \"TEST_EXIT:$?\")",
+      "Bash(echo \"BUILD_EXIT:$?\")",
+      "Bash(tail -10 /tmp/full49c.out)",
+      "Bash(tail -2 /tmp/build49c.out)"
     ]
   },
   "enableAllProjectMcpServers": true,

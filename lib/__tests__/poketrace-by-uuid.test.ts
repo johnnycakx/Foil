@@ -1,12 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-  parseSoldHistory,
-  getSoldHistory,
-  getPriceHistory,
-  priceSeriesFromStat,
-  __clearSoldHistoryCache,
-} from "../poketrace/by-uuid.ts";
+import { parseSoldHistory, getSoldHistory, __clearSoldHistoryCache } from "../poketrace/by-uuid.ts";
 
 const SAMPLE_CARD = {
   prices: {
@@ -96,58 +90,4 @@ test("getSoldHistory returns null when API key absent", async () => {
   delete process.env.POKETRACE_API_KEY;
   assert.equal(await getSoldHistory("uuid-x", { fetchImpl: okFetch({ data: SAMPLE_CARD }) }), null);
   if (prev) process.env.POKETRACE_API_KEY = prev;
-});
-
-// --- Session 49c: trailing-average "price history" -------------------------
-
-test("priceSeriesFromStat: real windowed points (30d→7d→24h), oldest→newest, drops nulls", () => {
-  const full = priceSeriesFromStat({
-    avg: 500, low: 300, high: 700, avg1d: 655, avg7d: 482, avg30d: 508, saleCount: 34,
-  });
-  assert.deepEqual(full.map((p) => p.windowDays), [30, 7, 1]);
-  assert.equal(full[0].avg, 508);
-  assert.equal(full[0].saleCount, 34); // 30d point carries the sale count
-  assert.equal(full[2].avg, 655);
-  // Missing 7d window is dropped (no fabricated point).
-  const sparse = priceSeriesFromStat({
-    avg: 300, low: null, high: null, avg1d: 310, avg7d: null, avg30d: 290, saleCount: 3,
-  });
-  assert.deepEqual(sparse.map((p) => p.windowDays), [30, 1]);
-  // No data at all → empty.
-  assert.deepEqual(priceSeriesFromStat(null), []);
-  assert.deepEqual(
-    priceSeriesFromStat({ avg: null, low: null, high: null, avg1d: null, avg7d: null, avg30d: null, saleCount: null }),
-    [],
-  );
-});
-
-test("getPriceHistory: tier lookup + range clamp + 1h cache reuse (Session 49c)", async () => {
-  __clearSoldHistoryCache();
-  process.env.POKETRACE_API_KEY = "test-key";
-  let calls = 0;
-  const fetchImpl = (async () => {
-    calls++;
-    return { ok: true, status: 200, json: async () => ({ data: SAMPLE_CARD }) } as unknown as Response;
-  }) as unknown as typeof fetch;
-
-  // 30D → all three points for NEAR_MINT.
-  const h30 = await getPriceHistory("uuid-hist", "NEAR_MINT", 30, { fetchImpl });
-  assert.ok(h30);
-  assert.deepEqual(h30!.map((p) => p.windowDays), [30, 7, 1]);
-  assert.equal(h30![0].avg, 508.15);
-
-  // 7D → clamps out the 30d window. Reuses the cached card (no 2nd fetch).
-  const h7 = await getPriceHistory("uuid-hist", "NEAR_MINT", 7, { fetchImpl });
-  assert.deepEqual(h7!.map((p) => p.windowDays), [7, 1]);
-  assert.equal(calls, 1, "getSoldHistory cache reused — one network call total");
-});
-
-test("getPriceHistory: soft-fails to null on missing uuid / tier / data", async () => {
-  __clearSoldHistoryCache();
-  process.env.POKETRACE_API_KEY = "test-key";
-  const fetchImpl = okFetch({ data: SAMPLE_CARD });
-  assert.equal(await getPriceHistory(null, "NEAR_MINT", 30, { fetchImpl }), null);
-  assert.equal(await getPriceHistory("u", "", 30, { fetchImpl }), null);
-  // A tier the card doesn't carry → null (e.g. BGS_10 absent on this fixture).
-  assert.equal(await getPriceHistory("u2", "BGS_10", 30, { fetchImpl }), null);
 });

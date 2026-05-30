@@ -8,7 +8,23 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
-## 2026-05-29 — Session 49c: reactive sold-history headline (bug fix) + trailing-average line chart — [ADR-044](DECISIONS.md#adr-044--reactive-sold-history-headline--a-trailing-average-line-chart-poketrace-has-no-daily-series)
+## 2026-05-30 — Session 49c (cont.): real PokeTrace daily price-history chart — supersedes the interim trailing-average line — [ADR-044](DECISIONS.md#adr-044--reactive-sold-history-headline--a-daily-price-history-line-chart-real-poketrace-history)
+
+**Correction to the entry below.** My first 49c probe wrongly concluded PokeTrace had no daily series — I tested `/cards/{id}/history`, `/price-history`, `/prices/history`, `?history=true` but **not the tier-scoped path**. The user corrected me; `GET /v1/cards/{uuid}/prices/{tier}/history?period={7d|30d|90d|1y|all}` returns **real daily rows** (verified live 2026-05-30: PSA_10 90d dated back to March; NEAR_MINT all → 168 daily rows across eBay+TCGplayer). Lesson recorded in ADR-044: probe the tier-scoped sub-resource before declaring an endpoint absent.
+
+**What changed (this commit supersedes `a59c2b3`'s trailing-average shim).**
+- **NEW `lib/poketrace/price-history.ts`** — `getPriceHistory({uuid, tier, period})` hits the tier-scoped endpoint; parses `{date, avg, median7d, low, high, saleCount, source}`; **dedups same-date rows preferring eBay**; oldest→newest; 1h SWR cache; soft-fail null on 404/plan/missing-key. `chartTierForCondition` + `PERIOD_FOR_RANGE` helpers. **Live round-trip verified end-to-end.**
+- **Rewrote `components/cards/sold-history-chart.tsx`** — inline-SVG line over **real daily data**, plotting **median7d** (fallback avg, per PokeTrace's recommendation), real **date** x-axis (start/mid/end), right-side min/max y labels, navy area fill, gold/coral endpoint dot, hover tooltip (date + price + sale count). **5-range selector 7D/1M/3M/1Y/MAX** (`?r=`, default 1M); ranges with <2 points disabled ("Limited history"). "Price history accumulating" placeholder when empty.
+- **Panel** resolves the chart tier from the selected condition and `await getPriceHistory(period:'all')`, passing the full daily series (client slices per range). Removed the interim `priceSeriesFromStat` + by-uuid `getPriceHistory` shim.
+- The **reactive-headline bug fix** (below) is unchanged and still correct.
+
+**Closure gate (R-011 strict).** Full suite green · `tsc` clean · `npm run build` exit 0 · `compliance:check` 6/6 · `design:lint` 0 new · `/security-review` RUN · push confirmed · Vercel Ready + live-verify before claiming closed. New `price-history.test.ts`; chart + panel + by-uuid tests updated. Commit prefix `fix:`.
+
+---
+
+## 2026-05-29 — Session 49c: reactive sold-history headline (bug fix) + trailing-average line chart [interim — superseded above] — [ADR-044](DECISIONS.md#adr-044--reactive-sold-history-headline--a-daily-price-history-line-chart-real-poketrace-history)
+
+> **Superseded 2026-05-30** by the real-endpoint rebuild (entry above). The chart described here (trailing-average 30d/7d/24h points, 90D/ALL disabled) was the honest fallback I built when I believed no daily series existed; that premise was a probe error. The reactive-headline bug fix in this entry remains valid.
 
 **Two parts: a bug fix + a charting feature with a documented data-reality adaptation.**
 

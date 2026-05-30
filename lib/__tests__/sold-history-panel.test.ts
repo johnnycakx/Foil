@@ -54,11 +54,14 @@ test("SoldHistoryPanel: headline reacts to the selected condition (Session 49c b
   assert.doesNotMatch(src, /headlineTierKey\s*=\s*RAW_TIERS\.find/, "must not relock headline to first raw tier");
 });
 
-test("SoldHistoryPanel: mounts the chart with the selected-condition series; table is condition-independent", () => {
+test("SoldHistoryPanel: mounts the chart with the selected-condition daily series; table is condition-independent", () => {
   const src = read("components/cards/sold-history-panel.tsx");
   assert.match(src, /<SoldHistoryChart\b/, "mounts the line chart");
-  assert.match(src, /series=\{chartSeries\}/, "passes the selected condition's trailing-avg series");
-  assert.match(src, /priceSeriesFromStat/);
+  assert.match(src, /series=\{chartSeries\}/, "passes the selected condition's daily series");
+  // Real daily history via the tier-scoped endpoint (ADR-044), tier resolved
+  // from the selected condition.
+  assert.match(src, /getPriceHistory/);
+  assert.match(src, /chartTierForCondition/);
   // The static "↑ 7d" arrow render-ternary is replaced by the chart.
   assert.doesNotMatch(src, /trend === "up" \? "↑"/, "static trend-arrow ternary removed");
   // Table renders whenever the variant has ANY data (not gated on the selected
