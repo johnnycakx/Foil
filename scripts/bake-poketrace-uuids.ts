@@ -27,13 +27,16 @@ import { writeFileSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { CARD_CATALOG } from "../lib/cards/catalog.ts";
 import { matchCatalogCard, slugifyName, type PtCardLite, type PoketraceVariant } from "../lib/poketrace/variant.ts";
+import { createBakeCheckpoint } from "./bake-checkpoint.ts";
 
 const BASE_URL = "https://api.poketrace.com/v1";
 const OUTPUT_PATH = "lib/cards/baked-metadata.json";
 const MISSES_PATH = "docs/poketrace-bake-misses.md";
+const STATE_PATH = ".bake-poketrace-state.json";
 const REQ_INTERVAL_MS = 200; // ~50 req / 10s, under the 60/10s Scale burst.
 
 const REFRESH = process.argv.includes("--refresh");
+const RESUME = process.argv.includes("--resume");
 
 type BakedCard = {
   name?: string;
@@ -137,7 +140,20 @@ async function main(): Promise<void> {
   const cards = snap.cards ?? {};
   const sets = snap.sets ?? {};
 
-  console.log(`Baking PokeTrace UUIDs for ${CARD_CATALOG.length} catalog cards${REFRESH ? " (--refresh)" : ""}…`);
+  console.log(
+    `Baking PokeTrace UUIDs for ${CARD_CATALOG.length} catalog cards${REFRESH ? " (--refresh)" : ""}${RESUME ? " (--resume)" : ""}…`,
+  );
+
+  // Resumable checkpoint (ADR-047): persists snapshot + state every 25 cards
+  // so a killed run can --resume instead of restarting the whole catalog.
+  const checkpoint = createBakeCheckpoint({
+    statePath: STATE_PATH,
+    resume: RESUME,
+    persistSnapshot: () => {
+      snap.bakedAt = new Date().toISOString();
+      writeFileSync(join(process.cwd(), OUTPUT_PATH), JSON.stringify(snap, null, 2), "utf8");
+    },
+  });
 
   const misses: string[] = [];
   let matched = 0;
@@ -149,6 +165,13 @@ async function main(): Promise<void> {
   for (const entry of CARD_CATALOG) {
     i++;
     const id = entry.pokemonTcgId;
+    if (checkpoint.shouldSkip(id)) {
+      skipped++;
+      continue;
+    }
+    // mark() runs on every exit path (incl. the early `continue`s below) so
+    // each processed card is recorded for --resume.
+    try {
     const card = cards[id];
     if (!card) {
       misses.push(`- \`${id}\` (${entry.slug}) — no baked card metadata; run \`bake:cards\` first.`);
@@ -236,10 +259,13 @@ async function main(): Promise<void> {
     }
 
     await sleep(REQ_INTERVAL_MS);
+    } finally {
+      checkpoint.mark(id);
+    }
   }
 
-  snap.bakedAt = new Date().toISOString();
-  writeFileSync(join(process.cwd(), OUTPUT_PATH), JSON.stringify(snap, null, 2), "utf8");
+  // Final flush of snapshot + checkpoint state (ADR-047).
+  checkpoint.finalize();
 
   const missesDoc = `# PokeTrace UUID bake — unmatched / ambiguous cards
 

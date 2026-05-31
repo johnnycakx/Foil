@@ -32,6 +32,10 @@ import { writeFileSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { CARD_CATALOG } from "../lib/cards/catalog.ts";
 import type { CardMetadata, SetMetadata } from "../lib/cards/sdk.ts";
+import { createBakeCheckpoint } from "./bake-checkpoint.ts";
+
+const STATE_PATH = ".bake-cards-state.json";
+const RESUME = process.argv.includes("--resume");
 
 const POKEMON_TCG_API_BASE = "https://api.pokemontcg.io/v2/cards";
 const POKEMON_TCG_SETS_BASE = "https://api.pokemontcg.io/v2/sets";
@@ -217,8 +221,23 @@ async function main(): Promise<void> {
     writeFileSync(join(process.cwd(), OUTPUT_PATH), outputJson, "utf8");
   }
 
+  // Resumable checkpoint (ADR-047): --resume skips cards already baked in a
+  // prior interrupted run. Flushes snapshot + state every SAVE_EVERY cards.
+  const checkpoint = createBakeCheckpoint({
+    statePath: STATE_PATH,
+    resume: RESUME,
+    flushEvery: SAVE_EVERY,
+    persistSnapshot: saveSnapshot,
+  });
+  let resumeSkipped = 0;
+
   async function processOne(entry: typeof CARD_CATALOG[number]): Promise<void> {
     const id = entry.pokemonTcgId;
+    if (checkpoint.shouldSkip(id)) {
+      completed++;
+      resumeSkipped++;
+      return;
+    }
     const card = await bakeCard(id);
     completed++;
     if (card) {
@@ -232,7 +251,10 @@ async function main(): Promise<void> {
       stillMissing++;
       console.log(`  [${completed}/${CARD_CATALOG.length}] ${id} -> NO COVERAGE`);
     }
-    if (completed % SAVE_EVERY === 0) saveSnapshot();
+    // mark AFTER mergedCards[id] is set, so a flush here always includes this
+    // card's data (state never claims a card the snapshot lacks). Flushes
+    // snapshot + state every SAVE_EVERY (ADR-047).
+    checkpoint.mark(id);
   }
 
   // Concurrency-limited fan-out — pool of workers each pulling from a
@@ -248,7 +270,8 @@ async function main(): Promise<void> {
   }
   await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
 
-  saveSnapshot();
+  checkpoint.finalize();
+  if (RESUME && resumeSkipped > 0) console.log(`  resumed: skipped ${resumeSkipped} already-baked cards`);
   const outputJson = JSON.stringify({ bakedAt: new Date().toISOString(), cards: mergedCards, sets: mergedSets }, null, 2);
 
   console.log("");
