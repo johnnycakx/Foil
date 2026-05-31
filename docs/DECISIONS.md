@@ -1644,6 +1644,28 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 
 **Cross-refs.** `app/(site)/cards/[slug]/page.tsx`, [ADR-046](#adr-046--tiered-per-card-rendering--catalog-expansion-to-1000-cards), [R-008](RISKS.md#r-008--ebay-2025-license-agreement-ai-output--no-cache-compliance), [R-013](RISKS.md), [R-014](RISKS.md), `app/sitemap.ts`.
 
+## ADR-048 — Brand-voice integration into the autonomous content + newsletter pipelines
+
+**Date:** 2026-05-31 (Session 47.5 / Goal V)
+**Status:** Accepted.
+
+**Context.** The autonomous blog + newsletter generators had a tone section ("direct, declarative") but were not grounded in a real, written voice. Three voice sources existed but were uncodified: John's actual hooks/bio/hero ([STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md)), the "trusted collector concierge" personality + 4 anti-references ([PRODUCT.md](../PRODUCT.md)), and a Cowork voice-research synthesis (Matt Levine × Morning Brew × active-seller composite + a ban list). Worse, the content `SYSTEM_PROMPT`'s Information-Gain mandate literally instructed the model to emit a `"Foil's scan data: ..."` citation — the exact pattern that produced the Session 47.4 fabrications (a fake "~18% spread"). Structural gates count tokens, not voice or truth ([PATTERNS I-004](PATTERNS.md)), so nothing stopped hype words, vague numbers, or unsourced proprietary stats.
+
+**Decision.**
+1. **[docs/BRAND-VOICE.md](BRAND-VOICE.md)** is the canonical voice doc, synthesized from the four sources (the 3 real hooks as the tuning fork; the exact-numbers / grounded-claims / personality-felt / dry-humor rules; the compiled ban list; the four real fabrications as annotated negative examples).
+2. **Expand `BANNED_PHRASES`** (`lib/seo/quality-gates.ts`) with 7 brand-voice bans (dive in, game-changer, to the moon, navigate the landscape, delve, tapestry, in today's market). The live gate (e) — used by BOTH the blog and newsletter pipelines — now auto-fails them.
+3. **Ground both system prompts** in BRAND-VOICE.md: a "Brand voice" section (voice DNA + the non-negotiable rules), the expanded inline ban list, and "no em dashes". **Fixed the IG mandate** so a Foil-data citation must trace verbatim to the supplied data block (never invented to satisfy the mandate) — closing the prompt-level root cause of the 47.4 fabrications.
+4. **`lib/seo/voice-check.ts`** — a verification *lens* (3 detectors: unsourced proprietary stat, vague/hedged number, ban phrase). **Deliberately NOT a runtime generation gate:** detector A would false-positive on a *legitimate* sourced Foil-data citation, which quality-gate 10 already validates with provenance context. The voice check is for tests + manual/CI voice linting; live ban-phrase enforcement runs through gate (e).
+5. **R-010 test** (`lib/__tests__/seo-voice-check.test.ts`) anchored on the four real fabricated paragraphs (from commit `d09638b^`) — all four must fail, a clean in-voice baseline must pass.
+
+**Consequences.**
+- Future generations are grounded in the real voice; the prompt no longer encourages the fabrication pattern.
+- **Honest limit:** the voice check is a tone/trust-signature net, not a fact-checker. It catches *unsourced proprietary stats* and *vague numbers* (the writing signatures of fabrication-prone copy) + ban phrases — it cannot know "Gardevoir ex SAR from 151" is factually wrong (that's gates 9/10 + human review). Documented in BRAND-VOICE.md §6.
+- **P5 finding:** running the check on the four *corrected* live posts shows they STILL fail — on vague-number hedges ("approximately $2,100", "around $9", "~270 gsm") and one "as a collector", none of which are fabrications, so the 47.4 fact-check correctly left them. This is pre-existing **voice debt**, not a regression; surfaced as a ROADMAP cleanup item. It demonstrates the new layer is stricter than the prior gates.
+- The "active seller" anchor only stays authentic if John writes the "from my store" line himself per the Cowork caveat; the composite voice is v1, iterating toward his real voice is v2.
+
+**Cross-refs.** `docs/BRAND-VOICE.md`, `lib/seo/voice-check.ts`, `lib/seo/quality-gates.ts` (BANNED_PHRASES), `lib/seo/content-engine.ts` (SYSTEM_PROMPT), `lib/newsletter/draft-generator.ts` (NEWSLETTER_SYSTEM_PROMPT), `lib/__tests__/seo-voice-check.test.ts`, [ADR-046 gates 9+10](#adr-046--tiered-per-card-rendering--catalog-expansion-to-1000-cards), [PATTERNS I-004](PATTERNS.md), R-001, R-010.
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

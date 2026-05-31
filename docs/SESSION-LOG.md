@@ -8,6 +8,24 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-31 — Session 47.5 (cont.) / Goal V: brand-voice integration into the content + newsletter pipelines — [ADR-048](DECISIONS.md#adr-048--brand-voice-integration-into-the-autonomous-content--newsletter-pipelines)
+
+**Codify Foil's voice and wire it into the autonomous generators so they stop producing hype/vague/fabricated copy.**
+
+**P0 premise correction.** The goal said "run `brand-voice:generate-guidelines`" — that skill does NOT exist (`.claude/skills/brandkit` is an unrelated image-generation skill). The named tool was a wrong premise; the deliverable (a BRAND-VOICE.md synthesized from the 4 real inputs) is fully authorable directly, so I did that. Input #3's path was also a guess — the real file is `…/OneDrive/Documents/Claude/Projects/Claude Cowrok/tcg-intel-voice-research.md`.
+
+**P1 — [docs/BRAND-VOICE.md](BRAND-VOICE.md).** Synthesized from John's real hooks/bio/hero ([STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md)), the concierge personality + 4 anti-references ([PRODUCT.md](../PRODUCT.md)), the Cowork voice research (Matt Levine × Morning Brew × active-seller + ban list), and the 4 Session-47.4 fabrications as annotated negative examples. Voice DNA + exact-numbers/grounded-claims/personality-felt rules + ban list + the honest limit (it's a tone net, not a fact-checker).
+
+**P2/P3 — grounding.** Expanded `BANNED_PHRASES` (`quality-gates.ts`) with 7 voice bans (dive in, game-changer, to the moon, navigate the landscape, delve, tapestry, in today's market) — live gate (e) now auto-fails them on BOTH blog + newsletter. Grounded both system prompts in BRAND-VOICE.md (voice section + expanded bans + "no em dashes"). **Fixed the content IG mandate** that literally told the model to write `"Foil's scan data: ..."` — the prompt-level root cause of the 47.4 fabrications; it now requires any Foil number to trace to the supplied data block.
+
+**P4 — voice check + R-010 test.** New `lib/seo/voice-check.ts` (3 detectors: unsourced proprietary stat / vague number / ban phrase) — a verification lens, NOT a runtime gate (detector A would false-positive on legit sourced data; gate 10 handles that with context). `seo-voice-check.test.ts` anchors on the 4 real fabricated paragraphs (from `d09638b^`): **all 4 fail the check, a clean in-voice baseline passes** (the guardrail). 637 tests, 637 pass; tsc clean; build 6.2s; compliance 6/6.
+
+**P5 — before/after on real content (the honest verification).** Rather than a one-shot nondeterministic LLM regeneration, ran the new voice check against the original (pre-fix) vs corrected (live) versions of the 4 posts — reproducible, no token spend. **Finding: the corrected live posts STILL fail the voice check** — on vague-number hedges ("approximately $2,100", "around $9", "~270 gsm") + one "as a collector", none of which are fabrications (so 47.4 correctly left them). This is pre-existing **voice debt**, not a regression, and proves the new layer is stricter than the prior gates. (The full SYSTEM_PROMPT diff is the deterministic "before/after" of what the generator now instructs.)
+
+**Follow-ups → ROADMAP/IDEAS.** Added NEXT **#32 — Goal B: buy-signal feature** + reframed **#31 — Goal A.5+A: ISR enablement**. Added IDEAS entry for the buy-signal feature (scope TBD). Voice-debt cleanup of the ~4 existing posts noted as a small follow-up. ADR-048 written.
+
+---
+
 ## 2026-05-31 — Session 47.5: metadata-only tier + resumable bake shipped; SSG+ISR hybrid + sitemap split REVERTED after prod verify — [ADR-047](DECISIONS.md#adr-047--ssgisr-hybrid-rendering--metadata-only-tier-for-the-18k-long-tail)
 
 **Architecture-only goal (NO new cards) to scale the catalog toward ~18K. Two of the four planned pieces survived production verification; two were reverted. The honest version is below — see the P6 correction.**

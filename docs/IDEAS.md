@@ -19,6 +19,19 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-05-31
+category: product
+status: promoted
+---
+## Buy-signal feature — "is now a good time to buy this card?"
+
+Turn the per-card page from a price display into a buy *recommendation* (the deal-finder's actual job-to-be-done). Compare the current best eBay listing against the PokeTrace 30-day sold median/range already baked per card, and surface a calm signal (below median / at median / above median) with a confidence note and the exact numbers behind it. No hype, no fabricated confidence (BRAND-VOICE.md); no caching the eBay side (R-008). Scope + thresholds need defining before any build.
+
+**Context:** Raised 2026-05-31 in Goal V (brand-voice) as a ROADMAP NEXT addition (#32). Promoted straight to ROADMAP NEXT since it's the natural next product surface after the catalog + voice work, but the signal definition is genuinely TBD so it carries a "scope TBD" flag.
+
+---
+
+---
 date: 2026-05-24
 category: infra
 status: captured
