@@ -1589,6 +1589,33 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 
 **Cross-refs.** `.github/workflows/weekly-content.yml` ("Configure git author"), [ADR-008](#adr-008--vercel-deploy-hook-for-autonomous-content-not-github-integration-auto-deploys), [ADR-006](#adr-006--full-autonomy-no-human-review-step-gates-as-the-safety-net), [RISKS R-011](RISKS.md).
 
+---
+
+## ADR-046 — Tiered per-card rendering + catalog expansion to ~1,000 cards
+
+**Date:** 2026-05-30 (Session 47.4)
+**Status:** Accepted.
+
+**Context.** `/cards/[slug]` is `force-dynamic` and fetches a live eBay best-listing (one Browse call) on every render. That's fine at 207 curated cards but doesn't scale — at 1,000+ cards with crawler/user traffic it would multiply Browse calls against eBay's default 5,000/day ceiling, and R-008 forbids caching listing data. We want to expand the catalog (creator sponsorships dispatch in ~4 weeks; the deal-finder needs depth) without that quota blow-up and without shipping thin pages.
+
+**Decision — two parts.**
+
+1. **Render tier.** `CatalogEntry.tier?: "curated" | "longtail"` (absent = curated). `curated` cards fetch the live eBay best-listing as before. `longtail` cards **skip `getBestListing` entirely** — they render the PokeTrace sold-history panel + a `<LongTailListingFallback>` (an affiliate *search* CTA, which is a link, not a Browse call → R-008-safe). Schema: longtail omits the live `Offer` and emits an `AggregateOffer` from the baked TCGplayer price range when present, so Product keeps a price signal. `/cards/[slug]` stays `ƒ (Dynamic)` for both tiers (confirmed in the build route table) — nothing is frozen to build-time data.
+
+2. **Expansion pipeline.** `scripts/rank-candidate-cards.ts` + `scripts/expand-catalog.ts` grow the catalog. The hand-curated 207 live in `CURATED_CATALOG`; the expansion lives in the generated `lib/cards/catalog-longtail.generated.ts` (spread into `CARD_CATALOG`), so the curated set stays pristine and regeneration is a clean overwrite. First wave: 207 → **1,007** (800 long-tail).
+
+**Ranking pivot (the load-bearing correction — AGENTS.md).** The goal spec ranked candidates by PokeTrace `totalSaleCount × topPrice`. Empirically that's **infeasible**: PokeTrace's list endpoint (`/v1/cards`) exposes neither field (both `undefined` on list rows — they exist only on per-card detail) nor a working sale-sort (`sort=-totalSaleCount` returns insertion order). Scoring that way needs a per-card *detail* fetch across the whole ~20k catalog (hours). Pivoted to ranking by the **Pokémon TCG SDK's inline TCGplayer market price**, scoped to the sets already in the catalog (commercially proven) — one cheap SDK query per set. This is strictly better: it sidesteps the infeasible ranking AND **guarantees non-thin pages** — every ranked card has a TCGplayer price by construction, so its page renders real `AggregateOffer` + variants pricing even when PokeTrace has no sold-history.
+
+**Consequences.**
+- **eBay quota bounded:** only curated pages call Browse; the 800 long-tail pages make zero Browse calls. Verified: long-tail render path has no `getBestListing`.
+- **Coverage:** first wave matched **1006/1007** cards to PokeTrace (99.9%; 1 transient `fetch failed`, not a data gap), 1567 variants. Build stays `ƒ (Dynamic)`, 2.9min (under the ≤2×~3min guardrail). 616/616 tests after catalog-test updates.
+- **Indexing is the real bottleneck, not page count** — see the [STRATEGY-PROGRAMMATIC-SEO 40%-gate amendment](STRATEGY-PROGRAMMATIC-SEO.md): per-card pages carry unique PokeTrace + TCGplayer data, so indexing is tracked as a *signal*, not a hard pre-expansion gate.
+- **Quota concentration risk** at 1K routes tracked as [RISKS R-012](RISKS.md).
+- **Second wave (1,008 → 2,000)** is gated on first-wave indexing + Browse telemetry (ROADMAP).
+- **Re-run:** `node --experimental-strip-types scripts/rank-candidate-cards.ts` → `… scripts/expand-catalog.ts --n N` → `bake:cards` + `bake:poketrace-uuids --refresh`.
+
+**Cross-refs.** `lib/cards/catalog.ts`, `lib/cards/catalog-longtail.generated.ts`, `scripts/{rank-candidate-cards,expand-catalog}.ts`, `app/(site)/cards/[slug]/page.tsx`, `components/cards/long-tail-listing-fallback.tsx`, [ADR-042](#adr-042--poketrace-per-variant-uuid-caching-search-then-bake--variant-aware-sold-history), [ADR-021](#adr-021--epn-as-v1-live-listing-source-browse-api-deferred) (R-008 no-cache), [RISKS R-012](RISKS.md).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

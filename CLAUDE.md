@@ -292,6 +292,7 @@ This contract is non-negotiable. Skipping it loses context across sessions and t
 
 Hard rules for new /goal commands
 
+Every goal opens with a P0 premise check, BEFORE the first work phase. If you see (a) a better path to the same outcome, (b) data contradicting a load-bearing premise of the goal, or (c) a phase that's already de facto done, stop and surface it to John in one honest, evidence-cited paragraph (no theorizing) before proceeding. Yield if convinced; hold and briefly say why if not. This caught a self-defeating fix in Session 47.4 (the deploy "ignore command" wasn't the cause — ADR-045) and an infeasible ranking premise (PokeTrace can't sort by sale volume — ADR-046) before either burned a cycle. The premise check is cheap; a goal built on a wrong premise is not.
 Any goal touching identification must read docs/foil-card-id-framework.md first.
 Every goal ends with npm test passing AND npx tsc --noEmit clean AND a /security-review pass with no High-severity findings before commit. The /security-review skill (claude-code-security-review) is the closure-gate's "second AI brain" check on the work the goal-running agent just produced — it catches injection risks, secret-exposure paths, error-handling gaps, and architectural anti-patterns that tests don't pin. Medium/Low findings get triaged inline (fix-or-document-why-not in the SESSION-LOG entry); a High finding blocks the commit until resolved.
 Conventional commit prefixes only: feat:, fix:, docs:, test:, refactor:.

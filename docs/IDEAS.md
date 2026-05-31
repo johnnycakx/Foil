@@ -42,6 +42,8 @@ Replace the curated 200-card CARD_CATALOG with programmatic generation from the 
 
 **Context:** Decision made 2026-05-23 evening after Session 24 shipped the 200-card era→sets→cards browse. Visual UX is now in place; gap is catalog coverage. Curated 600-card "cheap path" was on the table as Session 25, explicitly rejected by John — full programmatic generation is the correct path because it captures the long tail of "anything Pokemon for sale" search intent permanently, eliminates the "missing sets" problem, and makes the watchlist useful for any card not just curated ones. Session 25 (or 25 + 26 split) implements this. Likely needs ADR for the SSG+ISR hybrid + catalog-table-vs-hardcoded-array decision.
 
+**Update (Session 47.4 — first wave shipped via [ADR-046](DECISIONS.md#adr-046--tiered-per-card-rendering--catalog-expansion-to-1000-cards)):** the tiered-rendering + ranked-expansion approach landed the first wave (207 → 1,007 cards) — kept the hardcoded-array path (generated long-tail file spread into `CARD_CATALOG`) rather than the Supabase-table path, because the array regenerates cleanly and `generateStaticParams` stays deterministic. The SSG+ISR-hybrid idea was simplified: `/cards/[slug]` is `ƒ (Dynamic)` for all tiers; the quota concern the ISR idea targeted is solved by the curated/longtail tier split (long-tail skips the eBay Browse call) instead. Full 25K coverage + the Supabase-table migration remain open for later waves (2,000 → … gated on indexing + Browse telemetry).
+
 ---
 
 ---

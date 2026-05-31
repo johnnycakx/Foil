@@ -11,7 +11,7 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 ## R-001 — Content engine fabrication
 
 **Severity:** High
-**Status:** `accepted` pre-launch (see [ADR-006](DECISIONS.md#adr-006--full-autonomy-no-human-review-step-gates-as-the-safety-net))
+**Status:** `mitigating` (Session 47.4) — was `accepted` pre-launch ([ADR-006](DECISIONS.md#adr-006--full-autonomy-no-human-review-step-gates-as-the-safety-net)). Two structural mitigations now ship: **gate 9** (internal-link existence — catches dead `/blog`/`/cards`/pillar links the count-only gate missed) and **gate 10** (Foil-data provenance — any %/$/n=/× claim in a "Foil's scan data" sentence must trace to the real data snapshot, else it's blocked). The four live posts that carried the original fabrications (Moonbreon 15–20× off, 3 dead links, invented "~18% spread" / "2× grading rate" / failure-mode stats) were corrected. Gates 9/10 block FUTURE drafts; they don't retroactively scan existing posts, so the fix + the gates are complementary. Still not "resolved": gates check structure/provenance, not whether a *real-snapshot-backed* number is contextually right, and they don't fact-check market prices.
 
 **The risk.** The 8 quality gates check structure (word count, dollar figures, banned phrases, valid JSON-LD), not facts. A hallucinated "$45,000 Charizard sale" or a fabricated "PSA pop count of 234" passes every gate because it has correct dollar formatting and recent-date citations. With full autonomy, anything Claude invents ships to the live domain unreviewed.
 
@@ -187,6 +187,24 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 **Mitigation candidates** (deferred — root cause is gone):
 1. **In-CI deploy verification.** After `git push`, poll the Vercel API for a `READY` deployment at the pushed SHA; ping `#errors` if it's `BLOCKED`/`ERROR` after N minutes. Cost: a Vercel read token in CI (new secret surface). Worth it only if this class recurs.
 2. **Vercel deployment webhook → `#deploys`** already exists ([ADR-016](DECISIONS.md)); extend its consumer to flag a BLOCKED/ERROR state on a `bot+content` commit specifically.
+
+---
+
+## R-012 — eBay Browse-quota concentration at 1K+ routes
+
+**Severity:** Medium
+**Status:** `monitoring` (added Session 47.4 / [ADR-046](DECISIONS.md#adr-046--tiered-per-card-rendering--catalog-expansion-to-1000-cards))
+
+**The risk.** `/cards/[slug]` (curated tier) makes one render-time eBay Browse call per request (R-008: no caching). eBay's default keyset ceiling is ~5,000 calls/day. With the catalog now at ~1,007 cards, a crawl spike or a traffic burst across the **207 curated** pages could approach that ceiling — and the Application Growth Check ceiling lift (ROADMAP #10, Phase 6) isn't submitted yet.
+
+**Why only medium / monitoring.** ADR-046's tiering is the structural mitigation: the **800 long-tail pages make zero Browse calls** (they skip `getBestListing`), so expansion did NOT multiply quota usage — only the 207 curated pages call eBay, same as before the expansion. Pre-launch traffic is low; `browse_calls` telemetry (ADR-025) is the live gauge.
+
+**Trigger to escalate.** `browse_calls` daily volume exceeds ~3,500 (70% of ceiling) for 2 consecutive days, OR any eBay rate-limit (429) appears in the telemetry.
+
+**Mitigation candidates.**
+1. Submit the eBay Application Growth Check (ROADMAP #10, Phase 6) to lift the ceiling before promoting any long-tail cards to the curated tier.
+2. Short-TTL stale-while-revalidate on the curated best-listing IF eBay's terms permit (R-008 currently forbids caching listing data — would need a compliance re-read).
+3. Demote low-traffic curated cards to long-tail (no Browse call) based on `browse_calls` + analytics.
 
 ---
 

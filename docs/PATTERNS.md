@@ -6,6 +6,22 @@ Append new entries at the top. When an entry is promoted, leave it here with a `
 
 ---
 
+## I-004 — Structural gates pass factually-wrong content; quantity ≠ validity
+
+**Spotted:** Session 47.4, fact-checking the autonomous posts the 47.4 deploy-fix smoke tests shipped.
+
+**Shape.** Our quality gates check *structural* properties — word count, ≥5 dollar figures, ≥2 internal links, banned phrases, valid JSON-LD. A draft can satisfy every one of them and still be embarrassingly wrong, because the gates count tokens, not truth. Two failure axes show up together: (a) **factual fabrication** — a Moonbreon valued at "$120-140 raw" passes the dollar-figure gate while real market is ~$2,100 (15-20× off); an invented "Foil's scan data shows ~18% spread" passes the Foil-data-citation gate because the trigger phrase is present, even though the pipeline computes no such number; and (b) **target validity** — three `/blog/...` links passed the "≥2 internal links" gate while all three 404'd, because the gate counted well-formed hrefs without resolving them. The meta-lesson: any gate of the form "≥N things of shape X" is satisfiable by N *invalid* things of shape X. To bite, a gate must validate each thing against the real world (does the link resolve? does the number trace to a real source?), not just count shapes.
+
+**Two instances in the repo so far.**
+1. The link-count gate (h) shipped 3 dead `/blog` links live → fixed by **gate 9** (resolve every internal link against the post dir + catalog + route allowlist).
+2. The Foil-data-citation gate (d) rewarded the *presence* of "Foil's scan data" regardless of whether the attached number was real → four posts shipped invented stats → fixed by **gate 10** (every %/$/n= in a Foil-data sentence must trace verbatim to `data-injection.ts`'s actual return; null snapshot → no number allowed).
+
+**The general fix.** When adding a "must contain N of X" gate, pair it with an existence/provenance check on each X. Counting is necessary but never sufficient. (R-010 is the adjacent lesson for *tests*; this is the same shape for *content gates*.)
+
+**Related:** R-001 (content fabrication), gates 9 + 10 in `lib/seo/quality-gates.ts`, R-010.
+
+---
+
 ## I-003 — Silent autonomy-chain regressions: integrations can disconnect because nothing happens
 
 **Spotted:** Session 19, while diagnosing the Railway auto-deploy gap that Session 18 first surfaced.

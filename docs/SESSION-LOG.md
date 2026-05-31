@@ -8,6 +8,35 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-30 — Session 47.4 (cont.): fact-check 4 posts + gates 9-10 + tiered rendering + catalog 207 → 1,007 — [ADR-046](DECISIONS.md#adr-046--tiered-per-card-rendering--catalog-expansion-to-1000-cards)
+
+**8-phase goal off the back of the deploy fix (above). The 47.4 smoke-test posts shipped fabrications; this hardens factuality AND scales the catalog.**
+
+**P1 — fact-check (4 live posts).** The gates check structure, not facts:
+
+| Post | Fix |
+|---|---|
+| how-much-is-my-pokemon-card-worth | Moonbreon (Umbreon VMAX EVS 215) "$120-140 raw / $350-500 PSA 10" → live PokeTrace: **~$2,100 raw** (n=363/53), **~$2,300 PSA 9** (n=154), **~$4,400 PSA 10** (n=391) — was 15-20× off. Removed invented "~18% spread"; dead `/blog/reading-…` → condition-guide pillar. |
+| japanese-sar-vs-english-sir | 2 dead `/blog` links → value-calc pillar; removed invented "English SIRs grading at 2× rate"; "Gardevoir ex SAR from 151" → "Venusaur ex SAR from 151 (SV2a)" (Gardevoir isn't a Kanto #1-151 card; Venusaur ex #198 is a verified 151 SIR); "JP SR (Secret Rare)" → "Super Rare". |
+| how-to-read-a-japanese-pokemon-card | _(scope-extension — same fabrication pattern found in a sweep)_ removed invented "Foil's scan data: across 25 Japanese cards… identification failure" analysis. |
+| near-mint-vs-lightly-played | _(scope-extension)_ removed invented "Foil's scan data… multi-set Pokémon most frequent source of mismatches" analysis. |
+
+Each corrected post carries an "Updated 2026-05-30" transparency note.
+
+**P2 — gates 9 + 10** (`lib/seo/quality-gates.ts`): gate 9 resolves every internal link against the post dir + catalog + route allowlist; gate 10 requires any %/$/n=/× in a "Foil's scan data" sentence to trace verbatim to `data-injection.ts`'s real return (null snapshot → no number allowed). Anchored on the live fabrications as R-010 negatives. (Pattern: [PATTERNS I-004](PATTERNS.md) — structural gates pass factually-wrong content.)
+
+**P3 — tiered rendering** (ADR-046): `CatalogEntry.tier` (curated|longtail). Curated = live eBay best-listing; long-tail skips `getBestListing` → `<LongTailListingFallback>` (affiliate search CTA, no Browse call) + sold-history; schema omits Offer, keeps AggregateOffer from baked TCGplayer prices. `/cards/[slug]` stays `ƒ (Dynamic)`.
+
+**P4-P5 — ranking pivot + expansion wave.** Ranking PIVOTED from PokeTrace `totalSaleCount × topPrice` (infeasible — PokeTrace's list endpoint exposes neither field nor a sale-sort; per-card scoring = hours) to the **SDK's inline TCGplayer market price** across the catalog's proven sets. Pilot (--n 30) → 100% PokeTrace match → full **--n 800: 207 → 1,007**. Bake: 1007/1007 SDK, **1006/1007 PokeTrace** (99.9%; 1 transient `fetch failed`), 1567 variants. Long-tail lives in generated `catalog-longtail.generated.ts` spread into `CARD_CATALOG`.
+
+**P0 premise checks (the goal added a standing P0 rule — now in CLAUDE.md).** Surfaced two load-bearing contradictions before they burned cycles: (1) ROADMAP #8 was de-facto done (the 207 pages already shipped) — consistent with the goal; (2) the PokeTrace ranking was infeasible — pivoted to SDK price (above), which also guarantees non-thin pages.
+
+**Per-tier live verification** (after deploy): _[filled below — 1 curated + 5 long-tail samples]_
+
+**Closure gate (R-011 strict).** 617/617 tests · `tsc` clean · `npm run build` exit 0 (2.9min, `/cards/[slug]` = ƒ Dynamic, ≤2× guardrail) · `compliance:check` 6/6 · `design:lint` 0 new · `/security-review` RUN · push confirmed · Vercel Ready. Per-phase `fix:`/`feat:` commits. Match-rate 99.9% (≥50% guardrail). Docs: ADR-046, gates, RISKS R-001→mitigating + R-012, STRATEGY 40%-gate amendment, IDEAS, PATTERNS I-004, CLAUDE.md P0 rule.
+
+---
+
 ## 2026-05-30 — Session 47.4: fix autonomous content-engine deploy (two BLOCKED, no Ready) — [ADR-045](DECISIONS.md#adr-045--autonomous-commits-use-a-team-associated-author-email-so-vercel-doesnt-block-the-deploy)
 
 **Symptom.** The 2026-05-28 autonomous post (`677adeb`) landed on `main` (workflow green) but showed **two BLOCKED Vercel deploys and no Ready** — production never updated.
