@@ -31,7 +31,9 @@ Each corrected post carries an "Updated 2026-05-30" transparency note.
 
 **P0 premise checks (the goal added a standing P0 rule — now in CLAUDE.md).** Surfaced two load-bearing contradictions before they burned cycles: (1) ROADMAP #8 was de-facto done (the 207 pages already shipped) — consistent with the goal; (2) the PokeTrace ranking was infeasible — pivoted to SDK price (above), which also guarantees non-thin pages.
 
-**Per-tier live verification** (after deploy): _[filled below — 1 curated + 5 long-tail samples]_
+**Per-tier live verification** (deploy `foil-297v8k33w` ● Ready, foiltcg.com, all HTTP 200):
+- **Curated** `base1-4-charizard` → live "Best current listing" eBay block (`best-deal-heading`) — unchanged.
+- **Long-tail** (5 samples: `neo4-107-shining-charizard` vintage holo · `swsh8-271-gengar-vmax` modern VMAX · `base6-29-mewtwo` vintage · `swsh7-189-umbreon-v` modern V · `swsh35-79-charizard-v` promo) → all render the `<LongTailListingFallback>` ("Live listings" search CTA), the sold-history panel, and an AggregateOffer in schema, with **no live best-listing block (`getBestListing` skipped → zero Browse calls)**. (No JP cards in catalog — noted; R-012 mitigation confirmed: long-tail adds no eBay quota.)
 
 **Closure gate (R-011 strict).** 617/617 tests · `tsc` clean · `npm run build` exit 0 (2.9min, `/cards/[slug]` = ƒ Dynamic, ≤2× guardrail) · `compliance:check` 6/6 · `design:lint` 0 new · `/security-review` RUN · push confirmed · Vercel Ready. Per-phase `fix:`/`feat:` commits. Match-rate 99.9% (≥50% guardrail). Docs: ADR-046, gates, RISKS R-001→mitigating + R-012, STRATEGY 40%-gate amendment, IDEAS, PATTERNS I-004, CLAUDE.md P0 rule.
 
