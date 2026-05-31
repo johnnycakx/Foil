@@ -155,23 +155,23 @@ test("invariant: lib/affiliate/ebay-browse.ts contains cache: 'no-store'", () =>
 });
 
 // ---------------------------------------------------------------------------
-// Invariant 4: /cards/[slug] curated tier renders dynamically (R-008).
-// ADR-047 made the page ISR-enabled for the no-eBay tiers, so the R-008 control
-// is now `await connection()` (next/server) in the curated branch — it forces
-// those renders to runtime so the live eBay listing is never prerendered or
-// ISR-cached. (Replaces the old `dynamic = 'force-dynamic'` assertion.)
+// Invariant 4: /cards/[slug] renders dynamically (R-008). ADR-047 tried an ISR
+// hybrid, but the page's server-side `searchParams` read forces dynamic
+// rendering (incompatible with ISR — DYNAMIC_SERVER_USAGE at runtime), so
+// `force-dynamic` is the R-008 control: every curated render re-fetches the
+// live eBay listing and nothing is ever prerendered/cached.
 // ---------------------------------------------------------------------------
 
-test("invariant: /cards/[slug] curated tier forces dynamic render via connection() (R-008)", () => {
+test("invariant: /cards/[slug] is dynamic = 'force-dynamic' (R-008)", () => {
   const path = "app/(site)/cards/[slug]/page.tsx";
   const text = readFileSync(join(ROOT, path), "utf8");
   assert.match(
     text,
-    /import\s*\{[^}]*\bconnection\b[^}]*\}\s*from\s*["']next\/server["']/,
-    `${path} must import connection from next/server (R-008)`,
+    /export\s+const\s+dynamic\s*=\s*["']force-dynamic["']/,
+    `${path} must export dynamic = 'force-dynamic' (R-008)`,
   );
-  assert.match(text, /await\s+connection\(\)/, `${path} must call await connection() in the curated branch (R-008)`);
-  // And it must NOT have silently reverted to a cacheable config without the guard.
+  // And it must NOT have silently reverted to a cacheable config (ISR/static).
+  assert.doesNotMatch(text, /export\s+const\s+revalidate\s*=/);
   assert.doesNotMatch(text, /export\s+const\s+dynamic\s*=\s*["']force-static["']/);
 });
 

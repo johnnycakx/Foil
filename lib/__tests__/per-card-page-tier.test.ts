@@ -37,14 +37,15 @@ test("cardTier: honors an explicit longtail tier when present", () => {
   }
 });
 
-test("/cards/[slug]: Browse call gated to the curated tier; curated forced dynamic (ADR-047)", () => {
+test("/cards/[slug]: Browse call gated to the curated tier; page forced dynamic (ADR-047)", () => {
   const src = read("app/(site)/cards/[slug]/page.tsx");
   assert.match(src, /const\s+tier\s*=\s*cardTier\(slug\)/);
   // getBestListing only inside the curated branch (not longtail/metadata-only).
   assert.match(src, /if \(tier === "curated"\) \{/);
   assert.match(src, /getBestListing\(/);
-  // R-008: curated render forced dynamic via connection() before the eBay fetch.
-  assert.match(src, /await connection\(\)/);
+  // R-008: the page is force-dynamic (ISR is incompatible with its searchParams
+  // read — DYNAMIC_SERVER_USAGE), so the live eBay listing is never cached.
+  assert.match(src, /export const dynamic = "force-dynamic"/);
 });
 
 test("/cards/[slug]: longtail renders the fallback; curated renders the live block", () => {

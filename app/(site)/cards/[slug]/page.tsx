@@ -11,7 +11,6 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { connection } from "next/server";
 import { affiliateSearchUrl, type EpnBestListing } from "@/lib/affiliate/epn";
 import { getBestListing } from "@/lib/affiliate/ebay-browse";
 import { CARD_CATALOG, getCatalogEntry, relatedCardsForSlug, cardTier } from "@/lib/cards/catalog";
@@ -27,30 +26,25 @@ import { SoldHistoryPanel } from "@/components/cards/sold-history-panel";
 import { WatchlistForm } from "@/components/cards/watchlist-form";
 import { deriveAvailableVariants } from "@/lib/poketrace/variant";
 
-// SSG+ISR hybrid (ADR-047). `force-dynamic` is intentionally NOT set: only the
-// CURATED tier is prerendered (generateStaticParams below); the long tail
-// (longtail + metadata-only) renders on-demand via ISR (dynamicParams=true,
-// revalidate=3600) so the build never scales with catalog size.
-//
-// R-008 (no caching eBay listing data): the curated tier's getBestListing uses
-// `cache: "no-store"`, which forces every curated render to be dynamic and
-// uncached regardless of this segment config — so curated re-fetches the live
-// eBay listing on every load even though the page is no longer force-dynamic.
-// The no-store fetch (not `force-dynamic`) is now the R-008 guarantee.
-export const dynamicParams = true;
-export const revalidate = 3600;
+// Rendering mode (ADR-047, amended). This page reads `searchParams` (the `v`
+// variant + `c` condition URL state, ADR-043) on the server, which forces
+// DYNAMIC rendering — fundamentally incompatible with ISR. The original
+// SSG+ISR-hybrid attempt (revalidate=3600 + connection()) threw
+// DYNAMIC_SERVER_USAGE at runtime on EVERY card page because of this read, so
+// ISR is deferred until variant/condition selection moves client-side (see
+// ADR-047 "What shipped" + RISKS R-013). `force-dynamic` is the known-good
+// mode and the R-008 guarantee (eBay listing data is never cached): every
+// render re-fetches live, paired with getBestListing's own `cache: "no-store"`.
+export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-// No card pages are prerendered at build (empty set): the curated tier is
-// dynamic-by-R-008 (its no-store eBay fetch can't be cached), so prerendering
-// it would only add ~1 build-time eBay Browse call per curated card for output
-// that's discarded — measured +1.4min build with zero runtime benefit. The
-// long tail (longtail + metadata-only) renders on-demand via ISR
-// (dynamicParams=true, revalidate=3600). Result: the build never renders a
-// card page → flat build time at any catalog size, no build-time eBay calls.
-export function generateStaticParams() {
-  return [] as { slug: string }[];
-}
+// No generateStaticParams: under force-dynamic Next prerenders nothing, so the
+// build is flat at any catalog size with zero build-time eBay Browse calls
+// without it. (Exporting an empty generateStaticParams instead would classify
+// the route as ● SSG and conflict with the searchParams read — DYNAMIC_SERVER_
+// USAGE.) ISR for the cheap long tail is deferred until variant/condition
+// selection moves client-side and the server-side searchParams read is gone
+// (ADR-047 "What shipped" + RISKS R-013).
 
 function siteUrl(): string {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.foiltcg.com";
@@ -169,14 +163,12 @@ export default async function CardPage({
   const tier = cardTier(slug);
 
   // Render-time Browse fetch — curated tier only (ADR-046/047). Long-tail +
-  // metadata-only cards skip the eBay Browse call (quota + they're ISR-cached).
-  // R-008: `await connection()` forces curated renders to be DYNAMIC per request
-  // (never prerendered or ISR-cached), so the live eBay listing is never cached
-  // even though the page is ISR-enabled for the other tiers. Belt-and-suspenders
-  // with getBestListing's own `cache: "no-store"`. Soft-fails to null on error.
+  // metadata-only cards skip the eBay Browse call (bounds the per-render Browse
+  // quota as the catalog scales). R-008 (never cache eBay listing data) is held
+  // by force-dynamic above + getBestListing's own `cache: "no-store"`.
+  // Soft-fails to null on error.
   let best: EpnBestListing | null = null;
   if (tier === "curated") {
-    await connection();
     best = await getBestListing({
       cardName: card.name,
       setName: card.setName,
