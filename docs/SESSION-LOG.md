@@ -8,6 +8,34 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-31 — Session 47.5: SSG+ISR hybrid + metadata-only tier + resumable bake + sitemap split — [ADR-047](DECISIONS.md#adr-047--ssgisr-hybrid-rendering--metadata-only-tier-for-the-18k-long-tail)
+
+**Architecture-only goal (NO new cards) to make the catalog scale toward the full ~18K SDK universe without multiplying build time or the eBay Browse quota.**
+
+**P1 — SSG+ISR hybrid** (`app/(site)/cards/[slug]/page.tsx`). Removed `export const dynamic = "force-dynamic"`; added `dynamicParams = true` + `revalidate = 3600` + an **EMPTY `generateStaticParams`**. Nothing is prerendered at build → build is flat at any catalog size and makes zero build-time eBay calls (a curated-tier `generateStaticParams` was tried first and grew the build 2.9 → 4.3 min with 207 build-time Browse calls — reverted). R-008 (never cache eBay listing data) is preserved by calling `await connection()` in the curated branch only, which forces that render to runtime; the listing fetch stays `cache: "no-store"`. Belt-and-suspenders. Build dropped to ~4.1s, route shows `● (ISR)`.
+
+**P2 — metadata-only third tier.** `CardTier = "curated" | "longtail" | "metadata-only"`. metadata-only skips BOTH `getBestListing` and the sold-history panel; renders SDK image + set/rarity/artist + 2 CTAs via new `<MetadataOnlyListing>` ("Browse … on eBay →" affiliate `customId="foil-metadata-only"`, "See on TCGplayer →" non-affiliate w/ ROADMAP #26 swap comment). Product schema with NO offers. Exercised on 3 real existing cards via a stable `METADATA_ONLY_SLUGS` override (no new cards added).
+
+**P3 — resumable bake.** New tested helper `scripts/bake-checkpoint.ts` (`createBakeCheckpoint` → `done`/`shouldSkip`/`mark`/`finalize`). Both `bake-poketrace-uuids.ts` and `bake-card-metadata.ts` gained `--resume` + a `.bake-*-state.json` checkpoint flushed with the snapshot every N cards (mark AFTER the data is stored, so state never claims a card the snapshot lacks). Kill-mid-run + restart == uninterrupted, pinned by `bake-checkpoint.test.ts`. ([PATTERNS I-005](PATTERNS.md#i-005--resumable-long-running-scripts-checkpoint-state--snapshot-together).)
+
+**P4 — sitemap split.** `app/sitemap.ts` now uses `generateSitemaps()` → a `pages` shard (landings + posts) + one shard per set in the catalog; Next auto-serves the index at `/sitemap.xml`. Each child stays well under Google's 50K-URL limit; `robots.ts` already points at the index.
+
+**P5 — tests.** New `per-card-page-metadata-only.test.ts` + `bake-checkpoint.test.ts`; visual-regression PUBLIC_SURFACES extended for the metadata-only component; `catalog.test.ts` curated filter fixed (`tier === undefined || "curated"` — the old `!== "longtail"` wrongly counted the 3 metadata-only cards as curated). **626 tests, 626 pass; `tsc --noEmit` clean.**
+
+**P6 — live verification (post-push, production).** _Pending — fill table after the push lands and the production deploy goes Ready._
+
+| Tier | Sample slug | HTTP | Best-listing | Sold-history | Schema offers | Render mode |
+|---|---|---|---|---|---|---|
+| curated | _tbd_ | _tbd_ | present | present | Offer | dynamic (connection) |
+| longtail | _tbd_ | _tbd_ | absent (affiliate CTA) | present | AggregateOffer | ISR |
+| metadata-only | _tbd_ | _tbd_ | absent (2 CTAs) | absent | none | ISR |
+
+ISR cold-render p95: _tbd (<3s guardrail)_. browse_calls spike: _tbd_. compliance 6/6 ✅. design:lint 0 new ✅. /security-review: _tbd_.
+
+**Follow-ups → ROADMAP.** Rewrote #29 to Goal B (Wave 2: re-rank all ~150 SDK sets → ~5K priced) + Goal C (Wave 3: ~18K via ISR metadata-only, gated on ≥2 wk ISR cold-render telemetry). New RISKS [R-013](RISKS.md#r-013--isr-cold-render-latency-at-scale) (ISR cold-render p95) + R-014 (sitemap index↔child drift). ADR-046 amended for the 3rd tier.
+
+---
+
 ## 2026-05-30 — Session 47.4 (cont.): fact-check 4 posts + gates 9-10 + tiered rendering + catalog 207 → 1,007 — [ADR-046](DECISIONS.md#adr-046--tiered-per-card-rendering--catalog-expansion-to-1000-cards)
 
 **8-phase goal off the back of the deploy fix (above). The 47.4 smoke-test posts shipped fabrications; this hardens factuality AND scales the catalog.**

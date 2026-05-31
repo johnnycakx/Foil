@@ -120,7 +120,7 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 **Why mitigating.** Compliance is encoded into the architecture, not just the wiki:
 
 1. `lib/affiliate/epn.ts::searchProducts` passes `cache: "no-store"` on every EPN fetch; the function signature has no caching parameter, and the codebase has no `cached_listings` table.
-2. `app/cards/[slug]/page.tsx` is `export const dynamic = "force-dynamic"` — every page load re-fetches from EPN at render time.
+2. `app/(site)/cards/[slug]/page.tsx` re-fetches the live eBay listing on every load for the curated tier. **Mechanism updated Session 47.5 ([ADR-047](DECISIONS.md#adr-047--ssgisr-hybrid-rendering--metadata-only-tier-for-the-18k-long-tail)):** `force-dynamic` was dropped to allow ISR on the no-eBay tiers, but the curated tier's `getBestListing` `cache: "no-store"` fetch **forces every curated render dynamic and uncached** regardless of segment config — so the live listing is never SSG-prerendered or ISR-cached. The curated branch calls **`await connection()`** (next/server) before the eBay fetch, forcing those renders to runtime — so curated is never prerendered or ISR-cached even though the page is ISR-enabled for the no-eBay tiers — and `getBestListing` keeps `cache: "no-store"`. The `connection()` call + the no-store fetch (not `force-dynamic`) are now the guarantee. Curated routes are the only ones that touch eBay; longtail/metadata-only (ISR-cached) make no Browse call.
 3. The editorial paragraphs below the fold on per-card pages describe the *card* (set, print run, history), not the live listing. The live block self-describes from the EPN response on every load.
 4. The autonomous content engine's reframed "Best [card] deals this week" template ([ROADMAP NEXT #10](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10)) generates copy at *category* level ("Charizard prices have moved up X% this quarter"), not listing-specific claims, and pulls fresh listing data at render time of the resulting blog post.
 
@@ -205,6 +205,36 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 1. Submit the eBay Application Growth Check (ROADMAP #10, Phase 6) to lift the ceiling before promoting any long-tail cards to the curated tier.
 2. Short-TTL stale-while-revalidate on the curated best-listing IF eBay's terms permit (R-008 currently forbids caching listing data — would need a compliance re-read).
 3. Demote low-traffic curated cards to long-tail (no Browse call) based on `browse_calls` + analytics.
+
+---
+
+## R-013 — ISR cold-render latency at scale
+
+**Severity:** Medium
+**Status:** `monitoring` (added Session 47.5 / [ADR-047](DECISIONS.md#adr-047--ssgisr-hybrid-rendering--metadata-only-tier-for-the-18k-long-tail))
+
+**The risk.** ADR-047 stopped prerendering the long tail — longtail + metadata-only `/cards/[slug]` pages now render **on-demand via ISR** (first hit renders, then cached 1h). The first (cold) hit of an uncached page pays the full render cost: longtail fetches PokeTrace sold-history; metadata-only is pure SDK metadata (cheap). At 18K pages most are cold most of the time (long-tail traffic), so cold-render p95 is the user-facing latency that matters, and a slow PokeTrace response would land on a real visitor rather than the build.
+
+**Why medium / monitoring.** Curated (the high-traffic pages) is unaffected (still dynamic, always live). Cold renders touch only cacheable sources (PokeTrace 1h-SWR / baked SDK metadata) — no eBay. Measured p95 on the Vercel preview is the gate.
+
+**Trigger to escalate.** ISR cold-render p95 > 3s (architectural — revisit: pre-warm top-N, raise revalidate, or move sold-history to a streamed/Suspense boundary so the shell paints first).
+
+**Mitigation candidates.** Pre-warm the top-N longtail at build (bounded generateStaticParams); `<Suspense>` the sold-history panel so the page shell paints before PokeTrace resolves; raise `revalidate` for very-low-traffic shards.
+
+---
+
+## R-014 — Sitemap index ↔ child drift
+
+**Severity:** Low
+**Status:** `monitoring` (added Session 47.5 / [ADR-047](DECISIONS.md#adr-047--ssgisr-hybrid-rendering--metadata-only-tier-for-the-18k-long-tail))
+
+**The risk.** ADR-047 split the sitemap into a Next-generated index (`/sitemap.xml`) + per-set children (`/sitemap/set-<id>.xml`) + a `/sitemap/pages.xml`. The index is generated from `generateSitemaps()` (driven by `setIdsInCatalog()`), and `robots.ts` points crawlers at `/sitemap.xml`. Failure modes: a new set lands in the catalog but the index/children drift (e.g. a child 404s, or the index lists a shard the catalog no longer has), or a single shard quietly approaches Google's 50K-URL limit.
+
+**Why low.** Index + children derive from the same `CARD_CATALOG` at build, so they can't structurally diverge without a code change; largest set is < 300 URLs (50K is far off even at 18K). Pure SEO-hygiene risk, no user/revenue impact.
+
+**Trigger to escalate.** GSC reports sitemap-fetch errors on any child, OR any single shard exceeds ~40K URLs (international printings), OR a child sitemap 404s in a `curl` spot-check.
+
+**Mitigation candidates.** GSC sitemap-status check in the monthly SEO review; if a set ever nears 50K, sub-shard it by collector-number range.
 
 ---
 

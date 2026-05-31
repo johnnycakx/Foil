@@ -6,6 +6,22 @@ Append new entries at the top. When an entry is promoted, leave it here with a `
 
 ---
 
+## I-005 — Resumable long-running scripts: checkpoint state + snapshot together
+
+**Spotted:** Session 47.5, building toward the 18K-card bake (ADR-047).
+
+**Shape.** A script that loops over thousands of items, each doing a rate-limited API call (the PokeTrace/SDK bakes — 20-40 min on 1,000 cards, far longer at 18K), will eventually get killed partway (timeout, network, Ctrl-C, CI cap). If it only persists at the end, a kill loses everything; if it persists per-item but the "what's done" marker and the "actual output" live in separate writes, they drift — on resume you skip an item the output never captured. The fix has two parts: **(1) persist progress periodically, not just at the end** (`SAVE_EVERY` flush), and **(2) flush the done-marker and the output snapshot together, marking an item done only AFTER its data is in the snapshot** — so the state never claims an item the snapshot lacks. A `--resume` flag then reads the state and skips done items; a killed run + restart converges to the same result as an uninterrupted one.
+
+**Two instances in the repo so far.**
+1. `scripts/bake-poketrace-uuids.ts` — `--resume` skips already-matched cards; flushes snapshot + `.bake-poketrace-state.json` every 25 via the shared `createBakeCheckpoint`.
+2. `scripts/bake-card-metadata.ts` — same helper; `mark()` is called *after* `mergedCards[id]` is set so a flush always includes the card's data.
+
+**The general fix.** Factor the checkpoint into one tested helper (`scripts/bake-checkpoint.ts`) — `done` set, `shouldSkip(id)`, `mark(id)` (flushes every N), `finalize()` — with the snapshot-persist injected and fs swappable for tests. The ordering invariant (mark after the data is written) is the subtle bug-magnet; pin it with a kill-mid-run == uninterrupted equivalence test.
+
+**Related:** `scripts/bake-checkpoint.ts`, `lib/__tests__/bake-checkpoint.test.ts`, [ADR-047](DECISIONS.md#adr-047--ssgisr-hybrid-rendering--metadata-only-tier-for-the-18k-long-tail).
+
+---
+
 ## I-004 — Structural gates pass factually-wrong content; quantity ≠ validity
 
 **Spotted:** Session 47.4, fact-checking the autonomous posts the 47.4 deploy-fix smoke tests shipped.

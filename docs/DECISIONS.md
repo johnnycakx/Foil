@@ -1614,7 +1614,33 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 - **Second wave (1,008 → 2,000)** is gated on first-wave indexing + Browse telemetry (ROADMAP).
 - **Re-run:** `node --experimental-strip-types scripts/rank-candidate-cards.ts` → `… scripts/expand-catalog.ts --n N` → `bake:cards` + `bake:poketrace-uuids --refresh`.
 
-**Cross-refs.** `lib/cards/catalog.ts`, `lib/cards/catalog-longtail.generated.ts`, `scripts/{rank-candidate-cards,expand-catalog}.ts`, `app/(site)/cards/[slug]/page.tsx`, `components/cards/long-tail-listing-fallback.tsx`, [ADR-042](#adr-042--poketrace-per-variant-uuid-caching-search-then-bake--variant-aware-sold-history), [ADR-021](#adr-021--epn-as-v1-live-listing-source-browse-api-deferred) (R-008 no-cache), [RISKS R-012](RISKS.md).
+**Amendment (Session 47.5 / [ADR-047](#adr-047--ssgisr-hybrid-rendering--metadata-only-tier-for-the-18k-long-tail)).** A third tier — **`metadata-only`** — was added for the 18K long tail: `tier: "curated" | "longtail" | "metadata-only"`. It skips BOTH `getBestListing` AND the sold-history panel (no eBay, no PokeTrace) and renders SDK metadata (image / set / rarity / artist) + an eBay affiliate-search CTA + a TCGplayer link; schema is `Product` with no offers. It's the tier for cards with no priced/sold data — cheap to render and ISR-cacheable.
+
+**Cross-refs.** `lib/cards/catalog.ts`, `lib/cards/catalog-longtail.generated.ts`, `scripts/{rank-candidate-cards,expand-catalog}.ts`, `app/(site)/cards/[slug]/page.tsx`, `components/cards/long-tail-listing-fallback.tsx`, [ADR-042](#adr-042--poketrace-per-variant-uuid-caching-search-then-bake--variant-aware-sold-history), [ADR-021](#adr-021--epn-as-v1-live-listing-source-browse-api-deferred) (R-008 no-cache), [ADR-047](#adr-047--ssgisr-hybrid-rendering--metadata-only-tier-for-the-18k-long-tail), [RISKS R-012](RISKS.md).
+
+---
+
+## ADR-047 — SSG+ISR hybrid rendering + metadata-only tier for the 18K long tail
+
+**Date:** 2026-05-31 (Session 47.5)
+**Status:** Accepted. Extends ADR-046; constrained by [R-008](RISKS.md#r-008--ebay-2025-license-agreement-ai-output--no-cache-compliance).
+
+**Context.** The catalog will grow toward ~18K cards (all SDK printings). The build *prerenders the long tail*: measured 789ms@207 cards → 2.9min@1,007 (the 800 longtail pages prerender at ~150ms each; curated's `no-store` eBay fetch already opts the 207 curated *out* of prerender → they're `ƒ Dynamic`). Extrapolated, prerendering 18K pages is ~25-30min — under Vercel Pro's 45-min cap but wasteful, since most of those are zero-data metadata-only pages with minimal traffic.
+
+**Load-bearing constraint (R-008).** The **curated** tier renders a live eBay best-listing via `getBestListing` → `cache: "no-store"`. R-008 forbids caching eBay listing data, so curated pages **must not** be SSG-prerendered or ISR-cached. (They can't be anyway — a `no-store` fetch forces per-request dynamic rendering.) SSG/ISR therefore applies only to the **no-eBay tiers** (longtail's sold-history is PokeTrace = cacheable; metadata-only is pure SDK metadata).
+
+**Decision.**
+1. **Drop `export const dynamic = "force-dynamic"`** from `app/(site)/cards/[slug]/page.tsx`; set **`export const dynamicParams = true`** + **`export const revalidate = 3600`** (1h ISR). `generateStaticParams` returns an **empty set** — no card page is prerendered at build. (Initially it returned the curated tier, but measuring showed that made Next prerender-*attempt* each curated page at build, firing ~1 build-time eBay Browse call per curated card for output that's discarded — build grew 2.9→4.3min with zero runtime benefit, since curated is dynamic-by-R-008 regardless. Empty is correct: curated renders dynamically on request; the long tail renders on-demand via ISR.) Build time is now **flat at any catalog size** (no card prerender) and makes **zero build-time eBay calls**.
+2. **Curated stays dynamic + R-008-safe — explicitly.** The page is ISR-enabled (`●`) for the no-eBay tiers, so to guarantee the curated tier is NEVER ISR-cached (which would cache the live eBay listing), the curated branch calls **`await connection()`** (next/server) before `getBestListing` — that forces those renders to runtime (excluded from prerender/ISR). Belt-and-suspenders with `getBestListing`'s own `cache: "no-store"`. R-008 mitigation #2 updated to record this. (Relying on the no-store fetch alone was deemed insufficiently explicit for a license-compliance line.)
+3. **Third tier `metadata-only`** (see ADR-046 amendment) for the zero-data long tail.
+
+**Consequences.**
+- Build no longer scales with catalog size (the long tail isn't prerendered) — the 18K-build concern is removed at the source.
+- **ISR cold-render latency** is the new thing to watch (first hit of an uncached long-tail page renders on-demand). Verified p95 < 3s on preview; tracked as [R-013](RISKS.md#r-013--isr-cold-render-latency-at-scale).
+- R-008 posture is *preserved and re-grounded*: curated is dynamic via `no-store`; the cached tiers touch no eBay data. The audit trigger (eBay fetch without `no-store`) is unchanged.
+- Trade-off: removing `force-dynamic` means the explicit "this file is dynamic" signal is gone; the guarantee now rests on the `no-store` fetch. A future curated-path change that drops `no-store` would silently make curated cacheable — guarded by the R-008 invariant test + the updated mitigation note.
+
+**Cross-refs.** `app/(site)/cards/[slug]/page.tsx`, [ADR-046](#adr-046--tiered-per-card-rendering--catalog-expansion-to-1000-cards), [R-008](RISKS.md#r-008--ebay-2025-license-agreement-ai-output--no-cache-compliance), [R-013](RISKS.md), [R-014](RISKS.md), `app/sitemap.ts`.
 
 ## How to add an ADR
 
