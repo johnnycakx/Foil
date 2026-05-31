@@ -328,8 +328,14 @@ export function foilDataCitationCount(text: string): number {
 }
 
 export function bannedPhraseMatches(text: string): string[] {
-  const lower = text.toLowerCase();
-  return BANNED_PHRASES.filter((p) => lower.includes(p.toLowerCase()));
+  // Word-boundary match at the START of the phrase so a banned phrase doesn't
+  // false-match a longer word: "as a collector" must not fire on "has a
+  // collector number". Trailing is left open so stemmed forms still match
+  // ("delve" catches "delved"/"delving"). Leading \b only — that's the fix.
+  return BANNED_PHRASES.filter((p) => {
+    const re = new RegExp(`\\b${p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i");
+    return re.test(text);
+  });
 }
 
 /**

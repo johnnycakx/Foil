@@ -19,12 +19,13 @@
 // runs through gate (e) (BANNED_PHRASES); this function is for tests + manual
 // voice linting.
 
-import { BANNED_PHRASES, FOIL_DATA_CITATION_TRIGGERS } from "./quality-gates.ts";
+import { FOIL_DATA_CITATION_TRIGGERS, bannedPhraseMatches } from "./quality-gates.ts";
 
 export type VoiceViolationKind =
   | "unsourced_proprietary_stat"
   | "vague_number"
-  | "banned_phrase";
+  | "banned_phrase"
+  | "em_dash";
 
 export type VoiceViolation = {
   kind: VoiceViolationKind;
@@ -62,13 +63,11 @@ function sentences(text: string): string[] {
  */
 export function voiceCheck(text: string): VoiceCheckResult {
   const violations: VoiceViolation[] = [];
-  const lower = text.toLowerCase();
 
-  // C. Ban phrases (hype + AI tells).
-  for (const phrase of BANNED_PHRASES) {
-    if (lower.includes(phrase.toLowerCase())) {
-      violations.push({ kind: "banned_phrase", detail: `"${phrase}"` });
-    }
+  // C. Ban phrases (hype + AI tells). Reuses the word-boundary matcher so it
+  // stays consistent with the live gate (e) and doesn't false-match substrings.
+  for (const phrase of bannedPhraseMatches(text)) {
+    violations.push({ kind: "banned_phrase", detail: `"${phrase}"` });
   }
 
   // B. Vague / hedged numbers.
@@ -77,6 +76,13 @@ export function voiceCheck(text: string): VoiceCheckResult {
     if (m) {
       violations.push({ kind: "vague_number", detail: `${label}: "${m[0].trim()}"` });
     }
+  }
+
+  // D. Em dashes (BRAND-VOICE.md rule 7: none anywhere). En dashes (–) in
+  // numeric ranges like "$95–$110" are fine; only the em dash (—) is banned.
+  const emDashCount = (text.match(/—/g) || []).length;
+  if (emDashCount > 0) {
+    violations.push({ kind: "em_dash", detail: `${emDashCount} em dash(es): recast with commas/colons/semicolons/periods/parentheses` });
   }
 
   // A. Unsourced proprietary stat: a proprietary-data citation in the same

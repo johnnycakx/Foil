@@ -89,6 +89,15 @@ test("detector C: ban phrases are flagged (hype + AI tells)", () => {
   assert.ok(phrases.some((p) => p.includes("tapestry")));
 });
 
+test("detector D: em dashes are flagged; en-dash ranges are not", () => {
+  const withEmDash = voiceCheck("This is the divide, in one sentence — a single nick.");
+  assert.ok(withEmDash.violations.some((x) => x.kind === "em_dash"), "expected em_dash violation");
+  // En dash (–) in a numeric range must NOT trip the em-dash detector.
+  const enDashRange = voiceCheck("LP copies trade at $95–$110 against an NM market of $180.");
+  assert.ok(!enDashRange.violations.some((x) => x.kind === "em_dash"), "en-dash range must not be flagged");
+  assert.equal(enDashRange.passed, true);
+});
+
 test("voiceCheck returns every violation, not just the first (exhaustive)", () => {
   // Fixture 1 trips both detector A (Foil stat) and detector B (roughly 18%).
   const v = voiceCheck(FAB_1_FOIL_STAT).violations;
