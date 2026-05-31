@@ -47,6 +47,9 @@ const PUBLIC_SURFACES: readonly string[] = [
   // Session 47.4 / ADR-046: long-tail listing fallback rendered on
   // longtail-tier /cards/[slug] pages in place of the live best-listing.
   "components/cards/long-tail-listing-fallback.tsx",
+  // Session 47.5 / ADR-047: metadata-only listing block (3rd tier) — SDK
+  // metadata + two search CTAs, no eBay/PokeTrace.
+  "components/cards/metadata-only-listing.tsx",
 ];
 
 // ---------------------------------------------------------------------------

@@ -20,10 +20,10 @@ test("cardTier: defaults to 'curated' for unset entries + unknown slugs", () => 
   // The hand-curated 208 have no explicit tier → all curated by default.
   assert.equal(cardTier("base1-4-charizard"), "curated");
   assert.equal(cardTier("totally-unknown-slug"), "curated");
-  // Every catalog entry resolves to a valid tier.
+  // Every catalog entry resolves to a valid tier (ADR-047 added metadata-only).
   for (const e of CARD_CATALOG) {
     const t = cardTier(e.slug);
-    assert.ok(t === "curated" || t === "longtail", `bad tier for ${e.slug}: ${t}`);
+    assert.ok(t === "curated" || t === "longtail" || t === "metadata-only", `bad tier for ${e.slug}: ${t}`);
   }
 });
 
@@ -37,11 +37,14 @@ test("cardTier: honors an explicit longtail tier when present", () => {
   }
 });
 
-test("/cards/[slug]: skips the Browse call on the longtail tier", () => {
+test("/cards/[slug]: Browse call gated to the curated tier; curated forced dynamic (ADR-047)", () => {
   const src = read("app/(site)/cards/[slug]/page.tsx");
   assert.match(src, /const\s+tier\s*=\s*cardTier\(slug\)/);
-  // getBestListing is gated behind the curated tier — not called for longtail.
-  assert.match(src, /tier === "curated"\s*\?\s*await getBestListing/);
+  // getBestListing only inside the curated branch (not longtail/metadata-only).
+  assert.match(src, /if \(tier === "curated"\) \{/);
+  assert.match(src, /getBestListing\(/);
+  // R-008: curated render forced dynamic via connection() before the eBay fetch.
+  assert.match(src, /await connection\(\)/);
 });
 
 test("/cards/[slug]: longtail renders the fallback; curated renders the live block", () => {

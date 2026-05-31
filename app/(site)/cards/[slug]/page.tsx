@@ -11,10 +11,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { affiliateSearchUrl, type EpnBestListing } from "@/lib/affiliate/epn";
 import { getBestListing } from "@/lib/affiliate/ebay-browse";
 import { CARD_CATALOG, getCatalogEntry, relatedCardsForSlug, cardTier } from "@/lib/cards/catalog";
 import { LongTailListingFallback } from "@/components/cards/long-tail-listing-fallback";
+import { MetadataOnlyListing } from "@/components/cards/metadata-only-listing";
 import { getCardMetadata, type CardMetadata } from "@/lib/cards/sdk";
 import { breadcrumbListSchema, schemaGraph, serializeJsonLd } from "@/lib/seo/schema-helpers";
 import { Breadcrumb, type BreadcrumbItem } from "@/components/breadcrumb";
@@ -25,12 +27,29 @@ import { SoldHistoryPanel } from "@/components/cards/sold-history-panel";
 import { WatchlistForm } from "@/components/cards/watchlist-form";
 import { deriveAvailableVariants } from "@/lib/poketrace/variant";
 
-export const dynamic = "force-dynamic";
-export const dynamicParams = false;
+// SSG+ISR hybrid (ADR-047). `force-dynamic` is intentionally NOT set: only the
+// CURATED tier is prerendered (generateStaticParams below); the long tail
+// (longtail + metadata-only) renders on-demand via ISR (dynamicParams=true,
+// revalidate=3600) so the build never scales with catalog size.
+//
+// R-008 (no caching eBay listing data): the curated tier's getBestListing uses
+// `cache: "no-store"`, which forces every curated render to be dynamic and
+// uncached regardless of this segment config — so curated re-fetches the live
+// eBay listing on every load even though the page is no longer force-dynamic.
+// The no-store fetch (not `force-dynamic`) is now the R-008 guarantee.
+export const dynamicParams = true;
+export const revalidate = 3600;
 export const runtime = "nodejs";
 
+// No card pages are prerendered at build (empty set): the curated tier is
+// dynamic-by-R-008 (its no-store eBay fetch can't be cached), so prerendering
+// it would only add ~1 build-time eBay Browse call per curated card for output
+// that's discarded — measured +1.4min build with zero runtime benefit. The
+// long tail (longtail + metadata-only) renders on-demand via ISR
+// (dynamicParams=true, revalidate=3600). Result: the build never renders a
+// card page → flat build time at any catalog size, no build-time eBay calls.
 export function generateStaticParams() {
-  return CARD_CATALOG.map((entry) => ({ slug: entry.slug }));
+  return [] as { slug: string }[];
 }
 
 function siteUrl(): string {
@@ -149,19 +168,22 @@ export default async function CardPage({
   const card = await getCardMetadata({ id: entry.pokemonTcgId });
   const tier = cardTier(slug);
 
-  // Render-time Browse fetch — curated tier only (ADR-046). Long-tail cards
-  // skip the eBay Browse call to bound the per-render Browse quota at scale;
-  // they render the PokeTrace sold-history + an affiliate search CTA instead.
-  // No-caching / soft-fails to null on any error (R-008).
-  const best: EpnBestListing | null =
-    tier === "curated"
-      ? await getBestListing({
-          cardName: card.name,
-          setName: card.setName,
-          customId: "foil-card-page",
-          surface: "page_render",
-        })
-      : null;
+  // Render-time Browse fetch — curated tier only (ADR-046/047). Long-tail +
+  // metadata-only cards skip the eBay Browse call (quota + they're ISR-cached).
+  // R-008: `await connection()` forces curated renders to be DYNAMIC per request
+  // (never prerendered or ISR-cached), so the live eBay listing is never cached
+  // even though the page is ISR-enabled for the other tiers. Belt-and-suspenders
+  // with getBestListing's own `cache: "no-store"`. Soft-fails to null on error.
+  let best: EpnBestListing | null = null;
+  if (tier === "curated") {
+    await connection();
+    best = await getBestListing({
+      cardName: card.name,
+      setName: card.setName,
+      customId: "foil-card-page",
+      surface: "page_render",
+    });
+  }
 
   const fallbackUrl = affiliateSearchUrl(`${card.name} ${card.setName}`, "foil-card-page");
   const condition = best ? inferConditionLabel(best.title) : null;
@@ -280,24 +302,35 @@ export default async function CardPage({
           </div>
         </div>
 
-        {/* Variants + market range (TCGplayer) — Session 41 / ADR-030. */}
-        <CardVariantsSection card={card} currentBestPriceUsd={best?.price ?? null} />
+        {/* Variants + sold-history are data-bearing surfaces — skipped on the
+            metadata-only tier (no priced/sold data; ADR-047). */}
+        {tier !== "metadata-only" && (
+          <>
+            {/* Variants + market range (TCGplayer) — Session 41 / ADR-030. */}
+            <CardVariantsSection card={card} currentBestPriceUsd={best?.price ?? null} />
 
-        {/* Sold-history (PokeTrace) — Session 49 / ADR-042. Variant-aware
-            30-day sold averages, between the variants section and the
-            buy-now CTA. SSR-only; the ?v= chip links re-render the page. */}
-        <SoldHistoryPanel
-          slug={slug}
-          cardName={card.name}
-          variants={card.variants}
-          selectedKey={selectedVariant}
-          selectedCondition={selectedCondition}
-        />
+            {/* Sold-history (PokeTrace) — Session 49 / ADR-042. Variant-aware
+                30-day sold averages. SSR-only; ?v= chip links re-render. */}
+            <SoldHistoryPanel
+              slug={slug}
+              cardName={card.name}
+              variants={card.variants}
+              selectedKey={selectedVariant}
+              selectedCondition={selectedCondition}
+            />
+          </>
+        )}
 
-        {/* Listing block. Curated tier → live eBay best-listing (with the
-            Live freshness chip). Long-tail tier → no Browse call; render the
-            affiliate search fallback instead (ADR-046). */}
-        {tier === "longtail" ? (
+        {/* Listing block (ADR-046/047). metadata-only → 2 search CTAs, no
+            Browse call, no live block. longtail → affiliate search fallback +
+            sold-history above. curated → live eBay best-listing. */}
+        {tier === "metadata-only" ? (
+          <MetadataOnlyListing
+            cardName={card.name}
+            ebaySearchUrl={affiliateSearchUrl(`${card.name} ${card.setName}`, "foil-metadata-only")}
+            tcgplayerUrl={`https://www.tcgplayer.com/search/pokemon/product?productLineName=pokemon&q=${encodeURIComponent(card.name)}`}
+          />
+        ) : tier === "longtail" ? (
           <LongTailListingFallback cardName={card.name} searchUrl={fallbackUrl} />
         ) : (
         <>

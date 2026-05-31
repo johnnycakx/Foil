@@ -121,14 +121,18 @@ function fail(name: string, detail: string) {
 }
 
 // ---------------------------------------------------------------------------
-// 4. /cards/[slug] page exports dynamic = 'force-dynamic'.
+// 4. /cards/[slug] curated tier renders dynamically (R-008). Updated ADR-047:
+//    the page is now ISR-enabled for the no-eBay tiers, so the R-008 control is
+//    `await connection()` (next/server) in the curated branch — it forces those
+//    renders to runtime so the live eBay listing is never prerendered/ISR-cached.
 // ---------------------------------------------------------------------------
 {
   const path = "app/(site)/cards/[slug]/page.tsx";
   const text = readFileSync(join(ROOT, path), "utf8");
-  const ok = /export\s+const\s+dynamic\s*=\s*['"]force-dynamic['"]/.test(text);
-  if (ok) pass(`${path}: dynamic = 'force-dynamic'`);
-  else fail(`${path}: dynamic = 'force-dynamic'`, "not found");
+  const imports = /import\s*\{[^}]*\bconnection\b[^}]*\}\s*from\s*['"]next\/server['"]/.test(text);
+  const calls = /await\s+connection\(\)/.test(text);
+  if (imports && calls) pass(`${path}: curated dynamic via await connection() (R-008)`);
+  else fail(`${path}: curated dynamic via await connection() (R-008)`, "connection() import/call not found");
 }
 
 // ---------------------------------------------------------------------------

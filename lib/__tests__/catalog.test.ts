@@ -4,8 +4,9 @@
 //   1. Every slug is unique (no duplicate routes).
 //   2. Every slug matches the documented format <set-id>-<number>-<kebab-name>.
 //   3. Every pokemonTcgId is non-empty (slug → metadata lookup can't break).
-//   4. Exactly 207 CURATED entries (tier !== "longtail"); the long-tail count
-//      is generated (Session 47.4 / ADR-046) so we floor it, not pin it.
+//   4. Exactly 207 CURATED entries (tier undefined or "curated" — NOT
+//      "longtail" or "metadata-only", the two scaled tiers per ADR-046/047);
+//      the long-tail count is generated (Session 47.4) so we floor it, not pin.
 //   5. getCatalogEntry(slug) round-trips.
 
 import test from "node:test";
@@ -19,7 +20,7 @@ import {
 } from "../cards/catalog.ts";
 
 test("catalog has exactly 207 curated entries", () => {
-  const curated = CARD_CATALOG.filter((e) => e.tier !== "longtail");
+  const curated = CARD_CATALOG.filter((e) => e.tier === undefined || e.tier === "curated");
   assert.equal(curated.length, 207);
 });
 
