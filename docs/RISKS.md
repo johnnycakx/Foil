@@ -120,7 +120,7 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 **Why mitigating.** Compliance is encoded into the architecture, not just the wiki:
 
 1. `lib/affiliate/epn.ts::searchProducts` passes `cache: "no-store"` on every EPN fetch; the function signature has no caching parameter, and the codebase has no `cached_listings` table.
-2. `app/(site)/cards/[slug]/page.tsx` re-fetches the live eBay listing on every load for the curated tier. **Mechanism updated Session 47.5 ([ADR-047](DECISIONS.md#adr-047--ssgisr-hybrid-rendering--metadata-only-tier-for-the-18k-long-tail)):** `force-dynamic` was dropped to allow ISR on the no-eBay tiers, but the curated tier's `getBestListing` `cache: "no-store"` fetch **forces every curated render dynamic and uncached** regardless of segment config — so the live listing is never SSG-prerendered or ISR-cached. The curated branch calls **`await connection()`** (next/server) before the eBay fetch, forcing those renders to runtime — so curated is never prerendered or ISR-cached even though the page is ISR-enabled for the no-eBay tiers — and `getBestListing` keeps `cache: "no-store"`. The `connection()` call + the no-store fetch (not `force-dynamic`) are now the guarantee. Curated routes are the only ones that touch eBay; longtail/metadata-only (ISR-cached) make no Browse call.
+2. `app/(site)/cards/[slug]/page.tsx` re-fetches the live eBay listing on every load for the curated tier. **Mechanism (Session 47.5 / [ADR-047](DECISIONS.md#adr-047--ssgisr-hybrid-rendering--metadata-only-tier-for-the-18k-long-tail)):** the page is **`export const dynamic = "force-dynamic"`** + the curated tier's `getBestListing` uses **`cache: "no-store"`** — every curated render re-fetches live and nothing is ever prerendered or cached. (ADR-047 briefly attempted ISR via `connection()` instead of `force-dynamic`; that was reverted — the page's server-side `searchParams` read forces dynamic rendering and is incompatible with ISR, so `force-dynamic` is back as the explicit guarantee. See the ADR-047 "Runtime reality" amendment.) Curated routes are the only ones that touch eBay; longtail/metadata-only make no Browse call.
 3. The editorial paragraphs below the fold on per-card pages describe the *card* (set, print run, history), not the live listing. The live block self-describes from the EPN response on every load.
 4. The autonomous content engine's reframed "Best [card] deals this week" template ([ROADMAP NEXT #10](ROADMAP.md#next--next-2-weeks-2026-05-28--2026-06-10)) generates copy at *category* level ("Charizard prices have moved up X% this quarter"), not listing-specific claims, and pulls fresh listing data at render time of the resulting blog post.
 
@@ -208,33 +208,33 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 ---
 
-## R-013 — ISR cold-render latency at scale
+## R-013 — Long-tail per-card render cost (ISR blocked by searchParams)
 
 **Severity:** Medium
 **Status:** `monitoring` (added Session 47.5 / [ADR-047](DECISIONS.md#adr-047--ssgisr-hybrid-rendering--metadata-only-tier-for-the-18k-long-tail))
 
-**The risk.** ADR-047 stopped prerendering the long tail — longtail + metadata-only `/cards/[slug]` pages now render **on-demand via ISR** (first hit renders, then cached 1h). The first (cold) hit of an uncached page pays the full render cost: longtail fetches PokeTrace sold-history; metadata-only is pure SDK metadata (cheap). At 18K pages most are cold most of the time (long-tail traffic), so cold-render p95 is the user-facing latency that matters, and a slow PokeTrace response would land on a real visitor rather than the build.
+**The risk.** ADR-047 set out to ISR-cache the cheap long tail so most `/cards/[slug]` hits serve from cache. That **was reverted** — the page reads `searchParams` server-side (the `v`/`c` variant+condition state, [ADR-043](DECISIONS.md#adr-043--variant--condition-aware-watchlist)), which forces dynamic rendering and is incompatible with ISR (it threw `DYNAMIC_SERVER_USAGE` 500s in production). So **every** card page renders dynamically per request: curated fetches eBay (~2.7s prod), longtail fetches PokeTrace sold-history (~4.3s prod), metadata-only is baked-metadata-only (~0.46s prod). The longtail PokeTrace fetch lands on a real visitor on every load, and at 18K pages that's a lot of uncached PokeTrace traffic + a slow-ish p95 on long-tail pages.
 
-**Why medium / monitoring.** Curated (the high-traffic pages) is unaffected (still dynamic, always live). Cold renders touch only cacheable sources (PokeTrace 1h-SWR / baked SDK metadata) — no eBay. Measured p95 on the Vercel preview is the gate.
+**Why medium / monitoring.** No correctness or revenue bug — the same dynamic rendering was already the behavior before ADR-047 (the page was force-dynamic); metadata-only (the new tier) is actually the *fastest*. The unrealized win is caching, not a regression. The longtail ~4s is dominated by PokeTrace latency.
 
-**Trigger to escalate.** ISR cold-render p95 > 3s (architectural — revisit: pre-warm top-N, raise revalidate, or move sold-history to a streamed/Suspense boundary so the shell paints first).
+**Trigger to escalate.** Long-tail page p95 > 5s in production telemetry, OR PokeTrace request volume from page renders threatens the 10K/day quota as the catalog grows.
 
-**Mitigation candidates.** Pre-warm the top-N longtail at build (bounded generateStaticParams); `<Suspense>` the sold-history panel so the page shell paints before PokeTrace resolves; raise `revalidate` for very-low-traffic shards.
+**Mitigation candidates (the real fix is sequenced).** (1) **Unblock ISR** by moving variant/condition selection client-side (read `searchParams` via `useSearchParams` in a client component, render the default state server-side) — then `revalidate` becomes legal and the long tail caches. This is the gate on Goal C's ISR plan. (2) Independently, a data-layer cache on `getSoldHistory` (PokeTrace already supports a 24h Supabase SWR cache) cuts the per-render cost without touching rendering. (3) `<Suspense>` the sold-history panel so the shell paints before PokeTrace resolves.
 
 ---
 
-## R-014 — Sitemap index ↔ child drift
+## R-014 — Sitemap will need splitting before ~50K URLs (Goal C)
 
 **Severity:** Low
 **Status:** `monitoring` (added Session 47.5 / [ADR-047](DECISIONS.md#adr-047--ssgisr-hybrid-rendering--metadata-only-tier-for-the-18k-long-tail))
 
-**The risk.** ADR-047 split the sitemap into a Next-generated index (`/sitemap.xml`) + per-set children (`/sitemap/set-<id>.xml`) + a `/sitemap/pages.xml`. The index is generated from `generateSitemaps()` (driven by `setIdsInCatalog()`), and `robots.ts` points crawlers at `/sitemap.xml`. Failure modes: a new set lands in the catalog but the index/children drift (e.g. a child 404s, or the index lists a shard the catalog no longer has), or a single shard quietly approaches Google's 50K-URL limit.
+**The risk.** A single `app/sitemap.ts` emits one `/sitemap.xml` listing every URL (currently 1,021: landings + posts + 1,007 cards). Google's hard limit is **50,000 URLs per sitemap**. The ADR-047 split into `generateSitemaps()` per-set children **was reverted** — Next 16's `generateSitemaps` serves children at `/sitemap/[id].xml` and emits **no index** at `/sitemap.xml` (so robots.txt 404'd), and the child shards were blocked 307→`/login` by the default-deny auth proxy. At ~1,100 URLs the split was premature. But as the catalog grows toward 18K (Goal C) the single sitemap will approach the 50K cap.
 
-**Why low.** Index + children derive from the same `CARD_CATALOG` at build, so they can't structurally diverge without a code change; largest set is < 300 URLs (50K is far off even at 18K). Pure SEO-hygiene risk, no user/revenue impact.
+**Why low.** We're at ~2% of the 50K cap; the single sitemap is served correctly at `/sitemap.xml` (robots points there). Pure SEO-hygiene runway, no current impact.
 
-**Trigger to escalate.** GSC reports sitemap-fetch errors on any child, OR any single shard exceeds ~40K URLs (international printings), OR a child sitemap 404s in a `curl` spot-check.
+**Trigger to escalate.** Total URL count > ~40K, OR Google Search Console reports the sitemap as too large.
 
-**Mitigation candidates.** GSC sitemap-status check in the monthly SEO review; if a set ever nears 50K, sub-shard it by collector-number range.
+**Mitigation candidates (when actually needed).** Re-introduce the split, but correctly this time: (a) a real **sitemap index** route (Next's `generateSitemaps` does NOT create one — emit `<sitemapindex>` from a dedicated route handler, or list each child in robots.txt), and (b) add the `/sitemap/*` child paths to **PUBLIC_ROUTES** in `lib/supabase/proxy.ts` (+ pin in `proxy.test.ts`) so the auth proxy doesn't bounce crawlers to `/login`. Both were the gaps that made the 47.5 split fail.
 
 ---
 

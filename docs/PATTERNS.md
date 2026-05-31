@@ -6,6 +6,27 @@ Append new entries at the top. When an entry is promoted, leave it here with a `
 
 ---
 
+## I-006 — Green build + green tests are blind to runtime-config conflicts; verify on a real deploy
+
+**Spotted:** Session 47.5, when an ISR refactor that passed the build + 626 tests 500'd on every page in production.
+
+**Shape.** Some failure classes live entirely at request time in production mode and are invisible to both `next build` and `node --test`:
+- **`DYNAMIC_SERVER_USAGE`** — a route exports `revalidate` (ISR) but reads a dynamic API at render (`searchParams`, `cookies()`, `headers()`, `connection()`). The build doesn't catch it when `generateStaticParams` is empty (nothing prerenders), and dev mode doesn't enforce it. It only throws on a real request against the production server.
+- **Metadata-route assumptions** — e.g. assuming `generateSitemaps()` emits an index at `/sitemap.xml` (it doesn't — children are at `/sitemap/[id].xml`, no index). The build "succeeds"; the URL just 404s at runtime.
+- **Middleware/proxy interactions** — a new route path is correct in isolation but the default-deny auth proxy (`lib/supabase/proxy.ts`) 307s it to `/login` because it's not in PUBLIC_ROUTES. Tests pin the proxy contract for *known* routes, not routes a refactor newly introduces.
+
+The common thread: **the test suite asserts on source text + pure functions; the build asserts on compilation + what it chooses to prerender. Neither exercises a real HTTP request through the production runtime + middleware.** A refactor can be 100% green locally and 100% broken in prod.
+
+**Two instances in the repo so far.**
+1. Session 47.5 ISR refactor → `DYNAMIC_SERVER_USAGE` 500s on all `/cards/[slug]` (caught only by the P6 production curl).
+2. Session 47.5 sitemap split → `/sitemap.xml` 404 + child shards 307→`/login` (same P6 curl).
+
+**The general fix.** (1) For anything touching route-segment config, metadata routes, or middleware, a green build + green tests is NOT sufficient closure — `curl` the actual deploy (the goal's P6 "no '?'" verification is exactly this discipline, and it earned its keep here). (2) Two of these were also knowable *before* building, from the page source (`searchParams` read ⇒ can't ISR) and the platform docs (`generateSitemaps` has no index) — the P0 premise check is the cheaper place to catch them. Verify-on-deploy is the backstop; read-the-source/read-the-docs is the front line.
+
+**Related:** [ADR-047](DECISIONS.md#adr-047--ssgisr-hybrid-rendering--metadata-only-tier-for-the-18k-long-tail) "Runtime reality", R-010 (tests passing ≠ correct), AGENTS.md "read the docs before touching any external platform".
+
+---
+
 ## I-005 — Resumable long-running scripts: checkpoint state + snapshot together
 
 **Spotted:** Session 47.5, building toward the 18K-card bake (ADR-047).
