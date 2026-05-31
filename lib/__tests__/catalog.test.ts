@@ -1,10 +1,11 @@
-// Catalog invariants. The 207 entries are hand-curated; tests pin the
-// structural properties the page route + sitemap rely on:
+// Catalog invariants. The catalog is 207 hand-curated cards + a generated
+// long-tail expansion (ADR-046). Tests pin the structural properties the page
+// route + sitemap rely on:
 //   1. Every slug is unique (no duplicate routes).
 //   2. Every slug matches the documented format <set-id>-<number>-<kebab-name>.
 //   3. Every pokemonTcgId is non-empty (slug → metadata lookup can't break).
-//   4. The catalog has exactly 207 entries (changes are deliberate;
-//      Session 43 added 7 grail seeds — see ADR-033).
+//   4. Exactly 207 CURATED entries (tier !== "longtail"); the long-tail count
+//      is generated (Session 47.4 / ADR-046) so we floor it, not pin it.
 //   5. getCatalogEntry(slug) round-trips.
 
 import test from "node:test";
@@ -17,8 +18,16 @@ import {
   setIdsInCatalog,
 } from "../cards/catalog.ts";
 
-test("catalog has exactly 207 entries", () => {
-  assert.equal(CARD_CATALOG.length, 207);
+test("catalog has exactly 207 curated entries", () => {
+  const curated = CARD_CATALOG.filter((e) => e.tier !== "longtail");
+  assert.equal(curated.length, 207);
+});
+
+test("long-tail entries (ADR-046) are tagged tier='longtail'", () => {
+  const longtail = CARD_CATALOG.filter((e) => e.tier === "longtail");
+  // The generated wave adds ~800; floor (not pin) since it's regenerated.
+  assert.ok(longtail.length === 0 || longtail.length >= 100, `unexpected longtail count: ${longtail.length}`);
+  for (const e of longtail) assert.equal(e.tier, "longtail");
 });
 
 test("every slug in the catalog is unique", () => {
@@ -95,9 +104,11 @@ test("setIdsInCatalog returns 23 distinct ids in catalog source order (Base firs
 
 test("entriesForSet returns same-set entries ordered by collector number", () => {
   const base1 = entriesForSet("base1");
-  assert.equal(base1.length, 16);
+  // ≥16: the 16 curated Base Set holos plus any long-tail base1 cards the
+  // ADR-046 expansion added (the count is generated, so floor not pin).
+  assert.ok(base1.length >= 16, `expected ≥16 base1 entries, got ${base1.length}`);
   const numbers = base1.map((e) => parseInt(e.pokemonTcgId.split("-")[1], 10));
-  // Strictly ascending.
+  // Strictly ascending (Base Set collector numbers are distinct).
   for (let i = 1; i < numbers.length; i++) {
     assert.ok(numbers[i] > numbers[i - 1], `not sorted at index ${i}: ${numbers.join(",")}`);
   }

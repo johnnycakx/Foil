@@ -38,8 +38,12 @@ function main(): void {
   const rankedPath = newestRankedFile();
   const candidates = JSON.parse(readFileSync(join(process.cwd(), rankedPath), "utf8")) as Candidate[];
 
-  const existingSlugs = new Set(CARD_CATALOG.map((c) => c.slug));
-  const existingIds = new Set(CARD_CATALOG.map((c) => c.pokemonTcgId));
+  // Dedupe against the CURATED catalog only — NOT the existing long-tail,
+  // which this run is about to overwrite. (Otherwise a prior expansion's
+  // entries get treated as "taken" and the top-ranked cards drop out.)
+  const curated = CARD_CATALOG.filter((c) => c.tier !== "longtail");
+  const existingSlugs = new Set(curated.map((c) => c.slug));
+  const existingIds = new Set(curated.map((c) => c.pokemonTcgId));
   const seenSlug = new Set<string>();
   const seenId = new Set<string>();
 
@@ -76,7 +80,7 @@ function main(): void {
   console.log(`  appended:      ${picked.length} long-tail entries (requested ${N})`);
   console.log(`  skipped dupes: ${skippedDup}`);
   console.log(`  skipped bad slug: ${skippedBadSlug}`);
-  console.log(`  catalog total: ${CARD_CATALOG.length} + ${picked.length} = ${CARD_CATALOG.length + picked.length}`);
+  console.log(`  catalog total: ${curated.length} curated + ${picked.length} long-tail = ${curated.length + picked.length}`);
 }
 
 main();
