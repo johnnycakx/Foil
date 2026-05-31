@@ -8,6 +8,22 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-31 — Session 47.5 (cont.) / Goal V.1: voice-debt cleanup of the 4 fact-checked posts — [ADR-048](DECISIONS.md#adr-048--brand-voice-integration-into-the-autonomous-content--newsletter-pipelines)
+
+**Follow-through on the Goal V P5 finding: the 4 posts the 47.4 fact-check corrected still failed the brand-voice check (vague hedges + em dashes, not fabrications). This cleans them.**
+
+**P1 — surfaced every violation** via `voice-check.ts`: vague-number hedges ("approximately $25", "around $2,100", "roughly 20–35%", "~270 gsm", "(approximate)"), one apparent "as a collector" hit, and em dashes (32/23/31/26 across the four posts).
+
+**P0/P1 finding — a real bug.** The "as a collector" hit was a **false positive**: `bannedPhraseMatches` used `includes()`, so it substring-matched "h**as a collector** number" (legit domain text). That means the **live gate (e)** would have wrongly failed any future post containing "has a collector number". Fixed at the root: leading word-boundary matching (`\bas a collector` no longer fires inside "has"). Predates this goal (the phrase was a pre-existing ban) but surfaced here.
+
+**P2 — fixed per BRAND-VOICE.md.** Already-correct PokeTrace figures kept, the hedge word dropped ("around $2,100" → "$2,100"); unsourceable gsm card-stock figures recast qualitatively (no split-the-difference). Removed all 112 em dashes by recasting with commas/colons/semicolons/periods/parentheses; en-dash numeric ranges ($95–$110) kept. Added detector D (em dashes) to `voice-check.ts` so P3 actually verifies removal (the check didn't detect em dashes before, matching BRAND-VOICE rule 7 only on paper).
+
+**P3 — all 4 posts PASS** the voice check with 0 em dashes. **P4** — each carries an "Updated 2026-05-31: voice pass" transparency note (same shape as 47.4). **P5** — 638 tests, tsc clean, build 4.4s, compliance 6/6, design:lint 0 new, /security-review pending.
+
+**P7 — RISKS R-001 NOT marked resolved (honest call).** The goal proposed resolving R-001 if the fact-check + voice gates pass on all 4 posts. They do. But R-001 is a HIGH *systemic* risk about the content engine, not these 4 posts: the layers catch structure/provenance/tone/AI-tell patterns, not whether a real-looking number is factually correct (the Gardevoir-151 class is invisible to every automated layer). Resolving on 4 clean posts would overclaim. R-001 stays `mitigating`, status note updated to record the brand-voice layer; resolution waits on a fact-verification layer, not a tone layer.
+
+---
+
 ## 2026-05-31 — Session 47.5 (cont.) / Goal V: brand-voice integration into the content + newsletter pipelines — [ADR-048](DECISIONS.md#adr-048--brand-voice-integration-into-the-autonomous-content--newsletter-pipelines)
 
 **Codify Foil's voice and wire it into the autonomous generators so they stop producing hype/vague/fabricated copy.**
