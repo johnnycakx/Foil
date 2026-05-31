@@ -173,6 +173,7 @@ test("bannedPhraseMatches returns every offender so the retry prompt is exhausti
 
 test("BANNED_PHRASES list includes every phrase the goal spec names", () => {
   // Pin the exact list so a future refactor can't silently drop one.
+  // Extended Goal V with the 7 brand-voice bans (docs/BRAND-VOICE.md §5).
   assert.deepEqual([...BANNED_PHRASES], [
     "in conclusion",
     "in summary",
@@ -180,7 +181,22 @@ test("BANNED_PHRASES list includes every phrase the goal spec names", () => {
     "in today's digital world",
     "the world of pokemon",
     "as a collector",
+    "let's dive in",
+    "dive in",
+    "game-changer",
+    "game changer",
+    "to the moon",
+    "navigate the landscape",
+    "delve",
+    "tapestry",
+    "in today's market",
   ]);
+});
+
+test("BANNED_PHRASES carries the brand-voice additions (Goal V)", () => {
+  for (const p of ["dive in", "game-changer", "to the moon", "navigate the landscape", "delve", "tapestry", "in today's market"]) {
+    assert.ok(BANNED_PHRASES.includes(p), `missing voice ban: ${p}`);
+  }
 });
 
 test("gate (g): rejects when FAQ section is under 200 words", () => {

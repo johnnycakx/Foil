@@ -27,12 +27,25 @@ export const GATE_LIMITS = {
 } as const;
 
 export const BANNED_PHRASES: readonly string[] = [
+  // Pre-existing AI-tell / filler bans.
   "in conclusion",
   "in summary",
   "as we've seen",
   "in today's digital world",
   "the world of pokemon",
   "as a collector",
+  // Brand-voice bans (Goal V / docs/BRAND-VOICE.md §5 — hype words + AI tells
+  // from the Cowork voice research ban list). Grounds the live gate (e) in the
+  // voice doc so blog + newsletter generations auto-fail these.
+  "let's dive in",
+  "dive in",
+  "game-changer",
+  "game changer",
+  "to the moon",
+  "navigate the landscape",
+  "delve",
+  "tapestry",
+  "in today's market",
 ] as const;
 
 export const FOIL_DATA_CITATION_TRIGGERS: readonly string[] = [
