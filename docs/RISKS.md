@@ -273,13 +273,13 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 ## R-018 — CI YouTube bot-block on transcript ingestion
 
 **Severity:** Low
-**Status:** `monitoring` (added Goal C.1 / [ADR-050](DECISIONS.md#adr-050--creator-content-ingestion--attribution-gate))
+**Status:** `confirmed` (Goal C.1 / [ADR-050](DECISIONS.md#adr-050--creator-content-ingestion--attribution-gate)) — **empirically reproduced**: the first manual `workflow_dispatch` run (2026-06-01) fetched **0 transcripts across all 5 channels** from the GitHub Actions datacenter IP. So CI ingestion does NOT refresh signal today; the digest only refreshes from residential runs (local / a residential scheduled box) until a mitigation lands.
 
-**The risk.** yt-dlp transcript ingestion was verified from a residential IP. The daily `.github/workflows/transcript-ingestion.yml` runs on GitHub Actions datacenter IPs, which YouTube frequently bot-blocks ("Sign in to confirm you're not a bot"). If blocked, CI ingestion fetches nothing and the digest stops refreshing.
+**The risk.** yt-dlp transcript ingestion was verified from a residential IP. The daily `.github/workflows/transcript-ingestion.yml` runs on GitHub Actions datacenter IPs, which YouTube bot-blocks. Blocked CI ingestion fetches nothing.
 
-**Why low.** The workflow soft-fails (ingest step `continue-on-error`; digest runs on existing transcripts; the run still succeeds). No build/site breakage — only stale signal. The content engine degrades to "no fresh creator context," which is the pre-C.1 baseline.
+**Why low.** The workflow soft-fails (ingest step `continue-on-error`; the run still succeeds). No build/site breakage — only stale signal (pre-C.1 baseline). **Clobber fix (also surfaced by the verification):** the first bot-blocked run wrote a 0-creator EMPTY digest and committed it, overwriting the real digest. `scripts/transcript-digest.ts` now **skips the write entirely when 0 transcripts are ingested**, preserving the last good digest, so a bot-blocked CI run can no longer destroy real signal or feed the engine empty context.
 
-**Trigger to escalate.** The daily run logs bot-block errors for >3 consecutive days (signal goes stale).
+**Trigger to escalate.** Already triggered (confirmed). To make CI actually refresh signal, implement a mitigation below; until then, refresh the digest from a residential run.
 
 **Mitigation candidates.** Supply a `YT_DLP_COOKIES` secret (exported cookies.txt) to authenticate the runner; run ingestion from a residential scheduled box and push the digest; or route yt-dlp through a residential proxy.
 

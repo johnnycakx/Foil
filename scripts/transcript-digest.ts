@@ -322,6 +322,17 @@ function main() {
     .map((d) => d.name);
   const digests = creators.map((c) => digestCreator(c, pokeNames)).filter((d) => d.videos > 0);
 
+  // Never write an EMPTY digest. If ingestion fetched nothing (e.g. CI is
+  // YouTube-bot-blocked, R-018), writing a 0-creator digest would (a) clobber
+  // the last good digest and (b) feed the content engine empty signal. Skip the
+  // write and keep the most recent good digest in place. (Surfaced by the C.1
+  // CI verification: a bot-blocked run had overwritten a real digest with an
+  // empty one.)
+  if (digests.length === 0) {
+    console.warn("[digest] 0 transcripts ingested — skipping write to preserve the last good digest (R-018 / bot-block).");
+    return;
+  }
+
   const date = new Date().toISOString().slice(0, 10);
   fs.mkdirSync(DIGEST_DIR, { recursive: true });
   const outPath = path.join(DIGEST_DIR, `${date}.md`);
