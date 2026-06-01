@@ -5,8 +5,8 @@
 //   2. Fetch SERP context + Foil data snapshot
 //   3. Generate → quality gates → retry up to 3x
 //   4. On success:
-//      - if AUTO_PUBLISH_WEEKLY_POSTS=true (default): write to app/blog/posts/{slug}.mdx
-//      - if false (kill-switch): write to app/blog/posts/_pending/{slug}.mdx
+//      - if AUTO_PUBLISH_WEEKLY_POSTS=true (default): write to app/(site)/blog/posts/{slug}.mdx
+//      - if false (kill-switch): write to app/(site)/blog/posts/_pending/{slug}.mdx
 //   5. On 3-strike failure: log + POST to webhook + exit 1 (skip this run)
 //
 // Usage:
@@ -37,6 +37,7 @@ import { createDraftPost } from "../lib/beehiiv-posts.ts";
 import { serializeNewsletterFile } from "../lib/newsletter/file-writer.ts";
 import { sendNewsletterDraftEmail } from "../lib/notifications/resend.ts";
 import { postContentPublished, postError } from "../lib/notifications/discord.ts";
+import { POSTS_DIR } from "../lib/blog/posts-dir.ts";
 
 const NEWSLETTER_DRAFTS_DIR = path.join(process.cwd(), "docs", "newsletter-drafts");
 const FOUNDER_EMAIL = "john.c.craig24@gmail.com";
@@ -57,7 +58,7 @@ if (!process.env.ANTHROPIC_API_KEY) {
 
 const AUTO_PUBLISH = process.env.AUTO_PUBLISH_WEEKLY_POSTS !== "false"; // default true
 const SKIP_NEWSLETTER = process.argv.includes("--skip-newsletter");
-const POSTS_DIR = path.join(process.cwd(), "app", "blog", "posts");
+// POSTS_DIR imported from lib/blog/posts-dir (the canonical write+read dir).
 const PENDING_DIR = path.join(POSTS_DIR, "_pending");
 fs.mkdirSync(POSTS_DIR, { recursive: true });
 if (!AUTO_PUBLISH) fs.mkdirSync(PENDING_DIR, { recursive: true });

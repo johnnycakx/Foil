@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
+import { POSTS_DIR } from "../../../lib/blog/posts-dir.ts";
 
 export type PostFrontmatter = {
   slug: string;
@@ -18,9 +19,9 @@ export type PostFrontmatter = {
   faq?: { question: string; answer: string }[];
 };
 
-// Posts live under the (site) route group — the parens-wrapped folder is
-// part of the actual filesystem path even though it's elided from the URL.
-const POSTS_DIR = path.join(process.cwd(), "app", "(site)", "blog", "posts");
+// POSTS_DIR (the canonical write+read dir) is imported from lib/blog/posts-dir.
+// It lives under the (site) route group: the parens-wrapped folder is part of
+// the actual filesystem path even though it's elided from the URL.
 
 function isPostFile(name: string): boolean {
   return name.endsWith(".mdx") && !name.startsWith("_");

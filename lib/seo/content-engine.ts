@@ -45,6 +45,7 @@ import {
   type QualityGateContext,
 } from "./quality-gates.ts";
 import { readdirSync } from "node:fs";
+import { POSTS_DIR } from "../blog/posts-dir.ts";
 import { join } from "node:path";
 import { CARD_CATALOG } from "../cards/catalog.ts";
 
@@ -75,7 +76,7 @@ function buildInternalLinkResolver(): (href: string) => boolean {
   let blogSlugs: Set<string>;
   try {
     blogSlugs = new Set(
-      readdirSync(join(process.cwd(), "app/blog/posts"))
+      readdirSync(POSTS_DIR)
         .filter((f) => f.endsWith(".mdx"))
         .map((f) => f.replace(/\.mdx$/, "")),
     );
@@ -140,7 +141,7 @@ function escapeYamlString(s: string): string {
 }
 
 export type GenerateOptions = {
-  /** Slugs already in app/blog/posts/ — used to skip duplicates. */
+  /** Slugs already in the canonical POSTS_DIR — used to skip duplicates. */
   shippedSlugs: ReadonlySet<string>;
   /** Today's date in ISO YYYY-MM-DD for frontmatter.date. */
   today: string;

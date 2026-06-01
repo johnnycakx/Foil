@@ -6,7 +6,7 @@
 //   node --experimental-strip-types scripts/refresh-internal-links.ts <slug>
 //
 // If <slug> is omitted, uses the most recently modified MDX file under
-// app/blog/posts/ as the target.
+// the canonical POSTS_DIR (app/(site)/blog/posts/) as the target.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -16,8 +16,7 @@ import {
   suggestForNewPost,
   type LinkablePost,
 } from "../lib/seo/internal-linking.ts";
-
-const POSTS_DIR = path.join(process.cwd(), "app", "blog", "posts");
+import { POSTS_DIR } from "../lib/blog/posts-dir.ts";
 
 // Pillar pages are not MDX — they're TSX with metadata in code. We hand-roll
 // their LinkablePost entries so internal-link suggestions can target them

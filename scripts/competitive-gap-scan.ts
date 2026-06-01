@@ -17,13 +17,14 @@ import {
   scrapeCompetitorContent,
 } from "../lib/seo/competitive-analysis.ts";
 import { parseStrategyDoc } from "../lib/seo/keyword-backlog.ts";
+import { POSTS_DIR } from "../lib/blog/posts-dir.ts";
 
 const DEFAULT_TARGETS = [
   "https://pokescope.app/blog",
   "https://pokescope.app/tools/price-checker",
 ];
 
-const POSTS_DIR = path.join(process.cwd(), "app", "blog", "posts");
+// POSTS_DIR imported from lib/blog/posts-dir (the canonical write+read dir).
 const STRATEGY_PATH = path.join(process.cwd(), "docs", "seo-strategy.md");
 const OUT_PATH = path.join(process.cwd(), "docs", "competitive-gaps.md");
 

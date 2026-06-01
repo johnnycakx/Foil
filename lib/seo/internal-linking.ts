@@ -185,5 +185,5 @@ export function renderReport(
 }
 
 function pathForSlug(slug: string, isPillar: boolean): string {
-  return isPillar ? `app/${slug}/page.tsx` : `app/blog/posts/${slug}.mdx`;
+  return isPillar ? `app/${slug}/page.tsx` : `app/(site)/blog/posts/${slug}.mdx`;
 }
