@@ -17,6 +17,7 @@
 // both). yt-dlp is a dev/CI dependency, not bundled into the app.
 
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { cleanVtt, redactForSynthesis } from "../lib/seo/transcript-clean.ts";
@@ -27,6 +28,49 @@ const WHITELIST = path.join(ROOT, "docs", "creator-whitelist.md");
 const TRANSCRIPTS_DIR = path.join(ROOT, "docs", "transcripts");
 
 type Channel = { display: string; handle: string };
+
+/**
+ * Build the yt-dlp argument vector for one channel (everything after the binary).
+ * Pure + exported so the cookies wiring is unit-tested without a network call
+ * (R-018 Path A). When `cookiesPath` is provided, `--cookies <path>` is included
+ * so CI (datacenter IP) can authenticate past YouTube's bot-block.
+ */
+export function buildYtDlpArgs(
+  pre: string[],
+  ch: Channel,
+  days: number,
+  max: number,
+  outDir: string,
+  cookiesPath?: string,
+): string[] {
+  return [
+    ...pre,
+    ...(cookiesPath ? ["--cookies", cookiesPath] : []),
+    "--write-auto-subs",
+    "--sub-langs", "en.*",
+    "--skip-download",
+    "--sub-format", "vtt",
+    "--dateafter", dateAfter(days),
+    "--playlist-end", String(max),
+    "--ignore-errors",
+    "--no-warnings",
+    "--download-archive", path.join(outDir, ".download-archive"),
+    "-o", path.join(outDir, "%(id)s.%(ext)s"),
+    `https://www.youtube.com/@${ch.handle}/videos`,
+  ];
+}
+
+/**
+ * If YT_DLP_COOKIES env holds Netscape-format cookies.txt CONTENTS, write them
+ * to a 0600 tempfile and return its path (+ a cleanup fn). Returns null when
+ * unset (local/residential runs work without cookies). R-018 Path A.
+ */
+export function writeCookiesTempfile(contents: string | undefined): { path: string; cleanup: () => void } | null {
+  if (!contents || !contents.trim()) return null;
+  const p = path.join(os.tmpdir(), `foil-yt-cookies-${process.pid}-${Date.now()}.txt`);
+  fs.writeFileSync(p, contents, { encoding: "utf8", mode: 0o600 });
+  return { path: p, cleanup: () => fs.rmSync(p, { force: true }) };
+}
 
 /** Parse the whitelist table: rows `| Display | @handle | active | … |`. */
 export function parseWhitelist(md: string): Channel[] {
@@ -57,27 +101,14 @@ function dateAfter(days: number): string {
   return `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, "0")}${String(d.getUTCDate()).padStart(2, "0")}`;
 }
 
-function ingestChannel(ch: Channel, days: number, max: number): { fetched: number; cleaned: number } {
+function ingestChannel(ch: Channel, days: number, max: number, cookiesPath?: string): { fetched: number; cleaned: number } {
   const slug = ch.handle.toLowerCase();
   const dir = path.join(TRANSCRIPTS_DIR, slug);
   fs.mkdirSync(dir, { recursive: true });
 
   const [bin, ...pre] = ytDlpBase();
-  const args = [
-    ...pre,
-    "--write-auto-subs",
-    "--sub-langs", "en.*",
-    "--skip-download",
-    "--sub-format", "vtt",
-    "--dateafter", dateAfter(days),
-    "--playlist-end", String(max),
-    "--ignore-errors",
-    "--no-warnings",
-    "--download-archive", path.join(dir, ".download-archive"),
-    "-o", path.join(dir, "%(id)s.%(ext)s"),
-    `https://www.youtube.com/@${ch.handle}/videos`,
-  ];
-  console.log(`[ingest] ${ch.display} (@${ch.handle}) — last ${days}d, max ${max}…`);
+  const args = buildYtDlpArgs(pre, ch, days, max, dir, cookiesPath);
+  console.log(`[ingest] ${ch.display} (@${ch.handle}) — last ${days}d, max ${max}${cookiesPath ? " (cookies)" : ""}…`);
   const res = spawnSync(bin, args, { encoding: "utf8", timeout: 8 * 60 * 1000 });
   if (res.status !== 0 && !res.stdout) {
     console.warn(`[ingest] ${ch.handle}: yt-dlp exited ${res.status}; skipping (logged, not fatal). ${(res.stderr || "").slice(0, 200)}`);
@@ -120,20 +151,34 @@ function main() {
     process.exit(1);
   }
 
+  // R-018 Path A: authenticate yt-dlp with browser cookies on bot-blocked IPs
+  // (CI). YT_DLP_COOKIES holds the cookies.txt CONTENTS; write to a 0600
+  // tempfile, pass --cookies, clean up on exit. Unset (local) → no cookies.
+  const cookies = writeCookiesTempfile(process.env.YT_DLP_COOKIES);
+  if (cookies) {
+    console.log("[ingest] YT_DLP_COOKIES set — authenticating yt-dlp with cookies.");
+    process.on("exit", cookies.cleanup);
+  }
+
   let totalCleaned = 0;
-  for (const ch of channels) {
-    try {
-      const { fetched, cleaned } = ingestChannel(ch, days, max);
-      totalCleaned += cleaned;
-      console.log(`[ingest] ${ch.handle}: ${cleaned} new transcript(s) (${fetched} vtt processed).`);
-    } catch (e) {
-      console.warn(`[ingest] ${ch.handle}: error — ${(e as Error).message}. Continuing.`);
+  try {
+    for (const ch of channels) {
+      try {
+        const { fetched, cleaned } = ingestChannel(ch, days, max, cookies?.path);
+        totalCleaned += cleaned;
+        console.log(`[ingest] ${ch.handle}: ${cleaned} new transcript(s) (${fetched} vtt processed).`);
+      } catch (e) {
+        console.warn(`[ingest] ${ch.handle}: error — ${(e as Error).message}. Continuing.`);
+      }
     }
+  } finally {
+    cookies?.cleanup();
   }
   console.log(`[ingest] done. ${totalCleaned} new transcript(s) across ${channels.length} channel(s).`);
 }
 
-// Only run when invoked directly (not when imported by tests).
-if (process.argv[1] && process.argv[1].includes("ingest-transcripts")) {
+// Only run when invoked directly (not when imported by tests). endsWith, not
+// includes, so a test file named ingest-transcripts.test.ts doesn't trip it.
+if (process.argv[1]?.endsWith("ingest-transcripts.ts")) {
   main();
 }

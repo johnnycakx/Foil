@@ -281,7 +281,7 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 **Trigger to escalate.** Already triggered (confirmed). To make CI actually refresh signal, implement a mitigation below; until then, refresh the digest from a residential run.
 
-**Mitigation candidates.** Supply a `YT_DLP_COOKIES` secret (exported cookies.txt) to authenticate the runner; run ingestion from a residential scheduled box and push the digest; or route yt-dlp through a residential proxy.
+**Mitigation — Path A WIRED (2026-06-01).** `YT_DLP_COOKIES` (a GH Actions secret holding the CONTENTS of a Netscape `cookies.txt` exported from John's logged-in browser) is now plumbed end-to-end: `scripts/ingest-transcripts.ts` writes it to a 0600 tempfile and passes `--cookies <path>` to yt-dlp (cleaned up on exit; unset → runs cookieless as before), and the workflow passes the secret to the ingest step. **Set it with `gh secret set YT_DLP_COOKIES < cookies.txt`, then `gh workflow run transcript-ingestion.yml` to confirm transcripts > 0.** **Rotation: YouTube cookies expire in ~2-4 weeks** — when CI ingestion drops back to "0 new transcripts", re-export from the browser and re-run `gh secret set YT_DLP_COOKIES < cookies.txt`. (Cadence + procedure also in [ENV-VARS.md](ENV-VARS.md).) **Other paths if cookies prove too high-maintenance:** run ingestion from a residential scheduled box and push the digest, or route yt-dlp through a residential proxy.
 
 ---
 

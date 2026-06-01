@@ -340,6 +340,6 @@ function main() {
   console.log(`[digest] wrote ${path.relative(ROOT, outPath)} from ${digests.length} creators.`);
 }
 
-if (process.argv[1] && process.argv[1].includes("transcript-digest")) {
+if (process.argv[1]?.endsWith("transcript-digest.ts")) {
   main();
 }

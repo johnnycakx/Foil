@@ -55,8 +55,18 @@ jobs:
       # Soft-fail: a bot-block or a dark channel must not fail the run. The
       # ingest script already logs per-channel and continues; this guards the
       # whole step too.
+      # R-018 Path A: YT_DLP_COOKIES holds the CONTENTS of a Netscape-format
+      # cookies.txt exported from John's logged-in browser (e.g. the "Get
+      # cookies.txt LOCALLY" extension on youtube.com). Lets yt-dlp authenticate
+      # past YouTube's datacenter-IP bot-block. ROTATION: YouTube cookies expire
+      # in ~2-4 weeks — when CI ingestion drops back to "0 new transcripts",
+      # re-export from the browser and update the secret:
+      #   gh secret set YT_DLP_COOKIES < cookies.txt
+      # (See docs/ENV-VARS.md YT_DLP_COOKIES row + docs/RISKS.md R-018.)
       - name: Ingest transcripts (last 30 days)
         continue-on-error: true
+        env:
+          YT_DLP_COOKIES: ${{ secrets.YT_DLP_COOKIES }}
         run: node --experimental-strip-types scripts/ingest-transcripts.ts --days 30 --max 30
 
       - name: Build digest
