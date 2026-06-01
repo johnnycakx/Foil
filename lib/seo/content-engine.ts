@@ -412,6 +412,14 @@ Non-negotiable voice rules:
 
 Write like you're answering a friend who just texted you the question — knowledgeable, no padding.
 
+# Creator commentary context (when a digest is provided)
+
+The prompt may include a "Creator commentary digest" — a synthesis of what whitelisted Pokémon TCG YouTubers said in the last 30 days. It is **speaker-data (what creators are saying), not card-data (what a card is worth)**. Use it for *market-sentiment color* (what the community is watching, what's hyped, what's rotating), never as a price source. Rules:
+- **Synthesize, never copy.** Never reproduce more than 25 consecutive words from any transcript or digest line. Paraphrase the idea in Foil's voice.
+- **Always attribute by name.** If you reference what a creator said, name them ("PokeBeard called the Destined Rivals chase cards overheated"). Never write "creators are saying" or "the community thinks" without a named source — an unattributed creator claim auto-fails the quality gates.
+- **Hype is speaker-data.** When the digest flags a card as a "speculator-spike candidate," treat that as evidence the creator is excited, frequently a contrarian SELL signal — report it as sentiment, never adopt the hype. Stay calm and dealer-skeptical (the brand voice).
+- **Facts still need grounding.** A creator saying a card is "$2,000" is not a citable price; cite the Foil data block or completed sales for any number you state as fact. The digest tells you what to *write about*, not what a card *is worth*.
+
 # Output format
 
 Return a SINGLE JSON object inside a \`\`\`json fence. Schema:
@@ -460,9 +468,42 @@ function renderInitialUserPrompt(
   sections.push(renderDataInjectionPrompt(dataSnapshot));
   sections.push("");
 
+  // Creator commentary digest (ADR-050): speaker-data market signal, injected
+  // fresh each generation. Synthesis + named attribution required (Gate 11).
+  const digest = loadLatestCreatorDigest();
+  if (digest) {
+    sections.push("# Creator commentary digest (speaker-data — synthesize + attribute by name, never copy >25 words)");
+    sections.push(digest);
+    sections.push("");
+  }
+
   sections.push("Generate the JSON object now. Apply the DUD framework, the Information Gain mandate, and every hard rule from the system prompt. Body 1200-2200 words. 5+ dollar figures, 2+ recent (2025/2026) dates, 2+ internal links, 5-6 FAQs totaling 200+ words.");
 
   return sections.join("\n");
+}
+
+/**
+ * Load the most recent creator-commentary digest (ADR-050) for prompt injection.
+ * Returns the digest markdown (truncated to maxChars) or null if none exists.
+ * Read fresh per generation so the daily ingestion's latest signal is used.
+ */
+export function loadLatestCreatorDigest(maxChars = 7000): string | null {
+  const dir = join(process.cwd(), "docs", "transcript-digests");
+  let files: string[];
+  try {
+    files = readdirSync(dir).filter((f) => /^\d{4}-\d{2}-\d{2}\.md$/.test(f));
+  } catch {
+    return null;
+  }
+  if (files.length === 0) return null;
+  files.sort(); // ISO dates sort lexicographically = chronologically
+  const latest = files[files.length - 1];
+  try {
+    const raw = fs.readFileSync(join(dir, latest), "utf8");
+    return raw.length > maxChars ? `${raw.slice(0, maxChars)}\n…(digest truncated)` : raw;
+  } catch {
+    return null;
+  }
 }
 
 function renderRetryUserPrompt(failures: string[]): string {

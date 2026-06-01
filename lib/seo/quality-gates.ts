@@ -86,7 +86,41 @@ export type QualityGateContext = {
    *  gate with NO snapshot (any such number is then a fabrication). Omit
    *  (`undefined`) to skip the gate entirely. */
   foilDataAllowedValues?: Set<string> | null;
+  /** Gate 11a: the whitelisted creator names that count as valid attribution
+   *  (display names + handles from docs/creator-whitelist.md). Omit to use the
+   *  built-in default. */
+  creatorNames?: string[];
+  /** Gate 11b: concatenated ingested transcript text. When provided, any run of
+   *  >25 consecutive words in the draft that also appears in the corpus fails
+   *  the gate (copy, not synthesis). Omit (transcripts gitignored / absent) to
+   *  skip the verbatim-overlap check. */
+  transcriptCorpus?: string;
 };
+
+/** Gate 11a: collective "someone said it" phrases that imply a creator source
+ *  but name no one. A draft using one of these must name a whitelisted creator
+ *  within 50 chars, else it's an unattributed creator claim (ADR-050). */
+export const CREATOR_PROVENANCE_PHRASES: readonly string[] = [
+  "creators are saying",
+  "creators say",
+  "youtubers are saying",
+  "youtubers say",
+  "the community is saying",
+  "the community thinks",
+  "the community says",
+  "people are saying",
+  "everyone is saying",
+  "everyone's saying",
+  "collectors are saying",
+  "some are saying",
+  "content creators say",
+  "the hype is real",
+] as const;
+
+/** Default valid-attribution names (the C.1 whitelist). Gate 11a. */
+const DEFAULT_CREATOR_NAMES: readonly string[] = [
+  "PokeRev", "Pirate King", "ninetalescorner", "PokeChuck", "PikaPikaPapa", "PokeBeard",
+];
 
 /** Sentence triggers that assert a Foil-proprietary data claim (gate 10). */
 export const PROVENANCE_TRIGGERS: readonly string[] = [
@@ -209,7 +243,74 @@ export function runQualityGates(
     }
   }
 
+  // Gate 11 (creator attribution discipline, ADR-050). Two checks:
+  //  11a — a collective "creators are saying" phrase with no named creator
+  //        within 50 chars is an unattributed claim (always runs).
+  //  11b — any run of >25 consecutive words copied verbatim from an ingested
+  //        transcript is plagiarism, not synthesis (runs only when the corpus
+  //        is supplied; transcripts are gitignored so it's absent in unit runs).
+  const unattributed = unattributedCreatorClaims(`${body}\n${faqBody}`, ctx.creatorNames);
+  if (unattributed.length > 0) {
+    failures.push(
+      `Unattributed creator claim(s): ${unattributed.map((p) => `"${p}"`).join(", ")}. Name a specific whitelisted creator within the sentence (e.g. "PokeBeard noted…") or remove the collective attribution. (ADR-050 / Gate 11a)`,
+    );
+  }
+  if (ctx.transcriptCorpus) {
+    const copied = verbatimTranscriptRun(`${body}\n${faqBody}`, ctx.transcriptCorpus);
+    if (copied) {
+      failures.push(
+        `Verbatim transcript copy detected (>25 consecutive words): "${copied.slice(0, 80)}…". Synthesize the idea in Foil's voice and attribute by name — never reproduce a creator's words. (ADR-050 / Gate 11b)`,
+      );
+    }
+  }
+
   return { passed: failures.length === 0, failures };
+}
+
+/**
+ * Gate 11a: collective creator-provenance phrases used without a named creator
+ * within 50 chars. Returns the offending phrases. Exported for tests.
+ */
+export function unattributedCreatorClaims(text: string, creatorNames?: string[]): string[] {
+  const lower = text.toLowerCase();
+  const names = (creatorNames ?? DEFAULT_CREATOR_NAMES).map((n) => n.toLowerCase());
+  const hits: string[] = [];
+  for (const phrase of CREATOR_PROVENANCE_PHRASES) {
+    let i = lower.indexOf(phrase);
+    while (i !== -1) {
+      const windowStart = Math.max(0, i - 50);
+      const windowEnd = Math.min(lower.length, i + phrase.length + 50);
+      const window = lower.slice(windowStart, windowEnd);
+      const attributed = names.some((n) => window.includes(n));
+      if (!attributed && !hits.includes(phrase)) hits.push(phrase);
+      i = lower.indexOf(phrase, i + 1);
+    }
+  }
+  return hits;
+}
+
+/** Lowercased word tokens (letters/digits/$/%), for n-gram comparison. */
+function wordTokens(text: string): string[] {
+  return (text.toLowerCase().match(/[a-z0-9$%.,'-]+/g) ?? []).map((w) => w.replace(/^[.,']+|[.,']+$/g, "")).filter(Boolean);
+}
+
+/**
+ * Gate 11b: the first run of >25 (i.e. >=26) consecutive draft words that
+ * appears verbatim in the transcript corpus, or null. Exported for tests.
+ */
+export function verbatimTranscriptRun(draft: string, corpus: string, n = 26): string | null {
+  const corpusWords = wordTokens(corpus);
+  if (corpusWords.length < n) return null;
+  const corpusGrams = new Set<string>();
+  for (let i = 0; i + n <= corpusWords.length; i++) {
+    corpusGrams.add(corpusWords.slice(i, i + n).join(" "));
+  }
+  const draftWords = wordTokens(draft);
+  for (let i = 0; i + n <= draftWords.length; i++) {
+    const gram = draftWords.slice(i, i + n).join(" ");
+    if (corpusGrams.has(gram)) return gram;
+  }
+  return null;
 }
 
 /**
