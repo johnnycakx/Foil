@@ -11,9 +11,11 @@ The creator-commentary digest ([ADR-050](../DECISIONS.md#adr-050--creator-conten
 | **Action** | `powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\Users\John\dev\foil\scripts\ingest-and-push.ps1` |
 | **Runs as** | John (current user); needs the desktop session for Chrome cookie access |
 | **Log** | `%LOCALAPPDATA%\Foil\ingest.log` (i.e. `C:\Users\John\AppData\Local\Foil\ingest.log`) |
-| **Auth** | `--cookies-from-browser chrome` — reads the live Chrome session. **No secret, no rotation.** |
+| **Auth** | **Cookieless.** The residential IP alone clears YouTube's bot wall (verified: 10 new transcripts fetched on the 2026-06-01 setup run, plus the original 74-transcript C.1 run, both cookieless from this box). **No secret, no rotation.** |
 
-The script: `git pull --ff-only` → `ingest-transcripts.ts --cookies-from-browser chrome` → `transcript-digest.ts` → commit+push `docs/transcript-digests/` to `main`.
+The script: `git pull --ff-only` -> `ingest-transcripts.ts --days 30 --max 30` (cookieless) -> `transcript-digest.ts` -> commit+push `docs/transcript-digests/` to `main`.
+
+**Why not `--cookies-from-browser chrome`?** On Windows it fails `Could not copy Chrome cookie database` while Chrome is running (yt-dlp #7271), and it's unnecessary — the residential IP isn't bot-blocked. The script still *supports* `--cookies-from-browser <browser>` (and a cookies.txt path) as a fallback if YouTube ever starts blocking the residential IP too; run it with Chrome closed.
 
 ## Setup (already done; re-create if the task is lost)
 
@@ -32,8 +34,7 @@ schtasks /Delete /TN "FoilTranscriptIngest" /F
 
 ## Failure modes (pilot: no alerting — check the log if signal goes stale)
 
-- **0 transcripts fetched** (Chrome closed/locked DB, offline, cookies stale, YouTube change): `transcript-digest.ts` **skips the write** (clobber-guard), so the last good digest stays and nothing is committed. Symptom: digest date stops advancing. Check `ingest.log` for `done. 0 new transcript(s)`.
-- **Chrome cookie DB locked** while Chrome is running: yt-dlp usually copies the DB and proceeds; if it errors, close Chrome or switch the browser arg in `ingest-and-push.ps1` (`chrome` → `edge` / `firefox` / `brave`).
+- **0 transcripts fetched** (offline, YouTube extractor change, or YouTube starts bot-blocking the residential IP): `transcript-digest.ts` **skips the write** (clobber-guard), so the last good digest stays and nothing is committed. Symptom: digest date stops advancing. Check `ingest.log` for `done. 0 new transcript(s)`. If it's a residential-IP block, add `--cookies-from-browser <browser>` (Chrome closed) or a proxy.
 - **Push conflict**: the script `git pull --ff-only` first; if local `main` has diverged, the pull (and thus push) is skipped — `git status` in the repo and reconcile.
 - **Machine off at 06:00**: the run is missed (no catch-up configured for the pilot). Add `/RI`/`/DU` or a "run on logon if missed" option later if it matters.
 

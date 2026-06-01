@@ -1742,9 +1742,9 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 - **Path A (cookies alone)** — run `26778566985`: a valid 3399-byte `cookies.txt` authenticated (slower handshake) but every video still returned `Sign in to confirm you're not a bot` → 0 transcripts.
 - **Path A.5 (cookies + `player_client=web_safari,web,tv,mweb`)** — run `26779657010`: all four clients rejected identically. The block is IP-level, independent of cookies and client.
 
-**Decision — Path B: run ingestion on John's residential machine.**
-1. `scripts/ingest-and-push.ps1` (Windows): `git pull --ff-only` → `ingest-transcripts.ts --cookies-from-browser chrome` → `transcript-digest.ts` → commit+push `docs/transcript-digests/` to `main`. **`--cookies-from-browser chrome`** reads the live Chrome session, so it auto-refreshes — **no secret, no 2-4-week rotation** (the key advantage over Path A's `YT_DLP_COOKIES`).
-2. `ingest-transcripts.ts` gained `--cookies-from-browser <browser>` (CLI + `YT_DLP_COOKIES_FROM_BROWSER` env), which takes precedence over the cookies-file path; pinned by a test.
+**Decision — Path B: run ingestion COOKIELESS on John's residential machine.**
+1. `scripts/ingest-and-push.ps1` (Windows): `git pull --ff-only` → `ingest-transcripts.ts --days 30 --max 30` (cookieless) → `transcript-digest.ts` → commit+push `docs/transcript-digests/` to `main`. **The residential IP alone clears the bot wall** — no cookies, **no secret, no rotation.** Verified on the setup run (10 new transcripts fetched + pushed, plus the original 74-transcript C.1 run, both cookieless from this box).
+2. **Cookieless, not `--cookies-from-browser chrome`:** the setup run proved `--cookies-from-browser chrome` fails on Windows with `Could not copy Chrome cookie database` while Chrome is running (yt-dlp #7271), and it's unnecessary residentially. The script still *supports* `--cookies-from-browser <browser>` (CLI + `YT_DLP_COOKIES_FROM_BROWSER` env, precedence over the cookies-file path, pinned by test) as a fallback if the residential IP ever gets blocked — run with Chrome closed.
 3. Windows Task Scheduler job `FoilTranscriptIngest`, daily 06:00 local. Runbook: `docs/runbooks/local-ingest-cron.md`.
 4. The content engine reads the digest from `main` on its Mon/Thu CI run, so it's irrelevant that the residential box (not CI) produced it.
 
