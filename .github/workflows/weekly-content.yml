@@ -4,8 +4,9 @@
 #   1. Picks the next unshipped cluster topic from docs/seo-strategy.md
 #   2. Pulls SERP context (Brave Search) + Foil scan/waitlist data
 #   3. Drafts via Claude Sonnet 4.6 → runs 8 quality gates → retries up to 3x
-#   4. On gate pass: writes to app/blog/posts/{slug}.mdx, refreshes internal
-#      link suggestions, commits + pushes directly to main. Vercel auto-deploys.
+#   4. On gate pass: writes to the live posts dir (lib/blog/posts-dir.ts
+#      POSTS_DIR), refreshes internal link suggestions, commits + pushes directly
+#      to main. Vercel auto-deploys.
 #   5. On 3-strike failure: logs to Actions output, optional webhook, no commit.
 #      Next scheduled run picks a different topic from the backlog.
 #
@@ -105,8 +106,13 @@ jobs:
         id: commit
         if: steps.generate.outputs.exit_code == '0'
         run: |
-          # docs/ covers docs/newsletter-drafts/ (ADR-012 artifact path) too.
-          git add app/blog/posts/ docs/
+          # Stage the LIVE posts dir derived from lib/blog/posts-dir.ts (single
+          # source of truth — never hardcode the path here; that drift is what
+          # broke run 26776700075 with exit 128 against the deleted orphan dir.
+          # PATTERN I-008). docs/ covers docs/newsletter-drafts/ (ADR-012) too.
+          POSTS_DIR=$(node --experimental-strip-types --no-warnings --input-type=module -e 'import { POSTS_DIR } from "./lib/blog/posts-dir.ts"; import path from "node:path"; process.stdout.write(path.relative(process.cwd(), POSTS_DIR).split(path.sep).join("/"));')
+          echo "staging posts dir: $POSTS_DIR"
+          git add "$POSTS_DIR" docs/
           if git diff --cached --quiet; then
             echo "Nothing to commit — generator may have written to _pending/ (kill-switch active)"
             echo "committed=false" >> "$GITHUB_OUTPUT"
