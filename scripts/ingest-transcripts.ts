@@ -42,10 +42,19 @@ export function buildYtDlpArgs(
   max: number,
   outDir: string,
   cookiesPath?: string,
+  cookiesFromBrowser?: string,
 ): string[] {
+  // cookies-from-browser (residential box, R-018 Path B / ADR-052) takes
+  // precedence — it auto-refreshes from the live browser session, so no secret
+  // and no rotation cadence. Falls back to a cookies.txt path (CI, Path A).
+  const cookieArgs = cookiesFromBrowser
+    ? ["--cookies-from-browser", cookiesFromBrowser]
+    : cookiesPath
+      ? ["--cookies", cookiesPath]
+      : [];
   return [
     ...pre,
-    ...(cookiesPath ? ["--cookies", cookiesPath] : []),
+    ...cookieArgs,
     "--write-auto-subs",
     "--sub-langs", "en.*",
     "--skip-download",
@@ -101,14 +110,15 @@ function dateAfter(days: number): string {
   return `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, "0")}${String(d.getUTCDate()).padStart(2, "0")}`;
 }
 
-function ingestChannel(ch: Channel, days: number, max: number, cookiesPath?: string): { fetched: number; cleaned: number } {
+function ingestChannel(ch: Channel, days: number, max: number, cookiesPath?: string, cookiesFromBrowser?: string): { fetched: number; cleaned: number } {
   const slug = ch.handle.toLowerCase();
   const dir = path.join(TRANSCRIPTS_DIR, slug);
   fs.mkdirSync(dir, { recursive: true });
 
   const [bin, ...pre] = ytDlpBase();
-  const args = buildYtDlpArgs(pre, ch, days, max, dir, cookiesPath);
-  console.log(`[ingest] ${ch.display} (@${ch.handle}) — last ${days}d, max ${max}${cookiesPath ? " (cookies)" : ""}…`);
+  const args = buildYtDlpArgs(pre, ch, days, max, dir, cookiesPath, cookiesFromBrowser);
+  const auth = cookiesFromBrowser ? ` (cookies-from-browser:${cookiesFromBrowser})` : cookiesPath ? " (cookies)" : "";
+  console.log(`[ingest] ${ch.display} (@${ch.handle}) — last ${days}d, max ${max}${auth}…`);
   const res = spawnSync(bin, args, { encoding: "utf8", timeout: 8 * 60 * 1000 });
   if (res.status !== 0 && !res.stdout) {
     console.warn(`[ingest] ${ch.handle}: yt-dlp exited ${res.status}; skipping (logged, not fatal). ${(res.stderr || "").slice(0, 200)}`);
@@ -142,6 +152,10 @@ function main() {
   const max = Number(argv[argv.indexOf("--max") + 1]) || 30;
   const onlyIdx = argv.indexOf("--channel");
   const only = onlyIdx >= 0 ? argv[onlyIdx + 1]?.replace(/^@/, "") : null;
+  // Residential box (ADR-052): --cookies-from-browser chrome (auto-refresh, no
+  // secret). Also honored via YT_DLP_COOKIES_FROM_BROWSER env.
+  const cfbIdx = argv.indexOf("--cookies-from-browser");
+  const cookiesFromBrowser = cfbIdx >= 0 ? argv[cfbIdx + 1] : process.env.YT_DLP_COOKIES_FROM_BROWSER || undefined;
 
   const channels = parseWhitelist(fs.readFileSync(WHITELIST, "utf8")).filter(
     (c) => !only || c.handle.toLowerCase() === only.toLowerCase(),
@@ -154,9 +168,11 @@ function main() {
   // R-018 Path A: authenticate yt-dlp with browser cookies on bot-blocked IPs
   // (CI). YT_DLP_COOKIES holds the cookies.txt CONTENTS; write to a 0600
   // tempfile, pass --cookies, clean up on exit. Unset (local) → no cookies.
-  const cookies = writeCookiesTempfile(process.env.YT_DLP_COOKIES);
-  if (cookies) {
-    console.log("[ingest] YT_DLP_COOKIES set — authenticating yt-dlp with cookies.");
+  const cookies = cookiesFromBrowser ? null : writeCookiesTempfile(process.env.YT_DLP_COOKIES);
+  if (cookiesFromBrowser) {
+    console.log(`[ingest] using --cookies-from-browser ${cookiesFromBrowser} (residential, auto-refresh).`);
+  } else if (cookies) {
+    console.log("[ingest] YT_DLP_COOKIES set — authenticating yt-dlp with a cookies file.");
     process.on("exit", cookies.cleanup);
   }
 
@@ -164,7 +180,7 @@ function main() {
   try {
     for (const ch of channels) {
       try {
-        const { fetched, cleaned } = ingestChannel(ch, days, max, cookies?.path);
+        const { fetched, cleaned } = ingestChannel(ch, days, max, cookies?.path, cookiesFromBrowser);
         totalCleaned += cleaned;
         console.log(`[ingest] ${ch.handle}: ${cleaned} new transcript(s) (${fetched} vtt processed).`);
       } catch (e) {

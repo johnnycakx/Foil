@@ -8,6 +8,16 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-01 — R-018 resolved: transcript ingestion on a residential box (Path B) — [ADR-052](DECISIONS.md#adr-052--transcript-ingestion-on-a-residential-scheduled-box-path-b)
+
+**Follow-on to C.1. CI ingestion is YouTube-bot-blocked; verified the cheap mitigations fail, then moved ingestion to John's residential machine.**
+
+Empirical CI verification (verbose diagnostics on scratch branches, deleted after): **Path A (cookies alone)** ruled out — run `26778566985` authenticated (3399-byte cookies.txt, 75s/channel) but every video hit "Sign in to confirm you're not a bot" at the **player API**, 0 transcripts. **Path A.5 (cookies + `player_client=web_safari,web,tv,mweb`)** ruled out — run `26779657010`, all four clients rejected identically. The block is IP-level, not cookie/client-fixable.
+
+**Path B accepted (pilot):** `scripts/ingest-and-push.ps1` runs on John's Windows box via Task Scheduler job `FoilTranscriptIngest` (daily 06:00), using `--cookies-from-browser chrome` (live session, auto-refresh, **no secret, no rotation**) → digest → push to `main`. Added `--cookies-from-browser` support to `ingest-transcripts.ts` (precedence over the cookies-file path; pinned by test). Runbook: `docs/runbooks/local-ingest-cron.md`. The CI workflow + `YT_DLP_COOKIES` secret are retained dormant for a future residential-proxy path (Path C). R-018 → `mitigated`. 675 tests / 0 fail.
+
+---
+
 ## 2026-06-01 — Session 47.5 (cont.) / Goal C.1: creator-content ingestion pilot — [ADR-050](DECISIONS.md#adr-050--creator-content-ingestion--attribution-gate)
 
 **1-session, 5-channel pilot of feeding curated Pokémon-TCG-creator commentary to the content engine, with attribution discipline. Path A from the IDEAS entry.**

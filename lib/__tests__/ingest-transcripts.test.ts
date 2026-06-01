@@ -22,6 +22,14 @@ test("buildYtDlpArgs omits --cookies when no path is given (local/residential)",
   assert.ok(args.includes("--write-auto-subs") && args.some((a) => a.includes("youtube.com/@PokeRev")));
 });
 
+test("buildYtDlpArgs: --cookies-from-browser takes precedence over a cookies path (ADR-052 Path B)", () => {
+  const args = buildYtDlpArgs([], CH, 30, 30, "/tmp/out", "/tmp/cookies.txt", "chrome");
+  const i = args.indexOf("--cookies-from-browser");
+  assert.ok(i >= 0, "expected --cookies-from-browser");
+  assert.equal(args[i + 1], "chrome");
+  assert.ok(!args.includes("--cookies"), "from-browser must replace the cookies-file flag, not stack with it");
+});
+
 test("writeCookiesTempfile: contents -> a real file with --cookies-able path; unset -> null", () => {
   assert.equal(writeCookiesTempfile(undefined), null);
   assert.equal(writeCookiesTempfile("   "), null);

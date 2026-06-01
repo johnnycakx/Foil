@@ -1733,6 +1733,29 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 
 **Cross-refs.** `lib/seo/quality-gates.ts` (Gate 12), `lib/seo/voice-check.ts`, `lib/__tests__/attribution-gate.test.ts`, [ADR-050](#adr-050--creator-content-ingestion--attribution-gate), [ADR-048](#adr-048--brand-voice-integration-into-the-autonomous-content--newsletter-pipelines), [ROADMAP #34](ROADMAP.md).
 
+## ADR-052 — Transcript ingestion on a residential scheduled box (Path B)
+
+**Date:** 2026-06-01 (post-C.1)
+**Status:** Accepted (pilot). Resolves [R-018](RISKS.md#r-018--ci-youtube-bot-block-on-transcript-ingestion) after Path A + A.5 were empirically ruled out.
+
+**Context.** The creator-commentary digest ([ADR-050](#adr-050--creator-content-ingestion--attribution-gate)) needs daily YouTube auto-subs. GitHub Actions runs on datacenter IPs that YouTube bot-walls at the **player API** (the per-video metadata call, before subtitles). Two cheap mitigations were tried and disproven with verbose CI runs:
+- **Path A (cookies alone)** — run `26778566985`: a valid 3399-byte `cookies.txt` authenticated (slower handshake) but every video still returned `Sign in to confirm you're not a bot` → 0 transcripts.
+- **Path A.5 (cookies + `player_client=web_safari,web,tv,mweb`)** — run `26779657010`: all four clients rejected identically. The block is IP-level, independent of cookies and client.
+
+**Decision — Path B: run ingestion on John's residential machine.**
+1. `scripts/ingest-and-push.ps1` (Windows): `git pull --ff-only` → `ingest-transcripts.ts --cookies-from-browser chrome` → `transcript-digest.ts` → commit+push `docs/transcript-digests/` to `main`. **`--cookies-from-browser chrome`** reads the live Chrome session, so it auto-refreshes — **no secret, no 2-4-week rotation** (the key advantage over Path A's `YT_DLP_COOKIES`).
+2. `ingest-transcripts.ts` gained `--cookies-from-browser <browser>` (CLI + `YT_DLP_COOKIES_FROM_BROWSER` env), which takes precedence over the cookies-file path; pinned by a test.
+3. Windows Task Scheduler job `FoilTranscriptIngest`, daily 06:00 local. Runbook: `docs/runbooks/local-ingest-cron.md`.
+4. The content engine reads the digest from `main` on its Mon/Thu CI run, so it's irrelevant that the residential box (not CI) produced it.
+
+**Consequences.**
+- Ingestion now actually refreshes signal (residential IP works; the original 74-transcript run proved it). No secret to rotate.
+- Dependency on a residential box being up at 06:00. Pilot failure mode is benign: a missed/failed run fetches 0 → the digest clobber-guard skips the write → last good digest stays, nothing committed. No alerting in the pilot (check `%LOCALAPPDATA%\Foil\ingest.log`).
+- The CI workflow + `YT_DLP_COOKIES` secret are **retained, dormant** (cookieless CI = green no-op via clobber-guard) as the reactivation point for **Path C (residential proxy)** if box uptime disappoints — add `--proxy` + a proxy secret to the workflow.
+- Trade-off accepted: a daily commit to `main` from the box (one small digest file; triggers a cheap Vercel deploy), same shape as the autonomous blog posts.
+
+**Cross-refs.** `scripts/ingest-and-push.ps1`, `scripts/ingest-transcripts.ts` (`--cookies-from-browser`), `docs/runbooks/local-ingest-cron.md`, `.github/workflows/transcript-ingestion.yml` (dormant), [R-018](RISKS.md#r-018--ci-youtube-bot-block-on-transcript-ingestion), [ADR-050](#adr-050--creator-content-ingestion--attribution-gate).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).
