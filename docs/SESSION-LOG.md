@@ -8,6 +8,17 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-01 — CI fix: weekly-content workflow drifted to the deleted posts dir (PATTERN I-008 third instance)
+
+**Autonomous run `26776700075` failed exit 128: `weekly-content.yml` still `git add`-ed the orphan `app/blog/posts` after the V.2 (ADR-049) consolidation.** Directory-drift (I-008) reaching CI infra — the earlier guards only scanned `lib/` + the route.
+
+- **Fix:** the workflow's commit step now DERIVES the posts dir from `lib/blog/posts-dir.ts` POSTS_DIR via a node one-liner (no hardcoded path); no literal posts path left in any workflow.
+- **Standing guard:** `posts-dir-consistency.test.ts` now scans every `.github/workflows/*.yml` and fails if any carries a literal posts path (old or new). Revert/restore proof: reintroducing `git add app/blog/posts/` flips it red + pinpoints the line; restore → green. 676 tests / 0 fail.
+- **Full-stack verification (run `26783309941`, success):** the fixed workflow generated + committed a post (`66da22d`, psa-9-vs-psa-10). **Gate 12 held in production exactly as designed** — attempt 1 FAILED on 24 em dashes, attempt 2 on 1, attempt 3 PASSED; the shipped body has 0 em dashes, in-voice, hype-free. POSTS_DIR derivation logged "staging posts dir: app/(site)/blog/posts".
+- **Gap surfaced (NOT fixed — left for a follow-up):** the shipped post has **1 em dash in the frontmatter `description:` field** (line 3). Gate 12 scans `body + faq`, **not** the frontmatter description/title, so it passed. The description ships in `<meta>` + OG + the blog-index card. Post left untouched per the goal constraint. **Follow-up: extend Gate 12 (+ the brand-voice gates) to scan `frontmatter.description` + `frontmatter.title`.** PATTERNS I-008 updated with this third instance.
+
+---
+
 ## 2026-06-01 — R-018 resolved: transcript ingestion on a residential box (Path B) — [ADR-052](DECISIONS.md#adr-052--transcript-ingestion-on-a-residential-scheduled-box-path-b)
 
 **Follow-on to C.1. CI ingestion is YouTube-bot-blocked; verified the cheap mitigations fail, then moved ingestion to John's residential machine.**
