@@ -21,7 +21,7 @@ test("marketing pillar pages are public", () => {
 
 test("blog index and every blog post are public", () => {
   assert.equal(isPublicRoute("/blog"), true);
-  assert.equal(isPublicRoute("/blog/hello-world"), true);
+  assert.equal(isPublicRoute("/blog/how-much-is-my-pokemon-card-worth-a-60-second-checklist"), true);
   assert.equal(isPublicRoute("/blog/some-future-post-slug"), true);
 });
 
