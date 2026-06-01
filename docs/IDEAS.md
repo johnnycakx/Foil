@@ -19,15 +19,15 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
-date: 2026-06-01
-category: content
+date: 2026-05-31
+category: product
 status: captured
 ---
-## Google Trends + keyword-search ingestion alongside YouTube transcripts
+## Halo-watch signal: predict price lift on existing cards when new same-Pokemon cards are announced
 
-A second market-signal source beside the C.1 creator transcripts: Google Trends + keyword-search volume for Pokémon TCG terms (card names, set names, "[card] price", anniversary terms). Search interest is an *earlier, broader* leading indicator than creator commentary — it captures demand spikes before creators make a video about them, and demand that no creator covers at all. Same pipeline shape as C.1 (fetch → clean → digest → inject with attribution), different data source. Feeds the same digest (a "search-interest pulse" section) and the buy-signal (#32). Explicitly OUT OF SCOPE for C.1 (different source, not just another channel). Lands as C.2 or C.3.
+Compute a leading "halo watch" indicator: when creator transcripts mention a Pokemon name near a set-pulse marker (e.g. "Umbreon SIR coming in the 30th anniversary set"), flag ALL cards in the catalog with that Pokemon name as likely to see a price lift. Documented market pattern: new high-rarity card of Pokemon X drives demand bleed-up to all existing X cards (Moonbreon attention lifted vintage Umbreons; Charizard ex SIR lifted Base Set Charizards 8-12% in 30 days post-release). All inputs already in hand: C.1's set-pulse detection works, creator transcripts ingested, catalog has Pokemon name on every entry. Three pieces of work: (1) Pokemon-name proximity extraction near set-pulse markers in transcripts; (2) catalog cross-reference (`lib/cards/catalog.ts` filter by name); (3) halo-watch output in digest with confidence tag (HIGH for top-tier mons — Charizard/Pikachu/Umbreon/Lugia/Mewtwo/Rayquaza; LOWER for B-tier or over-printed Pokemon like Pikachu). Honest caveats to encode: reprint-in-same-set downgrades the halo (old card may DROP if new SIR is paired with reprint); time decay (halo strongest 0-21 days post-announcement, fades by 45); not always true (probabilistic). Methodology page documents accuracy ("~70% of HIGH-confidence halo signals see lift within 21 days") with PRODUCT.md "earned trust over persuasion" framing. Consumers via the market-pulse library: buy signal gets "halo-rising candidate" tag, per-card pages show halo-watch status, newsletter leads with "Halo alert" sections, content engine generates predictive posts. Moat: no Pokemon TCG competitor publishes a predictive halo signal — PriceCharting/PokeScope are backward-looking. Over 6-12 months of accuracy-tracked halo predictions, Foil becomes the cited source for "what will spike next."
 
-**Context:** Raised 2026-06-01 by John during C.1, captured as a deliberate scope boundary: "Google keyword-search ingestion is OUT OF SCOPE for C.1 (it's a different data source, not just another channel)." Adjacent signal that leads creator commentary.
+**Context:** Raised 2026-05-31 by John during C.1 close, after the 30th anniversary set-pulse signal landed at HIGH confidence in the actual digest. Example reasoning: "if we find out umbreon is getting a new SIR that means we will likely see a bump in all umbreon cards." This is the kind of leading-indicator product feature that turns C.1's transcript ingestion from a content-engine input into a market-prediction surface. Architecturally part of the market-pulse library (sibling idea above) — the halo signal is one of the highest-leverage consumers of that library.
 
 ---
 
