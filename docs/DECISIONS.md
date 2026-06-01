@@ -1687,6 +1687,31 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 
 **Cross-refs.** `lib/blog/posts-dir.ts`, `lib/__tests__/{posts-dir-consistency,no-duplicate-blog-paths,content-marker-verification}.test.ts`, [R-015](RISKS.md), [PATTERNS I-008 + I-006 + I-003](PATTERNS.md), [ROADMAP #33](ROADMAP.md), ADR-006.
 
+## ADR-050 — Creator-content ingestion + attribution gate
+
+**Date:** 2026-06-01 (Session 47.5 / Goal C.1)
+**Status:** Accepted (pilot). 1-session, 5-channel validation of feeding creator commentary to the content engine before automating further (Path A from the IDEAS entry).
+
+**Context.** PokeTrace's `avg30d` is a lagging signal; Pokémon TCG YouTubers react in days to set drops, anniversaries, leaks, and viral spikes. Feeding a synthesized digest of curated-creator commentary gives the content engine market-sentiment color it can't get from price data — and surfaces pre-release/leak signal that leads PokeTrace by weeks. The risk is twofold: copyright (don't reproduce creators' words) and shill-pollution (don't launder hype into "card-data"). Both are handled by ingestion filtering + an attribution gate + treating hype as *speaker-data*.
+
+**Decision.**
+1. **Curated whitelist** (`docs/creator-whitelist.md`, John owns it): 5 channels for C.1. A parse contract lets the ingestion read `active` rows. Channels are verified (handle resolves + auto-subs fetch) before landing.
+2. **Ingestion** (`scripts/ingest-transcripts.ts` + `lib/seo/transcript-clean.ts`): yt-dlp `--write-auto-subs --skip-download` for the last 30 days → clean VTT to deduped text → redact (R-008 eBay refs + URLs stripped; BRAND-VOICE.md AI-tell phrases stripped; market-hype words PRESERVED as signal) → gitignored `docs/transcripts/`. Idempotent.
+3. **Digest** (`scripts/transcript-digest.ts`): committed `docs/transcript-digests/{date}.md`. Card pulse (freq-ranked nickname mentions + cited prices + hype markers + speculator-spike candidates = nickname-near-hype, a contrarian-SELL watch) and a cross-channel **Upcoming-set pulse** (set lexicon + leak/upcoming markers; 3+ channels + markers = HIGH pre-release signal).
+4. **Content engine** (`content-engine.ts`): SYSTEM_PROMPT "Creator commentary context" (synthesize never copy; >25-word verbatim cap; attribute by name; hype = speaker-data not card-data). `loadLatestCreatorDigest()` injects the newest digest per generation.
+5. **Gate 11** (`quality-gates.ts`): 11a fails an unattributed collective claim ("creators are saying" with no named whitelisted creator within 50 chars); 11b fails any >25-consecutive-word run copied verbatim from the transcript corpus. 11b runs only when the corpus is supplied (transcripts gitignored → skipped in unit runs).
+6. **Daily ingestion** (`.github/workflows/transcript-ingestion.yml`, 06:00 UTC, kill-switch `AUTO_INGEST_TRANSCRIPTS`).
+
+**Pilot measurement (P6, honest).** Ran the real auto-pick generation with the digest injected (routed to `_pending`, not published): the post cited **2 creators with full attribution** ("Pirate King Investments mentioned in a recent video that…", "PokeBeard flagged that…"), Gate 11a = **0 violations**, and referenced digest signal (Moonbreon). The current live posts cite **0** creators — so the lift (attributed market-sentiment color) is real. **Negative:** the draft still failed `voiceCheck` (1 "roughly 4" hedge + 22 em dashes) because voiceCheck/em-dash detection is NOT a hard pipeline gate — the model ignored the prompt's no-em-dash rule. Follow-up: wire voiceCheck into the engine's gate set or rely on the `_pending` review step.
+
+**Consequences.**
+- Copyright posture: synthesis + named attribution = standard journalism shape (Money Stuff / PokeBeach). The >25-word cap + Gate 11 enforce it structurally.
+- Shill-pollution defense ([R-017](RISKS.md#r-017--creator-shill-pollution-of-the-content-engine)): hype is filtered/labeled at ingestion + treated as speaker-data; a creator's "$2,000" is never a citable price (Gate 10 + the prompt rule).
+- **CI bot-block risk ([R-018](RISKS.md#r-018--ci-youtube-bot-block-on-transcript-ingestion)):** yt-dlp verified from a residential IP; GitHub Actions datacenter IPs are often bot-blocked. The workflow soft-fails (digest runs on existing transcripts). Mitigations: cookies secret, residential scheduled box, or proxy.
+- Voice gate gap surfaced (above) is the main quality follow-up.
+
+**Cross-refs.** `docs/creator-whitelist.md`, `lib/seo/transcript-clean.ts`, `scripts/{ingest-transcripts,transcript-digest}.ts`, `lib/seo/content-engine.ts`, `lib/seo/quality-gates.ts` (Gate 11), `.github/workflows/transcript-ingestion.yml`, [R-017](RISKS.md) + [R-018](RISKS.md), [PATTERNS I-009](PATTERNS.md), IDEAS "Creator-content ingestion".
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

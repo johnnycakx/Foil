@@ -6,6 +6,20 @@ Append new entries at the top. When an entry is promoted, leave it here with a `
 
 ---
 
+## I-009 — External-source context needs attribution discipline baked in, not bolted on
+
+**Spotted:** Goal C.1, feeding curated-creator YouTube commentary into the content engine.
+
+**Shape.** The moment a generator draws on an external source (creator transcripts, competitor copy, scraped SERP text, a partner's data), two failures become possible that pure first-party generation can't have: (1) **plagiarism** — reproducing the source's words, and (2) **laundering** — presenting a source's opinion/hype as your own fact. Both quietly erode trust and create legal exposure, and neither is caught by structure/quality gates (word count, dollar figures) — the text looks fine. The fix can't be a post-hoc "please attribute" nudge in the prompt; it has to be enforced at three layers: **ingestion** (strip what must never appear — R-008 eBay refs, the source's identifiers), **prompt** (synthesize never copy, a hard verbatim cap, attribute by name, label opinion as opinion), and **gate** (fail unattributed collective claims + fail >N-word verbatim runs against the source corpus). Attribution is a *pipeline property*, designed in, not a writing tip.
+
+**The general fix.** For any external-source feed: (a) redact-at-ingestion the things that must never surface; (b) a synthesis + named-attribution prompt rule with a concrete verbatim-word cap; (c) a gate that mechanically checks both — unattributed-source-claim detection AND verbatim-overlap against the corpus (the gate needs the corpus, so it runs where the corpus is available). Treat the source's claims as *speaker-data* (what they said) distinct from *fact-data* (what's true), and never let speaker-data become a cited fact without independent grounding.
+
+**First instance.** Gate 11 (ADR-050): 11a (unattributed collective claim) + 11b (>25-word verbatim run vs transcript corpus), paired with ingestion redaction (`transcript-clean.ts`) + the SYSTEM_PROMPT creator-commentary rules. The pilot caught the discipline working: the generated post cited two creators by name with zero unattributed claims.
+
+**Promotion trigger.** Second external-source feed (competitor copy, partner data) that reuses the redact-prompt-gate recipe → promote to a dedicated ADR.
+
+---
+
 ## I-008 — Write path ≠ read path in autonomous pipelines (extends I-003)
 
 **Spotted:** Goal V.1/V.2, 2026-05-31. The autonomous content engine wrote blog posts to `app/blog/posts/`; the live route read `app/(site)/blog/posts/`. Different directories. So every autonomous post silently never went live, and two rounds of edits (the 47.4 fact-check, the first V.1 voice pass) corrected files nobody served.

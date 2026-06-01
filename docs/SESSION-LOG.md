@@ -8,6 +8,22 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-01 — Session 47.5 (cont.) / Goal C.1: creator-content ingestion pilot — [ADR-050](DECISIONS.md#adr-050--creator-content-ingestion--attribution-gate)
+
+**1-session, 5-channel pilot of feeding curated Pokémon-TCG-creator commentary to the content engine, with attribution discipline. Path A from the IDEAS entry.**
+
+**P0.** Verified feasibility first: yt-dlp isn't installed but Python is; `pip install yt-dlp` then fetched real PokeRev auto-subs (315KB VTT) — YouTube serves subs from John's residential IP. All 5 whitelisted channels (PokeRev, Pirate King Investments/@ninetalescorner, PokeChuck, PikaPikaPapa, PokeBeard) verified to resolve + fetch subs before building. (John set the final 5-channel list mid-goal; Smpratte dropped — 2 years dark.)
+
+**P1-P3 — ingest + digest.** `docs/creator-whitelist.md` (parse contract). `lib/seo/transcript-clean.ts` (VTT dedup + R-008/AI-tell redaction, hype preserved). `scripts/ingest-transcripts.ts` (idempotent, last-30d) → **74 transcripts across 5 channels**, gitignored. `scripts/transcript-digest.ts` → `docs/transcript-digests/2026-06-01.md`: card pulse (Rayquaza V Alt 18, Moonbreon 13, Charizard ex SIR 12), cited prices + attribution, speculator-spike candidates, and (John scope-add) a **cross-channel Upcoming-set pulse** that flagged **30th-anniversary + Mega Evolution + White Flare** as HIGH pre-release signal (3+ channels + leak markers). Nickname-expansion candidates surfaced for John (rayquaza vmax, charizard v…).
+
+**P4-P5 — engine + Gate 11.** SYSTEM_PROMPT creator-commentary rules (synthesize/attribute/25-word cap/hype=speaker-data) + per-prompt digest loader. Gate 11: 11a (unattributed collective claim) + 11b (>25-word verbatim copy vs corpus), R-010-anchored tests on a real PokeRev run.
+
+**P6 — pilot measurement (honest).** Ran the real auto-pick generation with the digest injected (→ `_pending`, then deleted; not published). **Lift: the post cited 2 creators with full attribution** — "Pirate King Investments mentioned in a recent video that…", "PokeBeard flagged that…" — Gate 11a = **0 violations**, referenced digest signal (Moonbreon). Current live posts cite **0** creators. **Negative: the draft failed voiceCheck (1 "roughly 4" hedge + 22 em dashes)** — voiceCheck/em-dash isn't a hard pipeline gate, so the model ignored the prompt's no-em-dash rule. Follow-up → ROADMAP #34.
+
+**P7-P8.** Daily ingestion workflow (`.github/workflows/transcript-ingestion.yml`, 06:00 UTC, `AUTO_INGEST_TRANSCRIPTS` kill-switch) — with the honest caveat that CI datacenter IPs may be YouTube-bot-blocked ([R-018](RISKS.md)); soft-fails to existing transcripts. 666 tests / 0 fail, tsc clean, build 5.3s, compliance 6/6, design:lint 0 new. Docs: ADR-050, [R-017](RISKS.md) shill-pollution + R-018, ROADMAP #34 (C.2), IDEAS (creator-content → promoted; Google keyword-search captured as out-of-scope per John), [PATTERNS I-009](PATTERNS.md), CLAUDE.md before/after-regeneration rule.
+
+---
+
 ## 2026-05-31 — Session 47.5 (cont.) / Goal V.2: content-pipeline reconciliation (R-015 resolved) — [ADR-049](DECISIONS.md#adr-049--content-pipeline-writeread-pinning--content-marker-verification-as-a-standing-closure-gate)
 
 **Closes the R-015 root cause V.1 surfaced: the autonomous engine WROTE `app/blog/posts/` while the live route READ `app/(site)/blog/posts/`, so autonomous posts silently never went live.**

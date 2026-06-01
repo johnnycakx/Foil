@@ -19,6 +19,71 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-06-01
+category: content
+status: captured
+---
+## Google Trends + keyword-search ingestion alongside YouTube transcripts
+
+A second market-signal source beside the C.1 creator transcripts: Google Trends + keyword-search volume for Pokémon TCG terms (card names, set names, "[card] price", anniversary terms). Search interest is an *earlier, broader* leading indicator than creator commentary — it captures demand spikes before creators make a video about them, and demand that no creator covers at all. Same pipeline shape as C.1 (fetch → clean → digest → inject with attribution), different data source. Feeds the same digest (a "search-interest pulse" section) and the buy-signal (#32). Explicitly OUT OF SCOPE for C.1 (different source, not just another channel). Lands as C.2 or C.3.
+
+**Context:** Raised 2026-06-01 by John during C.1, captured as a deliberate scope boundary: "Google keyword-search ingestion is OUT OF SCOPE for C.1 (it's a different data source, not just another channel)." Adjacent signal that leads creator commentary.
+
+---
+
+---
+date: 2026-05-31
+category: product
+status: captured
+---
+## Market-pulse as a shared library, not a content-engine private input
+
+The C.1 creator-content digest should be a shared market-context source for the WHOLE product, not just the content engine. Dual-format output: `docs/transcript-digests/{date}.md` (human + content engine prompt) + `docs/transcript-digests/{date}.json` (structured, parseable by code). A thin `lib/market-pulse/digest.ts` exposes `getLatestDigest()`, `getCardMentions(slug)`, `getCreatorVelocity(slug, windowDays)`, `isSpeculatorSpikeCandidate(slug)`, `getSentiment(slug)`. Server-side only, 1h-SWR cached. Consumers, in priority order: (1) buy signal (#32) — creator-spike flag becomes a contrarian "WAIT" input per market research; (2) per-card pages "Creator commentary this week" sidebar (builds cited-source moat); (3) wishlist alert emails ("PokeChuck just covered this card" context line); (4) watchlist proactive nudges (3+ creators mention -> "interest building" email); (5) newsletter "what creators are watching" section; (6) homepage trending widget; (7) buy-signal explainer copy; (8) Discord bot grounding; (9) content-engine topic selection (creator-velocity weighting on seo-strategy.md backlog); (10) catalog-expansion ranking; (11) per-set landing pages; (12) Claude Code + Cowork session grounding (per CLAUDE.md "Project Second Brain" pattern — every goal touching market reasoning automatically informed). The library is the architectural unlock that turns the digest from a one-pipe input into a foundation surface.
+
+**Context:** Raised 2026-05-31 by John during C.1 execution: "this market information from the youtubers [should be utilized] in other parts of the build. It gives claude code and you more context into what is actually happening in the markets." Scope: not a C.1 change (let that pilot land first), but the natural shape of C.2 OR a separate "Market-pulse library" goal that comes after C.1 proves the input lift.
+
+---
+
+---
+date: 2026-05-31
+category: content
+status: captured
+---
+## Google Trends + keyword-search ingestion alongside YouTube transcripts
+
+Add Google Trends + keyword-search velocity as a parallel signal source alongside the YouTube transcript pipeline (creator-content ingestion idea below). Google Trends often LEADS creator commentary by days — creators see search velocity rising and then make videos about it. Pulling both gives the content engine leading + lagging indicators in the same digest. Data sources to consider: Google Trends API (free, rate-limited; pytrends library wrappable in scripts/ingest-google-trends.ts), TCGplayer hot list (publicly scrapeable, daily-refresh), Pokellector trending pages. Architecture should treat these as additional contributors to the same docs/transcript-digests/{date}.md file (or a parallel docs/market-pulse/{date}.md if richer), keyed by card name for cross-source corroboration. When a card spikes on Google Trends AND appears in 2+ creator transcripts in the same week, that's a high-confidence trend signal worth surfacing in the content engine AND in the buy-signal feature (ROADMAP #32) as a "rising interest" indicator. Scope: C.2 or C.3 (after the YouTube pilot proves its lift).
+
+**Context:** Raised 2026-05-31 by John during C.1 pilot scoping. Sits adjacent to the YouTube transcript ingestion idea — same pipeline shape, different source. The "monitor uploads + scrape Google keyword search" framing came directly from John's curated-channel list message.
+
+---
+
+---
+date: 2026-05-31
+category: content
+status: promoted
+---
+## Creator-content ingestion for content engine market signal
+
+Feed the autonomous content engine a weekly digest of commentary from a curated whitelist of Pokemon TCG creators (YouTube transcripts via yt-dlp auto-subs first; Reddit + Twitter in V2). Provides real-time market-sentiment signal that PokeTrace's `avg30d` can't surface — creators react in days to anniversary moments, set drops, tournament rotation, viral spikes. Ingestion pipeline strips eBay-listing references (R-008 defense), filters hype words per BRAND-VOICE.md ban list, writes a digest at `docs/transcript-digests/{date}.md`. Content engine extends `SYSTEM_PROMPT` to draw on the digest with synthesis + attribution discipline (never quote >25 words verbatim, always attribute by name, treat hype language as speaker-data not card-data). New quality gate: attribution check on any creator-cited claim. Path A (1 session pilot): one creator, manual ingestion, measure lift in blog quality. Path B (full): multi-creator automated pipeline + attribution gate + transcript-aware buy-signal input (creator-spike often = contrarian SELL signal per market research). Copyright posture: synthesis + attribution = fair use, standard journalism shape (same as Money Stuff / Sports Card Investor / PokeBeach). John curates the creator list.
+
+**Context:** Raised 2026-05-31 by John during V.2 drafting. Sits adjacent to ROADMAP NEXT #10 (content engine reframe) and #32 (buy-signal). Builds toward the longer-term "be the cited source" play (captured below).
+
+---
+
+---
+date: 2026-05-31
+category: content
+status: captured
+---
+## Foil as the cited reference source (PriceCharting-shape moat)
+
+Once per-card pages carry buy signals + sold-history + transparent methodology + per-card editorial, creators will START linking to Foil in their video descriptions and tweets. That turns the creator-ingestion pipeline two-way: we cite them, they cite us. PriceCharting's moat is that they ARE the reference for video-game prices; this play makes Foil the reference for Pokemon TCG buyer-side. 6-12 month compound. Triggers and accelerators: shipping the buy-signal feature (#32), per-card editorial, creator sponsorships (capital plan), publishing the `/pricing-methodology` page (already captured).
+
+**Context:** Raised 2026-05-31 alongside the creator-content ingestion idea above. The two compound: ingestion gets us in the conversation; methodology + signal quality gets creators to cite us back.
+
+---
+
+---
 date: 2026-05-31
 category: product
 status: promoted

@@ -1,0 +1,81 @@
+# Creator-content ingestion — daily at 06:00 UTC (ADR-050 / Goal C.1).
+#
+# Each run:
+#   1. pip install yt-dlp
+#   2. scripts/ingest-transcripts.ts — pull last-30-day auto-subs for every
+#      `active` channel in docs/creator-whitelist.md, clean -> gitignored
+#      docs/transcripts/{creator}/{id}.txt (idempotent).
+#   3. scripts/transcript-digest.ts — synthesize -> docs/transcript-digests/
+#      {date}.md (committed; this is what the content engine reads).
+#   4. Commit the digest to main. One small file/day; clear `docs(transcripts):`
+#      prefix. (If the daily commit/deploy noise ever matters, switch to a
+#      docs-only branch with a weekly merge, or add a Vercel ignoreCommand for
+#      docs/transcript-digests/. Kept simple for the pilot.)
+#
+# ⚠️ KNOWN RISK (R-017 / R-018): yt-dlp was verified from a residential IP.
+# GitHub Actions runners use datacenter IPs that YouTube frequently bot-blocks
+# ("Sign in to confirm you're not a bot"). If CI ingestion is blocked, the
+# ingest step soft-fails (continue-on-error), the digest step runs on whatever
+# transcripts exist, and the run still succeeds — it just won't refresh signal.
+# Mitigations if blocked: supply a YT_DLP_COOKIES secret (cookies.txt), run
+# ingestion from a residential box on a schedule, or route through a proxy.
+#
+# Kill-switch: set repo variable AUTO_INGEST_TRANSCRIPTS=false.
+
+name: transcript-ingestion
+on:
+  schedule:
+    - cron: "0 6 * * *" # daily 06:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    if: ${{ vars.AUTO_INGEST_TRANSCRIPTS != 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet yt-dlp
+
+      # Soft-fail: a bot-block or a dark channel must not fail the run. The
+      # ingest script already logs per-channel and continues; this guards the
+      # whole step too.
+      - name: Ingest transcripts (last 30 days)
+        continue-on-error: true
+        run: node --experimental-strip-types scripts/ingest-transcripts.ts --days 30 --max 30
+
+      - name: Build digest
+        run: node --experimental-strip-types scripts/transcript-digest.ts
+
+      - name: Configure git author
+        # Same rationale as weekly-content.yml (ADR-045): commit with the
+        # team-associated email so Vercel deploys Ready; bot name marks it
+        # autonomous.
+        run: |
+          git config user.name  "foil-content-bot"
+          git config user.email "john.c.craig24@gmail.com"
+
+      - name: Commit digest to main
+        run: |
+          git add docs/transcript-digests/
+          if git diff --cached --quiet; then
+            echo "No digest change today — nothing to commit."
+            exit 0
+          fi
+          git commit -m "docs(transcripts): daily creator-commentary digest $(date -u +%Y-%m-%d)"
+          git push origin HEAD:main

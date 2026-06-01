@@ -255,6 +255,36 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 ---
 
+## R-017 — Creator shill-pollution of the content engine
+
+**Severity:** Medium
+**Status:** `mitigating` (added Goal C.1 / [ADR-050](DECISIONS.md#adr-050--creator-content-ingestion--attribution-gate))
+
+**The risk.** The creator-commentary pipeline feeds YouTuber sentiment into the content engine. Creators are often talking their own book (sealed they're holding, sponsored product, affiliate pushes). If the engine treats hype as fact, Foil launders a creator's pump into "Foil says this card is hot" — destroying the trusted-concierge credibility the whole brand rests on (R-001 adjacent).
+
+**Why mitigating.** Three structural defenses ship with the pipeline: (1) ingestion strips eBay refs (R-008) + AI-tell phrases but the digest LABELS hype as a "speculator-spike candidate" (a contrarian-SELL watch, never a buy signal); (2) the SYSTEM_PROMPT rule treats hype as *speaker-data not card-data* and forbids stating a creator's number as fact (Gate 10 still requires real provenance for any cited figure); (3) Gate 11 forces named attribution, so any creator claim is "PokeBeard said X," never "the market says X" — the reader sees it's one creator's take.
+
+**Trigger to escalate.** A published post adopts a creator's hype as Foil's own recommendation, OR a whitelisted channel turns out to be a paid shill (remove from whitelist). 
+
+**Mitigation candidates.** Sentiment-divergence check (flag when creator hype contradicts PokeTrace sold-trend); per-creator reliability weighting; never let a digest-only card become a buy-signal without independent sold-data confirmation (ties to ROADMAP #32).
+
+---
+
+## R-018 — CI YouTube bot-block on transcript ingestion
+
+**Severity:** Low
+**Status:** `monitoring` (added Goal C.1 / [ADR-050](DECISIONS.md#adr-050--creator-content-ingestion--attribution-gate))
+
+**The risk.** yt-dlp transcript ingestion was verified from a residential IP. The daily `.github/workflows/transcript-ingestion.yml` runs on GitHub Actions datacenter IPs, which YouTube frequently bot-blocks ("Sign in to confirm you're not a bot"). If blocked, CI ingestion fetches nothing and the digest stops refreshing.
+
+**Why low.** The workflow soft-fails (ingest step `continue-on-error`; digest runs on existing transcripts; the run still succeeds). No build/site breakage — only stale signal. The content engine degrades to "no fresh creator context," which is the pre-C.1 baseline.
+
+**Trigger to escalate.** The daily run logs bot-block errors for >3 consecutive days (signal goes stale).
+
+**Mitigation candidates.** Supply a `YT_DLP_COOKIES` secret (exported cookies.txt) to authenticate the runner; run ingestion from a residential scheduled box and push the digest; or route yt-dlp through a residential proxy.
+
+---
+
 ## How to log a new risk
 
 1. Next available ID (`R-NNN`, monotonically increasing).
