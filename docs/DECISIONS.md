@@ -1712,6 +1712,25 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 
 **Cross-refs.** `docs/creator-whitelist.md`, `lib/seo/transcript-clean.ts`, `scripts/{ingest-transcripts,transcript-digest}.ts`, `lib/seo/content-engine.ts`, `lib/seo/quality-gates.ts` (Gate 11), `.github/workflows/transcript-ingestion.yml`, [R-017](RISKS.md) + [R-018](RISKS.md), [PATTERNS I-009](PATTERNS.md), IDEAS "Creator-content ingestion".
 
+## ADR-051 — Wiring voiceCheck into the content-engine gates: em dash HARD, hedge SOFT
+
+**Date:** 2026-06-01 (Session 47.5, post-C.1)
+**Status:** Accepted. Closes the gap [ADR-050](#adr-050--creator-content-ingestion--attribution-gate)'s pilot surfaced (the generated draft shipped 22 em dashes because nothing gated them). [ROADMAP #34](ROADMAP.md).
+
+**Context.** `lib/seo/voice-check.ts` has detectors for ban phrases, em dashes, vague-number hedges, and unsourced proprietary stats. It was a verification *lens* (used in tests + manual linting), not wired into the generation pipeline, so the model could ignore the SYSTEM_PROMPT's "no em dashes" rule with no consequence. The question was which detectors can safely become hard gates (block + trigger a retry) without false-positive-rejecting legitimate copy.
+
+**Decision — split by false-positive risk.**
+- **Em dash → HARD gate (Gate 12 in `runQualityGates`).** The em-dash character (`—`) is unambiguous: BRAND-VOICE.md rule 7 bans it outright, en dashes (`–`) in numeric ranges stay legal, and detection is a literal character match with **zero false positives**. So it can reject the draft. (Implemented as a direct check in `quality-gates.ts`, not by importing `voiceCheck`, to avoid a circular import — `voiceCheck` imports from `quality-gates`.)
+- **Vague-number hedge → stays SOFT (NOT gated).** The hedge detector flags "around/approximately/roughly/~/(approximate)" + a number. That **false-positives on legitimate sourced citations** like "approximately $2,100 (PokeTrace n=363)" — a real, honest figure where "approximately" is correct (a 30-day median is genuinely approximate). Hard-gating it would reject good copy and push the model toward false precision. It remains available via `voiceCheck` for manual/CI linting, but never blocks generation.
+
+**Consequences.**
+- Generated drafts can no longer ship em dashes (the C.1 failure mode). The brand voice's most mechanical rule is now enforced where it's written.
+- Sourced hedging is tolerated by design; the honest-number cases the V.1 voice pass worried about (real PokeTrace medians) won't be rejected.
+- Existing `passingDraft` test fixture had 3 em dashes (recast to commas/parens) so the "passes every gate" test still holds — confirming the gate bites real content.
+- This is the general principle for promoting a lint to a gate: **hard-gate only detectors with zero false-positive risk; keep judgment-call detectors soft.** Newsletter gates are a separate set (`runNewsletterQualityGates`) and were left unchanged this round.
+
+**Cross-refs.** `lib/seo/quality-gates.ts` (Gate 12), `lib/seo/voice-check.ts`, `lib/__tests__/attribution-gate.test.ts`, [ADR-050](#adr-050--creator-content-ingestion--attribution-gate), [ADR-048](#adr-048--brand-voice-integration-into-the-autonomous-content--newsletter-pipelines), [ROADMAP #34](ROADMAP.md).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

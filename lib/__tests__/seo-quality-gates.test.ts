@@ -36,7 +36,7 @@ function passingDraft(): GeneratedDraft {
     "Across our scans, the typical chase card pulls a $200-$5,400 comp range depending on centering and surface. " +
     "Compare with [Pokémon card condition guide](/pokemon-card-condition-guide) for the full grading walkthrough. " +
     "Also see [Pokémon card value calculator](/pokemon-card-value-calculator) for live prices. " +
-    "The 2025 release of Surging Sparks shifted the modern set EV — and the 2026 reprint of Prismatic Evolutions doubled the supply at retail.";
+    "The 2025 release of Surging Sparks shifted the modern set EV, and the 2026 reprint of Prismatic Evolutions doubled the supply at retail.";
 
   return {
     candidate: null as unknown as GeneratedDraft["candidate"],
@@ -54,7 +54,7 @@ function passingDraft(): GeneratedDraft {
       {
         question: "What is a PSA 10?",
         answer:
-          "A PSA 10 is the highest grade — Gem Mint — assigned by Professional Sports Authenticator. Cards in PSA 10 slabs have no visible defects to the eye, centering of roughly 55/45 or better, and crisp corners. The PSA 10 grade commands a steep premium over PSA 9 on chase cards, sometimes 5x to 50x the lower-grade price. The grading service inspects centering, corners, edges, and surface independently before assigning the headline grade.",
+          "A PSA 10 is the highest grade (Gem Mint) assigned by Professional Sports Authenticator. Cards in PSA 10 slabs have no visible defects to the eye, centering of roughly 55/45 or better, and crisp corners. The PSA 10 grade commands a steep premium over PSA 9 on chase cards, sometimes 5x to 50x the lower-grade price. The grading service inspects centering, corners, edges, and surface independently before assigning the headline grade.",
       },
       {
         question: "How long does PSA grading take?",
@@ -64,7 +64,7 @@ function passingDraft(): GeneratedDraft {
       {
         question: "Is BGS better than PSA for Pokemon?",
         answer:
-          "PSA still commands the strongest resale premium for Pokémon — buyers default to PSA slabs and pay accordingly. BGS 10 Black Label sits above PSA 10 on vintage but BGS 9.5 generally underprices a PSA 10. CGC has closed the gap on Japanese sets but trails on English vintage. Default to PSA for anything you plan to sell within twelve months.",
+          "PSA still commands the strongest resale premium for Pokémon; buyers default to PSA slabs and pay accordingly. BGS 10 Black Label sits above PSA 10 on vintage but BGS 9.5 generally underprices a PSA 10. CGC has closed the gap on Japanese sets but trails on English vintage. Default to PSA for anything you plan to sell within twelve months.",
       },
     ],
     wordCount: 1500,

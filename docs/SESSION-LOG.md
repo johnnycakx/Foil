@@ -22,6 +22,8 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 **P7-P8.** Daily ingestion workflow (`.github/workflows/transcript-ingestion.yml`, 06:00 UTC, `AUTO_INGEST_TRANSCRIPTS` kill-switch) — with the honest caveat that CI datacenter IPs may be YouTube-bot-blocked ([R-018](RISKS.md)); soft-fails to existing transcripts. 666 tests / 0 fail, tsc clean, build 5.3s, compliance 6/6, design:lint 0 new. Docs: ADR-050, [R-017](RISKS.md) shill-pollution + R-018, ROADMAP #34 (C.2), IDEAS (creator-content → promoted; Google keyword-search captured as out-of-scope per John), [PATTERNS I-009](PATTERNS.md), CLAUDE.md before/after-regeneration rule.
 
+**Follow-on (same session): voiceCheck wired into the gates ([ADR-051](DECISIONS.md#adr-051--wiring-voicecheck-into-the-content-engine-gates-em-dash-hard-hedge-soft), ROADMAP #34).** Closed the C.1 pilot's em-dash gap. **Em dash → HARD gate (Gate 12)**: unambiguous literal char, zero false positives (en-dash ranges stay legal), rejects the draft. **Vague-number hedge → stays SOFT**: it false-positives on sourced citations like "approximately $2,100 (PokeTrace n=363)", so it's lint-only, never blocks. `passingDraft` fixture's 3 em dashes recast so "passes every gate" still holds. Tests anchored on both cases (em dash → FAIL; sourced hedge → PASS). 669 tests / 0 fail.
+
 ---
 
 ## 2026-05-31 — Session 47.5 (cont.) / Goal V.2: content-pipeline reconciliation (R-015 resolved) — [ADR-049](DECISIONS.md#adr-049--content-pipeline-writeread-pinning--content-marker-verification-as-a-standing-closure-gate)

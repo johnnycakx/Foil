@@ -99,3 +99,32 @@ test("Gate 11b is skipped when no corpus is supplied (transcripts gitignored)", 
     "11b must not run without a corpus",
   );
 });
+
+// --- Gate 12: em dash HARD, vague-number hedge SOFT (ADR-051) ---------------
+
+test("Gate 12 (HARD): a draft containing an em dash fails", () => {
+  const result = runQualityGates(draftWith("The grade jump is real — and worth it on chase cards."), "/blog/x");
+  assert.ok(
+    result.failures.some((f) => f.includes("em dash") && f.includes("Gate 12")),
+    `expected a Gate 12 em-dash failure, got: ${JSON.stringify(result.failures)}`,
+  );
+});
+
+test("Gate 12: en dashes in numeric ranges do NOT fail (only em dashes do)", () => {
+  const result = runQualityGates(draftWith("LP copies trade at $95–$110 against an NM market of $180."), "/blog/x");
+  assert.ok(!result.failures.some((f) => f.includes("Gate 12")), "en-dash range must not trip Gate 12");
+});
+
+test("hedging stays SOFT: sourced 'approximately $2,100 (PokeTrace n=363)' is NOT gated", () => {
+  // The vague-number-hedge detector false-positives on legitimate sourced
+  // citations, so it is deliberately NOT a hard gate. A draft hedging a sourced
+  // figure (and with no em dash) must produce no em-dash failure and no
+  // hedge/vague failure.
+  const body = "Raw NM Moonbreon sits at approximately $2,100 (PokeTrace n=363), roughly double the PSA 9.";
+  const result = runQualityGates(draftWith(body), "/blog/x");
+  assert.ok(!result.failures.some((f) => f.includes("Gate 12")), "no em dash, so no Gate 12 failure");
+  assert.ok(
+    !result.failures.some((f) => /hedge|vague|approximately/i.test(f)),
+    `sourced hedging must not be gated, got: ${JSON.stringify(result.failures)}`,
+  );
+});

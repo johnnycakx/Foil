@@ -259,9 +259,24 @@ export function runQualityGates(
     const copied = verbatimTranscriptRun(`${body}\n${faqBody}`, ctx.transcriptCorpus);
     if (copied) {
       failures.push(
-        `Verbatim transcript copy detected (>25 consecutive words): "${copied.slice(0, 80)}…". Synthesize the idea in Foil's voice and attribute by name — never reproduce a creator's words. (ADR-050 / Gate 11b)`,
+        `Verbatim transcript copy detected (>25 consecutive words): "${copied.slice(0, 80)}". Synthesize the idea in Foil's voice and attribute by name, never reproduce a creator's words. (ADR-050 / Gate 11b)`,
       );
     }
+  }
+
+  // Gate 12 (em dashes — HARD, ADR-051). BRAND-VOICE.md rule 7 bans em dashes
+  // (—); en dashes (–) in numeric ranges stay legal. This is the one voiceCheck
+  // detector wired as a hard gate: it's unambiguous (a literal char) with zero
+  // false positives, so it can reject the draft. The vague-number-hedge
+  // detector stays SOFT (NOT gated) — it false-positives on sourced citations
+  // like "approximately $2,100 (PokeTrace n=363)", so blocking on it would
+  // reject legitimate copy. (The C.1 pilot draft shipped 22 em dashes because
+  // nothing gated them; this closes that gap. ROADMAP #34.)
+  const emDashes = (`${body}\n${faqBody}`.match(/—/g) || []).length;
+  if (emDashes > 0) {
+    failures.push(
+      `${emDashes} em dash(es) found. BRAND-VOICE.md bans the em dash character; recast each with a comma, colon, semicolon, period, or parentheses. (En dashes in numeric ranges like $95-$110 are fine.) (Gate 12)`,
+    );
   }
 
   return { passed: failures.length === 0, failures };
