@@ -114,9 +114,11 @@ export function runNewsletterQualityGates(
 
   // Gate (g): no em dashes (HARD — parity with the blog Gate 12, ADR-051).
   // BRAND-VOICE.md rule 7 bans the em dash (—); en dashes (–) in numeric ranges
-  // stay legal. Unambiguous literal-char match, zero false positives. Checks
-  // both the plain text and the HTML body that actually ships.
-  const emDashes = (`${body}\n${html}`.match(/—/g) || []).length;
+  // stay legal. Unambiguous literal-char match, zero false positives. Scans
+  // EVERY field the model writes: the SUBJECT (inbox-visible), the plain text,
+  // and the HTML body — not just the body (the same field-coverage gap that let
+  // an em dash ship in a blog post's frontmatter description; PATTERNS I-008).
+  const emDashes = (`${subject}\n${body}\n${html}`.match(/—/g) || []).length;
   if (emDashes > 0) {
     failures.push(
       `${emDashes} em dash(es) found. BRAND-VOICE.md bans the em dash character; recast each with a comma, colon, semicolon, period, or parentheses. (En dashes in numeric ranges like $95-$110 are fine.)`,

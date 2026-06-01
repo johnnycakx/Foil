@@ -271,11 +271,16 @@ export function runQualityGates(
   // detector stays SOFT (NOT gated) — it false-positives on sourced citations
   // like "approximately $2,100 (PokeTrace n=363)", so blocking on it would
   // reject legitimate copy. (The C.1 pilot draft shipped 22 em dashes because
-  // nothing gated them; this closes that gap. ROADMAP #34.)
-  const emDashes = (`${body}\n${faqBody}`.match(/—/g) || []).length;
+  // nothing gated them; this closes that gap. ROADMAP #34.) Scans EVERY field
+  // the model writes — body, FAQ, AND the frontmatter title + description — not
+  // just the body: post 66da22d shipped an em dash in `description` (which
+  // renders in <meta>/OG/the blog-index card) because the gate only scanned
+  // body+faq. Audit all writable fields, not the obvious one (PATTERNS I-008).
+  const emDashScan = `${draft.frontmatter?.title ?? ""}\n${draft.frontmatter?.description ?? ""}\n${body}\n${faqBody}`;
+  const emDashes = (emDashScan.match(/—/g) || []).length;
   if (emDashes > 0) {
     failures.push(
-      `${emDashes} em dash(es) found. BRAND-VOICE.md bans the em dash character; recast each with a comma, colon, semicolon, period, or parentheses. (En dashes in numeric ranges like $95-$110 are fine.) (Gate 12)`,
+      `${emDashes} em dash(es) found (scanning title + description + body + FAQ). BRAND-VOICE.md bans the em dash character; recast each with a comma, colon, semicolon, period, or parentheses. (En dashes in numeric ranges like $95-$110 are fine.) (Gate 12)`,
     );
   }
 

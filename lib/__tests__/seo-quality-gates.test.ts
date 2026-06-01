@@ -77,6 +77,36 @@ test("a clean draft passes every gate", () => {
   assert.equal(result.passed, true);
 });
 
+// Gate 12 field coverage (PATTERNS I-008 fourth instance): post 66da22d shipped
+// an em dash in frontmatter.description because the gate only scanned body+faq.
+// The gate now scans title + description too.
+test("Gate 12: an em dash in frontmatter.description fails", () => {
+  const draft = passingDraft();
+  draft.frontmatter.description = "PSA 9 vs PSA 10 worth — we break down the multipliers.";
+  const result = runQualityGates(draft, "/blog/test-slug");
+  assert.ok(
+    result.failures.some((f) => f.includes("em dash") && f.includes("Gate 12")),
+    `expected a Gate 12 failure for a description em dash, got: ${JSON.stringify(result.failures)}`,
+  );
+});
+
+test("Gate 12: an em dash in frontmatter.title fails", () => {
+  const draft = passingDraft();
+  draft.frontmatter.title = "PSA 9 vs PSA 10 — Is the Premium Worth It?";
+  const result = runQualityGates(draft, "/blog/test-slug");
+  assert.ok(
+    result.failures.some((f) => f.includes("em dash") && f.includes("Gate 12")),
+    `expected a Gate 12 failure for a title em dash, got: ${JSON.stringify(result.failures)}`,
+  );
+});
+
+test("Gate 12: a body-only post with clean frontmatter still passes", () => {
+  // The passingDraft has no em dashes anywhere -> expanding the scan to
+  // title+description must NOT introduce a false positive.
+  const result = runQualityGates(passingDraft(), "/blog/test-slug");
+  assert.ok(!result.failures.some((f) => f.includes("Gate 12")), `clean draft must not trip Gate 12: ${JSON.stringify(result.failures)}`);
+});
+
 test("gate (a): rejects under-length body with a specific count", () => {
   const draft = passingDraft();
   draft.body = "short body. ".repeat(50); // ~100 words

@@ -149,6 +149,17 @@ test("gate (f): rejects subject under 30 chars", () => {
   assert.ok(result.failures.some((f) => f.includes("Subject too short")));
 });
 
+test("gate (g): an em dash in the SUBJECT line fails (field-coverage parity, I-008)", () => {
+  const draft = passingDraft();
+  draft.subject = "PSA 9 vs PSA 10 — the $200 question"; // valid length, em dash in subject
+  const result = runNewsletterQualityGates(draft, passingBlogPost());
+  assert.equal(result.passed, false);
+  assert.ok(
+    result.failures.some((f) => f.includes("em dash")),
+    `expected an em-dash failure for a subject em dash, got: ${JSON.stringify(result.failures)}`,
+  );
+});
+
 test("gate (f): rejects subject over 65 chars", () => {
   const draft = passingDraft();
   draft.subject = "This is a subject line that is much too long to fit in any inbox preview pane at all";

@@ -8,6 +8,16 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-01 — Gate 12 field-coverage fix: scan frontmatter (+ newsletter subject) — PATTERN I-008 fourth instance
+
+**Gate 12 scanned `body + faq` only, so post `66da22d` shipped an em dash in its frontmatter `description` (live in `<meta>`/OG/blog-index) with the gate reporting PASS.** Field-level coverage gap.
+
+- `quality-gates.ts` Gate 12 now scans `title + description + body + faq`. `newsletter/quality-gates.ts` gained parity: its em-dash gate scans the **subject** line too (the model writes it; it ships to the inbox). 4 new tests (em dash in description / title / newsletter subject fail; clean draft still passes). 680 tests / 0 fail.
+- Proved the extended gate catches the live violation (parsed the shipped `.mdx` → Gate 12 flagged the description), then fixed the one post with a single targeted edit (em dash → colon; no regeneration). Grep of ALL live posts' frontmatter found **only that one** violation — no mass edit.
+- PATTERNS I-008 (4th instance): the gap was field-level, not file-level. Lesson: when promoting a check to a gate, audit EVERY field the model writes (title/description/subject/preview), not just the body.
+
+---
+
 ## 2026-06-01 — CI fix: weekly-content workflow drifted to the deleted posts dir (PATTERN I-008 third instance)
 
 **Autonomous run `26776700075` failed exit 128: `weekly-content.yml` still `git add`-ed the orphan `app/blog/posts` after the V.2 (ADR-049) consolidation.** Directory-drift (I-008) reaching CI infra — the earlier guards only scanned `lib/` + the route.
@@ -15,7 +25,7 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 - **Fix:** the workflow's commit step now DERIVES the posts dir from `lib/blog/posts-dir.ts` POSTS_DIR via a node one-liner (no hardcoded path); no literal posts path left in any workflow.
 - **Standing guard:** `posts-dir-consistency.test.ts` now scans every `.github/workflows/*.yml` and fails if any carries a literal posts path (old or new). Revert/restore proof: reintroducing `git add app/blog/posts/` flips it red + pinpoints the line; restore → green. 676 tests / 0 fail.
 - **Full-stack verification (run `26783309941`, success):** the fixed workflow generated + committed a post (`66da22d`, psa-9-vs-psa-10). **Gate 12 held in production exactly as designed** — attempt 1 FAILED on 24 em dashes, attempt 2 on 1, attempt 3 PASSED; the shipped body has 0 em dashes, in-voice, hype-free. POSTS_DIR derivation logged "staging posts dir: app/(site)/blog/posts".
-- **Gap surfaced (NOT fixed — left for a follow-up):** the shipped post has **1 em dash in the frontmatter `description:` field** (line 3). Gate 12 scans `body + faq`, **not** the frontmatter description/title, so it passed. The description ships in `<meta>` + OG + the blog-index card. Post left untouched per the goal constraint. **Follow-up: extend Gate 12 (+ the brand-voice gates) to scan `frontmatter.description` + `frontmatter.title`.** PATTERNS I-008 updated with this third instance.
+- **Gap surfaced (NOT fixed — left for a follow-up):** the shipped post has **1 em dash in the frontmatter `description:` field** (line 3). Gate 12 scans `body + faq`, **not** the frontmatter description/title, so it passed. The description ships in `<meta>` + OG + the blog-index card. Post left untouched per the goal constraint. **Follow-up: extend Gate 12 (+ the brand-voice gates) to scan `frontmatter.description` + `frontmatter.title`.** PATTERNS I-008 updated with this third instance. **(RESOLVED same day — see the next entry: Gate 12 now scans title+description, newsletter gate scans the subject, the one live post fixed; I-008 fourth instance.)**
 
 ---
 
