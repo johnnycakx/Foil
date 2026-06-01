@@ -29,6 +29,10 @@ test("homepage is public", () => {
   assert.equal(isPublicRoute("/"), true);
 });
 
+test("buy-signal methodology page is public (ADR-053)", () => {
+  assert.equal(isPublicRoute("/pricing-methodology"), true);
+});
+
 test("login + magic-link callback are public (or the magic link loops)", () => {
   assert.equal(isPublicRoute("/login"), true);
   assert.equal(isPublicRoute("/auth/callback"), true);

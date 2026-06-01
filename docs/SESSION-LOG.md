@@ -8,6 +8,19 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-01 — Buy-signal MVP: compute + badge + /pricing-methodology + Gate 13 anti-hype (ROADMAP #32 / ADR-053)
+
+**Shipped Goal B — the buy signal, Foil's core job-to-be-done ("should I buy this now?").** A P0 premise check found the spec's `Sale[]`-median assumption doesn't match the data: PokeTrace exposes only aggregated 30-day averages + sale counts, not individual sales. Resolved by building both layers — a pure true-median function (`computeBuySignal`, ready for a future per-sale feed) and the threshold core used today (`classifyBuySignal`, fed the aggregate average) — and being honest about it everywhere ("30-day sold," not "median").
+
+- **Compute** (`lib/buy-signal/compute.ts`, pure/sync/no-deps): BELOW <90% / ABOVE >110% / AT ±10% / UNKNOWN when n<5. **Reference** (`lib/buy-signal/reference.ts`): raw-tier saleCount-weighted 30-day avg, **graded slabs excluded by construction**, shares `RAW_POKETRACE_TIERS` with the panel (I-008 drift guard), soft-fails to UNKNOWN.
+- **Badge** (`components/buy-signal-badge.tsx`): BELOW muted-green / AT gray / ABOVE amber-not-red / UNKNOWN→null; links to `/pricing-methodology`; CSS-only tooltip with n + window; no emoji, no "!", no "deal"/"discount" framing. Wired into `/cards/[slug]` **curated tier only**, above the sold-history chart.
+- **`/pricing-methodology`** (598 words, public, Gate-12-clean): window/thresholds/condition-filter/sample-floor/UNKNOWN/limitations, honest that the reference is an average not a median. Linked from the blog footer.
+- **Gate 13 (anti-hype)** in `quality-gates.ts`: HARD-bans hype terms + emojis on all generated copy (bare "moon" excluded so Moonbreon survives); SOFT-warns unquantified superlatives. Same severity model as Gate 12.
+- **Real-card smoke** (live PokeTrace): Charizard Base $373.54 n=168, Venusaur $207.59 n=32, Mewtwo $34.49 n=142 — all three tiers classify correctly; n≥5 floor behaved as designed, nothing to surface. **722 tests / 0 fail**, tsc clean, build clean, compliance 6/6, design:lint 0 new.
+- **Follow-up (added to ROADMAP):** B.1+ rollout to listing/search/watchlist surfaces; swap `reference.ts` to feed the true-median `computeBuySignal` once a per-sale feed exists; C.2 (#34) will feed creator sentiment-divergence into this signal.
+
+---
+
 ## 2026-06-01 — Gate 12 field-coverage fix: scan frontmatter (+ newsletter subject) — PATTERN I-008 fourth instance
 
 **Gate 12 scanned `body + faq` only, so post `66da22d` shipped an em dash in its frontmatter `description` (live in `<meta>`/OG/blog-index) with the gate reporting PASS.** Field-level coverage gap.

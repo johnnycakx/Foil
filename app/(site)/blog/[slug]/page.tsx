@@ -167,6 +167,12 @@ export default async function BlogPostPage({
             </ul>
           </aside>
         )}
+
+        <footer className="mt-12 border-t border-foil-navy/10 pt-6">
+          <Link href="/pricing-methodology" className="text-sm font-medium text-foil-navy underline-offset-4 hover:text-foil-coral hover:underline">
+            How Foil computes the buy signal
+          </Link>
+        </footer>
       </main>
     </>
   );

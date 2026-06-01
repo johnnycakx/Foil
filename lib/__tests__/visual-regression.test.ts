@@ -34,6 +34,7 @@ const PUBLIC_SURFACES: readonly string[] = [
   "app/(site)/legal/ebay-api-compliance/page.tsx",
   "app/(site)/newsletter/page.tsx",
   "components/email-capture.tsx",
+  "components/buy-signal-badge.tsx",
   // Session 42 / ADR-031: MDX components rendered inside blog post
   // bodies were missed by the Session 39 sweep — adding them to the
   // public-surfaces list extends the no-coral-default + no-raw-hex

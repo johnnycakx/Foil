@@ -75,6 +75,10 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // single email field with source='newsletter-landing'.
   { kind: "exact", path: "/newsletter" },
 
+  // Buy-signal methodology (ROADMAP #32 / ADR-053). Public, crawlable — it's
+  // the trust/defensibility page every buy-signal badge links to.
+  { kind: "exact", path: "/pricing-methodology" },
+
   // /start onboarding page (Task #20 / Session 38). Multi-card watchlist
   // signup — the new headline Twitter-CTA target. The page + the /api/start
   // POST + the /api/cards/search GET (typeahead) all must be reachable

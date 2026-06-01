@@ -1756,6 +1756,29 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 
 **Cross-refs.** `scripts/ingest-and-push.ps1`, `scripts/ingest-transcripts.ts` (`--cookies-from-browser`), `docs/runbooks/local-ingest-cron.md`, `.github/workflows/transcript-ingestion.yml` (dormant), [R-018](RISKS.md#r-018--ci-youtube-bot-block-on-transcript-ingestion), [ADR-050](#adr-050--creator-content-ingestion--attribution-gate).
 
+## ADR-053 — Buy-signal MVP + Gate 13 anti-hype
+
+**Date:** 2026-06-01 (Session 45)
+**Status:** Accepted. Implements ROADMAP #32 (Goal B).
+
+**Context.** Foil's job-to-be-done is "should I buy this card now?", but the per-card page only displayed prices. The buy signal turns price display into a buy read. The naive spec assumed a per-sale feed (`Sale[]` → median); the **P0 premise check found PokeTrace exposes only aggregated 30-day averages + a sale count per condition tier, not individual sales.** Shipping a median over data we don't have would be a fabricated precision, which the brand voice (no hype, no fake confidence) forbids.
+
+**Decision.**
+1. **Two-layer compute (`lib/buy-signal/compute.ts`, pure/sync/dependency-free).** `classifyBuySignal({askPrice, reference, sampleSize})` is the threshold core used in production today, fed the aggregate 30-day average. `computeBuySignal({sales, askPrice})` is the spec's true-median-over-individual-sales function, fully tested and ready for the day a per-sale feed exists. Thresholds: BELOW < ref×0.90, ABOVE > ref×1.10, AT within ±10%, **UNKNOWN when sampleSize < 5** (a thin sample is a coincidence, not a market read). `deltaPercent` is the exact distance, one decimal.
+2. **Reference resolver (`lib/buy-signal/reference.ts`).** saleCount-weighted 30-day average across `RAW_POKETRACE_TIERS` only — **graded slabs excluded by construction** (a PSA 10 trades at many times raw). Imports the same `RAW_POKETRACE_TIERS` constant the `SoldHistoryPanel` uses so the comparison universe can't drift (PATTERN I-008 guard). Picks the same default variant the panel headlines (?v= match, else most-traded). Soft-fails to a zero-sample reference → UNKNOWN → no badge.
+3. **Badge (`components/buy-signal-badge.tsx`).** BELOW muted green, AT neutral gray, **ABOVE amber not red** (above-market is information, not alarm), UNKNOWN → null. Copy is "Below / At / Above 30-day sold" — **"sold," not "median,"** because the reference is honestly an average today; **no "deal"/"discount" framing.** Whole badge links to `/pricing-methodology`; CSS-only hover/focus tooltip shows sample size + window. No emoji, no exclamation marks.
+4. **`/pricing-methodology` public page (598 words).** Documents the window, thresholds, condition filter, sample floor, the UNKNOWN state, and the known limitations — including the honest admission that the reference is currently an average, not a median. Content lives in `lib/buy-signal/methodology-content.ts` so the quality gates scan it in tests. Linked from the blog post footer. Added to PUBLIC_ROUTES.
+5. **Gate 13 (anti-hype) in `lib/seo/quality-gates.ts`.** Same severity model as Gate 12 (HARD blocks, SOFT warns). HARD-bans hype terms ("steal", "must-buy", "guaranteed", "easy money", "to the moon", "no-brainer", "amazing deal", …) + any emoji (`\p{Extended_Pictographic}`). Bare "moon" is deliberately excluded so "Moonbreon" doesn't false-match. SOFT-warns unquantified superlatives ("huge", "massive", "tons") with no nearby number. Defensibility lives in the calm, numeric voice; the gate enforces it structurally on all generated copy.
+6. **Scope:** curated tier only (the only tier with a live eBay ask), single card surface above the sold-history chart. Rollout to listing/search/watchlist is B.1+.
+
+**Consequences.**
+- R-008 held: the eBay ask is the live, force-dynamic, no-store `best.price`; only the PokeTrace sold side (already SWR-cached, legal to cache) feeds the reference.
+- The "average not median" reality is documented, not hidden; the true-median path is one data-source swap away (flip `reference.ts` to feed `computeBuySignal`).
+- Real-card smoke (Charizard Base $373.54 n=168, Venusaur $207.59 n=32, Mewtwo $34.49 n=142) classified all three tiers correctly with healthy samples; the n≥5 floor behaved as intended.
+- +three test files (`buy-signal`, `buy-signal-reference`, `copy-gate-anti-hype`); badge added to `visual-regression` PUBLIC_SURFACES.
+
+**Cross-refs.** `lib/buy-signal/{compute,reference,methodology-content}.ts`, `components/buy-signal-badge.tsx`, `app/(site)/pricing-methodology/page.tsx`, `app/(site)/cards/[slug]/page.tsx`, `lib/seo/quality-gates.ts` (Gate 13), ROADMAP #32, [R-008](RISKS.md).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

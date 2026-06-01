@@ -284,6 +284,18 @@ export function runQualityGates(
     );
   }
 
+  // Gate 13 (anti-hype — HARD on hype terms + emojis, ADR-053). Same field scan
+  // as Gate 12 (title + description + body + faq). Defensibility, not polish:
+  // the buy signal only works if Foil never sounds like a pump. SOFT warnings
+  // (unquantified superlatives) are surfaced by antiHypeCheck for linting but
+  // do NOT block (same soft treatment as the vague-number hedge).
+  const hype = antiHypeCheck(emDashScan);
+  if (hype.hard.length > 0) {
+    failures.push(
+      `Hype/forbidden term(s): ${hype.hard.map((h) => `"${h}"`).join(", ")}. BRAND-VOICE.md bans hype + emojis on user-visible copy; state the numbers and let the reader decide. (Gate 13)`,
+    );
+  }
+
   return { passed: failures.length === 0, failures };
 }
 
@@ -307,6 +319,56 @@ export function unattributedCreatorClaims(text: string, creatorNames?: string[])
     }
   }
   return hits;
+}
+
+// Gate 13 (anti-hype, ADR-053). HARD-banned hype phrases — matched on a leading
+// word boundary so e.g. "steal" doesn't fire inside "steally" and (crucially)
+// bare "moon" is NOT here: it would false-match "Moonbreon" (Umbreon VMAX, one
+// of the most-cited cards). The hype sense of moon is covered by "to the moon" /
+// "moonshot" / "mooning".
+export const HYPE_HARD_TERMS: readonly string[] = [
+  "steal",
+  "must-buy",
+  "must buy",
+  "guaranteed",
+  "easy money",
+  "to the moon",
+  "moonshot",
+  "mooning",
+  "amazing deal",
+  "no-brainer",
+  "no brainer",
+] as const;
+
+// SOFT: superlatives with no number nearby (analytical voice prefers a figure).
+const HYPE_SOFT_TERMS: readonly string[] = ["huge", "massive", "tons"];
+
+/**
+ * Gate 13 core. Returns HARD violations (banned hype terms + any emoji — no
+ * emojis on user-visible copy, ADR-053) and SOFT warnings (unquantified
+ * superlatives). HARD blocks; SOFT is lint-only. Exported for the copy-gate
+ * test that scans the badge strings + the methodology page.
+ */
+export function antiHypeCheck(text: string): { hard: string[]; soft: string[] } {
+  const hard: string[] = [];
+  for (const term of HYPE_HARD_TERMS) {
+    const re = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i");
+    if (re.test(text) && !hard.includes(term)) hard.push(term);
+  }
+  // Any emoji is a HARD violation (no emojis on buy-signal surfaces).
+  const emoji = text.match(/\p{Extended_Pictographic}/u);
+  if (emoji) hard.push(`emoji ${emoji[0]}`);
+
+  const soft: string[] = [];
+  for (const term of HYPE_SOFT_TERMS) {
+    const re = new RegExp(`\\b${term}\\b`, "i");
+    const m = re.exec(text);
+    if (!m) continue;
+    // soft-warn only if there's no digit within ~25 chars of the superlative.
+    const window = text.slice(Math.max(0, m.index - 25), m.index + term.length + 25);
+    if (!/\d/.test(window) && !soft.includes(term)) soft.push(term);
+  }
+  return { hard, soft };
 }
 
 /** Lowercased word tokens (letters/digits/$/%), for n-gram comparison. */
