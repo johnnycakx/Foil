@@ -8,6 +8,24 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-05-31 — Session 47.5 (cont.) / Goal V.2: content-pipeline reconciliation (R-015 resolved) — [ADR-049](DECISIONS.md#adr-049--content-pipeline-writeread-pinning--content-marker-verification-as-a-standing-closure-gate)
+
+**Closes the R-015 root cause V.1 surfaced: the autonomous engine WROTE `app/blog/posts/` while the live route READ `app/(site)/blog/posts/`, so autonomous posts silently never went live.**
+
+**P1 — one canonical dir.** New `lib/blog/posts-dir.ts` exports `POSTS_DIR = app/(site)/blog/posts`. Refactored all five consumers to import it: `posts-meta.ts` (reader), `generate-weekly-post.ts` (writer, was the dead dir), `content-engine.ts` (dedupe scan, was the dead dir), `refresh-internal-links.ts` + `competitive-gap-scan.ts` (readers, were the dead dir — the latter wasn't named in the goal; P0 caught it). Fixed the display-path literal in `internal-linking.ts`. `grep app/blog/posts` → 0 hits outside `posts-dir.ts`.
+
+**P2 — writer===reader pin.** `posts-dir-consistency.test.ts`: shared value resolves to `app/(site)/blog/posts` AND every consumer imports it + hardcodes no competing path. Drift fails the build.
+
+**P3 — orphan deleted.** Diffed all 4 shared slugs `app/blog/posts` vs `app/(site)/blog/posts` → byte-IDENTICAL (V.1 migration), so `rm -rf app/blog/posts` (+ the now-empty `app/blog/`) lost nothing. **P4** — `no-duplicate-blog-paths.test.ts` fails the build if the orphan reappears. **P5** — deleted `hello-world.mdx` (unlinked placeholder, predates BRAND-VOICE; `proxy.test.ts`'s sample slug repointed to a real post).
+
+**P6 — content-marker gate.** `content-marker-verification.test.ts` curls each live post + a card page and asserts rendered content (Moonbreon `$120-140` ABSENT, `$2,100` PRESENT, hedges ABSENT, 3 dead `/blog` links ABSENT, "Foil's scan data shows" ABSENT, japanese-sar 200). Skips offline (`CONTENT_VERIFY_BASE_URL` unset), runs against the deploy when set. Promoted to a standing closure-gate in CLAUDE.md (extends [PATTERNS I-006](PATTERNS.md) from HTTP-status to rendered-content; new [I-008](PATTERNS.md) write/read mismatch).
+
+**P7 — gates.** 654 tests (647 pass, 7 content-marker live tests skip offline), tsc clean, build 5.0s, compliance 6/6, design:lint 0 new, /security-review (P7).
+
+**Past-autonomous-posts accounting.** The maintained lineage now live in `app/(site)/blog/posts/`: the 4 fact-checked + voice-cleaned posts (incl. the smoke-test posts `1dc2cca` + `c91b794`). Future Mon/Thu posts land there directly. **R-015 → resolved; ROADMAP #33 done; ADR-049 written.** Chrome em dashes (header aria-label + CardScannerEmbed tagline) remain a separate site-wide voice follow-up (out of the post-body marker scope).
+
+---
+
 ## 2026-05-31 — Session 47.5 (cont.) / Goal V.1: voice-debt cleanup of the 4 fact-checked posts — [ADR-048](DECISIONS.md#adr-048--brand-voice-integration-into-the-autonomous-content--newsletter-pipelines)
 
 **Follow-through on the Goal V P5 finding: the 4 posts the 47.4 fact-check corrected still failed the brand-voice check (vague hedges + em dashes, not fabrications). This cleans them.**

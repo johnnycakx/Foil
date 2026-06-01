@@ -1666,6 +1666,27 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 
 **Cross-refs.** `docs/BRAND-VOICE.md`, `lib/seo/voice-check.ts`, `lib/seo/quality-gates.ts` (BANNED_PHRASES), `lib/seo/content-engine.ts` (SYSTEM_PROMPT), `lib/newsletter/draft-generator.ts` (NEWSLETTER_SYSTEM_PROMPT), `lib/__tests__/seo-voice-check.test.ts`, [ADR-046 gates 9+10](#adr-046--tiered-per-card-rendering--catalog-expansion-to-1000-cards), [PATTERNS I-004](PATTERNS.md), R-001, R-010.
 
+## ADR-049 — Content-pipeline write/read pinning + content-marker verification as a standing closure gate
+
+**Date:** 2026-05-31 (Session 47.5 / Goal V.2)
+**Status:** Accepted. Resolves [R-015](RISKS.md#r-015--content-engine-write-path--blog-read-path-autonomous-posts-dont-go-live).
+
+**Context.** Goal V.1 discovered that the autonomous content engine WROTE posts to `app/blog/posts/` while the live blog route READ from `app/(site)/blog/posts/` (two different directories). Consequence: every autonomously-generated post silently never went live, and Session 47.4's fact-check edited the dead dir too, so its corrections never reached production (the live Moonbreon post still served the `$120-140` fabrication). The directories had diverged because the `(site)` route-group migration (`922ff8a`) copied posts into `(site)` but never re-pointed the engine. Two failure modes compounded: (1) the writer/reader split itself, and (2) every prior verification checked HTTP status (200 OK), never the rendered *content* — so a 200 serving stale fabrications looked healthy.
+
+**Decision.**
+1. **One canonical directory constant.** `lib/blog/posts-dir.ts` exports `POSTS_DIR = app/(site)/blog/posts` (the dir the route reads). Every writer + reader imports it: `posts-meta.ts`, `generate-weekly-post.ts`, `content-engine.ts`, `refresh-internal-links.ts`, `competitive-gap-scan.ts`. No module hardcodes a posts path anymore.
+2. **Pin writer === reader.** `lib/__tests__/posts-dir-consistency.test.ts` asserts the shared value resolves to `app/(site)/blog/posts` AND that every consumer imports it (and hardcodes no competing path). The split cannot silently recur.
+3. **Delete the orphan + guard.** Removed `app/blog/posts/` (verified byte-identical to the live copies first) and the unlinked `hello-world.mdx` placeholder. `lib/__tests__/no-duplicate-blog-paths.test.ts` fails the build if `app/blog/posts/` ever reappears.
+4. **Content-marker verification as a standing closure gate.** `lib/__tests__/content-marker-verification.test.ts` curls each live blog post + a card page and asserts the rendered content is correct (fabrications/dead-links absent, the corrected `$2,100` present, `japanese-sar` 200). It SKIPS offline (`CONTENT_VERIFY_BASE_URL` unset) and RUNS against the deploy when set. Promoted in CLAUDE.md to a closure-gate step alongside `/security-review`. This extends [PATTERNS I-006](PATTERNS.md) from "is it 200?" to "is the content right?".
+
+**Consequences.**
+- Autonomous Mon/Thu posts now land where the site reads them; the engine's investment (ADR-006) is no longer silently defeated.
+- A new content directory or a re-pointed writer that drifts from the reader fails the build (P2 + P4 tests), not silently in production.
+- The closure gate now catches the class of bug where HTTP is green but content is wrong. Cost: the live content check needs a deploy URL, so it's a post-deploy step (skipped in the offline unit run by design).
+- The brand-voice rule still applies site-wide: chrome em dashes (header `aria-label`, a CardScannerEmbed tagline) remain a separate follow-up; the gate intentionally scopes to post-body markers, not chrome.
+
+**Cross-refs.** `lib/blog/posts-dir.ts`, `lib/__tests__/{posts-dir-consistency,no-duplicate-blog-paths,content-marker-verification}.test.ts`, [R-015](RISKS.md), [PATTERNS I-008 + I-006 + I-003](PATTERNS.md), [ROADMAP #33](ROADMAP.md), ADR-006.
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

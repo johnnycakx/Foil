@@ -6,6 +6,20 @@ Append new entries at the top. When an entry is promoted, leave it here with a `
 
 ---
 
+## I-008 — Write path ≠ read path in autonomous pipelines (extends I-003)
+
+**Spotted:** Goal V.1/V.2, 2026-05-31. The autonomous content engine wrote blog posts to `app/blog/posts/`; the live route read `app/(site)/blog/posts/`. Different directories. So every autonomous post silently never went live, and two rounds of edits (the 47.4 fact-check, the first V.1 voice pass) corrected files nobody served.
+
+**Shape.** Whenever one process *produces* artifacts into a location and another *consumes* them from a location, and those two locations are specified **independently** (two hardcoded paths, two env vars, two config keys), they can drift. The drift is silent because each side succeeds on its own terms: the writer writes (exit 0), the reader reads whatever is there (maybe stale, maybe empty). Nothing compares the two endpoints. This is the [I-003](#i-003--silent-autonomy-chain-regressions-integrations-can-disconnect-because-nothing-happens) "nothing happens" failure mode, specialized to a shared *data location* instead of a webhook/deploy hop. Candidates beyond the blog dir: a cache writer vs reader, a bake script's output path vs the app's import path, an upload bucket vs the serve bucket, a queue producer's topic vs the consumer's topic.
+
+**The general fix.** Give the location exactly ONE definition (a shared constant / single env var) that both sides import, and add a test that pins producer-path === consumer-path so a refactor can't re-split them. Then, because a path can be right yet the *content* wrong, verify the consumed artifact's content end-to-end, not just its presence (this is where I-008 meets [I-006](#i-006--green-build--green-tests-are-blind-to-runtime-config-conflicts-verify-on-a-real-deploy): a 200 OK serving stale content is worse than a 500).
+
+**Instances.** (1) `app/blog/posts` (engine write) vs `app/(site)/blog/posts` (route read) → fixed by `lib/blog/posts-dir.ts` + `posts-dir-consistency.test.ts` + `no-duplicate-blog-paths.test.ts` ([ADR-049](DECISIONS.md#adr-049--content-pipeline-writeread-pinning--content-marker-verification-as-a-standing-closure-gate)). (Watch for a second instance to harden the "shared-constant + equality-test" recipe into its own ADR.)
+
+**Promotion trigger.** Second write/read-path drift incident → promote the recipe to a dedicated ADR.
+
+---
+
 ## I-006 — Green build + green tests are blind to runtime-config conflicts; verify on a real deploy
 
 **Spotted:** Session 47.5, when an ISR refactor that passed the build + 626 tests 500'd on every page in production.
