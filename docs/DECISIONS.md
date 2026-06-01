@@ -1729,6 +1729,8 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 - Existing `passingDraft` test fixture had 3 em dashes (recast to commas/parens) so the "passes every gate" test still holds — confirming the gate bites real content.
 - This is the general principle for promoting a lint to a gate: **hard-gate only detectors with zero false-positive risk; keep judgment-call detectors soft.** Newsletter gates are a separate set (`runNewsletterQualityGates`) and were left unchanged this round.
 
+**Amendment (2026-06-01).** The newsletter gate set now has parity: `runNewsletterQualityGates` gained the same HARD em-dash gate (gate g), checking both the plain-text and HTML bodies, with an anchored test (em-dash newsletter → FAIL) and the newsletter `passingDraft` fixture recast. The hedge detector stays soft on the newsletter side too.
+
 **Cross-refs.** `lib/seo/quality-gates.ts` (Gate 12), `lib/seo/voice-check.ts`, `lib/__tests__/attribution-gate.test.ts`, [ADR-050](#adr-050--creator-content-ingestion--attribution-gate), [ADR-048](#adr-048--brand-voice-integration-into-the-autonomous-content--newsletter-pipelines), [ROADMAP #34](ROADMAP.md).
 
 ## How to add an ADR

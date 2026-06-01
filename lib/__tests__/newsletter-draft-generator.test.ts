@@ -43,9 +43,9 @@ function passingHtmlBody(): string {
   const filler =
     "Inspect corners, edges, surface, and centering before you commit to a grading submission. " .repeat(40);
   return [
-    "<p>Quick read this week — that $313 Charizard you scrolled past on Marketplace might be a $30,100 PSA 10 candidate.</p>",
+    "<p>Quick read this week: that $313 Charizard you scrolled past on Marketplace might be a $30,100 PSA 10 candidate.</p>",
     '<p>The grading math: $25 per submission via PSA, return in 8 weeks, sell into a market that hasn\'t cooled.</p>',
-    "<p>Foil's scan data this quarter shows where the misreads cluster — set codes and collector numbers, never artwork.</p>",
+    "<p>Foil's scan data this quarter shows where the misreads cluster: set codes and collector numbers, never artwork.</p>",
     '<p><a href="/blog/test-post">Read the full post →</a></p>',
     '<p><a href="https://foiltcg.com/upload">Try Foil free →</a></p>',
     `<p>${filler}</p>`,

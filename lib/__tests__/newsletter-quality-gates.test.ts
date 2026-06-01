@@ -29,9 +29,9 @@ function passingBlogPost(): NewsletterBlogPostInput {
 
 function passingDraft(): NewsletterDraft {
   const html = [
-    "<p>Quick read this week — that $313 Charizard you scrolled past on Marketplace might be a $30,100 PSA 10 candidate.</p>",
+    "<p>Quick read this week: that $313 Charizard you scrolled past on Marketplace might be a $30,100 PSA 10 candidate.</p>",
     '<p>The grading math: $25 per submission via PSA, return in 8 weeks, sell into a market that hasn\'t cooled.</p>',
-    "<p>Foil's scan data this quarter shows where the misreads cluster — set codes and collector numbers, never artwork.</p>",
+    "<p>Foil's scan data this quarter shows where the misreads cluster: set codes and collector numbers, never artwork.</p>",
     '<p><a href="/blog/test-post">Read the full post →</a></p>',
     '<p><a href="https://foiltcg.com/upload">Try Foil free →</a></p>',
   ].join("");
@@ -61,6 +61,17 @@ function passingDraft(): NewsletterDraft {
 test("passes when every gate is satisfied", () => {
   const result = runNewsletterQualityGates(passingDraft(), passingBlogPost());
   assert.equal(result.passed, true, `expected pass, got failures: ${result.failures.join("; ")}`);
+});
+
+test("gate (g) HARD: a newsletter draft containing an em dash fails (ADR-051 parity)", () => {
+  const draft = passingDraft();
+  draft.htmlBody = draft.htmlBody.replace("</p>", " — and here's the catch.</p>");
+  const result = runNewsletterQualityGates(draft, passingBlogPost());
+  assert.equal(result.passed, false);
+  assert.ok(
+    result.failures.some((f) => f.includes("em dash")),
+    `expected an em-dash failure, got: ${JSON.stringify(result.failures)}`,
+  );
 });
 
 test("gate (a): rejects when word count is below 300", () => {
