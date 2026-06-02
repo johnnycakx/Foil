@@ -206,6 +206,8 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 2. Short-TTL stale-while-revalidate on the curated best-listing IF eBay's terms permit (R-008 currently forbids caching listing data — would need a compliance re-read).
 3. Demote low-traffic curated cards to long-tail (no Browse call) based on `browse_calls` + analytics.
 
+**Held against this risk (2026-06-01).** The buy-signal badge listing/search rollout (ROADMAP #32.2 / B.2) was surfaced as a Browse-quota concentration risk and **held** by a P0 premise check. The badge needs a live eBay ask per card, so putting it on the `force-static` catalog grids (`/cards/sets/[set-id]`, 16–100+ tiles) would fire one Browse call per tile at render — multiplying quota by the grid size and forcing those pages off static (R-008 forbids caching the eBay side). Decision: keep the badge per-card-only; gate the grid rollout on this risk being retired (the #10 Growth-Check ceiling lift) before revisiting.
+
 ---
 
 ## R-013 — Long-tail per-card render cost (ISR blocked by searchParams)

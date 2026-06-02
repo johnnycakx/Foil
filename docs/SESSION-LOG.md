@@ -8,6 +8,19 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-01 — Buy-signal listing/search rollout (B.2) HELD by P0 premise check (docs-only; ROADMAP #32.2 / R-012)
+
+**Asked to roll the badge out to the listing + search surfaces; the P0 premise check stopped it before any code.** The badge needs a live eBay ask + the listing's title for condition inference — fine on the `force-dynamic` per-card page, but the targets are `force-static` catalog-browse surfaces by design:
+- `/cards` index + its search → `force-static` 24h; search is a pure client-side DOM filter over set tiles (no card-level data).
+- `/cards/sets/[set-id]` → `force-static` 1h, `dynamicParams=false`; 16–100+ card tiles, zero live-listing fetches.
+- `/start` typeahead → SDK name-match, no price/listing.
+
+Putting the live-ask badge on a set grid means **one Browse call per card tile at render** (16 for Base Set, 60–100+ for big modern sets), which forces those pages dynamic (R-008 forbids caching the eBay side), blows eBay's ~5,000/day ceiling ([R-012](RISKS.md#r-012--ebay-browse-quota-concentration-at-1k-routes)), and endangers the pending Growth Check (#10).
+
+**Three options surfaced:** (1) hold — keep it per-card-only; (2) a cacheable TCGplayer-market-vs-sold variant (no Browse calls, but a weaker market-vs-sold read that would show "At" on most cards); (3) ship the live-ask badge and accept the quota hit. **John chose (1) Hold.** Rationale: the buy signal is architecturally a per-card feature, and the I-009 lesson (don't ship a signal whose semantics — or here, cost — don't hold up) argues against diluting it onto surfaces where we can't honestly/cheaply compute it. Logged as ROADMAP **#32.2**, gated on #10 (Growth-Check ceiling lift) **plus ≥1 week of `/cards/[slug]` hit-rate data** (if the per-card badge rarely fires, a grid rollout is low-value regardless of quota). R-012 amended to record the held rollout. Docs-only; no code change.
+
+---
+
 ## 2026-06-01 — Buy-signal RE-MOUNTED: condition-matched comparison + outlier guard + live-smoke (ROADMAP #32.1 / PATTERN I-009)
 
 **Closed #32.1 — fixed the false-BELOW bug at its root (comparison basis) and re-enabled the badge.** P0 premise check confirmed PokeTrace exposes per-tier `avg30d`, so condition-matched references are buildable (no data-source STOP needed).
