@@ -74,6 +74,12 @@ function SiteFooter() {
               Newsletter
             </Link>
             <Link
+              href="/pricing-methodology"
+              className="transition hover:text-foil-navy"
+            >
+              Methodology
+            </Link>
+            <Link
               href="/legal/privacy"
               className="transition hover:text-foil-navy"
             >
