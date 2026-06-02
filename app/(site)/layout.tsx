@@ -67,7 +67,7 @@ function SiteFooter() {
           <FooterEmailCapture />
         </div>
         <div className="flex flex-col items-start justify-between gap-3 border-t border-foil-navy/10 pt-6 text-sm text-foil-slate sm:flex-row sm:items-center">
-          <p>© {new Date().getFullYear()} Foil. The best price on any Pokémon card.</p>
+          <p>© {new Date().getFullYear()} Foil TCG, LLC · Built by a Level-4 TCGplayer seller</p>
           <nav className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <Link
               href="/newsletter"
