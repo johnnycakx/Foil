@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Fraunces } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -80,6 +81,10 @@ export default function RootLayout({
           Impact-Site-Verification: b02776dd-2202-478a-9913-1cbc087e7931
         </span>
         {children}
+        {/* Vercel Analytics (F1) — first-party page-view + Web-Vitals data so a
+            paid creator pilot is measurable beyond raw EPN clicks. Loads
+            after-interactive; does not block render. */}
+        <Analytics />
       </body>
     </html>
   );

@@ -23,6 +23,7 @@
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.0",
     "@types/mdx": "^2.0.13",
+    "@vercel/analytics": "^2.0.1",
     "cheerio": "^1.2.0",
     "gray-matter": "^4.0.3",
     "next": "16.2.6",
