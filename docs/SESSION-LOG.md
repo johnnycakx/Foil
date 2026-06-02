@@ -8,6 +8,17 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-01 — Buy-signal badge DISABLED post-verify (condition-mismatch surfaced live) — ADR-053 amendment / ROADMAP #32.1
+
+**Live verification of the just-shipped badge caught a systematic correctness bug, so we disabled the mount the same day.** Curling production showed every curated card flashing a large green BELOW — Charizard Base **−88.5%**, Venusaur **−75.9%**, Mewtwo **−39.1%**. Root cause is a comparison-basis mismatch (not a compute bug): `getBestListing` returns the *cheapest quality-surviving* listing (the live Charizard ask was a ~$43 "Base Set Holo！！！" played/junk listing), while the reference is the **NM-weighted** raw 30-day sold avg (~$374). Cheapest-any-condition vs NM-weighted-average always reads BELOW, presenting as a hype "amazing deal" — the exact thing the brand + my new Gate 13 exist to prevent.
+
+- **Why the step-9 smoke missed it:** I tested asks derived *from* the reference (±20%), which by construction can't reveal an ask/reference condition mismatch. A real-ask verification was the only thing that could, and that's now the documented closure rule for any two-independent-numbers signal (ADR-053 amendment).
+- **Action (John chose "disable, then fix properly"):** removed the badge mount + the 3 imports + the compute block from `app/(site)/cards/[slug]/page.tsx`. **Kept everything else** — `lib/buy-signal/*`, the badge component, `/pricing-methodology`, Gate 13, all tests. Pure de-wiring, no logic deleted.
+- **Follow-up #32.1 (added to ROADMAP NEXT):** re-enable once the reference is condition-matched to the listing's inferred condition (`inferConditionLabel(best.title)` → that tier's avg) AND an outlier guard suppresses implausible sub-lowest-raw-tier asks (junk/fake listings the picker accepted — ties to ADR-026 / R-010). Re-verify on live Charizard/Venusaur/Mewtwo before claiming done.
+- Tests/tsc/build re-run green after de-wiring; prod re-verified badge-free.
+
+---
+
 ## 2026-06-01 — Buy-signal MVP: compute + badge + /pricing-methodology + Gate 13 anti-hype (ROADMAP #32 / ADR-053)
 
 **Shipped Goal B — the buy signal, Foil's core job-to-be-done ("should I buy this now?").** A P0 premise check found the spec's `Sale[]`-median assumption doesn't match the data: PokeTrace exposes only aggregated 30-day averages + sale counts, not individual sales. Resolved by building both layers — a pure true-median function (`computeBuySignal`, ready for a future per-sale feed) and the threshold core used today (`classifyBuySignal`, fed the aggregate average) — and being honest about it everywhere ("30-day sold," not "median").

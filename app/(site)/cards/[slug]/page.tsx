@@ -25,9 +25,6 @@ import { LiveTimestamp } from "@/components/live-timestamp";
 import { SoldHistoryPanel } from "@/components/cards/sold-history-panel";
 import { WatchlistForm } from "@/components/cards/watchlist-form";
 import { deriveAvailableVariants } from "@/lib/poketrace/variant";
-import { BuySignalBadge } from "@/components/buy-signal-badge";
-import { classifyBuySignal } from "@/lib/buy-signal/compute";
-import { resolveSoldReference } from "@/lib/buy-signal/reference";
 
 // Rendering mode (ADR-047, amended). This page reads `searchParams` (the `v`
 // variant + `c` condition URL state, ADR-043) on the server, which forces
@@ -230,20 +227,6 @@ export default async function CardPage({
 
   const related = relatedCardsForSlug(slug, 6);
 
-  // Buy signal (ROADMAP #32 / ADR-053): classify the live ask against the
-  // variant's raw 30-day sold average. Curated tier only (the only tier with a
-  // live ask). Renders nothing when the sample is thin (UNKNOWN -> null badge),
-  // so a card with no/sparse sold data simply shows no signal.
-  let buySignal = null;
-  if (tier === "curated" && best) {
-    const ref = await resolveSoldReference(card.variants, selectedVariant);
-    buySignal = classifyBuySignal({
-      askPrice: best.price,
-      reference: ref.reference,
-      sampleSize: ref.sampleSize,
-    });
-  }
-
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-5 pt-10 pb-20 sm:px-8 sm:pt-16">
       <script
@@ -318,14 +301,13 @@ export default async function CardPage({
             {/* Variants + market range (TCGplayer) — Session 41 / ADR-030. */}
             <CardVariantsSection card={card} currentBestPriceUsd={best?.price ?? null} />
 
-            {/* Buy signal (ROADMAP #32 / ADR-053) — calm read on the live ask
-                vs the 30-day sold average. Mounted above the sold-history /
-                price chart; renders nothing on a thin sample (UNKNOWN). */}
-            {buySignal && buySignal.tier !== "UNKNOWN" && (
-              <div className="mt-10">
-                <BuySignalBadge signal={buySignal} />
-              </div>
-            )}
+            {/* Buy-signal badge mount intentionally removed pending the
+                condition-matched + outlier-guarded rewire (ROADMAP #32.1 /
+                ADR-053 amendment). The lib (compute/reference), the badge
+                component, /pricing-methodology, and Gate 13 all remain; only
+                the live wiring is disabled because comparing the cheapest live
+                listing (any condition) against the NM-weighted sold average
+                produced a systematically misleading large BELOW on every card. */}
 
             {/* Sold-history (PokeTrace) — Session 49 / ADR-042. Variant-aware
                 30-day sold averages. SSR-only; ?v= chip links re-render. */}
