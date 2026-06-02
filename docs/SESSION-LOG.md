@@ -8,6 +8,21 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-01 — Buy-signal RE-MOUNTED: condition-matched comparison + outlier guard + live-smoke (ROADMAP #32.1 / PATTERN I-009)
+
+**Closed #32.1 — fixed the false-BELOW bug at its root (comparison basis) and re-enabled the badge.** P0 premise check confirmed PokeTrace exposes per-tier `avg30d`, so condition-matched references are buildable (no data-source STOP needed).
+
+- **`lib/buy-signal/condition-infer.ts` (new, pure):** infers the live listing's condition from its title — graded grades, raw phrases, abbreviations — with market/lot/proxy guards first. Conservative: foreign-market, lots, reproductions, vague "played", or no-keyword titles → UNKNOWN/low. 25-assertion table test against real eBay title shapes (incl. the actual production Charizard title); confirmed no false-positive abbreviation matches on common vintage titles.
+- **`reference.ts`:** `resolveConditionMatchedReference` returns the *matched-tier* 30-day avg only (GRADED → graded aggregate), **never** cross-condition fallback (that was the bug). Exposes `lowestRawReferenceFromHistory` for the guard.
+- **`compute.ts::classifyConditionMatched`:** UNKNOWN (+`reason`) on unknown listing tier, no matched-tier data, or **ask < 50% of the lowest raw-tier sold avg** (junk/fake guard, `OUTLIER_FLOOR_FRACTION`). +8 condition-matched/outlier tests.
+- **`buy-signal-live-smoke.test.ts` (new, standing):** the PATTERN I-009 codification — runs the full pipeline on the REAL flagship listings, asserts no large-false-BELOW (< −50%). Creds-gated (skips credentialless CI; closure runs it with `--env-file=.env.local`).
+- **Methodology:** +175-word "Matching the listing to its condition" section (≤200 growth, Gate 12 + 13 clean).
+- **Badge re-mounted** on `/cards/[slug]` curated tier. **758 tests / 0 fail** (10 skipped: 7 pre-existing + 3 live-smoke without local eBay cert), tsc clean, build clean, compliance 6/6, design:lint 0 new.
+- **Live verification (real prod asks + live PokeTrace):** all three flagships now read **UNKNOWN → no badge**, because their current eBay listings carry no condition keyword in the title. That is the correct, honest outcome: a missing badge beats a confident-wrong one. The badge appears only on a confidently-condition-matched listing above the outlier floor with ≥5 matched-tier sales.
+- **PATTERN I-009** captured: code-passing gates are blind to signal *semantics*; reference-derived synthetic smoke tests can't catch comparison-basis bugs — only a real-source live-smoke can, and it's now standing.
+
+---
+
 ## 2026-06-01 — Buy-signal badge DISABLED post-verify (condition-mismatch surfaced live) — ADR-053 amendment / ROADMAP #32.1
 
 **Live verification of the just-shipped badge caught a systematic correctness bug, so we disabled the mount the same day.** Curling production showed every curated card flashing a large green BELOW — Charizard Base **−88.5%**, Venusaur **−75.9%**, Mewtwo **−39.1%**. Root cause is a comparison-basis mismatch (not a compute bug): `getBestListing` returns the *cheapest quality-surviving* listing (the live Charizard ask was a ~$43 "Base Set Holo！！！" played/junk listing), while the reference is the **NM-weighted** raw 30-day sold avg (~$374). Cheapest-any-condition vs NM-weighted-average always reads BELOW, presenting as a hype "amazing deal" — the exact thing the brand + my new Gate 13 exist to prevent.

@@ -4,7 +4,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { computeBuySignal, classifyBuySignal, isGradedTier, type Sale } from "../buy-signal/compute.ts";
+import { computeBuySignal, classifyBuySignal, classifyConditionMatched, isGradedTier, OUTLIER_FLOOR_FRACTION, type Sale } from "../buy-signal/compute.ts";
 
 const NOW = Date.parse("2026-06-01T00:00:00Z");
 const day = 24 * 60 * 60 * 1000;
@@ -118,4 +118,108 @@ test("compute: far outliers shift the median far less than a mean", () => {
 test("isGradedTier recognizes slabs but not raw tiers", () => {
   for (const g of ["PSA_10", "PSA 9", "BGS_9.5", "CGC_10", "SGC_10"]) assert.ok(isGradedTier(g), g);
   for (const r of ["NEAR_MINT", "LIGHTLY_PLAYED", "MODERATELY_PLAYED", "DAMAGED"]) assert.ok(!isGradedTier(r), r);
+});
+
+// --- Condition-matched classifier + outlier guard (ROADMAP #32.1 / I-009) ---
+
+test("classifyConditionMatched: UNKNOWN listing tier -> UNKNOWN with a reason (the I-009 fix)", () => {
+  // The exact production failure: cheapest ask vs NM reference, but the listing
+  // condition is unknown. Old code said BELOW; new code refuses.
+  const sig = classifyConditionMatched({
+    askPrice: 43,
+    listingTier: "UNKNOWN",
+    conditionReference: 374,
+    conditionSampleSize: 168,
+    lowestRawReference: 150,
+  });
+  assert.equal(sig.tier, "UNKNOWN");
+  assert.match(sig.reason ?? "", /could not be determined/);
+});
+
+test("classifyConditionMatched: no sold data for the matched tier -> UNKNOWN", () => {
+  const sig = classifyConditionMatched({
+    askPrice: 80,
+    listingTier: "MP",
+    conditionReference: null,
+    conditionSampleSize: 0,
+    lowestRawReference: 150,
+  });
+  assert.equal(sig.tier, "UNKNOWN");
+  assert.match(sig.reason ?? "", /no 30-day sold data for the MP/);
+});
+
+test("classifyConditionMatched: outlier guard fires below half the lowest raw tier", () => {
+  // $43 ask, lowest raw (DMG) sold avg $150 -> floor is $75 -> $43 < $75 -> UNKNOWN.
+  const sig = classifyConditionMatched({
+    askPrice: 43,
+    listingTier: "NM",
+    conditionReference: 374,
+    conditionSampleSize: 168,
+    lowestRawReference: 150,
+  });
+  assert.equal(sig.tier, "UNKNOWN");
+  assert.match(sig.reason ?? "", /implausible outlier/);
+});
+
+test("classifyConditionMatched: just ABOVE the outlier floor still classifies", () => {
+  // floor = 150 * 0.5 = 75; ask 76 is above the floor and < NM ref*0.9 -> BELOW.
+  const sig = classifyConditionMatched({
+    askPrice: 76,
+    listingTier: "DMG",
+    conditionReference: 150,
+    conditionSampleSize: 12,
+    lowestRawReference: 150,
+  });
+  assert.equal(sig.tier, "BELOW");
+  assert.equal(sig.reason, undefined);
+  assert.equal(OUTLIER_FLOOR_FRACTION, 0.5);
+});
+
+test("classifyConditionMatched: condition-matched happy path (NM ask vs NM ref -> AT)", () => {
+  const sig = classifyConditionMatched({
+    askPrice: 360,
+    listingTier: "NM",
+    conditionReference: 374,
+    conditionSampleSize: 168,
+    lowestRawReference: 150,
+  });
+  assert.equal(sig.tier, "AT");
+  assert.equal(sig.median, 374);
+});
+
+test("classifyConditionMatched: graded ask vs graded reference -> real tier (BELOW)", () => {
+  // A PSA-10 listing compared against the graded sold avg, well above the raw floor.
+  const sig = classifyConditionMatched({
+    askPrice: 3000,
+    listingTier: "GRADED",
+    conditionReference: 4000,
+    conditionSampleSize: 50,
+    lowestRawReference: 150,
+  });
+  assert.equal(sig.tier, "BELOW");
+  assert.ok((sig.deltaPercent ?? 0) < 0);
+});
+
+test("classifyConditionMatched: matched LP ask reads AT against LP ref (not BELOW vs NM)", () => {
+  // The crux of I-009: a $90 LP ask is AT the $92 LP sold avg — NOT a -76% BELOW
+  // it would have flashed against the $374 NM-weighted average.
+  const sig = classifyConditionMatched({
+    askPrice: 90,
+    listingTier: "LP",
+    conditionReference: 92,
+    conditionSampleSize: 20,
+    lowestRawReference: 60,
+  });
+  assert.equal(sig.tier, "AT");
+});
+
+test("classifyConditionMatched: thin matched sample (<5) still yields UNKNOWN via the core", () => {
+  const sig = classifyConditionMatched({
+    askPrice: 80,
+    listingTier: "MP",
+    conditionReference: 100,
+    conditionSampleSize: 3,
+    lowestRawReference: 60,
+  });
+  assert.equal(sig.tier, "UNKNOWN");
 });

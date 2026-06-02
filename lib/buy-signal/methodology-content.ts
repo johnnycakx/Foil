@@ -27,6 +27,11 @@ export const METHODOLOGY_SECTIONS: MethodologySection[] = [
       "A raw card and a graded slab are different markets, and a PSA 10 can trade at many times the raw price. When the asking price is for a raw copy, graded-slab sales are excluded from the reference. Comparing across condition would produce a confident number that means nothing, so we do not do it. Condition is read from the data we have, which is itself imperfect, and the limitations section below is honest about where that can go wrong.",
   },
   {
+    heading: "Matching the listing to its condition",
+    body:
+      "A buy signal is only honest if the asking price and the sold reference describe the same thing. The live listing rarely states its condition in a structured field, so we infer it from the title: explicit grades like PSA 10, raw phrases like Near Mint or Lightly Played, and their abbreviations. We then compare the ask against the sold average for that exact condition, never against a different one. When the title gives no clear condition, or names a different market, a lot, or a likely reproduction, we infer nothing and show no signal. We also refuse to classify an ask that sits below half the lowest sold tier on the card: at that point it is almost certainly damaged, mislabeled, or not the card it claims to be, and calling it a deal would be the opposite of useful. This is deliberately conservative. A missing signal means we were not confident enough to stand behind one, which is the honest outcome on a thin or mismatched listing.",
+  },
+  {
     heading: "Why some cards show no signal",
     body:
       "If fewer than five comparable sales exist in the 30-day window, we show no signal at all. A reference built from two or three sales is not a market read, it is a coincidence, and a badge would lend it a confidence it has not earned. Blank is the correct output for a thin sample. You will see this most on low-volume cards, vintage, and obscure printings, and that is working as intended rather than a gap to paper over.",

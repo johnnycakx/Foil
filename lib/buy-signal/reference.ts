@@ -17,6 +17,8 @@
 import { getSoldHistory, type SoldHistory, type SoldStat, type SoldSource } from "../poketrace/by-uuid.ts";
 import type { PoketraceVariant } from "../poketrace/variant.ts";
 import { RAW_POKETRACE_TIERS } from "../cards/conditions.ts";
+import { isGradedTier } from "./compute.ts";
+import type { ListingConditionTier } from "./condition-infer.ts";
 
 // ebay/tcgplayer first (per-condition US tiers); cardmarket last (EU AGGREGATED
 // roll-up). Mirrors SoldHistoryPanel's SOURCES order.
@@ -104,5 +106,130 @@ export async function resolveSoldReference(
     return rawReferenceFromHistory(selected.history);
   } catch {
     return { reference: null, sampleSize: 0 };
+  }
+}
+
+// --- Condition-matched reference (ROADMAP #32.1 / ADR-053 / PATTERN I-009) ---
+
+/** Inferred listing tier → PokeTrace raw tier key. GRADED/UNKNOWN handled out of band. */
+const LISTING_TIER_TO_POKETRACE: Record<"NM" | "LP" | "MP" | "HP" | "DMG", string> = {
+  NM: "NEAR_MINT",
+  LP: "LIGHTLY_PLAYED",
+  MP: "MODERATELY_PLAYED",
+  HP: "HEAVILY_PLAYED",
+  DMG: "DAMAGED",
+};
+
+const stat30d = (s: SoldStat | null): number | null => (s ? (s.avg30d ?? s.avg) : null);
+
+export type ConditionMatchedReference = {
+  /** 30-day sold avg for the tier that matches the listing's inferred condition.
+   *  null means "no comparable data for that tier" → caller emits UNKNOWN.
+   *  We NEVER fall back to a different tier; that mismatch is the I-009 bug. */
+  conditionReference: number | null;
+  conditionSampleSize: number;
+  /** The PokeTrace tier key we matched against (for UI/telemetry/honesty). */
+  matchedTier: string | null;
+  /** Lowest 30-day avg across present raw tiers — the floor for the outlier guard. */
+  lowestRawReference: number | null;
+  lowestRawTier: string | null;
+};
+
+const EMPTY_MATCH: ConditionMatchedReference = {
+  conditionReference: null,
+  conditionSampleSize: 0,
+  matchedTier: null,
+  lowestRawReference: null,
+  lowestRawTier: null,
+};
+
+/** Lowest present raw-tier 30-day avg (+ its key). null when no raw tier priced. */
+export function lowestRawReferenceFromHistory(history: SoldHistory | null): { reference: number | null; tier: string | null } {
+  let lowest: number | null = null;
+  let lowestTier: string | null = null;
+  for (const t of RAW_POKETRACE_TIERS) {
+    const v = stat30d(statFor(history, t));
+    if (v == null || v <= 0) continue;
+    if (lowest == null || v < lowest) {
+      lowest = v;
+      lowestTier = t;
+    }
+  }
+  return { reference: lowest, tier: lowestTier };
+}
+
+/**
+ * Pure: resolve the reference for the listing's inferred condition tier from one
+ * variant's history. GRADED matches the saleCount-weighted average across all
+ * present graded tiers (coarse but honest — the methodology discloses it).
+ * Raw tiers match exactly. Returns conditionReference: null on any mismatch so
+ * the caller emits UNKNOWN instead of comparing across conditions.
+ */
+export function conditionMatchedReferenceFromHistory(
+  history: SoldHistory | null,
+  listingTier: ListingConditionTier,
+): ConditionMatchedReference {
+  const lowest = lowestRawReferenceFromHistory(history);
+  const base: ConditionMatchedReference = {
+    ...EMPTY_MATCH,
+    lowestRawReference: lowest.reference,
+    lowestRawTier: lowest.tier,
+  };
+
+  // No history, or the listing condition couldn't be inferred → no matched
+  // reference (the caller emits UNKNOWN). We still surface lowestRaw for the
+  // outlier guard when available.
+  if (!history || listingTier === "UNKNOWN") return base;
+
+  if (listingTier === "GRADED") {
+    // saleCount-weighted average across every present graded tier.
+    let num = 0;
+    let den = 0;
+    let sample = 0;
+    let firstKey: string | null = null;
+    for (const src of SOURCES) {
+      for (const [key, s] of Object.entries(history.bySource[src] ?? {})) {
+        if (!isGradedTier(key)) continue;
+        const v = stat30d(s);
+        if (v == null || v <= 0) continue;
+        const w = s.saleCount && s.saleCount > 0 ? s.saleCount : 1;
+        num += v * w;
+        den += w;
+        sample += s.saleCount ?? 0;
+        firstKey ??= key;
+      }
+    }
+    return den > 0
+      ? { ...base, conditionReference: num / den, conditionSampleSize: sample, matchedTier: "GRADED" }
+      : base;
+  }
+
+  const key = LISTING_TIER_TO_POKETRACE[listingTier];
+  const s = statFor(history, key);
+  const v = stat30d(s);
+  if (v == null || v <= 0) return base;
+  return { ...base, conditionReference: v, conditionSampleSize: s?.saleCount ?? 0, matchedTier: key };
+}
+
+/**
+ * Fetch histories, pick the same default variant the panel shows, and resolve
+ * the condition-matched reference for the listing's inferred tier. Soft-fails to
+ * EMPTY_MATCH (→ UNKNOWN signal) on outage.
+ */
+export async function resolveConditionMatchedReference(
+  variants: PoketraceVariant[] | undefined,
+  selectedKey: string | undefined,
+  listingTier: ListingConditionTier,
+): Promise<ConditionMatchedReference> {
+  if (!variants || variants.length === 0) return EMPTY_MATCH;
+  try {
+    const histories = await Promise.all(variants.map((v) => getSoldHistory(v.poketraceId)));
+    const pairs = variants.map((variant, i) => ({ variant, history: histories[i] }));
+    const explicit = selectedKey ? pairs.find((p) => p.variant.variantKey === selectedKey) : undefined;
+    const ranked = [...pairs].sort((a, b) => tradedScore(b.history) - tradedScore(a.history));
+    const selected = explicit ?? ranked[0];
+    return conditionMatchedReferenceFromHistory(selected.history, listingTier);
+  } catch {
+    return EMPTY_MATCH;
   }
 }

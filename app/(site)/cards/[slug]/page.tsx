@@ -25,6 +25,10 @@ import { LiveTimestamp } from "@/components/live-timestamp";
 import { SoldHistoryPanel } from "@/components/cards/sold-history-panel";
 import { WatchlistForm } from "@/components/cards/watchlist-form";
 import { deriveAvailableVariants } from "@/lib/poketrace/variant";
+import { BuySignalBadge } from "@/components/buy-signal-badge";
+import { classifyConditionMatched } from "@/lib/buy-signal/compute";
+import { inferListingCondition } from "@/lib/buy-signal/condition-infer";
+import { resolveConditionMatchedReference } from "@/lib/buy-signal/reference";
 
 // Rendering mode (ADR-047, amended). This page reads `searchParams` (the `v`
 // variant + `c` condition URL state, ADR-043) on the server, which forces
@@ -227,6 +231,25 @@ export default async function CardPage({
 
   const related = relatedCardsForSlug(slug, 6);
 
+  // Buy signal (ROADMAP #32.1 / ADR-053 / PATTERN I-009): condition-MATCHED.
+  // Infer the live listing's condition from its title, compare the ask only
+  // against the SAME condition's 30-day sold average (never across conditions),
+  // and refuse implausible-outlier asks. Curated tier only (the only tier with
+  // a live ask). Renders nothing on UNKNOWN — which is the correct, honest
+  // outcome for a listing whose condition we can't determine.
+  let buySignal = null;
+  if (tier === "curated" && best) {
+    const inferred = inferListingCondition({ title: best.title });
+    const matched = await resolveConditionMatchedReference(card.variants, selectedVariant, inferred.tier);
+    buySignal = classifyConditionMatched({
+      askPrice: best.price,
+      listingTier: inferred.tier,
+      conditionReference: matched.conditionReference,
+      conditionSampleSize: matched.conditionSampleSize,
+      lowestRawReference: matched.lowestRawReference,
+    });
+  }
+
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-5 pt-10 pb-20 sm:px-8 sm:pt-16">
       <script
@@ -301,13 +324,16 @@ export default async function CardPage({
             {/* Variants + market range (TCGplayer) — Session 41 / ADR-030. */}
             <CardVariantsSection card={card} currentBestPriceUsd={best?.price ?? null} />
 
-            {/* Buy-signal badge mount intentionally removed pending the
-                condition-matched + outlier-guarded rewire (ROADMAP #32.1 /
-                ADR-053 amendment). The lib (compute/reference), the badge
-                component, /pricing-methodology, and Gate 13 all remain; only
-                the live wiring is disabled because comparing the cheapest live
-                listing (any condition) against the NM-weighted sold average
-                produced a systematically misleading large BELOW on every card. */}
+            {/* Buy signal (ROADMAP #32.1 / ADR-053 / I-009) — condition-matched
+                read of the live ask vs the same-condition 30-day sold average.
+                Mounted above the sold-history chart; renders nothing on UNKNOWN
+                (condition not inferable, no matched sold data, thin sample, or
+                an implausible-outlier ask). */}
+            {buySignal && buySignal.tier !== "UNKNOWN" && (
+              <div className="mt-10">
+                <BuySignalBadge signal={buySignal} />
+              </div>
+            )}
 
             {/* Sold-history (PokeTrace) — Session 49 / ADR-042. Variant-aware
                 30-day sold averages. SSR-only; ?v= chip links re-render. */}

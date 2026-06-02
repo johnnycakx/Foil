@@ -20,6 +20,20 @@ Append new entries at the top. When an entry is promoted, leave it here with a `
 
 ---
 
+## I-009 — Code-passing gates are blind to signal SEMANTICS; reference-derived smoke tests can't catch comparison-basis bugs
+
+**Spotted:** ROADMAP #32 → #32.1, 2026-06-01. The buy-signal MVP shipped clean: pure compute, 19 unit tests, tsc, build, security-review, all green. The step-9 smoke test even ran against three real cards and "passed." Yet the moment it hit production it was systematically wrong — every flagship card flashed a large green BELOW (Charizard −88.5%) because the live ask (the cheapest listing, usually a played/damaged/junk copy) was compared against a Near-Mint-weighted sold average. The code was correct; the *premise of the comparison* — that ask and reference describe the same condition — was false.
+
+**Shape.** Two failure layers stack here. (1) **Gates verify code, not meaning.** Type-checks, unit tests, and a security pass all confirm the function does what it says; none confirm the function is *measuring the right thing*. A signal that compares two independently-sourced numbers (a live ask vs a sold reference; a forecast vs an actual; a quote vs a benchmark) can be flawless in code and meaningless in semantics. (2) **A smoke test is only as honest as its inputs.** The step-9 smoke synthesized asks *from* the reference (`ask = reference × 0.8/1.0/1.2`), so by construction the ask and reference were already on the same scale — it could never surface a basis mismatch. It tested the arithmetic, not the comparison.
+
+**The general fix.** For any signal that compares two independently-sourced numbers: (a) **normalize the axis before comparing** — here, infer the listing's condition and compare only against the *same* condition's reference, never cross-condition, and emit UNKNOWN rather than guess; (b) add an **outlier guard** that refuses implausible inputs (an ask below half the lowest sold tier is junk, not a deal); and (c) write a **live-smoke test that pulls BOTH numbers from their real, independent sources** and asserts the *output is sensible* (no large-false-BELOW signature), not that the math is right. Reference-derived synthetic inputs are banned in that test — they re-introduce the exact blindness. Make the live-smoke a standing test (creds-gated so credentialless CI stays green; the closure gate runs it with creds).
+
+**Instances.** (1) Buy signal: cheapest-any-condition ask vs NM-weighted sold avg → false BELOW on every card. Fixed by `lib/buy-signal/condition-infer.ts` (axis normalization) + `classifyConditionMatched` outlier guard + `buy-signal-live-smoke.test.ts` (real-ask standing test). See [ADR-053](DECISIONS.md#adr-053--buy-signal-mvp--gate-13-anti-hype) closing amendment.
+
+**Promotion trigger.** One instance so far. If a second comparison-signal bug appears (a forecast, a price-delta, a "vs benchmark" badge) that the unit tests passed but a real-data smoke would have caught, promote "axis-normalize + outlier-guard + real-source live-smoke" to a dedicated ADR.
+
+---
+
 ## I-008 — Write path ≠ read path in autonomous pipelines (extends I-003)
 
 **Spotted:** Goal V.1/V.2, 2026-05-31. The autonomous content engine wrote blog posts to `app/blog/posts/`; the live route read `app/(site)/blog/posts/`. Different directories. So every autonomous post silently never went live, and two rounds of edits (the 47.4 fact-check, the first V.1 voice pass) corrected files nobody served.

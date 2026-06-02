@@ -11,6 +11,8 @@
 //     directly with that average as the reference. The /pricing-methodology
 //     page documents that the reference is currently the 30-day sold average.
 
+import type { ListingConditionTier } from "./condition-infer.ts";
+
 export type Sale = {
   price: number;
   /** ISO string or ms-epoch. */
@@ -29,12 +31,21 @@ export type BuySignal = {
   deltaPercent: number | null;
   sampleSize: number;
   windowDays: number;
+  /** Why the signal is UNKNOWN (condition mismatch, outlier, thin sample, …).
+   *  Populated for UNKNOWN; undefined for a real BELOW/AT/ABOVE. */
+  reason?: string;
 };
 
 export const BUY_SIGNAL_MIN_SAMPLE = 5;
 export const BELOW_THRESHOLD = 0.9; // ask < median * 0.90
 export const ABOVE_THRESHOLD = 1.1; // ask > median * 1.10
 const DEFAULT_WINDOW_DAYS = 30;
+
+// Outlier guard (PATTERN I-009): an ask below half the LOWEST known raw-tier
+// 30-day sold average is almost never a real deal on the same card — it is a
+// damaged/mislabeled/junk/fake listing the quality picker let through (the
+// $43 "Base Set Charizard" case). Below this floor we refuse to classify.
+export const OUTLIER_FLOOR_FRACTION = 0.5;
 
 /** Graded slabs are a different market; exclude them when comparing a raw ask. */
 export function isGradedTier(tier: string): boolean {
@@ -82,6 +93,54 @@ export function classifyBuySignal(args: {
   else tier = "AT";
 
   return { tier, median: ref, deltaPercent, sampleSize, windowDays };
+}
+
+/**
+ * Condition-matched classifier (ROADMAP #32.1 / PATTERN I-009). The live entry
+ * point: it only compares an ask against a reference for the SAME condition the
+ * listing is in, and refuses to classify implausible-outlier asks.
+ *
+ * Returns UNKNOWN (with a `reason`) when:
+ *   - the listing condition couldn't be inferred (listingTier "UNKNOWN"), or
+ *   - there is no sold data for that condition tier (conditionReference null), or
+ *   - the ask is below OUTLIER_FLOOR_FRACTION × the lowest raw-tier sold avg.
+ * Otherwise it delegates to the shared `classifyBuySignal` threshold core.
+ */
+export function classifyConditionMatched(args: {
+  askPrice: number;
+  listingTier: ListingConditionTier;
+  conditionReference: number | null;
+  conditionSampleSize: number;
+  lowestRawReference: number | null;
+  windowDays?: number;
+}): BuySignal {
+  const windowDays = args.windowDays ?? DEFAULT_WINDOW_DAYS;
+  const { askPrice, listingTier, conditionReference, conditionSampleSize, lowestRawReference } = args;
+  const unknown = (reason: string): BuySignal => ({
+    tier: "UNKNOWN",
+    median: conditionReference ?? null,
+    deltaPercent: null,
+    sampleSize: conditionSampleSize,
+    windowDays,
+    reason,
+  });
+
+  if (listingTier === "UNKNOWN") return unknown("listing condition could not be determined from the title");
+  if (conditionReference == null || !(conditionReference > 0)) {
+    return unknown(`no 30-day sold data for the ${listingTier} condition`);
+  }
+  if (
+    typeof lowestRawReference === "number" &&
+    Number.isFinite(lowestRawReference) &&
+    lowestRawReference > 0 &&
+    Number.isFinite(askPrice) &&
+    askPrice > 0 &&
+    askPrice < lowestRawReference * OUTLIER_FLOOR_FRACTION
+  ) {
+    return unknown("ask is an implausible outlier (below half the lowest sold tier) — likely a damaged, mislabeled, or junk listing");
+  }
+
+  return classifyBuySignal({ askPrice, reference: conditionReference, sampleSize: conditionSampleSize, windowDays });
 }
 
 /**
