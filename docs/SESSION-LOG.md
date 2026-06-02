@@ -8,6 +8,20 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-02 — Cold-visitor readiness arc: F1/F2/F3/F6/F8 shipped before the PokeBeard outreach (+ B.4/B.5 filed)
+
+**Closed the 5 small-effort gaps the readiness audit flagged as gating the creator pilot.** Each its own commit for clean revert:
+- **F1 — Vercel Analytics.** Prod had *no* analytics, so a paid pilot was unmeasurable beyond raw EPN clicks. `@vercel/analytics <Analytics />` in the root layout (every page; after-interactive, no CWV hit).
+- **F2 — `?src=` on email signups.** Affiliate clicks attributed but email captures (the deeper moat) didn't. New nullable `watchlists.src` column (migration applied to prod via `supabase db push` *before* the code shipped, so inserts couldn't break); form carries `?src=` → action sanitizes ([a-z0-9-], 64-cap) → upsert persists it (omitted when absent so a price-update can't null it). Test pins the write.
+- **F3 — trust line.** "Foil TCG, LLC · Built by a Level-4 TCGplayer seller" in the footer + on the card page near the buy CTA. The Level-4 credential (the moat) was previously surfaced nowhere a cold visitor sees.
+- **F6 — removed "Sign in" from the main header** (watchlists are no-account; a sign-in CTA implied an account is required). Footer link relabeled "Account"; `/login` + auth + `/upload` paywall untouched.
+- **F8 — `/pricing-methodology` linked in the footer** (was only linked from blog posts).
+- **791 tests / 0 fail**, tsc + build clean, compliance 6/6, design:lint 0 new.
+- **Filed (docs-only, gated):** ROADMAP **B.4** (buy-signal leaderboard — cron-precomputed `buy_signals` table, serves from cache, decouples from R-012; gated on F4 coverage lift or ship-infra-now) and **B.5** (one-time $15-20 unlock monetization, "support the site" framing; gated on 4-8wk traffic + post-pilot demand signal; affiliate stays primary; do NOT revive the founder-member tier). Both surfaced from the Collectrics IQ competitive review.
+- **Explicitly untouched:** F4 (buy-signal coverage, ~1-mo reference-enrichment track), F5 (mobile-IA redesign), buy-signal logic/thresholds, voice gates 12/13.
+
+---
+
 ## 2026-06-02 — EPN attribution: per-card/tier/creator customid taxonomy + empty-customid leak guard (growth-sprint prep)
 
 **Context:** the growth-sprint pivot (4–8wk before the eBay Growth Check) needs real, *segmentable* EPN numbers. EPN dashboard showed 11 clicks: 8 `foil-card-page` (chain works), 3 "No Custom ID" (27%). Investigated the leak, then shipped per-card attribution + a guard.
