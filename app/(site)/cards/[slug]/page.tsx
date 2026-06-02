@@ -237,6 +237,12 @@ export default async function CardPage({
   // and refuse implausible-outlier asks. Curated tier only (the only tier with
   // a live ask). Renders nothing on UNKNOWN — which is the correct, honest
   // outcome for a listing whose condition we can't determine.
+  //
+  // DISABLED 2026-06-01 (ROADMAP #32.3): the prod hit-rate scan caught ~9/19
+  // rendering badges with I-009-signature deltas (coarse GRADED aggregate +
+  // grade-token abbreviation false-positives + no graded outlier guard). Kill
+  // switch held OFF until the #32.3 fix re-verifies clean, then flip to true.
+  const BUY_SIGNAL_ENABLED = false;
   let buySignal = null;
   if (tier === "curated" && best) {
     const inferred = inferListingCondition({ title: best.title });
@@ -329,7 +335,7 @@ export default async function CardPage({
                 Mounted above the sold-history chart; renders nothing on UNKNOWN
                 (condition not inferable, no matched sold data, thin sample, or
                 an implausible-outlier ask). */}
-            {buySignal && buySignal.tier !== "UNKNOWN" && (
+            {BUY_SIGNAL_ENABLED && buySignal && buySignal.tier !== "UNKNOWN" && (
               <div className="mt-10">
                 <BuySignalBadge signal={buySignal} />
               </div>
