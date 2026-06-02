@@ -8,6 +8,23 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-02 — EPN attribution: per-card/tier/creator customid taxonomy + empty-customid leak guard (growth-sprint prep)
+
+**Context:** the growth-sprint pivot (4–8wk before the eBay Growth Check) needs real, *segmentable* EPN numbers. EPN dashboard showed 11 clicks: 8 `foil-card-page` (chain works), 3 "No Custom ID" (27%). Investigated the leak, then shipped per-card attribution + a guard.
+
+**Leak investigation — not a code bug.** Traced every affiliate-link path: all set a non-empty customid (`foil-card-page` / `foil-metadata-only` / `foil-wishlist-alert`), confirmed via `buildAffiliateUrl` (the single enforced boundary — compliance Invariant 2). No rogue hardcoded eBay link in app/components/blog mdx (grep clean — only API endpoints). `customid` wired since the builder's birth commit (`8676102`) → no customid-less era leaving legacy cached links. **Conclusion: the 3 "No Custom ID" clicks are not produced by any current code path** (and there's no first-party click logging to trace them further) — overwhelmingly likely founder test clicks / the EPN-portal link-tester, which emit campid-only. The creator-pilot path (card pages) is clean → not a pilot blocker.
+
+**Fixes shipped (`1df957b`):**
+- **`buildCustomId` taxonomy** (`lib/affiliate/epn.ts`): `cp-`/`lt-`/`mo-`/`wl-<slug>` per tier + optional `-s-<src>` creator/campaign tag. Wired into `/cards/[slug]` (curated/longtail/metadata-only) + `wl-<slug>` into the wishlist cron. Now the EPN Custom ID report segments by **card, tier, and creator** instead of one `foil-card-page` blob.
+- **`?src=<creator>`** flows from the inbound link into the customid → the creator pilot is a clean isolated experiment (`cp-<slug>-s-<creator>`). `src` is untrusted → sanitized to `[a-z0-9]`.
+- **Empty-customid LEAK GUARD:** `buildAffiliateUrl` falls a blank/whitespace customId back to the visible sentinel `foil-untagged`, so any *future* mis-wiring surfaces as an attributable bucket, never as untraceable "No Custom ID."
+- **Charset (per AGENTS.md, doc-verified):** EPN customid is "up to 256 alphanumeric characters"; **hyphens proven to survive empirically** (the working `foil-card-page` clicks attributed), underscores unverified → avoided. Hyphen-delimited, 256-capped.
+- **Guard tests:** compliance Invariant 2 extended to catch rogue `customid` assembly outside `epn.ts`; new `epn-customid.test.ts` pins the taxonomy + sentinel + src-sanitization. 789 tests / 0 fail, build clean, compliance 6/6.
+- **Live-verified post-deploy:** `cp-base1-4-charizard`, `lt-neo4-113-shining-tyranitar`, `mo-gym2-38-erika-s-bellsprout`, `cp-base1-4-charizard-s-pokerev`, and `?src=ev il&x=1` → `s-evilx1` (no `&`/`=`/space).
+- **Follow-up surfaced (not built):** there's no first-party outbound-click tracking — EPN's lagged report is the only click visibility. A click beacon is the IDEAS B.4-adjacent enhancement if the sprint needs real-time source correlation.
+
+---
+
 ## 2026-06-01 — Buy-signal #32.3: graded grade-specificity + grade-token disambiguation + graded outlier guard (core fix landed, re-enable HELD)
 
 **The full-catalog hit-rate scan (prior turn) caught that #32.1's fix was incomplete; #32.3 fixes the root causes but the re-scan isn't fully clean, so the badge stays disabled.** First action: kill-switched the badge OFF in prod (`c2f3fe3`) so the ~9 misleading badges stopped rendering within the deploy window. Then the fix:
