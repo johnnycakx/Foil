@@ -122,6 +122,13 @@ test("invariant: raw 'mkevt' / 'campid' assembly appears only in lib/affiliate/e
     /\bcampid\s*:/,
     /["']campid["']/,
     /\bcampid\s*=/,
+    // customid (the sub-id param) — assembly only, so a future rogue
+    // `searchParams.set("customid", …)` / `{ customid: … }` outside epn.ts
+    // trips this. The `=` form is deliberately omitted: prose comments
+    // legitimately write `customid=…`, and the camelCase `customId` ARG
+    // (passed by page/cron callers) is a different token we don't restrict.
+    /["']customid["']/,
+    /\bcustomid\s*:/,
   ];
   const offenders: string[] = [];
   for (const dir of SCAN_DIRS) {

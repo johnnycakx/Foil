@@ -175,8 +175,55 @@ export function buildAffiliateUrl(itemUrl: string, customId: string): string {
     target.searchParams.set(k, v);
   }
   target.searchParams.set("campid", campId);
-  target.searchParams.set("customid", customId);
+  // Never emit an EMPTY customid — that is exactly the "No Custom ID" leak
+  // class (a campid-bearing click with no sub-tag). A blank/whitespace
+  // customId falls back to a VISIBLE sentinel so any future mis-wiring shows
+  // up as `foil-untagged` in the EPN report (greppable, attributable) instead
+  // of untraceable "No Custom ID". (ROADMAP #32.3 follow-up.)
+  const safeCustomId = customId && customId.trim() ? customId.trim() : CUSTOMID_FALLBACK;
+  target.searchParams.set("customid", safeCustomId);
   return target.toString();
+}
+
+// --- customid taxonomy (per-card + per-tier + per-creator attribution) ---
+//
+// eBay's customid is "up to 256 alphanumeric characters" (EPN docs). We use a
+// HYPHEN-delimited scheme because hyphens are the only punctuation EMPIRICALLY
+// proven to survive eBay's handling — the working `foil-card-page` clicks
+// attributed correctly, while underscores are unverified, so we avoid them.
+// Format: `<tier>-<slug>` + optional `-s-<src>` (creator/campaign tag).
+
+export const CUSTOMID_MAX_LENGTH = 256;
+/** Visible fallback so an empty customid never silently becomes "No Custom ID". */
+export const CUSTOMID_FALLBACK = "foil-untagged";
+
+export type CustomIdTier = "curated" | "longtail" | "metadata-only" | "wishlist";
+const TIER_CODE: Record<CustomIdTier, string> = {
+  curated: "cp",
+  longtail: "lt",
+  "metadata-only": "mo",
+  wishlist: "wl",
+};
+
+/** Reduce to the proven-safe customid charset. `allowHyphen` keeps the
+ *  hyphen delimiter for slugs; creator/src tags strip to [a-z0-9] so the
+ *  `-s-` delimiter stays unambiguous and untrusted URL input can't pollute it. */
+function sanitizeSegment(s: string, allowHyphen: boolean): string {
+  const stripped = s.toLowerCase().replace(allowHyphen ? /[^a-z0-9-]+/g : /[^a-z0-9]+/g, allowHyphen ? "-" : "");
+  return stripped.replace(/-+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+/**
+ * Build a per-surface EPN customid. `src` (a creator/campaign tag, typically
+ * from a `?src=` URL param) is UNTRUSTED and sanitized to [a-z0-9]. The result
+ * is capped under eBay's 256-char limit and is never empty.
+ */
+export function buildCustomId(input: { tier: CustomIdTier; slug: string; src?: string | null }): string {
+  const slug = sanitizeSegment(input.slug ?? "", true);
+  const base = slug ? `${TIER_CODE[input.tier]}-${slug}` : TIER_CODE[input.tier];
+  const src = input.src ? sanitizeSegment(input.src, false) : "";
+  const full = (src ? `${base}-s-${src}` : base).slice(0, CUSTOMID_MAX_LENGTH);
+  return full || CUSTOMID_FALLBACK;
 }
 
 /**

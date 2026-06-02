@@ -4,9 +4,9 @@
 // lib/notifications/resend.ts::sendTransactionalEmail.
 //
 // Affiliate posture: the CTA in the email body is an affiliate-tracked
-// eBay URL with `customid=foil-wishlist-alert` (distinct from the
-// per-card-page `foil-card-page` customid) so the per-channel commission
-// attribution comes through clean.
+// eBay URL whose customid is the per-card wishlist code `wl-<slug>` (built by
+// buildCustomId in the cron; distinct from the per-card-page `cp-<slug>`) so
+// the per-channel + per-card commission attribution comes through clean.
 
 import type { EpnBestListing } from "../affiliate/epn.ts";
 

@@ -11,7 +11,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { affiliateSearchUrl, type EpnBestListing } from "@/lib/affiliate/epn";
+import { affiliateSearchUrl, buildCustomId, type EpnBestListing } from "@/lib/affiliate/epn";
 import { getBestListing } from "@/lib/affiliate/ebay-browse";
 import { CARD_CATALOG, getCatalogEntry, relatedCardsForSlug, cardTier } from "@/lib/cards/catalog";
 import { LongTailListingFallback } from "@/components/cards/long-tail-listing-fallback";
@@ -156,10 +156,10 @@ export default async function CardPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ v?: string; c?: string }>;
+  searchParams: Promise<{ v?: string; c?: string; src?: string }>;
 }) {
   const { slug } = await params;
-  const { v: selectedVariant, c: selectedCondition } = await searchParams;
+  const { v: selectedVariant, c: selectedCondition, src } = await searchParams;
   const entry = getCatalogEntry(slug);
   if (!entry) notFound();
 
@@ -171,17 +171,25 @@ export default async function CardPage({
   // quota as the catalog scales). R-008 (never cache eBay listing data) is held
   // by force-dynamic above + getBestListing's own `cache: "no-store"`.
   // Soft-fails to null on error.
+  // Per-card + per-tier + per-creator EPN attribution (ROADMAP #32.3 follow-up).
+  // `src` (a creator/campaign tag from the inbound link, e.g. ?src=pokerev) is
+  // untrusted — buildCustomId sanitizes it. Each tier gets its own code so the
+  // EPN report segments by card, tier, and creator instead of one foil-card-page
+  // blob.
+  const ebayQuery = `${card.name} ${card.setName}`;
   let best: EpnBestListing | null = null;
   if (tier === "curated") {
     best = await getBestListing({
       cardName: card.name,
       setName: card.setName,
-      customId: "foil-card-page",
+      customId: buildCustomId({ tier: "curated", slug, src }),
       surface: "page_render",
     });
   }
 
-  const fallbackUrl = affiliateSearchUrl(`${card.name} ${card.setName}`, "foil-card-page");
+  // Curated-tier "best unavailable" fallback (the longtail + metadata-only
+  // tiers build their own tier-coded search URLs at render time below).
+  const fallbackUrl = affiliateSearchUrl(ebayQuery, buildCustomId({ tier: "curated", slug, src }));
   const condition = best ? inferConditionLabel(best.title) : null;
 
   const canonical = `${siteUrl()}/cards/${slug}`;
@@ -360,11 +368,11 @@ export default async function CardPage({
         {tier === "metadata-only" ? (
           <MetadataOnlyListing
             cardName={card.name}
-            ebaySearchUrl={affiliateSearchUrl(`${card.name} ${card.setName}`, "foil-metadata-only")}
+            ebaySearchUrl={affiliateSearchUrl(ebayQuery, buildCustomId({ tier: "metadata-only", slug, src }))}
             tcgplayerUrl={`https://www.tcgplayer.com/search/pokemon/product?productLineName=pokemon&q=${encodeURIComponent(card.name)}`}
           />
         ) : tier === "longtail" ? (
-          <LongTailListingFallback cardName={card.name} searchUrl={fallbackUrl} />
+          <LongTailListingFallback cardName={card.name} searchUrl={affiliateSearchUrl(ebayQuery, buildCustomId({ tier: "longtail", slug, src }))} />
         ) : (
         <>
         {/* Live timestamp chip — sits above the Best Listing block as a

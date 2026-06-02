@@ -50,7 +50,9 @@ test("MetadataOnlyListing: two CTAs (eBay affiliate search + TCGplayer), no Brow
   assert.doesNotMatch(src, /#[0-9a-fA-F]{6}/, "no raw hex — DESIGN.md tokens only");
 });
 
-test("/cards/[slug]: metadata-only eBay CTA uses the foil-metadata-only customId", () => {
+test("/cards/[slug]: metadata-only eBay CTA uses the metadata-only customId tier (ROADMAP #32.3)", () => {
   const src = read("app/(site)/cards/[slug]/page.tsx");
-  assert.match(src, /affiliateSearchUrl\([^)]*"foil-metadata-only"\)/);
+  // The CTA's customId is now built by buildCustomId with the metadata-only
+  // tier (cp/lt/mo/wl per-tier codes) rather than the old static literal.
+  assert.match(src, /affiliateSearchUrl\([^)]*buildCustomId\(\{\s*tier:\s*"metadata-only"/);
 });
