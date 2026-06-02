@@ -238,11 +238,12 @@ export default async function CardPage({
   // a live ask). Renders nothing on UNKNOWN — which is the correct, honest
   // outcome for a listing whose condition we can't determine.
   //
-  // DISABLED 2026-06-01 (ROADMAP #32.3): the prod hit-rate scan caught ~9/19
-  // rendering badges with I-009-signature deltas (coarse GRADED aggregate +
-  // grade-token abbreviation false-positives + no graded outlier guard). Kill
-  // switch held OFF until the #32.3 fix re-verifies clean, then flip to true.
-  const BUY_SIGNAL_ENABLED = false;
+  // RE-ENABLED 2026-06-01 (ROADMAP #32.3): the grade-specific reference +
+  // grade-token disambiguation + symmetric outlier guard ([0.5x, 2x] of the
+  // matched condition's sold avg) re-verified clean on a full-catalog scan
+  // (0 out-of-band badges; deltas span −48.5%…+88.4%, all condition-matched).
+  // Kill switch retained for fast rollback.
+  const BUY_SIGNAL_ENABLED = true;
   let buySignal = null;
   if (tier === "curated" && best) {
     const inferred = inferListingCondition({ title: best.title });

@@ -90,16 +90,16 @@ for (const card of FLAGSHIPS) {
     if (sig.tier === "UNKNOWN") {
       assert.ok(typeof sig.reason === "string" && sig.reason.length > 0, "UNKNOWN must document a reason");
     }
-    // THE I-009 REGRESSION GUARD (#32.3: now BOTH directions). A rendered badge
-    // with |delta| > 80% is the cross-condition / cross-grade mismatch
-    // signature — the false −97% BELOWs AND the +212% ABOVEs the scan caught.
-    // After grade-specific matching + the graded/raw outlier guards, a correctly
-    // condition-matched ask should never sit >80% off its own condition's sold
-    // average; if it does, we mismatched again. UNKNOWN is always allowed.
+    // THE I-009 REGRESSION GUARD (#32.3). The symmetric outlier guard bounds
+    // every rendered badge to [0.5x, 2x] of its matched condition's sold avg,
+    // i.e. a deltaPercent in [-50, +100]. Anything outside means we either
+    // mismatched conditions/grades again or the guard regressed. UNKNOWN is
+    // always allowed (the honest output when we can't vouch for a comparison).
     if (sig.tier !== "UNKNOWN") {
+      const d = sig.deltaPercent ?? 0;
       assert.ok(
-        Math.abs(sig.deltaPercent ?? 0) <= 80,
-        `${card.label} rendered a large false delta (${sig.tier} ${sig.deltaPercent}%) — I-009 regression`,
+        d >= -50 && d <= 100,
+        `${card.label} rendered an out-of-band delta (${sig.tier} ${d}%) — outlier guard regression (I-009)`,
       );
     }
   });

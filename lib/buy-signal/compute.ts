@@ -103,7 +103,8 @@ export function classifyBuySignal(args: {
  * Returns UNKNOWN (with a `reason`) when:
  *   - the listing condition couldn't be inferred (listingTier "UNKNOWN"), or
  *   - there is no sold data for that condition tier (conditionReference null), or
- *   - the ask is below OUTLIER_FLOOR_FRACTION × the lowest raw-tier sold avg.
+ *   - the ask is outside [0.5x, 2x] of the matched condition's sold average
+ *     (the symmetric outlier guard — ROADMAP #32.3).
  * Otherwise it delegates to the shared `classifyBuySignal` threshold core.
  */
 export function classifyConditionMatched(args: {
@@ -111,11 +112,13 @@ export function classifyConditionMatched(args: {
   listingTier: ListingConditionTier;
   conditionReference: number | null;
   conditionSampleSize: number;
-  lowestRawReference: number | null;
+  /** Retained for telemetry/back-compat; the symmetric guard keys off the
+   *  matched conditionReference, not the lowest raw tier (ROADMAP #32.3). */
+  lowestRawReference?: number | null;
   windowDays?: number;
 }): BuySignal {
   const windowDays = args.windowDays ?? DEFAULT_WINDOW_DAYS;
-  const { askPrice, listingTier, conditionReference, conditionSampleSize, lowestRawReference } = args;
+  const { askPrice, listingTier, conditionReference, conditionSampleSize } = args;
   const unknown = (reason: string): BuySignal => ({
     tier: "UNKNOWN",
     median: conditionReference ?? null,
@@ -129,21 +132,23 @@ export function classifyConditionMatched(args: {
   if (conditionReference == null || !(conditionReference > 0)) {
     return unknown(`no 30-day sold data for the ${listingTier} condition`);
   }
-  // Outlier guard. Raw tiers floor on the LOWEST raw-tier sold avg (a raw ask
-  // below half of even the cheapest raw tier is junk). Graded asks floor on
-  // their OWN matched-grade reference (a PSA-9 ask below half the PSA-9 sold
-  // avg is a mislabeled/junk slab) — ROADMAP #32.3 closes the graded gap.
-  const guardFloorRef = listingTier === "GRADED" ? conditionReference : lowestRawReference;
-  if (
-    typeof guardFloorRef === "number" &&
-    Number.isFinite(guardFloorRef) &&
-    guardFloorRef > 0 &&
-    Number.isFinite(askPrice) &&
-    askPrice > 0 &&
-    askPrice < guardFloorRef * OUTLIER_FLOOR_FRACTION
-  ) {
-    const what = listingTier === "GRADED" ? "the matched grade's sold average" : "the lowest sold tier";
-    return unknown(`ask is an implausible outlier (below half ${what}) — likely a damaged, mislabeled, or junk listing`);
+  // SYMMETRIC outlier guard (ROADMAP #32.3). The ask must sit within
+  // [0.5x, 2x] of its OWN matched-condition sold average. Outside that band the
+  // comparison is unreliable, so we show no signal — same rationale both ways:
+  //   - below half  -> a damaged / mislabeled / junk listing priced like a
+  //     lower grade (the original raw guard, now keyed to the matched tier so a
+  //     high-value condition gets a proportionally higher floor);
+  //   - above double -> anomalously overpriced, a mislabeled grade, or just
+  //     low-value-card % noise (a $4 ask vs a $2 sold avg reads +100% on a $2
+  //     spread). These were the residual >±80% ABOVE cases #32.3 caught.
+  // conditionReference is guaranteed finite > 0 by the check above.
+  if (Number.isFinite(askPrice) && askPrice > 0) {
+    if (askPrice < conditionReference * OUTLIER_FLOOR_FRACTION) {
+      return unknown("ask is an implausible outlier (below half the matched condition's sold average) — likely a damaged, mislabeled, or junk listing");
+    }
+    if (askPrice > conditionReference / OUTLIER_FLOOR_FRACTION) {
+      return unknown("ask is an implausible outlier (above double the matched condition's sold average) — likely overpriced beyond a reliable read, a mislabeled grade, or low-value-card noise");
+    }
   }
 
   return classifyBuySignal({ askPrice, reference: conditionReference, sampleSize: conditionSampleSize, windowDays });

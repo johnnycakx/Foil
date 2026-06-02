@@ -148,8 +148,8 @@ test("classifyConditionMatched: no sold data for the matched tier -> UNKNOWN", (
   assert.match(sig.reason ?? "", /no 30-day sold data for the MP/);
 });
 
-test("classifyConditionMatched: outlier guard fires below half the lowest raw tier", () => {
-  // $43 ask, lowest raw (DMG) sold avg $150 -> floor is $75 -> $43 < $75 -> UNKNOWN.
+test("classifyConditionMatched: outlier guard fires below half the MATCHED reference", () => {
+  // $43 ask vs the NM sold avg $374 -> floor is $187 -> $43 < $187 -> UNKNOWN.
   const sig = classifyConditionMatched({
     askPrice: 43,
     listingTier: "NM",
@@ -158,7 +158,26 @@ test("classifyConditionMatched: outlier guard fires below half the lowest raw ti
     lowestRawReference: 150,
   });
   assert.equal(sig.tier, "UNKNOWN");
-  assert.match(sig.reason ?? "", /implausible outlier/);
+  assert.match(sig.reason ?? "", /below half/);
+});
+
+test("classifyConditionMatched: SYMMETRIC high guard fires above double the matched ref (#32.3)", () => {
+  // The residual >±80% ABOVE case: $300 ask vs $100 PSA-7 sold avg = +200%.
+  // 2x100 = 200; 300 > 200 -> UNKNOWN, not a +200% ABOVE badge.
+  const sig = classifyConditionMatched({
+    askPrice: 300,
+    listingTier: "GRADED",
+    conditionReference: 100,
+    conditionSampleSize: 24,
+  });
+  assert.equal(sig.tier, "UNKNOWN");
+  assert.match(sig.reason ?? "", /above double/);
+});
+
+test("classifyConditionMatched: ask just under 2x still classifies as ABOVE", () => {
+  // 190 vs 100 = +90% (< 2x) -> ABOVE renders; 210 vs 100 -> UNKNOWN (high guard).
+  assert.equal(classifyConditionMatched({ askPrice: 190, listingTier: "NM", conditionReference: 100, conditionSampleSize: 30 }).tier, "ABOVE");
+  assert.equal(classifyConditionMatched({ askPrice: 210, listingTier: "NM", conditionReference: 100, conditionSampleSize: 30 }).tier, "UNKNOWN");
 });
 
 test("classifyConditionMatched: just ABOVE the outlier floor still classifies", () => {
@@ -238,7 +257,7 @@ test("classifyConditionMatched: graded outlier fires on its OWN grade reference 
     lowestRawReference: 150,
   });
   assert.equal(sig.tier, "UNKNOWN");
-  assert.match(sig.reason ?? "", /matched grade/);
+  assert.match(sig.reason ?? "", /below half/);
 });
 
 test("classifyConditionMatched: graded happy path — PSA-9 ask vs PSA-9 avg -> AT (not BELOW vs a PSA-10 blend)", () => {
