@@ -47,6 +47,10 @@ export function WatchlistForm({
   const variant = vRaw && availableVariantKeys.includes(vRaw) ? vRaw : DEFAULT_VARIANT_KEY;
   const cRaw = params.get("c");
   const condition = cRaw && isValidConditionToken(cRaw) ? cRaw : DEFAULT_CONDITION;
+  // F2: carry the inbound creator/campaign tag (?src=) into the signup so email
+  // captures attribute to the pilot, not just affiliate clicks. Sanitized
+  // server-side in create-watchlist; "" omits it.
+  const src = params.get("src") ?? "";
 
   const targeting =
     variant !== DEFAULT_VARIANT_KEY || condition !== DEFAULT_CONDITION
@@ -70,6 +74,7 @@ export function WatchlistForm({
       <input type="hidden" name="card_slug" value={cardSlug} />
       <input type="hidden" name="variant" value={variant} />
       <input type="hidden" name="condition" value={condition} />
+      {src && <input type="hidden" name="src" value={src} />}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
         <input

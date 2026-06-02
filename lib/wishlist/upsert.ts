@@ -23,6 +23,9 @@ export type WatchlistUpsertInput = {
   variant: string;
   condition: string;
   target_price_cents: number;
+  /** Inbound traffic source (e.g. a creator pilot tag from `?src=`). Optional,
+   *  nullable column — omitting it preserves the pre-F2 write behaviour. */
+  src?: string | null;
 };
 
 /**
@@ -41,6 +44,10 @@ export async function upsertWatchlist(
       variant: input.variant,
       condition: input.condition,
       target_price_cents: input.target_price_cents,
+      // Only set src when present so an existing watch's source isn't
+      // overwritten with null on a later target-price update (the conflict
+      // path). Absent src column values stay null by default.
+      ...(input.src ? { src: input.src } : {}),
     },
     { onConflict: WATCHLIST_CONFLICT_TARGET },
   );

@@ -35,6 +35,14 @@ function dollarsToCents(raw: FormDataEntryValue | null): number {
   return Number.isFinite(n) ? Math.round(n * 100) : NaN;
 }
 
+/** Sanitize the inbound `?src=` creator/campaign tag (F2). Untrusted URL input:
+ *  reduce to the safe `[a-z0-9-]` charset, cap length, null when empty. */
+function sanitizeSrc(raw: FormDataEntryValue | null): string | null {
+  if (typeof raw !== "string") return null;
+  const clean = raw.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "").slice(0, 64);
+  return clean || null;
+}
+
 export async function createWatchlist(
   _prev: WatchlistFormState,
   formData: FormData,
@@ -72,7 +80,7 @@ export async function createWatchlist(
     return { status: "error", error: "unavailable" };
   }
 
-  const res = await upsertWatchlist(admin, parsed.value);
+  const res = await upsertWatchlist(admin, { ...parsed.value, src: sanitizeSrc(formData.get("src")) });
   if (!res.ok) {
     console.warn("[create-watchlist] upsert failed:", res.error);
     return { status: "error", error: "save_failed" };
