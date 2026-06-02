@@ -47,12 +47,10 @@ function SiteHeader() {
           >
             Blog
           </Link>
-          <Link
-            href="/login"
-            className="text-foil-slate transition hover:text-foil-navy"
-          >
-            Sign in
-          </Link>
+          {/* F6: no "Sign in" in the main nav — watchlists work with no account,
+              so a sign-in CTA up top only confuses cold visitors. The route +
+              auth flow are untouched; a discreet "Account" link lives in the
+              footer, and /upload still routes to /login at the paywall. */}
         </nav>
       </div>
     </header>
@@ -91,7 +89,7 @@ function SiteFooter() {
               href="/login"
               className="underline decoration-foil-navy/20 underline-offset-4 transition hover:text-foil-navy hover:decoration-foil-gold"
             >
-              Sign in
+              Account
             </Link>
           </nav>
         </div>
