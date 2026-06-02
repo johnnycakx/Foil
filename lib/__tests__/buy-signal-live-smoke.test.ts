@@ -28,10 +28,24 @@ const HAVE_POKETRACE = !!process.env.POKETRACE_API_KEY;
 const HAVE_EBAY = !!(process.env.EBAY_DEVELOPER_APP_ID && process.env.EBAY_DEVELOPER_CERT_ID);
 const LIVE = HAVE_POKETRACE && HAVE_EBAY;
 
+// ROADMAP #32.3 / I-009 update: the #32.1 smoke covered only 3 UNKNOWN
+// flagships, so the graded + abbreviation paths slipped through ungated. The
+// corpus now ALSO includes cards that actually rendered a badge in the
+// production hit-rate scan (mixed BELOW / AT / ABOVE / graded) — the exact set
+// that exposed the false deltas. Listings rotate, so any card may resolve to
+// UNKNOWN on a given run; the invariant being guarded is "never a large false
+// delta", which must hold regardless of which listing is live.
 const FLAGSHIPS = [
+  // Original 3 (no-condition vintage → UNKNOWN path).
   { id: "base1-4", label: "Charizard Base" },
   { id: "base1-15", label: "Venusaur Base" },
   { id: "base1-10", label: "Mewtwo Base" },
+  // Cards that rendered a badge in the #32.3 scan (the regression corpus).
+  { id: "neo2-1", label: "Espeon Neo (graded-heavy)" },
+  { id: "neo2-13", label: "Umbreon Neo ('NM 7' case)" },
+  { id: "sm115-31", label: "Mewtwo-GX Hidden Fates (+212% case)" },
+  { id: "base6-8", label: "Dark Slowbro (+134% case)" },
+  { id: "swsh4-188", label: "Pikachu VMAX Rainbow (-86% case)" },
 ];
 
 for (const card of FLAGSHIPS) {
@@ -54,7 +68,7 @@ for (const card of FLAGSHIPS) {
     }
 
     const inferred = inferListingCondition({ title: best.title });
-    const matched = await resolveConditionMatchedReference(meta.variants, undefined, inferred.tier);
+    const matched = await resolveConditionMatchedReference(meta.variants, undefined, inferred.tier, inferred.gradeKey);
     const sig = classifyConditionMatched({
       askPrice: best.price,
       listingTier: inferred.tier,
@@ -76,12 +90,17 @@ for (const card of FLAGSHIPS) {
     if (sig.tier === "UNKNOWN") {
       assert.ok(typeof sig.reason === "string" && sig.reason.length > 0, "UNKNOWN must document a reason");
     }
-    // THE I-009 REGRESSION GUARD: a large BELOW is the junk-comparison signature.
-    // A legitimate BELOW (condition-matched, above the outlier floor) is fine;
-    // a < -50% BELOW means we compared across conditions again.
-    assert.ok(
-      !(sig.tier === "BELOW" && (sig.deltaPercent ?? 0) < -50),
-      `${card.label} flashed a large false BELOW (${sig.deltaPercent}%) — I-009 regression`,
-    );
+    // THE I-009 REGRESSION GUARD (#32.3: now BOTH directions). A rendered badge
+    // with |delta| > 80% is the cross-condition / cross-grade mismatch
+    // signature — the false −97% BELOWs AND the +212% ABOVEs the scan caught.
+    // After grade-specific matching + the graded/raw outlier guards, a correctly
+    // condition-matched ask should never sit >80% off its own condition's sold
+    // average; if it does, we mismatched again. UNKNOWN is always allowed.
+    if (sig.tier !== "UNKNOWN") {
+      assert.ok(
+        Math.abs(sig.deltaPercent ?? 0) <= 80,
+        `${card.label} rendered a large false delta (${sig.tier} ${sig.deltaPercent}%) — I-009 regression`,
+      );
+    }
   });
 }

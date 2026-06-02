@@ -8,6 +8,21 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-01 — Buy-signal #32.3: graded grade-specificity + grade-token disambiguation + graded outlier guard (core fix landed, re-enable HELD)
+
+**The full-catalog hit-rate scan (prior turn) caught that #32.1's fix was incomplete; #32.3 fixes the root causes but the re-scan isn't fully clean, so the badge stays disabled.** First action: kill-switched the badge OFF in prod (`c2f3fe3`) so the ~9 misleading badges stopped rendering within the deploy window. Then the fix:
+
+- **P0 for the graded path PASSED:** PokeTrace exposes every service×grade as its own tier (Charizard `PSA_9` $3,420 n=93 ≠ `PSA_10` $30,100 n=35 ≠ `BGS_9_5` …), so grade-specific matching is buildable — no data-source STOP.
+- **`condition-infer.ts`:** new `BARE_GRADE_RE` routes "NM 7"/"MT 8"/"GEM MINT 10" (a grade with no service) → UNKNOWN instead of the old Near-Mint false-positive; `GRADED_RE` now captures service+grade into a `gradeKey` (`PSA_9`, `BGS_9_5`). A collector-number lookahead keeps "LP 6/102" as LP.
+- **`reference.ts`:** `conditionMatchedReferenceFromHistory(history, tier, gradeKey)` matches the SPECIFIC graded tier (PSA_9 vs PSA_9), **no blended fallback** (the blend was the false-BELOW bug).
+- **`compute.ts`:** outlier guard extended to the graded path (ask < 50% of the matched-grade ref → UNKNOWN).
+- **Tests:** +grade-token disambiguation (condition-infer), +graded mismatch/outlier/happy-path (buy-signal), +grade-specific reference (buy-signal-reference); **live-smoke expanded 3 → 8** incl. the rendering-badge corpus, guard tightened to |delta| ≤ 80 both directions. **781 tests / 0 fail**, tsc + build clean.
+- **Re-scan (new pipeline, real prod asks + live PokeTrace, n=201):** badge rate 6.0%, **false BELOWs eliminated** (worst BELOW −65.5%). But **3 ABOVE cases remain >±80%** — Hitmonlee PSA-7 +200% ($299.99 vs $100 n=24), Jolteon PSA-6 +178% ($598 vs $215 n=25), Zacian-V NM +117% ($4.24 vs $1.96 n=383). These are **not** the cross-condition bug — they're correctly matched against solid samples, i.e. *genuinely overpriced* cheapest-listings.
+- **Per step-7 STOP, NOT re-enabled.** Badge stays kill-switched OFF pending a product decision: the ABOVE side is now a real "this listing is a ripoff" signal that just happens to read >±80%. Surfaced to John (symmetric high guard → UNKNOWN, vs accept large ABOVE as a true overpriced-warning, vs keep disabled).
+- **PATTERN I-009 updated (2nd instance):** the #32.1 smoke was necessary-but-not-sufficient — it covered only UNKNOWN flagships, so the graded + abbreviation branches shipped ungated. A live-smoke only guards the branches its corpus exercises; a periodic full-population scan is the real backstop.
+
+---
+
 ## 2026-06-01 — Buy-signal listing/search rollout (B.2) HELD by P0 premise check (docs-only; ROADMAP #32.2 / R-012)
 
 **Asked to roll the badge out to the listing + search surfaces; the P0 premise check stopped it before any code.** The badge needs a live eBay ask + the listing's title for condition inference — fine on the `force-dynamic` per-card page, but the targets are `force-static` catalog-browse surfaces by design:

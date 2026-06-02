@@ -223,3 +223,59 @@ test("classifyConditionMatched: thin matched sample (<5) still yields UNKNOWN vi
   });
   assert.equal(sig.tier, "UNKNOWN");
 });
+
+// --- #32.3: grade-specific graded path + graded outlier guard ---
+
+test("classifyConditionMatched: graded outlier fires on its OWN grade reference (PSA-9 ask < 50% PSA-9 avg)", () => {
+  // The #32.3 graded gap: a $1,000 ask vs the PSA-9 sold avg $3,420 is below
+  // half ($1,710) -> UNKNOWN (mislabeled/junk slab), not a -71% BELOW. The raw
+  // lowestRawReference is irrelevant on the graded path.
+  const sig = classifyConditionMatched({
+    askPrice: 1000,
+    listingTier: "GRADED",
+    conditionReference: 3420,
+    conditionSampleSize: 93,
+    lowestRawReference: 150,
+  });
+  assert.equal(sig.tier, "UNKNOWN");
+  assert.match(sig.reason ?? "", /matched grade/);
+});
+
+test("classifyConditionMatched: graded happy path — PSA-9 ask vs PSA-9 avg -> AT (not BELOW vs a PSA-10 blend)", () => {
+  // The crux of #32.3: $3,400 PSA-9 ask reads AT the $3,420 PSA-9 sold avg.
+  // Against the old blended graded aggregate (~$2,672, PSA-10-inflated... and
+  // for Charizard far higher) it would have flashed a large false signal.
+  const sig = classifyConditionMatched({
+    askPrice: 3400,
+    listingTier: "GRADED",
+    conditionReference: 3420,
+    conditionSampleSize: 93,
+    lowestRawReference: 150,
+  });
+  assert.equal(sig.tier, "AT");
+});
+
+test("classifyConditionMatched: graded ask just above the outlier floor still classifies (BELOW)", () => {
+  // floor = 3420 * 0.5 = 1710; ask 1720 > floor and < 3420*0.9 -> BELOW (~-49.7%).
+  const sig = classifyConditionMatched({
+    askPrice: 1720,
+    listingTier: "GRADED",
+    conditionReference: 3420,
+    conditionSampleSize: 93,
+    lowestRawReference: 150,
+  });
+  assert.equal(sig.tier, "BELOW");
+  assert.ok((sig.deltaPercent ?? 0) >= -50);
+});
+
+test("classifyConditionMatched: graded ask with no matched-grade data -> UNKNOWN (no blended fallback)", () => {
+  const sig = classifyConditionMatched({
+    askPrice: 800,
+    listingTier: "GRADED",
+    conditionReference: null,
+    conditionSampleSize: 0,
+    lowestRawReference: 150,
+  });
+  assert.equal(sig.tier, "UNKNOWN");
+  assert.match(sig.reason ?? "", /no 30-day sold data for the GRADED/);
+});

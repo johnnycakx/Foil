@@ -42,6 +42,11 @@ export type ConditionInference = {
   tier: ListingConditionTier;
   confidence: InferenceConfidence;
   evidence: string[];
+  /** For GRADED listings with a named grading service: the PokeTrace tier key
+   *  to compare against (e.g. "PSA_9", "BGS_9_5"). Undefined when the grade has
+   *  no service (e.g. a bare "MT 8") — the reference resolver then returns
+   *  UNKNOWN rather than comparing against the wrong grade (ROADMAP #32.3). */
+  gradeKey?: string;
 };
 
 const MARKET_RE = /\b(japanese|japan|korean|korea|chinese|china|german|deutsch|french|fran[cç]ais|italian|italiano|spanish|espa[nñ]ol|portuguese|jpn|jp)\b/i;
@@ -49,7 +54,21 @@ const NOT_REAL_RE = /\b(proxy|fake|repro|reproduction|orica|altered|art\s*card|c
 // "lot", "bundle", "playset", "set of", "lot of", "x4", "(4)", "complete set",
 // and a bare plural "cards" (a single card is "card").
 const MULTI_RE = /\b(lot|bundle|playset|complete\s+set|set\s+of|lot\s+of)\b|\bx\s?\d{1,2}\b|\(\s?\d{1,2}\s?\)|\bcards\b/i;
-const GRADED_RE = /\b(PSA|BGS|CGC|SGC)\s*\d{1,2}(?:\.5)?\b/i;
+// Named grading service + grade -> a SPECIFIC PokeTrace tier (PSA_9 ≠ PSA_10).
+const GRADED_RE = /\b(PSA|BGS|CGC|SGC)\s*(10|\d(?:\.5)?)\b/i;
+// A bare numeric grade attached to a raw/mint abbreviation but with NO grading
+// service ("NM 7", "MT 8", "GEM MINT 10", "NM-MT 8.5"). The seller is denoting
+// a GRADE, not a clean raw condition — so we must NOT infer NM/MT. Without a
+// service we can't pick the right PokeTrace graded tier, so this routes to
+// UNKNOWN (ROADMAP #32.3, fixing the "NM 7" -> Near Mint false-positive). The
+// negative lookahead `(?!\s*\/)` keeps a collector number like "LP 6/102" from
+// matching (the 6 is a card number, not a grade).
+const BARE_GRADE_RE = /\b(?:GEM[\s-]*)?(?:NM[\s-]*MT|NEAR[\s-]*MINT|MINT|NM|MT|LP|MP|HP)\s*(?:10|[1-9](?:\.5)?)(?!\s*\/)\b/i;
+
+/** Build the PokeTrace graded tier key from a service + grade ("PSA","9.5" -> "PSA_9_5"). */
+function gradeKeyFor(service: string, grade: string): string {
+  return `${service.toUpperCase()}_${grade.replace(".", "_")}`;
+}
 
 function pushIf(ev: string[], cond: boolean, note: string): void {
   if (cond) ev.push(note);
@@ -93,12 +112,27 @@ export function inferListingCondition(input: {
     return { tier: "UNKNOWN", confidence: "low", evidence: [`multi-card / lot marker: "${multi[0]}"`] };
   }
 
-  // 4. Graded slab — strongest single-card signal.
+  // 4. Graded slab with a NAMED service — strongest single-card signal, and we
+  //    capture the SPECIFIC grade so the reference resolver compares PSA 9 vs
+  //    PSA 9 (not vs a PSA-10-inflated blend). ROADMAP #32.3.
   const graded = haystack.match(GRADED_RE);
-  if (input.isGraded || graded) {
-    pushIf(evidence, !!input.isGraded, "isGraded flag set");
-    pushIf(evidence, !!graded, `graded grade: "${graded?.[0]}"`);
-    return { tier: "GRADED", confidence: "high", evidence };
+  if (graded) {
+    const key = gradeKeyFor(graded[1], graded[2]);
+    return { tier: "GRADED", confidence: "high", evidence: [`graded grade: "${graded[0]}" -> ${key}`], gradeKey: key };
+  }
+  if (input.isGraded) {
+    // Flagged graded but no parseable grade in the title — we can't pick a
+    // specific tier, so downstream resolves to UNKNOWN (no blended fallback).
+    return { tier: "GRADED", confidence: "medium", evidence: ["isGraded flag set, no parseable grade"] };
+  }
+
+  // 4b. A bare numeric grade with NO grading service ("NM 7", "GEM MINT 10").
+  //     Ambiguous — could be a slab grade or seller shorthand, but it is NOT a
+  //     clean raw condition. Conservative: UNKNOWN (no service -> no comparable
+  //     PokeTrace grade tier). This kills the "NM 7" -> Near Mint mis-inference.
+  const bareGrade = haystack.match(BARE_GRADE_RE);
+  if (bareGrade) {
+    return { tier: "UNKNOWN", confidence: "low", evidence: [`numeric grade with no grading service: "${bareGrade[0].trim()}"`] };
   }
 
   const t = haystack.toUpperCase();

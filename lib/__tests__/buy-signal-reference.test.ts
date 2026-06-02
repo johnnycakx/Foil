@@ -4,7 +4,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { rawReferenceFromHistory } from "../buy-signal/reference.ts";
+import { rawReferenceFromHistory, conditionMatchedReferenceFromHistory } from "../buy-signal/reference.ts";
 import type { SoldHistory, SoldStat } from "../poketrace/by-uuid.ts";
 
 function stat(over: Partial<SoldStat>): SoldStat {
@@ -59,4 +59,45 @@ test("rawReferenceFromHistory: priced tier with no saleCount still contributes (
   const { reference, sampleSize } = rawReferenceFromHistory(h);
   assert.equal(reference, 150, "equal-weight mean when no counts present");
   assert.equal(sampleSize, 0);
+});
+
+// --- #32.3: grade-specific graded reference (no blended fallback) ---
+
+const gradedHistory = () =>
+  history({
+    NEAR_MINT: stat({ avg30d: 300, saleCount: 20 }),
+    DAMAGED: stat({ avg30d: 120, saleCount: 5 }),
+    PSA_9: stat({ avg30d: 3420, saleCount: 93 }),
+    PSA_10: stat({ avg30d: 30100, saleCount: 35 }),
+    BGS_9_5: stat({ avg30d: 5179, saleCount: 24 }),
+  });
+
+test("conditionMatched: GRADED with gradeKey PSA_9 returns PSA_9 ONLY (not a PSA-10 blend)", () => {
+  const r = conditionMatchedReferenceFromHistory(gradedHistory(), "GRADED", "PSA_9");
+  assert.equal(r.conditionReference, 3420, "must be the PSA_9 avg, not blended with PSA_10/BGS");
+  assert.equal(r.conditionSampleSize, 93);
+  assert.equal(r.matchedTier, "PSA_9");
+});
+
+test("conditionMatched: GRADED with PSA_10 gradeKey returns PSA_10's $30,100", () => {
+  const r = conditionMatchedReferenceFromHistory(gradedHistory(), "GRADED", "PSA_10");
+  assert.equal(r.conditionReference, 30100);
+});
+
+test("conditionMatched: GRADED with NO gradeKey -> UNKNOWN (no blended fallback — the #32.3 fix)", () => {
+  const r = conditionMatchedReferenceFromHistory(gradedHistory(), "GRADED");
+  assert.equal(r.conditionReference, null);
+  assert.equal(r.matchedTier, null);
+});
+
+test("conditionMatched: GRADED with a grade absent from history -> UNKNOWN", () => {
+  const r = conditionMatchedReferenceFromHistory(gradedHistory(), "GRADED", "CGC_10");
+  assert.equal(r.conditionReference, null);
+});
+
+test("conditionMatched: raw NM still matches the NM tier exactly + exposes lowestRaw", () => {
+  const r = conditionMatchedReferenceFromHistory(gradedHistory(), "NM");
+  assert.equal(r.conditionReference, 300);
+  assert.equal(r.matchedTier, "NEAR_MINT");
+  assert.equal(r.lowestRawReference, 120, "lowestRaw = DAMAGED for the raw outlier guard");
 });

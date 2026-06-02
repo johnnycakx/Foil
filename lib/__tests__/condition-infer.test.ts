@@ -51,10 +51,11 @@ for (const c of CASES) {
   });
 }
 
-test("infer: isGraded flag forces GRADED even with no grade in the title", () => {
+test("infer: isGraded flag forces GRADED but, with no parseable grade, medium + no gradeKey (#32.3 -> UNKNOWN downstream)", () => {
   const r = inferListingCondition({ title: "Charizard Base Set Holo Rare", isGraded: true });
   assert.equal(r.tier, "GRADED");
-  assert.equal(r.confidence, "high");
+  assert.equal(r.confidence, "medium");
+  assert.equal(r.gradeKey, undefined);
 });
 
 test("infer: empty / missing title -> UNKNOWN low", () => {
@@ -67,4 +68,50 @@ test("infer: market guard beats a graded grade (Japanese PSA 10 -> UNKNOWN, wron
   const r = inferListingCondition({ title: "Japanese Charizard PSA 10 Base Set" });
   assert.equal(r.tier, "UNKNOWN");
   assert.match(r.evidence[0], /market/);
+});
+
+// --- #32.3: grade-token disambiguation + grade-specific gradeKey ---
+
+test("infer: 'NM 7' is a bare grade with no service -> UNKNOWN, NOT Near Mint (the #32.3 bug)", () => {
+  const r = inferListingCondition({ title: "Espeon 32/75 Neo Discovery Regular NM 7" });
+  assert.equal(r.tier, "UNKNOWN");
+  assert.match(r.evidence[0], /no grading service/);
+});
+
+test("infer: 'MT 8' bare grade -> UNKNOWN", () => {
+  assert.equal(inferListingCondition({ title: "Charizard Base Set MT 8 holo" }).tier, "UNKNOWN");
+});
+
+test("infer: 'GEM MINT 10' (no service) -> UNKNOWN, not NM", () => {
+  assert.equal(inferListingCondition({ title: "Blastoise Base Set GEM MINT 10 holo" }).tier, "UNKNOWN");
+});
+
+test("infer: 'NM-MT 8.5' (no service) -> UNKNOWN", () => {
+  assert.equal(inferListingCondition({ title: "Umbreon Neo Discovery NM-MT 8.5" }).tier, "UNKNOWN");
+});
+
+test("infer: 'PSA 9' -> GRADED with gradeKey PSA_9 (grade-specific)", () => {
+  const r = inferListingCondition({ title: "Charizard Base Set PSA 9 4/102" });
+  assert.equal(r.tier, "GRADED");
+  assert.equal(r.gradeKey, "PSA_9");
+});
+
+test("infer: 'BGS 9.5' -> gradeKey BGS_9_5", () => {
+  assert.equal(inferListingCondition({ title: "Charizard Base BGS 9.5 Gem Mint" }).gradeKey, "BGS_9_5");
+});
+
+test("infer: 'CGC 8.5' -> gradeKey CGC_8_5; 'PSA 10' -> PSA_10", () => {
+  assert.equal(inferListingCondition({ title: "Venusaur Base CGC 8.5 Holo" }).gradeKey, "CGC_8_5");
+  assert.equal(inferListingCondition({ title: "Pikachu PSA 10 GEM MINT" }).gradeKey, "PSA_10");
+});
+
+test("infer: collector number is NOT a grade — 'LP 6/102' stays LP (lookahead guard)", () => {
+  const r = inferListingCondition({ title: "Gyarados Base Set LP 6/102" });
+  assert.equal(r.tier, "LP");
+  assert.equal(r.gradeKey, undefined);
+});
+
+test("infer: a clean raw phrase with no digit is unaffected — 'Near Mint' -> NM", () => {
+  assert.equal(inferListingCondition({ title: "Charizard Base Set Near Mint Holo" }).tier, "NM");
+  assert.equal(inferListingCondition({ title: "Machamp 8/102 NM" }).tier, "NM");
 });

@@ -246,7 +246,7 @@ export default async function CardPage({
   let buySignal = null;
   if (tier === "curated" && best) {
     const inferred = inferListingCondition({ title: best.title });
-    const matched = await resolveConditionMatchedReference(card.variants, selectedVariant, inferred.tier);
+    const matched = await resolveConditionMatchedReference(card.variants, selectedVariant, inferred.tier, inferred.gradeKey);
     buySignal = classifyConditionMatched({
       askPrice: best.price,
       listingTier: inferred.tier,

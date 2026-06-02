@@ -17,7 +17,6 @@
 import { getSoldHistory, type SoldHistory, type SoldStat, type SoldSource } from "../poketrace/by-uuid.ts";
 import type { PoketraceVariant } from "../poketrace/variant.ts";
 import { RAW_POKETRACE_TIERS } from "../cards/conditions.ts";
-import { isGradedTier } from "./compute.ts";
 import type { ListingConditionTier } from "./condition-infer.ts";
 
 // ebay/tcgplayer first (per-condition US tiers); cardmarket last (EU AGGREGATED
@@ -160,14 +159,17 @@ export function lowestRawReferenceFromHistory(history: SoldHistory | null): { re
 
 /**
  * Pure: resolve the reference for the listing's inferred condition tier from one
- * variant's history. GRADED matches the saleCount-weighted average across all
- * present graded tiers (coarse but honest — the methodology discloses it).
- * Raw tiers match exactly. Returns conditionReference: null on any mismatch so
- * the caller emits UNKNOWN instead of comparing across conditions.
+ * variant's history. GRADED matches the SPECIFIC grade tier (e.g. PSA_9 vs
+ * PSA_9, never a PSA-10-inflated blend — ROADMAP #32.3 / PATTERN I-009); a
+ * graded listing with no specific `gradeKey` (a bare grade with no service)
+ * resolves to UNKNOWN rather than a blended fallback. Raw tiers match exactly.
+ * Returns conditionReference: null on any mismatch so the caller emits UNKNOWN
+ * instead of comparing across conditions.
  */
 export function conditionMatchedReferenceFromHistory(
   history: SoldHistory | null,
   listingTier: ListingConditionTier,
+  gradeKey?: string,
 ): ConditionMatchedReference {
   const lowest = lowestRawReferenceFromHistory(history);
   const base: ConditionMatchedReference = {
@@ -182,26 +184,15 @@ export function conditionMatchedReferenceFromHistory(
   if (!history || listingTier === "UNKNOWN") return base;
 
   if (listingTier === "GRADED") {
-    // saleCount-weighted average across every present graded tier.
-    let num = 0;
-    let den = 0;
-    let sample = 0;
-    let firstKey: string | null = null;
-    for (const src of SOURCES) {
-      for (const [key, s] of Object.entries(history.bySource[src] ?? {})) {
-        if (!isGradedTier(key)) continue;
-        const v = stat30d(s);
-        if (v == null || v <= 0) continue;
-        const w = s.saleCount && s.saleCount > 0 ? s.saleCount : 1;
-        num += v * w;
-        den += w;
-        sample += s.saleCount ?? 0;
-        firstKey ??= key;
-      }
-    }
-    return den > 0
-      ? { ...base, conditionReference: num / den, conditionSampleSize: sample, matchedTier: "GRADED" }
-      : base;
+    // Grade-SPECIFIC: compare a PSA 9 ask against PSA_9 sold, not a blend.
+    // No gradeKey (bare grade, no service) or no data for that exact grade →
+    // UNKNOWN. We deliberately do NOT fall back to a blended graded average —
+    // that cross-grade blend was the #32.3 false-BELOW bug.
+    if (!gradeKey) return base;
+    const s = statFor(history, gradeKey);
+    const v = stat30d(s);
+    if (v == null || v <= 0) return base;
+    return { ...base, conditionReference: v, conditionSampleSize: s?.saleCount ?? 0, matchedTier: gradeKey };
   }
 
   const key = LISTING_TIER_TO_POKETRACE[listingTier];
@@ -220,6 +211,7 @@ export async function resolveConditionMatchedReference(
   variants: PoketraceVariant[] | undefined,
   selectedKey: string | undefined,
   listingTier: ListingConditionTier,
+  gradeKey?: string,
 ): Promise<ConditionMatchedReference> {
   if (!variants || variants.length === 0) return EMPTY_MATCH;
   try {
@@ -228,7 +220,7 @@ export async function resolveConditionMatchedReference(
     const explicit = selectedKey ? pairs.find((p) => p.variant.variantKey === selectedKey) : undefined;
     const ranked = [...pairs].sort((a, b) => tradedScore(b.history) - tradedScore(a.history));
     const selected = explicit ?? ranked[0];
-    return conditionMatchedReferenceFromHistory(selected.history, listingTier);
+    return conditionMatchedReferenceFromHistory(selected.history, listingTier, gradeKey);
   } catch {
     return EMPTY_MATCH;
   }

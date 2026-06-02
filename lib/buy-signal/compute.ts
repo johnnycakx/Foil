@@ -129,15 +129,21 @@ export function classifyConditionMatched(args: {
   if (conditionReference == null || !(conditionReference > 0)) {
     return unknown(`no 30-day sold data for the ${listingTier} condition`);
   }
+  // Outlier guard. Raw tiers floor on the LOWEST raw-tier sold avg (a raw ask
+  // below half of even the cheapest raw tier is junk). Graded asks floor on
+  // their OWN matched-grade reference (a PSA-9 ask below half the PSA-9 sold
+  // avg is a mislabeled/junk slab) — ROADMAP #32.3 closes the graded gap.
+  const guardFloorRef = listingTier === "GRADED" ? conditionReference : lowestRawReference;
   if (
-    typeof lowestRawReference === "number" &&
-    Number.isFinite(lowestRawReference) &&
-    lowestRawReference > 0 &&
+    typeof guardFloorRef === "number" &&
+    Number.isFinite(guardFloorRef) &&
+    guardFloorRef > 0 &&
     Number.isFinite(askPrice) &&
     askPrice > 0 &&
-    askPrice < lowestRawReference * OUTLIER_FLOOR_FRACTION
+    askPrice < guardFloorRef * OUTLIER_FLOOR_FRACTION
   ) {
-    return unknown("ask is an implausible outlier (below half the lowest sold tier) — likely a damaged, mislabeled, or junk listing");
+    const what = listingTier === "GRADED" ? "the matched grade's sold average" : "the lowest sold tier";
+    return unknown(`ask is an implausible outlier (below half ${what}) — likely a damaged, mislabeled, or junk listing`);
   }
 
   return classifyBuySignal({ askPrice, reference: conditionReference, sampleSize: conditionSampleSize, windowDays });
