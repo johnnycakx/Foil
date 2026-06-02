@@ -19,6 +19,19 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-06-01
+category: product
+status: captured
+---
+## Live-deal leaderboard (B.4) — out-discover Collectrics IQ on the live-deal axis
+
+Sort all curated cards by current buy-signal BELOW magnitude into a leaderboard of "the best live deals right now." This is the discovery surface that counters Collectrics IQ Price Lab's sticky "undervalued cards" leaderboard — except Foil's ranks by LIVE eBay asks (condition-matched, post-#32.3), which Collectric structurally can't do (it's a backward-looking valuation model, not pulling live listings). Gated on ROADMAP #10 (eBay Growth-Check ceiling lift) for the same Browse-quota reason as #32.2: a leaderboard ranking by live BELOW needs a live ask per card, so it can't ship on the static catalog grids until the ceiling lifts. Adjacent reference-enrichment candidates worth pursuing independently (signal augmentation, NOT a pivot to valuation): (1) grading intensity (PSA pop / time) — free data, useful where the 30-day sold sample is thin; (2) in/out-of-print status — rotated manually per set release; (3) pack scarcity / cost tracking — cheap scrape, high signal. Stealable UX (in-lane): per-card "why" explanation inline using the #32.3 data already surfaced (inferred condition + matched tier + delta), and honest-subjectivity framing ("if you disagree, adjust") per ADR-048. Explicitly do NOT steal: character premium (subjective, fights ADR-048), adjustable sliders (no natural inputs for a comparison-based signal), or the full multi-factor model (the 1-input MVP just survived three de-risking rounds). Strategic posture: don't pivot to valuation; out-discover on the live-deal axis; stay in lane.
+
+**Context:** Raised 2026-06-01 by John from a pokedatadadguy YouTube walkthrough of Collectrics IQ Price Lab (youtube.com/watch?v=0s0YMFOsrjY). Full competitive writeup in [competitive-collectric.md](competitive-collectric.md). The threat is discovery-beats-search for casual users; the counter is a live-deal leaderboard native to Foil's moat (live asks). Pairs with the buy-signal work (#32 / #32.1 / #32.3) as the consumer surface for the condition-matched signal once #10 lands.
+
+---
+
+---
 date: 2026-05-31
 category: product
 status: captured
