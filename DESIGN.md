@@ -150,7 +150,7 @@ gold and a coral that only ever appears under a cursor.
 
 ### Secondary
 - **Concierge Gold** (#c9a24b): The premium signal. Live-status dots, "good deal"
-  badges, the brand spark mark, focus rings, hairlines on premium surfaces, and
+  badges, the brand glyph, focus rings, hairlines on premium surfaces, and
   link-hover underlines. Never a background fill for large areas, never decorative.
   Its scarcity is the entire point. Two siblings exist only inside the brand
   glyph's holofoil gradient: **Gold Deep** (#a07d2c) and **Gold Light** (#e6c170).
@@ -283,18 +283,31 @@ already lifted before you point at it, drop it back down.
 - **Numeric (price) fields:** Right-aligned, narrow, prefixed with a slate `$`.
 
 ### Navigation
-- **Brand:** The Logo, spark glyph + "Foil" wordmark, in display font, navy.
+- **Brand:** The Logo, brand glyph + "Foil" wordmark, in display font, navy.
 - **Links:** Body/label scale, navy, gold-underline on hover, matching the text
   link pattern above.
 
-### Signature Component: The Foil Spark (brand glyph)
-A four-point gold sparkle with two smaller shimmer accents, the "spark of
-holofoil" collectors chase (ADR-036, replaced the rhombus, which read as a
-folder/square at favicon size). Filled with a three-stop holofoil gradient (Gold
-Deep → Gold Light → Concierge Gold), inlined as SVG so it doubles as the favicon
-(navy field at app-icon sizes for 16px legibility). It ladders sm/md/lg for footer
-/ header / hero. This mark is the *only* sanctioned gradient in the system (see
-Don'ts), it is a small mark, not a background. NOT a Pokeball.
+### Signature Component: The brand glyph
+The glyph is a small SVG mark, inlined so it doubles as the favicon, legible at
+16px, laddering sm/md/lg for footer / header / hero. That set of requirements is
+stable; the mark itself is **mid-refresh** (see below).
+
+**Current mark (`components/brand/logo.tsx`, ADR-040):** a pixel-art red/white
+Pokeball. It is the one place the cream/navy/gold palette is deliberately relaxed
+(classic red `#e63946`). **This mark is flagged for replacement** — "Pokeball" is a
+registered Nintendo/Pokémon trademark, an IP exposure for a buyer-side affiliate
+brand, and the logo refresh is a pre-PokeBeard-launch blocker. Four candidate
+directions are drafted in [docs/BRAND-LOGO-CONCEPTS.md](docs/BRAND-LOGO-CONCEPTS.md)
+(see also the 2026-06-02 IDEAS.md entry). Do not enshrine the Pokeball in new work.
+
+**History:** the prior mark was the "Foil Spark" (ADR-036, Session 46) — a gold
+sparkle filled with the three-stop holofoil gradient (Gold Deep → Gold Light →
+Concierge Gold), the *only* sanctioned gradient in the system. It was reverted to
+the Pokeball in Session 47.1 (ADR-038) → 47.3 (ADR-040). Whatever replaces the
+Pokeball: a small mark, not a background, holding on both cream and navy. If the
+chosen direction reintroduces the holofoil gradient (e.g. the "Light Split" or
+"Foil Corner" candidates), it remains the system's only sanctioned gradient (see
+Don'ts).
 
 ## 6. Do's and Don'ts
 
@@ -326,7 +339,8 @@ Don'ts), it is a small mark, not a background. NOT a Pokeball.
   a bug.
 - **Don't** let gold spread past ~10% of a screen, the moment it becomes a section
   background or a second button fill, it stops meaning anything.
-- **Don't** use `background-clip: text` gradients. The brand spark mark is the only
-  sanctioned gradient, and it is a small SVG mark, not text and not a panel.
+- **Don't** use `background-clip: text` gradients. The brand glyph's holofoil
+  gradient is the only sanctioned gradient, and it is a small SVG mark, not text
+  and not a panel.
 - **Don't** use side-stripe accents (`border-left`/`border-right` > 1px as a color
   bar) or default to a modal when an inline or progressive reveal would do.
