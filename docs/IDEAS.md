@@ -19,6 +19,19 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-06-02
+category: marketing
+status: captured
+---
+## IP risk: the live logo is a literal Pokeball (Nintendo trademark) — refresh before driving paid creator traffic
+
+The brand glyph at `components/brand/logo.tsx` (per [ADR-040](DECISIONS.md#adr-040--brand-glyph-is-the-classic-redwhite-pokeball-section-pattern-density-reduced)) is a pixel-art Pokeball — a registered Nintendo/Pokémon trademark — sitting in the brand position of a buyer-side affiliate business. Almost certainly below Nintendo's enforcement-detection threshold at current traffic, but it's exactly the wrong thing to *compound* by pointing paid creator traffic (PokeBeard) at it. **Action:** logo refresh promoted to a pre-PokeBeard-launch blocker. Four concept directions captured in [BRAND-LOGO-CONCEPTS.md](BRAND-LOGO-CONCEPTS.md) (Light Split / Faceted F / Foil Corner / The Tilt); recommendation is to generate Direction 1 (Light Split) + Direction 3 (Foil Corner) via Canva Magic Media, pick one, and swap `logo.tsx` + `app/favicon.ico` + `app/opengraph-image.tsx` before the PokeBeard send. Resolves the docs/code drift in the same swap (DESIGN.md §5 still documents the retired Foil Spark as canonical).
+
+**Context:** Surfaced 2026-06-02 while grounding the logo-concept drafting task. The docs/code "disagreement" investigation is **resolved by git history**: the Foil Spark was *built, then reverted*, not spec'd-and-never-built. Spark shipped Session 46 (ADR-036, `0cc9034`) → founder replaced it with a navy Pokeball Session 47.1 (ADR-038, `b9e1eca`) → classic red/white Pokeball Session 47.3 (ADR-040, `4227be8`). DECISIONS.md (line ~1437) records ADR-036's "not a Pokeball" reasoning being *explicitly reversed* by the founder. The drift is simply that DESIGN.md §5 was never updated to follow ADR-038/040 — a stale doc, not a silent code divergence. The trademark angle is the net-new finding the original logo decisions never weighed.
+
+---
+
+---
 date: 2026-06-01
 category: product
 status: captured

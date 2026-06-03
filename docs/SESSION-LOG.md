@@ -8,6 +8,16 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-02 — IP-risk discovery: the live logo is a literal Pokeball (trademark exposure) + four refresh directions drafted
+
+**Grounding a logo-concept drafting task surfaced an IP finding worth more than the concepts.** The live brand glyph (`components/brand/logo.tsx`, [ADR-040](DECISIONS.md#adr-040--brand-glyph-is-the-classic-redwhite-pokeball-section-pattern-density-reduced)) is a pixel-art **Pokeball** — a registered Nintendo/Pokémon trademark — in the brand position of a buyer-side affiliate business. Below Nintendo's detection threshold at current traffic, but exactly the wrong thing to compound by driving paid creator (PokeBeard) traffic at it. **Logo refresh promoted to a pre-PokeBeard-launch blocker.**
+
+- **Concepts drafted** in [docs/BRAND-LOGO-CONCEPTS.md](BRAND-LOGO-CONCEPTS.md): four directions (Light Split refraction prism / Faceted F monogram / Foil Corner card-edge / The Tilt line mark), each with concept, voice fit, generator-mistakes-to-avoid, a paste-ready Canva Magic Media prompt, and cream/navy dual-background notes. **Recommendation:** generate Direction 1 (Light Split) + Direction 3 (Foil Corner) via Magic Media, pick one, swap `logo.tsx` + `app/favicon.ico` + `app/opengraph-image.tsx` before the PokeBeard send. Hold the monogram for a human designer (AI garbles letterforms).
+- **Docs/code drift investigated and resolved.** The Foil Spark glyph (DESIGN.md §5, [ADR-036](DECISIONS.md#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim)) was *built, then reverted* — not spec'd-and-never-built. Spark shipped Session 46 (`0cc9034`) → navy Pokeball Session 47.1 (ADR-038, `b9e1eca`) → classic red/white Pokeball Session 47.3 (ADR-040, `4227be8`); the "not a Pokeball" reasoning was explicitly reversed by the founder. DESIGN.md §5 simply never followed the supersession — a stale doc, fixed in the same swap when a direction is chosen.
+- **Filed:** IDEAS.md entry (marketing, captured) for Sunday triage. Docs-only session; no code, tests, or production touched.
+
+---
+
 ## 2026-06-02 — Cold-visitor readiness arc: F1/F2/F3/F6/F8 shipped before the PokeBeard outreach (+ B.4/B.5 filed)
 
 **Closed the 5 small-effort gaps the readiness audit flagged as gating the creator pilot.** Each its own commit for clean revert:
