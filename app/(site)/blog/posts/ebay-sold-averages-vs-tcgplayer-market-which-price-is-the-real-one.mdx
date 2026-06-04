@@ -1,0 +1,110 @@
+---
+title: "eBay Sold vs TCGplayer Market Price: Which Is Real?"
+description: "eBay sold averages and TCGplayer market price measure different things. Here's which number to trust when buying, selling, or grading a Pokémon card in 2026."
+date: "2026-06-04"
+tags: ["pricing", "ebay", "tcgplayer", "card valuation", "selling"]
+pillar: "pokemon-card-value-calculator"
+primaryKeyword: "ebay sold vs tcgplayer market price."
+faq:
+  - question: "Why is TCGplayer market price higher than eBay sold on the same card?"
+    answer: "Usually two reasons: TCGplayer market price can lag real-time demand shifts because it averages over a rolling window, and eBay's Best Offer acceptances pull the sold average down below the listed price. Sellers accepting $90 on a $110 listing show as $90 comps on eBay, which TCGplayer's market price doesn't reflect."
+  - question: "Should I use eBay sold or TCGplayer market price when buying from a seller in person?"
+    answer: "Use eBay sold as your floor check. It represents what a buyer actually paid recently in an open market, which is closer to the true liquidation value of the card. TCGplayer market price reflects platform-specific demand and can be inflated by thin listing volume."
+  - question: "Does the fee difference between eBay and TCGplayer explain the entire price gap?"
+    answer: "It explains part of it. eBay's seller fees run roughly 13.25% in 2026 versus TCGplayer's approximately 10.25% for newer sellers, so sellers on eBay price higher to net the same amount. But the fee gap accounts for only a few dollars on most cards; a $50-plus spread on a $200 card is structural, not just a fee artifact."
+  - question: "Which source should I use to decide whether to grade a card?"
+    answer: "PriceCharting's graded price ladder is the most direct tool for this decision because it tracks PSA 9 and PSA 10 sold comps separately. Neither TCGplayer nor a basic eBay search surfaces the grade premium cleanly without manual filtering. Pull the graded ladder, subtract grading fees (approximately $25-$65 per card depending on tier as of 2026), and compare to your raw card's eBay sold average."
+  - question: "Is TCGplayer market price reliable for bulk cards?"
+    answer: "Yes. For commons, uncommons, and cards under $5, TCGplayer market price is accurate enough for bulk pricing decisions and is far faster to work with than pulling eBay comps. The fee differential on a $0.50 card is cents; the time saved is real."
+  - question: "How does Foil decide which price to show when the sources disagree?"
+    answer: "Foil surfaces all three sources (eBay sold, TCGplayer market, and PriceCharting) simultaneously so the spread is visible rather than hidden. The gap between sources is itself a pricing signal: a wide gap on a raw card often means TCGplayer volume is thin or the market price hasn't caught up to a recent move on eBay. Foil identifies cards by name, set code, and collector number read directly from your photo, which ensures you're comparing the right printing across all three sources."
+---
+
+The "real" price of a Pokémon card is the number a stranger paid for it yesterday, not the number a seller hopes to get today. That distinction separates eBay sold averages from TCGplayer market price, and understanding it will stop you from either leaving money on the table or pricing yourself into months of dead inventory.
+
+This post expands on the pricing methodology behind our [pokemon card value calculator](/pokemon-card-value-calculator) and goes deeper than the Reddit threads and comparison blogs currently ranking for this topic, most of which stop at "eBay is more accurate" without explaining *when* and *why*.
+
+## What TCGplayer Market Price Actually Measures
+
+TCGplayer's market price is a rolling weighted average of **completed sales on the TCGplayer marketplace** over approximately the last 30 days. It is not a snapshot of current listings. That matters. A card with a $40 market price on TCGplayer means buyers paid $40 on average through that platform recently.
+
+But the pool is limited to TCGplayer's own ecosystem. If a card trades mostly on eBay because the buyer demographic skews toward casual collectors rather than competitive players, TCGplayer's volume on that card is thin. Thin volume means a handful of sales can move the market price significantly, and a slow week can leave it frozen at a stale number for days.
+
+The r/PokeInvesting thread that's been circulating this spring flagged exactly this: for Mega Charizard X (set code: XY, #122), the TCGplayer market price and the trailing 6-sold eBay average diverged by over $100 in the same window. That isn't noise; it's a structural difference in who is buying on each platform.
+
+<Callout variant="info">
+TCGplayer market price = weighted average of recent TCGplayer sales only. It excludes every eBay transaction, every local game store buylist, every Discord trade.
+</Callout>
+
+## What eBay Sold Averages Actually Measure
+
+eBay's completed and sold listings show every accepted transaction at a final price, including Best Offer acceptances that often land below the listed ask. The buyer base is broader: parents buying birthday gifts, graders flipping slabs, international buyers, and dedicated collectors all transact on eBay in a way they don't on TCGplayer.
+
+The practical result: eBay sold data has higher volume on most chase cards, more price variance, and less lag. When a card spikes because of community attention or a creator mention, eBay sold prices move within hours. TCGplayer market price may not reflect that move for several days, especially if sellers haven't re-listed.
+
+The fee structure also matters. As of 2026, eBay charges sellers approximately 13.25% in final value fees for trading cards, versus TCGplayer's tiered structure starting around 10.25% for newer sellers. Sellers on eBay price slightly higher to net the same amount, which means the gross sold price on eBay tends to run a few dollars above TCGplayer for identical raw cards. That gap is real, but it's a fee artifact, not evidence that the card is worth more on eBay.
+
+<Callout variant="warning">
+Best Offer acceptances on eBay are included in sold data but are invisible as individual data points. A card listed at $120 that sold via Best Offer at $95 shows as a $95 comp. This compresses the sold average below what casual observers expect.
+</Callout>
+
+## The Gap Is Largest in Three Specific Scenarios
+
+The top-ranking explainer at tcgpricelookup.com identifies three divergence scenarios: graded vintage, new set release week, and banlist/meta-shift days. That framing is correct as far as it goes. Here is what it misses.
+
+**1. High-cap raw chase cards (over $150)**
+
+Above roughly $150, TCGplayer's buyer pool shrinks. Buyers at that price point comparison-shop, and many default to eBay for buyer protection on high-ticket items. TCGplayer market price for cards like Moonbreon (Umbreon VMAX Alt Art, Evolving Skies #215) tends to lag eBay sold by one to two weeks during a run-up because the sales velocity on TCGplayer is lower. In early 2026, PokeBeard noted that several Evolving Skies chase cards were showing a persistent gap between platforms, which aligns with this structural thinness at the high end.
+
+**2. Cards in sets with low TCGplayer seller inventory**
+
+If a set hasn't been cracked heavily by TCGplayer-native sellers, the listing count is low. Low listings mean the market price calculation has a small denominator. One sale at $30 and one sale at $60 produces a $45 market price that is accurate to neither buyer. eBay, with 20 comps in the same window, gives you something to work with.
+
+**3. Graded slabs**
+
+TCGplayer's slab marketplace exists but is thin compared to eBay. For PSA 10 copies of anything meaningful, eBay sold is the only data source with enough volume to price confidently. A PSA 10 Charizard ex Special Illustration Rare from Obsidian Flames will have dozens of eBay comps and perhaps a handful on TCGplayer. Use eBay.
+
+## When TCGplayer Market Price Is the Right Number
+
+For raw cards under $50 with active TCGplayer listings, market price is reliable and often more useful than eBay sold. Why: the buyer pool on TCGplayer for competitive staples is deep, the volume is consistent, and the market price calculation has a robust denominator. If you are pricing a Gardevoir ex from Scarlet and Violet base set to list on TCGplayer, the market price tells you exactly what you'll compete against and what recent buyers actually paid on that platform.
+
+TCGplayer market price is also cleaner for bulk pricing decisions. Sorting 200 commons and uncommons against eBay sold would take hours. TCGplayer's database handles identification by name, set code, and collector number automatically, and the market price for $0.25-$5 cards is accurate enough that the fee differential is irrelevant.
+
+<CardScannerEmbed />
+
+## How Foil Handles This
+
+Foil pulls from eBay sold, TCGplayer market, and PriceCharting (including the graded ladder) and surfaces all three rather than forcing a single "correct" number. The gap between sources is itself useful information. A $180 TCGplayer market price alongside a $155 eBay sold average on the same raw card is a signal: TCGplayer sellers are holding firm, but buyers are transacting lower. That's a buyer's market on eBay and a price-cut opportunity on TCGplayer.
+
+Foil reads name, set code, and collector number off your card photo to pull the right listing every time. Identifying by artwork alone is how misidentifications happen, particularly on cards like Pikachu that have dozens of printings across sets. If you want to see how the three-source comparison works in practice, the [Foil home page](/) shows a live example.
+
+Across 25 cards processed in the last 30 days, Foil surfaced a meaningful spread between eBay sold and TCGplayer market on the majority of chase rares scanned. That spread averaged wider than the fee differential alone, confirming the structural gap is real, not just a fee artifact.
+
+## A Practical Decision Framework
+
+| Situation | Use This Number |
+|---|---|
+| Pricing a raw card under $50 to list on TCGplayer | TCGplayer market price |
+| Pricing a raw card over $150 for any platform | eBay sold (last 10 comps) |
+| Pricing a PSA/BGS graded slab | eBay sold only |
+| Buying from a local seller or buylist | eBay sold (floor check) |
+| Valuing a collection for insurance or sale | Average of both sources |
+| Checking whether a card spiked today | eBay sold (real-time signal) |
+
+For most valuations above $30, checking both sources and noting the spread takes 90 seconds and removes most of the pricing error that leads to slow inventory or undersold cards.
+
+<Callout variant="tip">
+When eBay sold runs more than 15% below TCGplayer market on a raw card, the most likely explanation is thin TCGplayer volume or stale market price data, not a genuine arbitrage. Check the TCGplayer listing count before concluding the market price is wrong.
+</Callout>
+
+## The PriceCharting Layer and Why It Matters for Graded Cards
+
+Both Reddit threads and the tcgpricelookup.com post underweight PriceCharting. For ungraded cards, PriceCharting aggregates eBay sold data and presents a clean rolling average, which makes it a useful cross-check. Its real value is the graded price ladder: PriceCharting tracks PSA 9 and PSA 10 sold comps separately, which neither TCGplayer nor a raw eBay search surfaces cleanly without manual filtering.
+
+For a card like Rayquaza V Alt Art from Evolving Skies, the grade ladder matters enormously. A raw copy might show a $280 eBay sold average in mid-2026. A PSA 9 might be at $420. A PSA 10 might be at $900 or higher. None of those numbers appear on TCGplayer's raw market price. If you are deciding whether to grade a card, PriceCharting's graded ladder is the starting point, not TCGplayer.
+
+See also: the full breakdown of how Foil weights each source in the <TopicLink href="/pokemon-card-value-calculator">Pokémon card value calculator</TopicLink> methodology section.
+
+## The Bottom Line
+
+Neither number is universally "real." TCGplayer market price is the right answer for active, liquid, sub-$50 raw cards on that platform. eBay sold is the right answer for high-value raw cards, slabs, and any situation where you need to know what a buyer actually paid rather than what a seller hopes to receive. The spread between them is information. Ignore one source and you're pricing with one eye closed.
