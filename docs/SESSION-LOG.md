@@ -8,6 +8,17 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-05 — DEPLOYED the FoilTCG logo to production (John authorized) — Pokeball gone live
+
+**Shipped ADR-055 to prod + caught two live-verify gaps the build missed.** Commits: `262d0e3` (the logo work) → `98b012a` (footer wordmark + homepage OG fix) → `c4f534c` + `6309949` (Gate-12 em-dash cleanups). Deploys confirmed READY by polling prod content markers (the user declined the Vercel CLI; verification is curl/hash-based).
+- **Live verification on foiltcg.com (final, commit 6309949):** header **and** footer render the Fredoka "FoilTCG" wordmark (navy Foil + gold TCG) — `>TCG<`/`>Foil<` ×2, four clean `aria-label="FoilTCG home"`; favicon is the new foil-corner mark (**fresh-fetch sha256 == local `public/favicon.svg`**, not tab cache); homepage `og:image` → `/opengraph-image` (HTTP 200 image/png, the dynamic Fredoka wordmark card); **zero Pokeball remnants** (`#e63946` count 0 across homepage + favicon.svg + icon.svg); `app/favicon.ico` and `public/og-image.png` both 404 (removed).
+- **Gap 1 (caught live, fixed):** the footer rendered only plain-text "Foil TCG, LLC", not the wordmark lockup — added `<Logo>` to the footer.
+- **Gap 2 (regression I caused, caught live, fixed):** removing the static `/og-image.png` left the homepage with **no `og:image`** — Next's file-based `opengraph-image` does NOT cascade into a page that exports its own `openGraph` (proven: `/pricing-methodology`, which doesn't override, got the card; the homepage + `/deals`, which do, got nothing). Fixed by pointing the homepage `openGraph`/`twitter` images at `/opengraph-image`. **Followup:** `/deals` has the same imageless-OG shape — not fixed here (out of scope); worth a one-line metadata add later.
+- **Gate 12:** my footer aria-label shipped an em dash ("FoilTCG — home"); caught on live grep and fixed, then also cleaned the pre-existing stale header `aria-label="Foil — home"` → "FoilTCG home". The only em dashes left on the homepage are in the hand-authored page **title + meta description** marketing copy ("Foil — The best price…", "eBay — curated…") — pre-existing, unrelated to the logo, and not governed by Gate 12 (the content-engine voice gate, ADR-051); deliberately left untouched per "do not alter unrelated files".
+- **Untouched:** unrelated working-tree docs (`.claude/*`, handoff/plan/business-model/research docs) stayed unstaged across all four commits.
+
+---
+
 ## 2026-06-05 — Retired the Pokeball logo → Fredoka "FoilTCG" wordmark + foil-corner mark (ADR-055, trademark blocker)
 
 **Pre-PokeBeard-launch IP fix: removed the literal Pokémon Pokeball trade dress from the brand.** Replaced it with an owned mark — a **Fredoka "FoilTCG" wordmark** (navy "Foil" + gold-sheen "TCG", `next/font` `--font-wordmark`) and an **abstract foil-corner card glyph** (navy card + folded two-tone gold corner).
