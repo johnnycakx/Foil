@@ -33,11 +33,16 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     siteName: "Foil",
     url: "/deals",
+    // A page that exports its own openGraph does NOT inherit the file-based
+    // app/opengraph-image.tsx, so reference the dynamic OG (the FoilTCG
+    // wordmark card, ADR-055) explicitly or the share card is blank.
+    images: ["/opengraph-image"],
   },
   twitter: {
     card: "summary_large_image",
     title: "Today's best Pokémon card deals",
     description: DESCRIPTION,
+    images: ["/opengraph-image"],
   },
 };
 
