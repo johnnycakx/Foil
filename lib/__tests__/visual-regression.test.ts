@@ -269,28 +269,47 @@ test("CardScannerEmbed + TopicLink: cream palette, no pre-cream coral defaults",
 // Session 43 / ADR-032 — Brand mark: gold rhombus glyph + Foil wordmark.
 // ---------------------------------------------------------------------------
 
-test("Logo component: glyph is the classic red/white pixel Pokeball mark (ADR-040)", () => {
+test("Logo component: foil-corner card mark, zero Pokeball geometry (ADR-055)", () => {
   const src = readFile("components/brand/logo.tsx");
-  // Session 47.3 / ADR-040: the brand glyph is the classic Pokémon
-  // red/white Pokeball (palette discipline relaxed for the glyph only).
-  assert.doesNotMatch(src, /foil-spark-gradient/, "old spark gradient id should be gone");
-  assert.doesNotMatch(src, /#c9a24b/i, "no gold in the Pokeball mark");
-  assert.match(src, /function PokeballMark/, "PokeballMark must exist + be exported for bullet reuse");
-  assert.match(src, /shapeRendering="crispEdges"/, "pixel mark uses crispEdges");
-  assert.match(src, /#e63946/i, "classic Pokémon red top");
-  assert.match(src, /#ffffff/i, "white bottom + button");
-  assert.match(src, /#0f1e3a/i, "navy 'black' outline + band");
-  // The logo glyph renders the classic tone; bullets stay navy (default).
-  assert.match(src, /<PokeballMark px=\{px\} tone="classic"/, "LogoGlyph uses the classic red/white tone");
-  assert.match(src, /tone = "navy"/, "PokeballMark defaults to navy (the pill bullets stay navy)");
+  // ADR-055 retired the Pokeball (trade-dress exposure). The mark is now an
+  // abstract foil-corner card: navy body + two-tone gold folded corner.
+  assert.match(src, /function FoilCornerMark/, "FoilCornerMark must exist");
+  assert.doesNotMatch(src, /function PokeballMark/, "PokeballMark must be gone");
+  assert.doesNotMatch(src, /#e63946/i, "the Pokémon red must be gone");
+  assert.match(src, /#0f1e3a/i, "navy card body");
+  assert.match(src, /#c9a24b/i, "gold foil corner");
+  assert.match(src, /#a8842f/i, "darker gold fold underside");
 });
 
-test("Logo component: wordmark uses font-display + foil-navy tokens", () => {
+test("Logo component: FoilTCG wordmark — Fredoka, navy 'Foil' + gold 'TCG', accessible name (ADR-055)", () => {
   const src = readFile("components/brand/logo.tsx");
-  // The wordmark stays type-led (now Fraunces via the --font-display
-  // variable, ADR-036) and navy — only the glyph + display font changed.
-  assert.match(src, /font-display/);
-  assert.match(src, /text-foil-navy/);
+  assert.match(src, /font-wordmark/, "wordmark uses the Fredoka font-wordmark utility");
+  assert.match(src, /aria-label="FoilTCG home"/, "accessible name (no em dash — Gate 12)");
+  assert.match(src, /text-foil-navy/, "onCream tone: navy 'Foil'");
+  assert.match(src, /text-foil-cream/, "onNavy tone: cream 'Foil'");
+  assert.match(src, />Foil</, "'Foil' word");
+  assert.match(src, />\s*TCG\s*</, "'TCG' word");
+});
+
+test("Wordmark font Fredoka is pinned + exposed as font-wordmark (ADR-055)", () => {
+  const layout = readFile("app/layout.tsx");
+  assert.match(layout, /Fredoka/, "layout imports Fredoka");
+  assert.match(layout, /variable:\s*["']--font-wordmark["']/, "Fredoka backs the --font-wordmark var");
+  const css = readFile("app/globals.css");
+  assert.match(css, /--font-wordmark:\s*var\(--font-wordmark\)/, "the font-wordmark utility token exists");
+});
+
+test("Brand assets: favicon + icon + OG carry the foil-corner mark / wordmark, no Pokeball (ADR-055)", () => {
+  const fav = readFile("public/favicon.svg");
+  assert.doesNotMatch(fav, /#e63946/i, "favicon must not be the red Pokeball");
+  assert.match(fav, /M 17 4 L 26 13/, "favicon carries the foil-corner fold path");
+  const icon = readFile("public/icon.svg");
+  assert.doesNotMatch(icon, /#e63946/i, "icon.svg must not be the Pokeball");
+  assert.match(icon, /Foil<\/tspan>/, "icon.svg carries the 'Foil' wordmark");
+  assert.match(icon, /TCG<\/tspan>/, "icon.svg carries the 'TCG' wordmark");
+  const og = readFile("app/opengraph-image.tsx");
+  assert.doesNotMatch(og, /#FF6B5C/i, "OG must not use the retired coral");
+  assert.match(og, /FoilTCG|Fredoka/, "OG carries the FoilTCG wordmark");
 });
 
 test("Site header: uses the <Logo /> brand component (ADR-032)", () => {
@@ -368,13 +387,14 @@ test("Home page: orphan CardPeek decorations removed (ADR-038)", () => {
   assert.doesNotMatch(src, /CardPeek/, "CardPeek (component + invocations) should be gone");
 });
 
-test("Hero pills: gold-dot bullets swapped to navy Pokeball marks (ADR-038)", () => {
+test("Hero pills: bullets use the foil-corner mark, no Pokeball (ADR-055)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // The Live pill + the Verified-Seller pill use <PokeballMark /> as the
-  // bullet now (gold animate-ping dot removed). At least two instances.
-  const marks = (src.match(/<PokeballMark\b/g) ?? []).length;
-  assert.ok(marks >= 2, "expected >=2 PokeballMark bullets (Live + trust pills)");
-  assert.match(src, /import \{ PokeballMark \} from "@\/components\/brand\/logo"/);
+  // The Live pill + the Verified-Seller pill use <FoilCornerMark /> as the
+  // bullet (the navy Pokeball bullet is retired). At least two instances.
+  const marks = (src.match(/<FoilCornerMark\b/g) ?? []).length;
+  assert.ok(marks >= 2, "expected >=2 FoilCornerMark bullets (Live + trust pills)");
+  assert.match(src, /import \{ FoilCornerMark \} from "@\/components\/brand\/logo"/);
+  assert.doesNotMatch(src, /<PokeballMark\b/, "no PokeballMark bullets remain");
 });
 
 test("Display font is Fraunces with the SOFT warmth axis (ADR-036)", () => {
@@ -399,21 +419,19 @@ test("Hero: the grail showcase renders ABOVE the H1 (ADR-037)", () => {
   assert.ok(cardsIdx < h1Idx, "the HERO_CARDS showcase must render before the H1");
 });
 
-test("How it works: navy+white Pokeball pattern band, that section only (ADR-039)", () => {
+test("How it works: foil-corner card watermark, that section only, no Pokeball (ADR-055)", () => {
   const src = readFile("app/(site)/page.tsx");
-  assert.doesNotMatch(src, /function FloralPattern/, "FloralPattern should be gone");
-  assert.doesNotMatch(src, /foil-floral/, "the floral pattern id should be gone");
-  assert.match(src, /function PokeballPattern/, "PokeballPattern component must exist");
-  assert.match(src, /<pattern id="foil-pokeball"/, "the Pokeball <pattern> tile must exist");
+  assert.doesNotMatch(src, /function PokeballPattern/, "PokeballPattern should be gone");
+  assert.doesNotMatch(src, /foil-pokeball/, "the Pokeball pattern id should be gone");
+  assert.doesNotMatch(src, /#e63946/i, "no Pokémon red in the pattern");
+  assert.match(src, /function FoilCornerPattern/, "FoilCornerPattern component must exist");
+  assert.match(src, /<pattern id="foil-card-pattern"/, "the foil-corner <pattern> tile must exist");
   // Rendered exactly once — How it works is the only textured section.
-  const uses = (src.match(/<PokeballPattern\s*\/>/g) ?? []).length;
-  assert.equal(uses, 1, "PokeballPattern should render exactly once (How it works only)");
-  // ADR-039: two-tone (navy dome + white bottom) detailed pixel line work.
-  assert.match(src, /fill="#0f1e3a"/i, "navy dome/band/outline");
-  assert.match(src, /fill="#ffffff"/i, "white bottom half — the classic two-tone read");
-  assert.match(src, /<rect x="7" y="7" width="2" height="2" fill="#ffffff"/i, "white center button");
-  // ADR-039 opacity (≈14% mobile, ≈20% desktop) kept; ADR-040 loosened the
-  // tile to 48×96 (ball pitch 48, ~1.4× ball width) — ~50% fewer balls.
-  assert.match(src, /opacity-\[0\.14\]\s+sm:opacity-\[0\.2\]/);
-  assert.match(src, /<pattern id="foil-pokeball" patternUnits="userSpaceOnUse" width="48" height="96"/);
+  const uses = (src.match(/<FoilCornerPattern\s*\/>/g) ?? []).length;
+  assert.equal(uses, 1, "FoilCornerPattern should render exactly once (How it works only)");
+  // In-brand two-tone: navy card body + gold folded corner.
+  assert.match(src, /fill="#0f1e3a"/i, "navy card body");
+  assert.match(src, /fill="#c9a24b"/i, "gold folded corner");
+  // Faint watermark so text on top holds AA contrast.
+  assert.match(src, /opacity-\[0\.0\d\]/, "low-opacity watermark");
 });

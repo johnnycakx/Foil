@@ -1,15 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" shape-rendering="crispEdges">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e3c87a"/>
+      <stop offset="1" stop-color="#c9a24b"/>
+    </linearGradient>
+  </defs>
   <rect width="64" height="64" rx="14" fill="#f8f5f0"/>
-  <g transform="translate(10 10) scale(2.75)">
-    <g fill="#0f1e3a">
-      <rect x="6" y="0" width="4" height="1"/><rect x="4" y="1" width="8" height="1"/><rect x="3" y="2" width="10" height="1"/><rect x="2" y="3" width="12" height="1"/><rect x="2" y="4" width="12" height="1"/><rect x="1" y="5" width="14" height="1"/><rect x="1" y="6" width="14" height="1"/><rect x="0" y="7" width="16" height="1"/><rect x="0" y="8" width="16" height="1"/><rect x="1" y="9" width="14" height="1"/><rect x="1" y="10" width="14" height="1"/><rect x="2" y="11" width="12" height="1"/><rect x="2" y="12" width="12" height="1"/><rect x="3" y="13" width="10" height="1"/><rect x="4" y="14" width="8" height="1"/><rect x="6" y="15" width="4" height="1"/>
-    </g>
-    <g fill="#e63946">
-      <rect x="5" y="1" width="6" height="1"/><rect x="4" y="2" width="8" height="1"/><rect x="3" y="3" width="10" height="1"/><rect x="3" y="4" width="10" height="1"/><rect x="2" y="5" width="12" height="1"/><rect x="2" y="6" width="12" height="1"/>
-    </g>
-    <g fill="#ffffff">
-      <rect x="3" y="11" width="10" height="1"/><rect x="3" y="12" width="10" height="1"/><rect x="4" y="13" width="8" height="1"/><rect x="5" y="14" width="6" height="1"/><rect x="7" y="15" width="2" height="1"/>
-    </g>
-    <rect x="7" y="8" width="2" height="2" fill="#ffffff"/>
+  <g transform="translate(6.4 6.4) scale(1.6)">
+    <path d="M 9.5 4 H 17 L 26 13 V 24.5 A 3.5 3.5 0 0 1 22.5 28 H 9.5 A 3.5 3.5 0 0 1 6 24.5 V 7.5 A 3.5 3.5 0 0 1 9.5 4 Z" fill="#0f1e3a"/>
+    <path d="M 17 4 H 26 V 13 Z" fill="#a8842f"/>
+    <path d="M 17 4 L 26 13 H 17 Z" fill="url(#sheen)"/>
   </g>
 </svg>

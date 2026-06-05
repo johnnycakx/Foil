@@ -283,31 +283,39 @@ already lifted before you point at it, drop it back down.
 - **Numeric (price) fields:** Right-aligned, narrow, prefixed with a slate `$`.
 
 ### Navigation
-- **Brand:** The Logo, brand glyph + "Foil" wordmark, in display font, navy.
+- **Brand:** The Logo — foil-corner card mark + "FoilTCG" wordmark — in the
+  Fredoka wordmark font. "Foil" navy (or cream on dark), "TCG" gold.
 - **Links:** Body/label scale, navy, gold-underline on hover, matching the text
   link pattern above.
 
-### Signature Component: The brand glyph
-The glyph is a small SVG mark, inlined so it doubles as the favicon, legible at
-16px, laddering sm/md/lg for footer / header / hero. That set of requirements is
-stable; the mark itself is **mid-refresh** (see below).
+### Signature Component: The FoilTCG wordmark + foil-corner mark
+The brand lockup (`components/brand/logo.tsx`, **ADR-055**) is a wordmark plus a
+small mark, laddering sm/md/lg for footer / header / hero:
 
-**Current mark (`components/brand/logo.tsx`, ADR-040):** a pixel-art red/white
-Pokeball. It is the one place the cream/navy/gold palette is deliberately relaxed
-(classic red `#e63946`). **This mark is flagged for replacement** — "Pokeball" is a
-registered Nintendo/Pokémon trademark, an IP exposure for a buyer-side affiliate
-brand, and the logo refresh is a pre-PokeBeard-launch blocker. Four candidate
-directions are drafted in [docs/BRAND-LOGO-CONCEPTS.md](docs/BRAND-LOGO-CONCEPTS.md)
-(see also the 2026-06-02 IDEAS.md entry). Do not enshrine the Pokeball in new work.
+- **Wordmark:** "FoilTCG" set in **Fredoka 700** (pinned via `next/font/google`,
+  exposed as the `font-wordmark` utility). "Foil" is navy (`onCream`, the default
+  header tone) or cream (`onNavy`, for footer / OG / dark surfaces); "TCG" is gold
+  with a restrained vertical sheen gradient (Gold → Gold Light → Gold) clipped to
+  the text — a nod to the brand name, not a glossy-toy 3D effect. Accessible name:
+  `"FoilTCG home"` (no em dash, Gate 12).
+- **Mark (`FoilCornerMark`):** an abstract foil-corner card — a navy rounded-rect
+  card tile with a folded top-right corner revealing a two-tone gold foil back
+  (bright flap `#c9a24b` with sheen over a darker underside `#a8842f`). It is the
+  favicon (`public/favicon.svg`, legible at 16px), the lockup icon, and tiles as
+  the faint "How it works" section watermark (`FoilCornerPattern`). Geometry-only
+  and isolated so it can be swapped without touching the wordmark.
 
-**History:** the prior mark was the "Foil Spark" (ADR-036, Session 46) — a gold
-sparkle filled with the three-stop holofoil gradient (Gold Deep → Gold Light →
-Concierge Gold), the *only* sanctioned gradient in the system. It was reverted to
-the Pokeball in Session 47.1 (ADR-038) → 47.3 (ADR-040). Whatever replaces the
-Pokeball: a small mark, not a background, holding on both cream and navy. If the
-chosen direction reintroduces the holofoil gradient (e.g. the "Light Split" or
-"Foil Corner" candidates), it remains the system's only sanctioned gradient (see
-Don'ts).
+**No Pokémon trade dress.** The mark uses no Pokeball or other Pokémon-trademark
+shape, and avoids the Pokémon yellow+blue trade dress — it is fully in the
+cream/navy/gold system. The holofoil gradient on "TCG" + the fold flap is the
+*only* sanctioned gradient in the system (see Don'ts).
+
+**History:** the lineage was "Foil Spark" (ADR-036, Session 46) → navy Pokeball
+(ADR-038, 47.1) → classic red/white Pokeball (ADR-040, 47.3). The Pokeball was a
+registered Nintendo/Pokémon trademark in the brand position of a buyer-side
+affiliate business — an IP exposure. **ADR-055 (2026-06-05) retired it entirely**
+for the owned Fredoka wordmark + foil-corner mark, pre-PokeBeard-launch. Do not
+reintroduce the Pokeball or any Pokémon-trademark shape.
 
 ## 6. Do's and Don'ts
 

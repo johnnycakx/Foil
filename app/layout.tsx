@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces, Fredoka } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
@@ -25,9 +25,19 @@ const fraunces = Fraunces({
   axes: ["opsz", "SOFT"],
 });
 
-// ADR-032 — brand metadata aligned with the deal-finder positioning
-// (ADR-020) + the gold-rhombus mark. The OG + Twitter card reference
-// /public/og-image.png so every share renders the new brand surface.
+// Brand wordmark font (ADR-055). Fredoka — bold, rounded, confident — sets the
+// "FoilTCG" lockup. Exposed as the `font-wordmark` utility via globals.css.
+const fredoka = Fredoka({
+  variable: "--font-wordmark",
+  subsets: ["latin"],
+  weight: ["600", "700"],
+});
+
+// Brand metadata aligned with the deal-finder positioning (ADR-020) + the
+// FoilTCG wordmark (ADR-055). The favicon is the foil-corner card mark
+// (public/favicon.svg). OG + Twitter images are generated dynamically by
+// app/opengraph-image.tsx + app/twitter-image.tsx (Next auto-discovers them),
+// so the static /og-image.png is retired and not referenced here.
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://foiltcg.com"),
   title: {
@@ -51,9 +61,6 @@ export const metadata: Metadata = {
       "Search any Pokémon card and instantly see the best live deal across eBay. Free wishlist alerts when prices drop.",
     siteName: "Foil",
     url: "/",
-    images: [
-      { url: "/og-image.png", width: 1200, height: 630, alt: "Foil — the best price on any Pokémon card" },
-    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -61,7 +68,6 @@ export const metadata: Metadata = {
     description:
       "Search any Pokémon card and instantly see the best live deal across eBay. Free wishlist alerts when prices drop.",
     creator: "@foilcards",
-    images: ["/og-image.png"],
   },
 };
 
@@ -73,7 +79,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${fredoka.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {/* Impact.com affiliate program site verification - see ADR-020 once landed. */}

@@ -1,118 +1,109 @@
-// ADR-040 — Pokeball brand glyph + "Foil" wordmark.
+// ADR-055 — Fredoka "FoilTCG" wordmark + foil-corner card mark.
 //
-// The glyph is an 8-bit pixel Pokeball on a 16×16 grid (same geometry as
-// the "How it works" section pattern, just at brand-mark scale). It has
-// two tones:
-//   - "classic" (the brand mark / favicon / app icons): classic Pokémon
-//     red top (#e63946), white bottom, navy "black" outline + center band,
-//     white center button. Per ADR-040 the brand glyph is the one place
-//     the cream/navy/gold palette discipline is relaxed — the Pokeball
-//     reads as a Pokeball only in red/white.
-//   - "navy" (default; the inline pill bullets): navy dome + white bottom,
-//     monochrome, so the small text accents stay on-palette.
-// navy (#0f1e3a) stands in for "black" (the brand's near-black) on the
-// outline/band/button-ring. `shape-rendering: crispEdges` keeps the
-// pixels sharp at every size, including the 16px favicon.
+// Supersedes the ADR-036/038/040 glyph lineage (Foil Spark → navy Pokeball →
+// classic red/white Pokeball). The literal Pokeball was Nintendo/Pokémon
+// trade dress in the brand position of a buyer-side affiliate business — a
+// pre-PokeBeard-launch trademark-exposure blocker. This replaces it with an
+// owned mark: a Fredoka wordmark ("Foil" + gold-sheen "TCG") and an abstract
+// foil-corner card glyph. No Pokeball, no Pokémon-trademark shapes, no
+// yellow+blue Pokémon trade dress — navy/gold, fully in-brand.
+//
+// Tokens (globals.css @theme): navy #0f1e3a, gold #c9a24b, cream #f8f5f0.
+// Fredoka is pinned in app/layout.tsx as the `--font-wordmark` next/font var,
+// exposed as the `font-wordmark` Tailwind utility.
 
 type Size = "sm" | "md" | "lg";
-type Tone = "navy" | "classic";
+/** "onCream" (default, header): navy "Foil". "onNavy" (footer/dark/OG): cream "Foil". */
+type Tone = "onCream" | "onNavy";
 
-const GLYPH_PX: Record<Size, number> = {
-  sm: 12,
-  md: 14,
-  lg: 22,
-};
+const MARK_PX: Record<Size, number> = { sm: 16, md: 20, lg: 30 };
+const WORDMARK_CLASS: Record<Size, string> = { sm: "text-base", md: "text-xl", lg: "text-3xl" };
+const GAP_CLASS: Record<Size, string> = { sm: "gap-1.5", md: "gap-2", lg: "gap-2.5" };
 
-const WORDMARK_CLASS: Record<Size, string> = {
-  sm: "text-sm",
-  md: "text-lg",
-  lg: "text-2xl",
-};
-
-const GAP_CLASS: Record<Size, string> = {
-  sm: "gap-1.5",
-  md: "gap-2",
-  lg: "gap-2.5",
-};
+// Darker gold for the fold underside (the revealed corner) — passes as a flat
+// accent, distinct enough from the bright flap to read as a fold.
+const GOLD = "#c9a24b";
+const GOLD_DARK = "#a8842f";
+const GOLD_LIGHT = "#e3c87a";
+const NAVY = "#0f1e3a";
 
 /**
- * The pixel Pokeball, on a 16×16 grid. `tone="classic"` = red/white brand
- * mark; `tone="navy"` (default) = navy monochrome for inline bullets.
+ * Foil-corner card mark. A navy rounded-rect card tile whose top-right corner
+ * is folded forward, revealing a two-tone gold foil back (a "dog-ear"): the
+ * cut corner shows darker gold (underside), the folded flap is bright gold with
+ * a restrained vertical sheen gradient. Transparent background — drop it into
+ * any lockup. Isolated + geometry-only so John can swap it later without
+ * touching the wordmark. (viewBox 0 0 32 32; card x6→26 y4→28, fold leg 9.)
  */
-export function PokeballMark({ px = 14, tone = "navy" }: { px?: number; tone?: Tone }) {
-  const topFill = tone === "classic" ? "#e63946" : "#0f1e3a";
+export function FoilCornerMark({ px = 20 }: { px?: number }) {
   return (
     <svg
-      viewBox="0 0 16 16"
+      viewBox="0 0 32 32"
       width={px}
       height={px}
       role="presentation"
       aria-hidden
-      shapeRendering="crispEdges"
       className="inline-block shrink-0"
     >
-      {/* navy disc = outline + center band ("black") */}
-      <g fill="#0f1e3a">
-        <rect x="6" y="0" width="4" height="1" />
-        <rect x="4" y="1" width="8" height="1" />
-        <rect x="3" y="2" width="10" height="1" />
-        <rect x="2" y="3" width="12" height="1" />
-        <rect x="2" y="4" width="12" height="1" />
-        <rect x="1" y="5" width="14" height="1" />
-        <rect x="1" y="6" width="14" height="1" />
-        <rect x="0" y="7" width="16" height="1" />
-        <rect x="0" y="8" width="16" height="1" />
-        <rect x="1" y="9" width="14" height="1" />
-        <rect x="1" y="10" width="14" height="1" />
-        <rect x="2" y="11" width="12" height="1" />
-        <rect x="2" y="12" width="12" height="1" />
-        <rect x="3" y="13" width="10" height="1" />
-        <rect x="4" y="14" width="8" height="1" />
-        <rect x="6" y="15" width="4" height="1" />
-      </g>
-      {/* top dome interior — red (classic) or navy (navy tone) */}
-      <g fill={topFill}>
-        <rect x="5" y="1" width="6" height="1" />
-        <rect x="4" y="2" width="8" height="1" />
-        <rect x="3" y="3" width="10" height="1" />
-        <rect x="3" y="4" width="10" height="1" />
-        <rect x="2" y="5" width="12" height="1" />
-        <rect x="2" y="6" width="12" height="1" />
-      </g>
-      {/* white bottom interior — inset 1px so the navy outline survives */}
-      <g fill="#ffffff">
-        <rect x="3" y="11" width="10" height="1" />
-        <rect x="3" y="12" width="10" height="1" />
-        <rect x="4" y="13" width="8" height="1" />
-        <rect x="5" y="14" width="6" height="1" />
-        <rect x="7" y="15" width="2" height="1" />
-      </g>
-      {/* white center button (clasp), ringed by the navy band */}
-      <rect x="7" y="8" width="2" height="2" fill="#ffffff" />
+      <defs>
+        <linearGradient id="foil-corner-sheen" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={GOLD_LIGHT} />
+          <stop offset="1" stopColor={GOLD} />
+        </linearGradient>
+      </defs>
+      {/* Navy card body — top-right corner sliced for the fold. */}
+      <path
+        d="M 9.5 4 H 17 L 26 13 V 24.5 A 3.5 3.5 0 0 1 22.5 28 H 9.5 A 3.5 3.5 0 0 1 6 24.5 V 7.5 A 3.5 3.5 0 0 1 9.5 4 Z"
+        fill={NAVY}
+      />
+      {/* Fold underside — the revealed corner (upper-right triangle), darker gold. */}
+      <path d="M 17 4 H 26 V 13 Z" fill={GOLD_DARK} />
+      {/* Folded flap lying on the card (lower-left triangle), bright gold + sheen. */}
+      <path d="M 17 4 L 26 13 H 17 Z" fill="url(#foil-corner-sheen)" />
     </svg>
   );
 }
 
-export function LogoGlyph({ size = "md" }: { size?: Size }) {
-  const px = GLYPH_PX[size];
-  return (
-    <span aria-hidden className="inline-block shrink-0" style={{ width: px, height: px }}>
-      <PokeballMark px={px} tone="classic" />
-    </span>
-  );
-}
-
+/**
+ * The FoilTCG wordmark lockup: foil-corner mark + "Foil" + gold-sheen "TCG",
+ * set in Fredoka (font-wordmark). `tone` flips "Foil" navy↔cream for cream vs
+ * navy/dark surfaces; "TCG" is always gold. Whole lockup is one accessible
+ * name: "FoilTCG home" (no em dash — Gate 12).
+ */
 export function Logo({
   size = "md",
-  withWordmark = true,
+  tone = "onCream",
+  withMark = true,
 }: {
   size?: Size;
-  withWordmark?: boolean;
+  tone?: Tone;
+  withMark?: boolean;
 }) {
+  const foilColor = tone === "onNavy" ? "text-foil-cream" : "text-foil-navy";
   return (
-    <span className={`font-display inline-flex items-center font-bold tracking-tight text-foil-navy ${GAP_CLASS[size]}`}>
-      <LogoGlyph size={size} />
-      {withWordmark && <span className={WORDMARK_CLASS[size]}>Foil</span>}
+    <span
+      aria-label="FoilTCG home"
+      className={`font-wordmark inline-flex items-center font-bold leading-none tracking-tight ${GAP_CLASS[size]}`}
+    >
+      {withMark && <FoilCornerMark px={MARK_PX[size]} />}
+      <span aria-hidden className={`inline-flex items-baseline ${WORDMARK_CLASS[size]}`}>
+        <span className={foilColor}>Foil</span>
+        {/* "TCG" gold with a restrained vertical sheen (gold→light→gold),
+            clipped to the text. A solid-gold fallback color shows for the
+            brief moment before background-clip paints + anywhere clip is
+            unsupported. */}
+        <span
+          className="bg-clip-text text-transparent"
+          style={{
+            color: GOLD,
+            backgroundImage: `linear-gradient(180deg, ${GOLD} 0%, ${GOLD_LIGHT} 50%, ${GOLD} 100%)`,
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+          }}
+        >
+          TCG
+        </span>
+      </span>
     </span>
   );
 }

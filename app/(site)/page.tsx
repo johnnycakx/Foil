@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { EmailCapture } from "@/components/email-capture";
 import { CARD_CATALOG, setIdsInCatalog } from "@/lib/cards/catalog";
-import { PokeballMark } from "@/components/brand/logo";
+import { FoilCornerMark } from "@/components/brand/logo";
 
 const SITE_TITLE = "Foil — The best price on any Pokémon card";
 const SITE_DESCRIPTION =
@@ -109,7 +109,7 @@ function Hero() {
           cards no longer overlap the text. */}
       <div className="relative mx-auto w-full max-w-3xl px-5 pt-10 pb-20 text-center sm:px-8 sm:pt-12 sm:pb-28">
         <p className="inline-flex items-center gap-2 rounded-full border border-foil-gold/40 bg-foil-cream/80 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">
-          <PokeballMark px={11} />
+          <FoilCornerMark px={13} />
           Live · tracking {cardCount} cards across {setCount} sets
         </p>
 
@@ -119,7 +119,7 @@ function Hero() {
         </h1>
 
         <p className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-foil-navy/10 bg-foil-cream/70 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">
-          <PokeballMark px={11} />
+          <FoilCornerMark px={13} />
           Built by a Level-4 TCGplayer Verified Seller
         </p>
 
@@ -165,71 +165,35 @@ function Hero() {
   );
 }
 
-// Session 47.1 (ADR-038) — navy Pokeball pixel pattern marking the "How
-// it works" band as the one distinct textured section. Same pixel
-// Pokeball silhouette as the brand glyph, tiled in a half-drop stagger,
-// in foil-navy. Opacity on the wrapper (≈4.5% mobile, ≈6% desktop) so the
-// texture is a faint brand watermark and text on top keeps AA contrast.
-// (Replaced the Session-47 gold floral, which clashed with the Pokeball
-// brand direction.)
-function PokeballPattern() {
-  // Detailed 8-bit pixel Pokeball on a 16×16 grid (ADR-039): navy dome +
-  // navy center band, white bottom half (navy outline preserved by a 1px
-  // inset), and a white center button ringed in navy. On the cream
-  // surface the navy carries the line work and the white reads as the
-  // light lower half — the classic two-tone Pokeball. Tightly packed in a
-  // half-drop stagger (balls near-touching) at 14% mobile / 20% desktop.
+// ADR-055 — foil-corner card watermark marking the "How it works" band as the
+// one distinct textured section (replaces the retired Pokeball pixel pattern).
+// The brand's foil-corner glyph (navy card + folded gold corner) tiled in a
+// half-drop stagger, in-palette. Wrapper opacity keeps it a faint watermark so
+// text on top holds AA contrast.
+function FoilCornerPattern() {
   return (
     <svg
       aria-hidden
-      className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.14] sm:opacity-[0.2]"
-      shapeRendering="crispEdges"
+      className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.06] sm:opacity-[0.08]"
     >
       <defs>
-        <g id="foil-pb">
-          {/* navy disc (full silhouette + outline + dome + band) */}
-          <g fill="#0f1e3a">
-            <rect x="6" y="0" width="4" height="1" />
-            <rect x="4" y="1" width="8" height="1" />
-            <rect x="3" y="2" width="10" height="1" />
-            <rect x="2" y="3" width="12" height="1" />
-            <rect x="2" y="4" width="12" height="1" />
-            <rect x="1" y="5" width="14" height="1" />
-            <rect x="1" y="6" width="14" height="1" />
-            <rect x="0" y="7" width="16" height="1" />
-            <rect x="0" y="8" width="16" height="1" />
-            <rect x="1" y="9" width="14" height="1" />
-            <rect x="1" y="10" width="14" height="1" />
-            <rect x="2" y="11" width="12" height="1" />
-            <rect x="2" y="12" width="12" height="1" />
-            <rect x="3" y="13" width="10" height="1" />
-            <rect x="4" y="14" width="8" height="1" />
-            <rect x="6" y="15" width="4" height="1" />
-          </g>
-          {/* white bottom half — inset 1px so the navy outline survives */}
-          <g fill="#ffffff">
-            <rect x="2" y="10" width="12" height="1" />
-            <rect x="3" y="11" width="10" height="1" />
-            <rect x="3" y="12" width="10" height="1" />
-            <rect x="4" y="13" width="8" height="1" />
-            <rect x="5" y="14" width="6" height="1" />
-            <rect x="7" y="15" width="2" height="1" />
-          </g>
-          {/* white center button (clasp), ringed by the navy band */}
-          <rect x="7" y="7" width="2" height="2" fill="#ffffff" />
+        {/* One foil-corner card glyph on a 32-unit grid (matches FoilCornerMark). */}
+        <g id="foil-card">
+          <path
+            d="M 9.5 4 H 17 L 26 13 V 24.5 A 3.5 3.5 0 0 1 22.5 28 H 9.5 A 3.5 3.5 0 0 1 6 24.5 V 7.5 A 3.5 3.5 0 0 1 9.5 4 Z"
+            fill="#0f1e3a"
+          />
+          <path d="M 17 4 H 26 V 13 Z" fill="#a8842f" />
+          <path d="M 17 4 L 26 13 H 17 Z" fill="#c9a24b" />
         </g>
-        {/* half-drop stagger; ADR-040 (Session 47.3) loosened the spacing —
-            ball diameter 34 on a 48px pitch (~1.4× ball width) so the
-            balls breathe ("too many pokeballs" feedback), ~50% fewer than
-            the near-touching 47.2 packing. The second row's ball is drawn
-            on both vertical edges so it reads whole across the tile seam. */}
-        <pattern id="foil-pokeball" patternUnits="userSpaceOnUse" width="48" height="96">
-          <use href="#foil-pb" transform="translate(7 7) scale(2.125)" />
-          <use href="#foil-pb" transform="translate(-17 55) scale(2.125)" />
-          <use href="#foil-pb" transform="translate(31 55) scale(2.125)" />
+        {/* Half-drop stagger: card ~32 units on a 72px pitch so the marks breathe. */}
+        <pattern id="foil-card-pattern" patternUnits="userSpaceOnUse" width="72" height="144">
+          <use href="#foil-card" transform="translate(8 12) scale(1.4)" />
+          <use href="#foil-card" transform="translate(-28 84) scale(1.4)" />
+          <use href="#foil-card" transform="translate(44 84) scale(1.4)" />
         </pattern>
       </defs>
-      <rect width="100%" height="100%" fill="url(#foil-pokeball)" />
+      <rect width="100%" height="100%" fill="url(#foil-card-pattern)" />
     </svg>
   );
 }
@@ -255,7 +219,7 @@ function HowItWorks() {
 
   return (
     <section className="relative isolate overflow-hidden border-y border-foil-navy/10 bg-foil-cream">
-      <PokeballPattern />
+      <FoilCornerPattern />
       <div className="relative mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
         <h2 className="font-display text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">How it works</h2>
         <p className="mt-3 max-w-2xl text-foil-slate">

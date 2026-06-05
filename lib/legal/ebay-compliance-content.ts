@@ -70,6 +70,10 @@ export const REQUIREMENTS: readonly PublicRequirement[] = [
     title: "No fallback to scraping eBay search HTML.",
     body: "Foil's only server-side connection to eBay is the official Browse API. The fallback CTA shown when the Browse response is empty is a navigable browser-facing eBay search URL (sponsored via EPN affiliate parameters) — but it is a link the visitor's browser follows, not a server-side fetch. The 2025 License Agreement's prohibition on automated HTML scraping is honored architecturally: Foil constructs no fetch call to www.ebay.com from server-side code.",
   },
+  {
+    title: "2025 License Agreement — `/deals` leaderboard precompute persists DERIVED metadata only, never an eBay listing payload.",
+    body: "Foil's 'Today's best deals' leaderboard is precomputed once a day by a background job that fetches each card's live eBay listing through the same official Browse API (cache: 'no-store'), classifies how its price compares to the card's recent sold prices, and then discards the listing. The cache that feeds the public board stores only Foil's derived signal (a below/at/above classification and the percentage), the recent sold reference from a separate pricing source, and basic catalog fields (card name, set, image) — never an eBay item ID, listing title, seller, listing URL, or raw asking price. The board makes no eBay call when a visitor loads it; the live listing resolves only when the visitor clicks through to an affiliate-tracked eBay search.",
+  },
 ];
 
 // ---------------------------------------------------------------------------

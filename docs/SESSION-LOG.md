@@ -8,6 +8,18 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-05 — Retired the Pokeball logo → Fredoka "FoilTCG" wordmark + foil-corner mark (ADR-055, trademark blocker)
+
+**Pre-PokeBeard-launch IP fix: removed the literal Pokémon Pokeball trade dress from the brand.** Replaced it with an owned mark — a **Fredoka "FoilTCG" wordmark** (navy "Foil" + gold-sheen "TCG", `next/font` `--font-wordmark`) and an **abstract foil-corner card glyph** (navy card + folded two-tone gold corner).
+- **P0 premise check expanded the surface.** The goal named `app/favicon.ico` + `app/opengraph-image.tsx`, but the *live* favicon is `public/favicon.svg` + `public/icon.svg` + `public/apple-touch-icon.png` and the *live* OG is the static `public/og-image.png` (metadata-referenced) — none of which the goal named. I handled **all** Pokeball surfaces: `components/brand/logo.tsx` (new `FoilCornerMark` + `Logo` with `onCream`/`onNavy` tones), the two hero pills + the "How it works" `FoilCornerPattern` watermark in `page.tsx`, the sold-history bullet, the three `public/` icons, deleted `app/favicon.ico` + `public/og-image.png`, and rebuilt the dynamic OG (`app/opengraph-image.tsx`, navy + Fredoka-via-CSS-API with a Satori fallback so it never 500s) + new `app/twitter-image.tsx`.
+- **No Pokémon trade dress:** no Pokeball, no trademark shape, and deliberately not the yellow+blue palette — fully cream/navy/gold. WCAG AA holds (navy-on-cream, gold-on-navy). Shared `computeCardBuySignal`-style isolation: the mark is geometry-only so John can swap it later.
+- **Drift guards rewritten** in `visual-regression.test.ts` (3 Pokeball tests → foil-corner/wordmark + a new Fredoka-wiring test + a brand-assets test); `sold-history-panel` bullet test flipped. **Grep proves zero Pokeball remnants** in `app/`/`components/`/`public/` (only removal-documenting comments remain).
+- **Caught + fixed a drift I introduced in the prior B.4 goal:** EBAY-COMPLIANCE.md row #13 had no mirror in the `/legal/ebay-api-compliance` content module (I'd added the doc row *after* that goal's test run). Added the mirror; the drift test passes.
+- **Docs:** ADR-055 (supersedes the ADR-036/038/039/040 glyph lineage; marked ADR-040 superseded); DESIGN.md §5 rewritten; IDEAS "Pokeball IP risk" flipped to **shipped**.
+- **Gates:** premise ✅ · grep zero-remnants ✅ · `npm test` 794 (779 pass / 0 fail / 15 skip) · compliance:check **6/6** · `tsc` clean · `npm run build` clean · design:lint **0 new** (2 pre-existing warnings) · /security-review (below). **Not pushed — awaiting John.** Live-verify (header/footer/favicon/OG) is post-deploy.
+
+---
+
 ## 2026-06-05 — DEPLOYED `/deals` to production (John authorized) — live with 4 real below-market deals
 
 **Shipped the B.4 leaderboard end-to-end to prod.** All 5 deploy steps clean:

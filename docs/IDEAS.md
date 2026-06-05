@@ -19,11 +19,26 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
-date: 2026-06-02
-category: marketing
+date: 2026-06-04
+category: product
 status: captured
 ---
+## Foil as the deal-data layer AI agents cite (+ possible MCP monetization)
+
+Expose Foil's best-deal and buy-signal data to AI agents (a structured feed or an MCP server) so when a collector asks an assistant "where is the best deal on <card>," Foil is the cited source and the purchase routes to eBay with our affiliate tag. Stripe's "monetize your MCP app" could later charge agents or devs for premium access to Foil's deal data.
+
+**Context:** Raised 2026-06-04 in the Cowork strategy session while reviewing the Stripe Agentic Commerce page. Stripe Agentic Commerce itself is not a fit (it is for first-party merchants selling a catalog, and Foil is an affiliate with no inventory), so the angle is positioning Foil as the deal-data layer agents cite. Threat side: agentic checkout could disintermediate the affiliate-click middle layer, so the defense is owning the recommendation and trust layer plus the owned email list. See CONTEXT-HANDOFF-2026-06-04.md.
+
+---
+
+---
+date: 2026-06-02
+category: marketing
+status: shipped
+---
 ## IP risk: the live logo is a literal Pokeball (Nintendo trademark) — refresh before driving paid creator traffic
+
+**SHIPPED 2026-06-05 ([ADR-055](DECISIONS.md#adr-055--fredoka-foiltcg-wordmark--foil-corner-card-mark-pokeball-retired)).** The Pokeball is retired everywhere — replaced by an owned Fredoka "FoilTCG" wordmark (navy "Foil" + gold-sheen "TCG") + an abstract foil-corner card mark. Swapped the live surfaces the original note under-counted: `components/brand/logo.tsx`, the hero pills + "How it works" watermark in `page.tsx`, the sold-history bullet, `public/favicon.svg` + `public/icon.svg` + `public/apple-touch-icon.png` (the *actual* favicons, not the `app/favicon.ico` named here), `app/opengraph-image.tsx` + new `app/twitter-image.tsx` (the dynamic OG, not the static `public/og-image.png` which was deleted). Grep proves zero Pokeball remnants; DESIGN.md §5 updated. Built + gated; live-verify pending John's deploy.
 
 The brand glyph at `components/brand/logo.tsx` (per [ADR-040](DECISIONS.md#adr-040--brand-glyph-is-the-classic-redwhite-pokeball-section-pattern-density-reduced)) is a pixel-art Pokeball — a registered Nintendo/Pokémon trademark — sitting in the brand position of a buyer-side affiliate business. Almost certainly below Nintendo's enforcement-detection threshold at current traffic, but it's exactly the wrong thing to *compound* by pointing paid creator traffic (PokeBeard) at it. **Action:** logo refresh promoted to a pre-PokeBeard-launch blocker. Four concept directions captured in [BRAND-LOGO-CONCEPTS.md](BRAND-LOGO-CONCEPTS.md) (Light Split / Faceted F / Foil Corner / The Tilt); recommendation is to generate Direction 1 (Light Split) + Direction 3 (Foil Corner) via Canva Magic Media, pick one, and swap `logo.tsx` + `app/favicon.ico` + `app/opengraph-image.tsx` before the PokeBeard send. Resolves the docs/code drift in the same swap (DESIGN.md §5 still documents the retired Foil Spark as canonical).
 

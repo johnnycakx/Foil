@@ -1467,7 +1467,7 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 ## ADR-040 — Brand glyph is the classic red/white Pokeball; section pattern density reduced
 
 **Date:** 2026-05-29 (Session 47.3)
-**Status:** Accepted. Supersedes the **brand-glyph color** of [ADR-038](#adr-038--pokeball-as-the-brand-mark--section-pattern--bullet-accent) (navy monochrome → classic red/white) and iterates the **section-pattern density** of [ADR-039](#adr-039--pokeball-section-pattern-shape--density--opacity-iteration) (denser → looser). The Pokeball *geometry* (ADR-038/039), Fraunces wordmark, navy pill bullets, and the cream/navy/gold palette for chrome + text are unchanged.
+**Status:** **Superseded by [ADR-055](#adr-055--fredoka-foiltcg-wordmark--foil-corner-card-mark-pokeball-retired) (2026-06-05)** — the entire Pokeball brand-glyph lineage (ADR-036 spark mark → ADR-038 → ADR-039 → ADR-040) is retired for an owned Fredoka "FoilTCG" wordmark + foil-corner card mark, because the Pokeball is Nintendo/Pokémon trade dress (a pre-PokeBeard-launch IP-exposure blocker). Original status: Accepted — superseded the brand-glyph color of ADR-038 (navy → classic red/white) and iterated the ADR-039 section-pattern density; Fraunces display + the cream/navy/gold palette for chrome + text carry forward into ADR-055 unchanged.
 
 **Context.** Two pieces of founder feedback after Session 47.2: (a) the brand mark should be the **classic Pokémon red/white Pokeball**, not navy monochrome — the obvious, recognizable symbol; and (b) the "How it works" Pokeball pattern was still "too many pokeballs" at near-touching density.
 
@@ -1814,6 +1814,28 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 - Follow-ups: a Discord ops summary for the deals cron (skipped for launch — `browse_calls` already logs the calls); revisit a literal live-ask column only if a compliant cacheable-market-read variant is ever justified.
 
 **Cross-refs.** `app/api/cron/deals-refresh/route.ts`, `app/(site)/deals/page.tsx`, `components/deals/deals-board.tsx`, `lib/deals/{leaderboard,refresh-batch}.ts`, `lib/buy-signal/card-signal.ts`, `supabase/migrations/20260605120000_buy_signals.sql`, `docs/website-copy-deal-finder.md`, [R-008](RISKS.md), [R-012](RISKS.md), EBAY-COMPLIANCE.md row #13.
+
+## ADR-055 — Fredoka "FoilTCG" wordmark + foil-corner card mark (Pokeball retired)
+
+**Date:** 2026-06-05
+**Status:** Accepted. **Supersedes the entire Pokeball brand-glyph lineage** — [ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim) (Foil Spark mark) → [ADR-038](#adr-038--pokeball-as-the-brand-mark--section-pattern--bullet-accent) → [ADR-039](#adr-039--pokeball-section-pattern-shape--density--opacity-iteration) → [ADR-040](#adr-040--brand-glyph-is-the-classic-redwhite-pokeball-section-pattern-density-reduced). The cream/navy/gold palette ([ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness)) + Fraunces *display* font for headlines ([ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim)) are unchanged — this changes only the brand mark + adds a wordmark font.
+
+**Context.** The live brand glyph was a literal pixel-art Pokémon **Pokeball** (ADR-040) in the header, favicon, OG, and as the hero pill bullet + "How it works" section watermark. A Pokeball is registered Nintendo/Pokémon **trade dress** sitting in the brand position of a buyer-side affiliate business — an IP-exposure flagged in the 2026-06-02 IDEAS entry and made urgent by the imminent paid-creator (PokeBeard) traffic push. Retiring it was a pre-launch blocker.
+
+**Decision.**
+1. **Wordmark "FoilTCG" in Fredoka 700** (`next/font/google`, `--font-wordmark` → the `font-wordmark` Tailwind utility). "Foil" navy (`tone="onCream"`, default header) or cream (`tone="onNavy"`, footer/OG/dark); "TCG" gold with a restrained vertical sheen gradient (Gold → Gold-Light → Gold) clipped to the text. Bold, rounded, confident — not glossy-toy 3D. Accessible name `"FoilTCG home"` (no em dash, Gate 12).
+2. **Foil-corner card mark (`FoilCornerMark`)** — an abstract navy rounded-rect card with a folded top-right corner revealing a two-tone gold foil back (bright flap `#c9a24b` + sheen over a darker underside `#a8842f`). Geometry-only + isolated so John can swap it later. Reused as the lockup icon, the favicon (`public/favicon.svg` + `public/icon.svg`), the apple-touch-icon (regenerated 180×180 PNG via sharp), and a faint `FoilCornerPattern` "How it works" watermark.
+3. **No Pokémon trade dress** anywhere: no Pokeball, no Pokémon-trademark shape, and deliberately NOT the Pokémon yellow+blue palette — fully in cream/navy/gold.
+4. **OG/social rebuilt** — `app/opengraph-image.tsx` now renders the wordmark lockup on navy (Fredoka loaded best-effort via the Google Fonts CSS API with a graceful Satori-default fallback so it never 500s); `app/twitter-image.tsx` reuses it. The retired static `public/og-image.png` + the stale pre-pivot/coral scanner OG copy are gone; the static `app/favicon.ico` Pokeball is deleted (the SVG favicon is canonical).
+
+**Consequences.**
+- **Zero Pokeball remnants** in `app/`, `components/`, `public/` (grep gate; the only "Pokeball" strings left are comments documenting the removal). Drift guards rewritten in `visual-regression.test.ts` (mark = no `#e63946` / `function PokeballMark`; wordmark = `font-wordmark` + `aria-label` + both tones; assets carry the fold path / wordmark) + the `sold-history-panel` bullet test flipped to `FoilCornerMark`.
+- WCAG AA holds: navy-on-cream (`#0f1e3a` on `#f8f5f0`) and gold-on-navy (`#c9a24b` on `#0f1e3a`) both clear AA; the "TCG" sheen carries a solid-gold fallback color for the pre-clip paint + unsupported clients.
+- Fredoka is a second brand-font network dependency at build (next/font self-hosts it, so no runtime fetch); the OG-route Fredoka fetch is best-effort + falls back.
+- One drift I introduced in the prior B.4 goal surfaced + was fixed here: EBAY-COMPLIANCE.md row #13 had no mirror in `lib/legal/ebay-compliance-content.ts` (the `/legal/ebay-api-compliance` page); added so the drift test passes.
+- Follow-up: John may swap the foil-corner mark for a designer mark later — it's isolated to `FoilCornerMark` + the two SVGs + the apple-touch PNG.
+
+**Cross-refs.** `components/brand/logo.tsx`, `app/layout.tsx`, `app/globals.css`, `app/(site)/page.tsx`, `app/opengraph-image.tsx`, `app/twitter-image.tsx`, `components/cards/sold-history-panel.tsx`, `public/{favicon,icon}.svg`, `public/apple-touch-icon.png`, `DESIGN.md` §5, `lib/__tests__/visual-regression.test.ts`, IDEAS "IP risk: live logo is a Pokeball" (flipped to shipped).
 
 ## How to add an ADR
 
