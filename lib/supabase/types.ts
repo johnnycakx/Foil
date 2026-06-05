@@ -237,23 +237,62 @@ export type Database = {
         Row: {
           id: number;
           called_at: string;
-          surface: "page_render" | "wishlist_cron" | "manual";
+          surface: "page_render" | "wishlist_cron" | "deals_cron" | "manual";
           success: boolean;
           latency_ms: number;
         };
         Insert: {
           id?: number;
           called_at?: string;
-          surface: "page_render" | "wishlist_cron" | "manual";
+          surface: "page_render" | "wishlist_cron" | "deals_cron" | "manual";
           success: boolean;
           latency_ms: number;
         };
         Update: Partial<{
           id: number;
           called_at: string;
-          surface: "page_render" | "wishlist_cron" | "manual";
+          surface: "page_render" | "wishlist_cron" | "deals_cron" | "manual";
           success: boolean;
           latency_ms: number;
+        }>;
+        Relationships: [];
+      };
+      buy_signals: {
+        Row: {
+          card_slug: string;
+          card_name: string;
+          set_name: string;
+          image_url: string;
+          signal: "BELOW" | "AT" | "ABOVE" | "UNKNOWN";
+          delta_pct: number | null;
+          sold_reference: number | null;
+          sold_sample_size: number;
+          matched_tier: string | null;
+          computed_at: string;
+        };
+        Insert: {
+          card_slug: string;
+          card_name?: string;
+          set_name?: string;
+          image_url?: string;
+          signal: "BELOW" | "AT" | "ABOVE" | "UNKNOWN";
+          delta_pct?: number | null;
+          sold_reference?: number | null;
+          sold_sample_size?: number;
+          matched_tier?: string | null;
+          computed_at?: string;
+        };
+        Update: Partial<{
+          card_slug: string;
+          card_name: string;
+          set_name: string;
+          image_url: string;
+          signal: "BELOW" | "AT" | "ABOVE" | "UNKNOWN";
+          delta_pct: number | null;
+          sold_reference: number | null;
+          sold_sample_size: number;
+          matched_tier: string | null;
+          computed_at: string;
         }>;
         Relationships: [];
       };

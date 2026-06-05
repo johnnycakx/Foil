@@ -36,6 +36,12 @@ function SiteHeader() {
         </Link>
         <nav className="flex items-center gap-5 text-sm">
           <Link
+            href="/deals"
+            className="font-medium text-foil-navy transition hover:text-foil-coral"
+          >
+            Today&apos;s deals
+          </Link>
+          <Link
             href="/cards"
             className="text-foil-slate transition hover:text-foil-navy"
           >

@@ -8,6 +8,10 @@
     {
       "path": "/api/cron/browse-telemetry",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/deals-refresh",
+      "schedule": "0 8 * * *"
     }
   ]
 }

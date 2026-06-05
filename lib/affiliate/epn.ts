@@ -197,12 +197,13 @@ export const CUSTOMID_MAX_LENGTH = 256;
 /** Visible fallback so an empty customid never silently becomes "No Custom ID". */
 export const CUSTOMID_FALLBACK = "foil-untagged";
 
-export type CustomIdTier = "curated" | "longtail" | "metadata-only" | "wishlist";
+export type CustomIdTier = "curated" | "longtail" | "metadata-only" | "wishlist" | "deals";
 const TIER_CODE: Record<CustomIdTier, string> = {
   curated: "cp",
   longtail: "lt",
   "metadata-only": "mo",
   wishlist: "wl",
+  deals: "dl",
 };
 
 /** Reduce to the proven-safe customid charset. `allowHyphen` keeps the
@@ -247,7 +248,7 @@ export type GetBestListingInput = {
   /** Telemetry tag — which call site initiated this Browse call. The
    *  Browse client logs every call to browse_calls keyed on this; see
    *  ADR-025. Consumed by lib/affiliate/ebay-browse.ts; EPN ignores it. */
-  surface?: "page_render" | "wishlist_cron" | "manual";
+  surface?: "page_render" | "wishlist_cron" | "deals_cron" | "manual";
   /** Watchlist variant token (PoketraceVariant.variantKey or "default").
    *  Biases the Browse query + gates listing titles per Session 49b /
    *  ADR-043. Consumed by lib/affiliate/ebay-browse.ts; EPN ignores it. */

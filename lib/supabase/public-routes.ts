@@ -79,6 +79,13 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // the trust/defensibility page every buy-signal badge links to.
   { kind: "exact", path: "/pricing-methodology" },
 
+  // "Today's best deals" leaderboard (ROADMAP B.4 / ADR-054). Public,
+  // crawlable, anonymous-friendly — the screenshot surface for the X content
+  // bot + the homepage primary CTA. Renders from the buy_signals cache (no
+  // eBay call at view time); the refresh cron is /api/cron/deals-refresh
+  // (already covered by the /api/cron prefix).
+  { kind: "exact", path: "/deals" },
+
   // /start onboarding page (Task #20 / Session 38). Multi-card watchlist
   // signup — the new headline Twitter-CTA target. The page + the /api/start
   // POST + the /api/cards/search GET (typeahead) all must be reachable

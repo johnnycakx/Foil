@@ -132,8 +132,14 @@ function Hero() {
 
         <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
-            href="/start"
+            href="/deals"
             className="rounded-xl bg-foil-navy px-6 py-3.5 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40"
+          >
+            See today&apos;s best deals →
+          </Link>
+          <Link
+            href="/start"
+            className="text-sm text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
           >
             Start tracking cards →
           </Link>

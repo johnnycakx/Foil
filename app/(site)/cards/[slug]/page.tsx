@@ -26,9 +26,7 @@ import { SoldHistoryPanel } from "@/components/cards/sold-history-panel";
 import { WatchlistForm } from "@/components/cards/watchlist-form";
 import { deriveAvailableVariants } from "@/lib/poketrace/variant";
 import { BuySignalBadge } from "@/components/buy-signal-badge";
-import { classifyConditionMatched } from "@/lib/buy-signal/compute";
-import { inferListingCondition } from "@/lib/buy-signal/condition-infer";
-import { resolveConditionMatchedReference } from "@/lib/buy-signal/reference";
+import { computeCardBuySignal } from "@/lib/buy-signal/card-signal";
 
 // Rendering mode (ADR-047, amended). This page reads `searchParams` (the `v`
 // variant + `c` condition URL state, ADR-043) on the server, which forces
@@ -251,18 +249,19 @@ export default async function CardPage({
   // matched condition's sold avg) re-verified clean on a full-catalog scan
   // (0 out-of-band badges; deltas span −48.5%…+88.4%, all condition-matched).
   // Kill switch retained for fast rollback.
+  // Shared orchestrator (lib/buy-signal/card-signal.ts) — the SAME computation
+  // the /deals leaderboard refresh cron runs, so the per-card badge and the
+  // leaderboard can never silently disagree (I-008 guard).
   const BUY_SIGNAL_ENABLED = true;
   let buySignal = null;
   if (tier === "curated" && best) {
-    const inferred = inferListingCondition({ title: best.title });
-    const matched = await resolveConditionMatchedReference(card.variants, selectedVariant, inferred.tier, inferred.gradeKey);
-    buySignal = classifyConditionMatched({
+    const cardSignal = await computeCardBuySignal({
+      variants: card.variants,
+      listingTitle: best.title,
       askPrice: best.price,
-      listingTier: inferred.tier,
-      conditionReference: matched.conditionReference,
-      conditionSampleSize: matched.conditionSampleSize,
-      lowestRawReference: matched.lowestRawReference,
+      selectedVariant,
     });
+    buySignal = cardSignal.signal;
   }
 
   return (

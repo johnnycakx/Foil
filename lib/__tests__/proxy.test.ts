@@ -33,6 +33,15 @@ test("buy-signal methodology page is public (ADR-053)", () => {
   assert.equal(isPublicRoute("/pricing-methodology"), true);
 });
 
+test("/deals leaderboard is public — screenshot surface + homepage CTA (ADR-054)", () => {
+  // Renders from the buy_signals cache; anonymous-friendly, crawlable. The
+  // refresh cron at /api/cron/deals-refresh is covered by the /api/cron prefix.
+  assert.equal(isPublicRoute("/deals"), true);
+  assert.equal(isPublicRoute("/api/cron/deals-refresh"), true);
+  // Exact rule — must not bleed into an adjacent stem.
+  assert.equal(isPublicRoute("/dealsroom"), false);
+});
+
 test("login + magic-link callback are public (or the magic link loops)", () => {
   assert.equal(isPublicRoute("/login"), true);
   assert.equal(isPublicRoute("/auth/callback"), true);

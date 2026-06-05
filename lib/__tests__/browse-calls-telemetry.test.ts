@@ -120,7 +120,7 @@ test("aggregateLast24h: totals + per-surface counts + success rate math", async 
   });
   const out = await aggregateLast24h({ client });
   assert.equal(out.total, 5);
-  assert.deepEqual(out.byCounts, { page_render: 3, wishlist_cron: 1, manual: 1 });
+  assert.deepEqual(out.byCounts, { page_render: 3, wishlist_cron: 1, deals_cron: 0, manual: 1 });
   assert.equal(out.successCount, 4);
   assert.equal(out.successRatePct, 80); // 4/5 = 80%
 });
