@@ -29,7 +29,7 @@ function SiteHeader() {
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
         <Link
           href="/"
-          aria-label="Foil — home"
+          aria-label="FoilTCG home"
           className="inline-flex items-center transition hover:text-foil-coral"
         >
           <Logo size="md" />
