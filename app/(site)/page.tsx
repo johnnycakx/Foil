@@ -57,8 +57,10 @@ export default async function Home() {
 // Session 47 (ADR-037) these are a full-opacity foreground showcase
 // fanned across the top of the hero — no longer a ghosted backdrop. The
 // array order is the left-to-right fan order; tilts give each card
-// character. Image URLs hit the Pokemon TCG SDK CDN directly — same data
-// the per-card pages load, so the browser cache wins on subsequent nav.
+// character. Images are SELF-HOSTED (ADR-056): downloaded once + resized to
+// small local webp under public/hero/ so the hero never depends on the flaky
+// images.pokemontcg.io CDN (which intermittently rendered the row as broken
+// images in prod). `id.replace("/","-")` maps "swsh7/215" → "/hero/swsh7-215.webp".
 const HERO_CARDS: { id: string; alt: string; tilt: string }[] = [
   { id: "base1/4",    alt: "Charizard, Base Set (vintage anchor)",             tilt: "rotate-[2deg]"  },
   { id: "swsh35/74",  alt: "Charizard VMAX Rainbow Rare, Champions Path",      tilt: "-rotate-[3deg]" },
@@ -97,11 +99,10 @@ function Hero() {
           >
             <div className="relative aspect-[5/7] w-24 overflow-hidden rounded-lg bg-foil-cream shadow-lg shadow-foil-navy/25 ring-1 ring-foil-navy/10 sm:w-28 md:w-32 lg:w-40">
               <Image
-                src={`https://images.pokemontcg.io/${c.id}_hires.png`}
+                src={`/hero/${c.id.replace("/", "-")}.webp`}
                 alt={c.alt}
                 width={400}
                 height={560}
-                unoptimized
                 className="h-full w-full object-cover"
                 priority={false}
               />

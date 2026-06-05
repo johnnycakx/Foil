@@ -248,7 +248,7 @@ export type GetBestListingInput = {
   /** Telemetry tag — which call site initiated this Browse call. The
    *  Browse client logs every call to browse_calls keyed on this; see
    *  ADR-025. Consumed by lib/affiliate/ebay-browse.ts; EPN ignores it. */
-  surface?: "page_render" | "wishlist_cron" | "deals_cron" | "manual";
+  surface?: "page_render" | "wishlist_cron" | "deals_cron" | "deals_redirect" | "manual";
   /** Watchlist variant token (PoketraceVariant.variantKey or "default").
    *  Biases the Browse query + gates listing titles per Session 49b /
    *  ADR-043. Consumed by lib/affiliate/ebay-browse.ts; EPN ignores it. */

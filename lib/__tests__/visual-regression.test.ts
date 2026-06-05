@@ -6,7 +6,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = new URL("../..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
@@ -434,4 +434,19 @@ test("How it works: foil-corner card watermark, that section only, no Pokeball (
   assert.match(src, /fill="#c9a24b"/i, "gold folded corner");
   // Faint watermark so text on top holds AA contrast.
   assert.match(src, /opacity-\[0\.0\d\]/, "low-opacity watermark");
+});
+
+test("Homepage hero images are self-hosted local webp that exist, no flaky external CDN (ADR-056)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  // The hero must NOT depend on images.pokemontcg.io (it intermittently rendered
+  // the row as broken images in prod). Local /hero/*.webp only.
+  assert.doesNotMatch(src, /https:\/\/images\.pokemontcg\.io/, "hero must not fetch from the external SDK CDN");
+  assert.match(src, /\/hero\/\$\{c\.id\.replace\("\/", "-"\)\}\.webp/, "hero src must be a local /hero/*.webp path");
+  // Every HERO_CARDS id must have a real file in public/hero/ — no broken refs.
+  const ids = [...src.matchAll(/\{\s*id:\s*"([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(ids.length >= 8, `expected >=8 HERO_CARDS ids, found ${ids.length}`);
+  for (const id of ids) {
+    const file = join(ROOT, "public/hero", `${id.replace("/", "-")}.webp`);
+    assert.ok(existsSync(file), `missing self-hosted hero image: public/hero/${id.replace("/", "-")}.webp`);
+  }
 });

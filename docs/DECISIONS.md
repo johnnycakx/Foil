@@ -1837,6 +1837,29 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 
 **Cross-refs.** `components/brand/logo.tsx`, `app/layout.tsx`, `app/globals.css`, `app/(site)/page.tsx`, `app/opengraph-image.tsx`, `app/twitter-image.tsx`, `components/cards/sold-history-panel.tsx`, `public/{favicon,icon}.svg`, `public/apple-touch-icon.png`, `DESIGN.md` §5, `lib/__tests__/visual-regression.test.ts`, IDEAS "IP risk: live logo is a Pokeball" (flipped to shipped).
 
+## ADR-056 — Click-time deal redirect (/go/deal/[slug]) + self-hosted homepage hero images
+
+**Date:** 2026-06-05
+**Status:** Accepted. Follow-up to [ADR-054](#adr-054--todays-best-deals-leaderboard-precompute-and-cache-derived-metadata-never-persist-ebay-listing-data) (the /deals leaderboard). Conversion + reliability polish before driving creator traffic.
+
+**Context.** Two pre-traffic issues on the leaderboard surface:
+1. **Conversion:** the /deals "See it on eBay" buttons linked to a card-name **search** affiliate URL (`affiliateSearchUrl`), dumping the buyer on an eBay search page rather than the specific below-market listing the board promised. The board can't resolve the specific item at render time — that would fire a Browse call per row per view (R-008/R-012, the whole reason ADR-054 precomputes).
+2. **Homepage "broken image row":** the P0 premise check could NOT reproduce a 404 — all 8 homepage images return 200, and they're the **hero card fan** (top of page), not a "bottom row." The real exposure: the hero used `unoptimized` external hi-res PNGs from `images.pokemontcg.io`, a CDN this codebase already documents as flaky (`next.config.ts` comment + `lib/cards/sdk.ts` retry logic). When it hiccups, the whole hero row renders broken. (Premise corrected in the SESSION-LOG.)
+
+**Decision.**
+1. **Click-time redirect route `/go/deal/[slug]`** (`app/go/deal/[slug]/route.ts`). On GET it runs a **LIVE `getBestListing`** for the card and 302-redirects to that specific item's affiliate URL (`EpnBestListing.affiliateUrl`, already `buildAffiliateUrl`-wrapped), falling back to the affiliate **search** url when no confident listing exists at click time. **One Browse call per CLICK** — bounded by clicks, not views (the board still makes zero Browse calls per view). R-008: compute at click, persist nothing. New `deals_redirect` `BrowseSurface` for quota attribution.
+2. **Pure resolver `lib/deals/redirect.ts::resolveDealDestination`** (injectable, unit-tested): validates the slug against the catalog (`getCatalogEntry`), returns `{ok:false,"unknown_slug"}` for an unknown slug, else an `item`/`search` eBay URL. **No open-redirect surface:** the destination is ALWAYS an internally-built eBay URL (a Browse item or an `affiliateSearchUrl`), never user input; an unknown slug bounces to the internal `/deals`.
+3. **Attribution:** the redirect uses the leaderboard-distinct `deals` tier customid (`dl-<slug>`) via `buildCustomId`, so EPN segments leaderboard-driven revenue from card-page (`cp-`) revenue. The board's button now points at the internal `/go/deal/[slug]` (it no longer builds the affiliate URL itself).
+4. **Self-hosted hero images:** the 8 homepage hero cards were downloaded once, resized to small local **webp** (`public/hero/*.webp`, ~664KB total for 8), and the hero `<Image>` now serves `/hero/<id>.webp` with `unoptimized` dropped (Next optimizes the local files). The hero no longer depends on the external CDN, so it cannot render broken. A structural test pins every `HERO_CARDS` id to an existing local file + asserts no `https://images.pokemontcg.io` fetch remains on the homepage.
+
+**Consequences.**
+- Compliance stays 6/6: the redirect route calls `getBestListing` (the existing `api.ebay.com` boundary) and `buildAffiliateUrl`/`affiliateSearchUrl` (the `mkevt`/`campid`/`customid` boundary) — no new allowlist entries needed. R-008 held (no persistence; live compute at click).
+- `/go` added to `PUBLIC_ROUTES` (+ proxy test); `deals_redirect` added to the `BrowseSurface` union (telemetry + types + epn input + telemetry test).
+- Quota: redirect Browse calls scale with leaderboard clicks (low pre-launch) under the same ~5,000/day ceiling tracked by R-012; attributed separately as `deals_redirect`.
+- Hero images are now a committed binary asset set (8 webp); refreshing the grail seed list means regenerating them (a throwaway sharp script, deleted after use).
+
+**Cross-refs.** `app/go/deal/[slug]/route.ts`, `lib/deals/redirect.ts`, `components/deals/deals-board.tsx`, `lib/__tests__/deals-redirect.test.ts`, `public/hero/*.webp`, `app/(site)/page.tsx`, `lib/supabase/public-routes.ts`, `lib/telemetry/browse-calls.ts`, [ADR-054](#adr-054--todays-best-deals-leaderboard-precompute-and-cache-derived-metadata-never-persist-ebay-listing-data), [R-008](RISKS.md), [R-012](RISKS.md).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

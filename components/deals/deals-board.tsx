@@ -11,7 +11,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { affiliateSearchUrl, buildCustomId } from "@/lib/affiliate/epn";
 import type { DealRow } from "@/lib/deals/leaderboard";
 
 function formatUsd(n: number): string {
@@ -64,10 +63,10 @@ export function DealsBoard({ deals }: { deals: DealRow[] }) {
       <ol className="divide-y divide-foil-navy/10">
         {deals.map((d, i) => {
           const below = d.deltaPct != null ? Math.round(Math.abs(d.deltaPct)) : null;
-          const ctaUrl = affiliateSearchUrl(
-            `${d.cardName} ${d.setName}`.trim(),
-            buildCustomId({ tier: "deals", slug: d.cardSlug }),
-          );
+          // Click-time redirect (ADR-056): /go/deal/[slug] runs a LIVE
+          // getBestListing and lands the buyer on the specific best listing
+          // (falling back to an affiliate search). No Browse call at view time.
+          const ctaUrl = `/go/deal/${d.cardSlug}`;
           return (
             <li
               key={d.cardSlug}

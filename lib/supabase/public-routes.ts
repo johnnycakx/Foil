@@ -79,6 +79,12 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // the trust/defensibility page every buy-signal badge links to.
   { kind: "exact", path: "/pricing-methodology" },
 
+  // Click-time affiliate redirect (ROADMAP B.4 follow-up / ADR-056). /go/deal/
+  // [slug] runs a live getBestListing and 302s to the specific item's affiliate
+  // URL. Anonymous-friendly (it's a buyer click-through); the destination is
+  // always an internally-built eBay URL (no open redirect).
+  { kind: "prefix", path: "/go" },
+
   // "Today's best deals" leaderboard (ROADMAP B.4 / ADR-054). Public,
   // crawlable, anonymous-friendly — the screenshot surface for the X content
   // bot + the homepage primary CTA. Renders from the buy_signals cache (no

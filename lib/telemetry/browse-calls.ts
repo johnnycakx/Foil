@@ -20,7 +20,7 @@ import type { Database } from "../supabase/types.ts";
 export const BROWSE_DAILY_CEILING = 5000;
 export const APPROACHING_CEILING_PCT = 80;
 
-export type BrowseSurface = "page_render" | "wishlist_cron" | "deals_cron" | "manual";
+export type BrowseSurface = "page_render" | "wishlist_cron" | "deals_cron" | "deals_redirect" | "manual";
 
 export type LogBrowseCallInput = {
   surface: BrowseSurface;
@@ -87,7 +87,7 @@ export async function aggregateLast24h(opts: {
   const cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
   const empty: Aggregate24h = {
     total: 0,
-    byCounts: { page_render: 0, wishlist_cron: 0, deals_cron: 0, manual: 0 },
+    byCounts: { page_render: 0, wishlist_cron: 0, deals_cron: 0, deals_redirect: 0, manual: 0 },
     successCount: 0,
     successRatePct: 100,
     pctOfCeiling: 0,
@@ -102,7 +102,7 @@ export async function aggregateLast24h(opts: {
     if (error || !data) return empty;
     const out: Aggregate24h = {
       total: data.length,
-      byCounts: { page_render: 0, wishlist_cron: 0, deals_cron: 0, manual: 0 },
+      byCounts: { page_render: 0, wishlist_cron: 0, deals_cron: 0, deals_redirect: 0, manual: 0 },
       successCount: 0,
       successRatePct: 100,
       pctOfCeiling: 0,

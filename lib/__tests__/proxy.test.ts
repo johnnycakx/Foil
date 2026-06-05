@@ -33,6 +33,14 @@ test("buy-signal methodology page is public (ADR-053)", () => {
   assert.equal(isPublicRoute("/pricing-methodology"), true);
 });
 
+test("/go/deal/[slug] click-time redirect is public (ADR-056)", () => {
+  // Buyer click-through from the leaderboard; must be reachable anonymously.
+  assert.equal(isPublicRoute("/go/deal/base1-4-charizard"), true);
+  assert.equal(isPublicRoute("/go"), true);
+  // Prefix must not bleed into an adjacent stem.
+  assert.equal(isPublicRoute("/google-thing"), false);
+});
+
 test("/deals leaderboard is public — screenshot surface + homepage CTA (ADR-054)", () => {
   // Renders from the buy_signals cache; anonymous-friendly, crawlable. The
   // refresh cron at /api/cron/deals-refresh is covered by the /api/cron prefix.

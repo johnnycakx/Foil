@@ -8,6 +8,17 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-05 — Deal click-time redirect (lands on the actual listing) + self-hosted hero images (ADR-056)
+
+**Conversion + polish before driving creator traffic. Built + gated, NOT pushed (awaiting John).**
+- **Premise check corrected one of three claims.** (a) ✅ /deals "See it on eBay" was a card-name SEARCH affiliate URL; (b) ✅ the per-card page resolves a specific listing via `getBestListing` → `EpnBestListing.affiliateUrl` (reused); **(c) ✗ the homepage "broken-image bottom row that 404s" did NOT reproduce** — all 8 homepage images return 200 and they're the *hero card fan* (top), not a bottom row. Real cause: the hero used `unoptimized` external hi-res PNGs from `images.pokemontcg.io`, a CDN this repo already documents as flaky → intermittent broken hero. Fixed durably by self-hosting.
+- **Click-time redirect:** new `/go/deal/[slug]` route + pure `resolveDealDestination` (`lib/deals/redirect.ts`). Runs a LIVE `getBestListing` at click and 302s to the specific item's affiliate URL, search-fallback when none. **One Browse call per click** (bounded by clicks, not views — board still zero-Browse-per-view), nothing persisted (R-008), new `deals_redirect` BrowseSurface, `dl-<slug>` deals customid (segments EPN revenue from card pages). **No open redirect:** slug validated vs catalog; destination always an internally-built eBay URL; unknown slug → internal `/deals`. Board button rewired to the internal path (dropped its own affiliate-URL build).
+- **Hero images self-hosted:** downloaded the 8 grail cards once, resized to small webp (`public/hero/*.webp`, ~664KB total), pointed the hero `<Image>` at `/hero/<id>.webp`, dropped `unoptimized`. Structural test pins every `HERO_CARDS` id to an existing local file + no `https://images.pokemontcg.io` fetch on the homepage.
+- **Gates:** premise ✅ · `npm test` 781 pass / 0 fail / 15 skip (new `deals-redirect` 6 tests: specific-item resolve, search fallback, slug-validation/no-open-redirect, deals customid + `deals_redirect` surface, metadata soft-fail; + proxy `/go` + no-broken-image structural) · compliance:check **6/6** · `tsc` clean · `npm run build` clean (`/go/deal/[slug]` = ƒ) · design:lint **0 new** · /security-review (open-redirect check; below). **Not pushed.** Live-verify (click a deal → specific eBay listing; homepage zero broken images) is post-deploy.
+- **Docs:** ADR-056; ROADMAP B.6; this entry.
+
+---
+
 ## 2026-06-05 — DEPLOYED the FoilTCG logo to production (John authorized) — Pokeball gone live
 
 **Shipped ADR-055 to prod + caught two live-verify gaps the build missed.** Commits: `262d0e3` (the logo work) → `98b012a` (footer wordmark + homepage OG fix) → `c4f534c` + `6309949` (Gate-12 em-dash cleanups). Deploys confirmed READY by polling prod content markers (the user declined the Vercel CLI; verification is curl/hash-based).

@@ -237,21 +237,21 @@ export type Database = {
         Row: {
           id: number;
           called_at: string;
-          surface: "page_render" | "wishlist_cron" | "deals_cron" | "manual";
+          surface: "page_render" | "wishlist_cron" | "deals_cron" | "deals_redirect" | "manual";
           success: boolean;
           latency_ms: number;
         };
         Insert: {
           id?: number;
           called_at?: string;
-          surface: "page_render" | "wishlist_cron" | "deals_cron" | "manual";
+          surface: "page_render" | "wishlist_cron" | "deals_cron" | "deals_redirect" | "manual";
           success: boolean;
           latency_ms: number;
         };
         Update: Partial<{
           id: number;
           called_at: string;
-          surface: "page_render" | "wishlist_cron" | "deals_cron" | "manual";
+          surface: "page_render" | "wishlist_cron" | "deals_cron" | "deals_redirect" | "manual";
           success: boolean;
           latency_ms: number;
         }>;
