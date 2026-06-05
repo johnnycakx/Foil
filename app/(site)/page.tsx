@@ -21,12 +21,17 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     siteName: "Foil",
     url: "/",
+    // The homepage exports its own openGraph, which does NOT inherit the
+    // file-based app/opengraph-image.tsx — so reference the dynamic OG (the
+    // FoilTCG wordmark card, ADR-055) explicitly or the share card is blank.
+    images: ["/opengraph-image"],
   },
   twitter: {
     card: "summary_large_image",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     creator: "@foilcards",
+    images: ["/opengraph-image"],
   },
 };
 

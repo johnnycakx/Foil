@@ -67,6 +67,12 @@ function SiteFooter() {
   return (
     <footer className="border-t border-foil-navy/10 bg-foil-cream">
       <div className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
+        {/* Brand wordmark lockup (ADR-055) — FoilTCG in Fredoka, navy + gold. */}
+        <div className="mb-6">
+          <Link href="/" aria-label="FoilTCG — home" className="inline-flex transition hover:opacity-80">
+            <Logo size="md" />
+          </Link>
+        </div>
         <div className="mb-8 max-w-md">
           <FooterEmailCapture />
         </div>
