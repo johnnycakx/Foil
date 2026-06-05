@@ -8,6 +8,19 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-05 — DEPLOYED `/deals` to production (John authorized) — live with 4 real below-market deals
+
+**Shipped the B.4 leaderboard end-to-end to prod.** All 5 deploy steps clean:
+1. **Push.** Committed the 24-file feature surgically (left `IDEAS.md`, `.claude/*`, and the handoff/research docs out — unrelated) as `0381900`; pushed to `origin/main`.
+2. **Deploy.** Vercel auto-deployed `main` to production; verified READY by the new `/deals` route returning **HTTP 200** (it 404'd before this commit) and rendering the new page.
+3. **Migration.** `supabase db push --linked` applied **only** `20260605120000_buy_signals.sql` (migration-list confirmed it was the sole pending one; no other table touched). Verified via MCP: `buy_signals` has the exact 10 derived/non-eBay columns (no listing column), **RLS enabled, single `buy_signals_service_all` policy, service_role only, all commands.**
+4. **Populate.** Called prod `/api/cron/deals-refresh` with the `CRON_SECRET` bearer → `{ok:true, durationMs:91252, cardsConsidered:207, browseCalls:207, listingsFound:203, belowCount:4, written:207, errors:[]}`. Cache: 207 rows (4 BELOW, 2 AT, 3 ABOVE, 198 UNKNOWN).
+5. **Live-verify.** `https://foiltcg.com/deals` = 200, empty-state ABSENT, renders the 4 ranked condition-matched (NEAR_MINT) deals: **Jolteon VMAX (Evolving Skies) ~30% below $11.40 n=313 · Alakazam ex (151) ~29% below $77.63 n=430 · Raichu-GX (Hidden Fates) 19% below $3.71 n=355 · Mew V (Crown Zenith) 17% below $5.44 n=544.** Header nav + homepage primary CTA link to `/deals` (confirmed in live HTML).
+- **Why only 4 (honest, not a bug).** 198 of 207 curated cards classified UNKNOWN — their cheapest live listing carries no title-inferable condition, or sits within ±10% of the matched sold avg, or trips the symmetric outlier guard. Same conservative behavior as the per-card badge (most flagships read UNKNOWN). The board shows fewer deals we trust over a long list we don't — exactly the "curated, not exhaustive" contract. Coverage will rise with F4 reference-enrichment + as listings turn over (the cron refreshes daily at 08:00 UTC).
+- **Constraint honored:** no unrelated table/data altered or deleted; the deploy commit excluded all non-leaderboard working-tree changes.
+
+---
+
 ## 2026-06-05 — Built the public `/deals` "Today's best deals" leaderboard (ROADMAP B.4 / ADR-054) — R-008 resolved, pending deploy + push
 
 **The screenshot surface for the X content bot. Free, affiliate, no paywall. P0 premise check (R-008) resolved, not blocked.** The board ranks curated cards by how far below their condition-matched sold price the best live eBay listing is — but eBay's no-cache rule (R-008) + the no-per-view-Browse rule (R-012) mean it can't fetch live at view time. **Resolution: persist the SIGNAL, discard the listing.**
