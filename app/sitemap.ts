@@ -1,27 +1,13 @@
 import type { MetadataRoute } from "next";
 import { getAllPosts } from "./(site)/blog/posts-meta";
 import { CARD_CATALOG } from "@/lib/cards/catalog";
+import { LANDING_PATHS } from "@/lib/seo/sitemap-landings";
 
 function siteUrl(): string {
   return (
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
   ).replace(/\/$/, "");
 }
-
-// Public landing/marketing pages that should be indexed. Authenticated
-// surfaces (/upload, /account, /login, /auth/*, /api/*) intentionally omitted.
-const LANDING_PATHS: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
-  { path: "/", priority: 1.0, changeFrequency: "weekly" },
-  { path: "/japanese-pokemon-cards-value", priority: 0.9, changeFrequency: "monthly" },
-  { path: "/pokemon-card-value-calculator", priority: 0.9, changeFrequency: "monthly" },
-  { path: "/pokemon-card-condition-guide", priority: 0.9, changeFrequency: "monthly" },
-  { path: "/blog", priority: 0.7, changeFrequency: "weekly" },
-  { path: "/newsletter", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/start", priority: 0.95, changeFrequency: "weekly" },
-  { path: "/legal/ebay-api-compliance", priority: 0.5, changeFrequency: "monthly" },
-  { path: "/legal/privacy", priority: 0.4, changeFrequency: "yearly" },
-  { path: "/legal/terms", priority: 0.4, changeFrequency: "yearly" },
-];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteUrl();
