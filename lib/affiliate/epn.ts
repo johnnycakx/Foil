@@ -31,6 +31,9 @@ export type EpnProductHit = {
   title: string;
   /** Canonical eBay item URL (no affiliate params yet). */
   itemUrl: string;
+  /** eBay RESTful item id (e.g. "v1|123456789|0") — for a getItem aspect fetch
+   *  (ADR-057). Optional/back-compat; absent when the source didn't supply it. */
+  itemId?: string;
   image: string | null;
   price: number;
   currency: string;
@@ -38,6 +41,9 @@ export type EpnProductHit = {
 
 export type EpnBestListing = {
   title: string;
+  /** eBay RESTful item id of the chosen listing — for the like-for-like aspect
+   *  read (ADR-057). May be absent on legacy/soft-fail paths. */
+  itemId?: string;
   image: string | null;
   price: number;
   currency: string;

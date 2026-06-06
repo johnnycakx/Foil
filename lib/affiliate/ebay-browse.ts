@@ -33,6 +33,7 @@ import { pickBestListing } from "./listing-picker.ts";
 import { logBrowseCall, type BrowseSurface } from "../telemetry/browse-calls.ts";
 import { variantEbayKeywords } from "../poketrace/variant.ts";
 import { ebayKeywordsForCondition, conditionRelaxesJunkGate } from "../cards/conditions.ts";
+import { aspectsFromLocalized } from "../buy-signal/aspects.ts";
 
 const BROWSE_SEARCH_ENDPOINT = "https://api.ebay.com/buy/browse/v1/item_summary/search";
 const MARKETPLACE_ID = "EBAY_US";
@@ -160,7 +161,8 @@ function parseItemSummaries(body: unknown): EpnProductHit[] {
     }
     if (price === null || Number.isNaN(price) || price <= 0) continue;
 
-    out.push({ title, itemUrl, image, price, currency });
+    const itemId = typeof raw.itemId === "string" ? raw.itemId : undefined;
+    out.push({ title, itemUrl, itemId, image, price, currency });
   }
   return out;
 }
@@ -261,9 +263,80 @@ export async function getBestListing(input: GetBestListingInput): Promise<EpnBes
   const customId = input.customId ?? "foil-card-page";
   return {
     title: best.title,
+    itemId: best.itemId,
     image: best.image,
     price: best.price,
     currency: best.currency,
     affiliateUrl: buildAffiliateUrl(best.itemUrl, customId),
   };
+}
+
+// --- getItem aspect read (ADR-057) -----------------------------------------
+//
+// item_summary/search exposes NO item specifics — only getItem returns the full
+// `localizedAspects` (Card Condition, Language, Graded/Grade, Country/Region).
+// The buy-signal like-for-like gate needs them, so after the search picks the
+// best listing we fetch getItem for THAT one item (one extra Browse call per
+// signal compute — bounded by computes, not page views; R-012 note in ADR-057).
+//
+// R-008: `cache: "no-store"`, response read at compute time and DISCARDED — only
+// the derived condition/market classification is ever used. Nothing persisted.
+
+const BROWSE_ITEM_ENDPOINT = "https://api.ebay.com/buy/browse/v1/item";
+
+export type GetListingAspectsInput = {
+  /** eBay RESTful item id, e.g. "v1|123456789|0" (EpnBestListing.itemId). */
+  itemId: string;
+  fetchImpl?: typeof fetch;
+  surface?: BrowseSurface;
+  logImpl?: typeof logBrowseCall;
+};
+
+/**
+ * Fetch a listing's flattened item-specifics via Browse getItem. Returns the
+ * name→value aspect map, or `null` on any failure (missing creds / auth / 4xx /
+ * 5xx / network / no aspects) so the caller emits a conservative UNKNOWN signal.
+ * Never throws. Logs one Browse call under `surface` (same quota as the search).
+ */
+export async function getListingAspects(input: GetListingAspectsInput): Promise<Record<string, string> | null> {
+  if (!input.itemId?.trim()) return null;
+
+  const accessToken = await getAccessToken({ fetchImpl: input.fetchImpl });
+  if (!accessToken) return null;
+
+  const surface: BrowseSurface = input.surface ?? "manual";
+  const log = input.logImpl ?? logBrowseCall;
+  const fetchFn = input.fetchImpl ?? fetch;
+  const url = `${BROWSE_ITEM_ENDPOINT}/${encodeURIComponent(input.itemId)}`;
+  const startedAt = Date.now();
+
+  let response: Response;
+  try {
+    response = await fetchFn(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken.token}`,
+        Accept: "application/json",
+        "X-EBAY-C-MARKETPLACE-ID": MARKETPLACE_ID,
+      },
+      cache: "no-store", // R-008: never cache listing data.
+    });
+  } catch (err) {
+    void log({ surface, success: false, latency_ms: Date.now() - startedAt }).catch(() => {});
+    return null;
+  }
+
+  void log({ surface, success: response.ok, latency_ms: Date.now() - startedAt }).catch(() => {});
+  if (!response.ok) return null;
+
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    return null;
+  }
+  const localized = (body as { localizedAspects?: Array<{ name?: unknown; value?: unknown }> } | null)?.localizedAspects;
+  if (!Array.isArray(localized) || localized.length === 0) return null;
+  const aspects = aspectsFromLocalized(localized);
+  return Object.keys(aspects).length > 0 ? aspects : null;
 }

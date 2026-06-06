@@ -13,6 +13,7 @@
 //   3. classify the ask against that reference with the symmetric outlier guard.
 
 import type { PoketraceVariant } from "../poketrace/variant.ts";
+import type { ListingAspects } from "./aspects.ts";
 import { inferListingCondition } from "./condition-infer.ts";
 import { resolveConditionMatchedReference } from "./reference.ts";
 import { classifyConditionMatched, type BuySignal } from "./compute.ts";
@@ -28,12 +29,16 @@ export type CardBuySignal = {
 export async function computeCardBuySignal(input: {
   variants: PoketraceVariant[] | undefined;
   listingTitle: string | undefined | null;
+  /** eBay getItem item-specifics for the listing (ADR-057). A record → used as
+   *  the authoritative market+condition source; `null` → getItem failed/empty
+   *  (→ UNKNOWN); omitted → title-only inference (back-compat). */
+  listingAspects?: ListingAspects | null;
   askPrice: number;
   /** Pin a specific variant (the page's ?v= state). Cron leaves undefined →
    *  the reference resolver picks the most-traded variant. */
   selectedVariant?: string;
 }): Promise<CardBuySignal> {
-  const inferred = inferListingCondition({ title: input.listingTitle });
+  const inferred = inferListingCondition({ title: input.listingTitle, aspects: input.listingAspects });
   const matched = await resolveConditionMatchedReference(
     input.variants,
     input.selectedVariant,

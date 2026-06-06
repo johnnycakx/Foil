@@ -41,9 +41,12 @@ export type DealUpsertRow = {
 
 export type GetBestListingFn = (input: GetBestListingInput) => Promise<EpnBestListing | null>;
 export type GetCardMetadataFn = (input: { id: string }) => Promise<CardMetadata>;
+/** Fetch a listing's eBay item-specifics (ADR-057) for the like-for-like gate. */
+export type GetListingAspectsFn = (input: { itemId: string }) => Promise<Record<string, string> | null>;
 export type ComputeSignalFn = (input: {
   variants: CardMetadata["variants"];
   listingTitle: string | undefined | null;
+  listingAspects?: Record<string, string> | null;
   askPrice: number;
   selectedVariant?: string;
 }) => Promise<CardBuySignal>;
@@ -53,6 +56,7 @@ export type RefreshDealsInput = {
   entries: CuratedEntry[];
   getCardMetadata: GetCardMetadataFn;
   getBestListing: GetBestListingFn;
+  getListingAspects: GetListingAspectsFn;
   computeSignal: ComputeSignalFn;
   upsertRows: UpsertRowsFn;
   /** Affiliate custom-id per card (built by the caller via epn.buildCustomId so
@@ -161,11 +165,24 @@ export async function refreshDeals(input: RefreshDealsInput): Promise<RefreshDea
     }
     listingsFound += 1;
 
+    // Read the chosen listing's eBay item-specifics (ADR-057) for the
+    // like-for-like gate (Card Condition + Language). One extra getItem call per
+    // listing-found card. null on failure → conservative UNKNOWN signal.
+    let listingAspects: Record<string, string> | null = null;
+    if (listing.itemId) {
+      try {
+        listingAspects = await input.getListingAspects({ itemId: listing.itemId });
+      } catch {
+        listingAspects = null;
+      }
+    }
+
     let cardSignal: CardBuySignal;
     try {
       cardSignal = await input.computeSignal({
         variants: metadata.variants,
         listingTitle: listing.title,
+        listingAspects,
         askPrice: listing.price,
       });
     } catch (err) {

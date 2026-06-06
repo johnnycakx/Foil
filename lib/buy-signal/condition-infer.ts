@@ -35,6 +35,8 @@
 // purpose — a "Japanese Charizard NM" is the wrong market regardless of grade,
 // and a "lot of 4 NM" is not a single-card comparison.
 
+import { type ListingAspects, marketFromAspects, conditionFromAspects } from "./aspects.ts";
+
 export type ListingConditionTier = "NM" | "LP" | "MP" | "HP" | "DMG" | "GRADED" | "UNKNOWN";
 export type InferenceConfidence = "high" | "medium" | "low";
 
@@ -84,17 +86,24 @@ export function inferListingCondition(input: {
   title: string | undefined | null;
   description?: string | null;
   isGraded?: boolean;
+  /** eBay getItem item-specifics (ADR-057). When present (a record), they are
+   *  AUTHORITATIVE for market + condition, preferred over title parsing. `null`
+   *  means getItem was attempted but returned nothing → UNKNOWN (never a false
+   *  cross-market deal). `undefined` = aspects not supplied → title-only path
+   *  (back-compat for legacy callers + tests). */
+  aspects?: ListingAspects | null;
 }): ConditionInference {
   const title = (input.title ?? "").trim();
   const haystack = `${title} ${input.description ?? ""}`.trim();
   const evidence: string[] = [];
 
-  if (!haystack) {
+  if (!haystack && input.aspects == null) {
     return { tier: "UNKNOWN", confidence: "low", evidence: ["empty title"] };
   }
 
   // 1. Wrong market — a foreign-language listing can't be compared to the
-  //    English-card sold reference.
+  //    English-card sold reference. (Title-level catch; the aspect Language gate
+  //    below catches the harder case where the title has no language word.)
   const market = haystack.match(MARKET_RE);
   if (market) {
     return { tier: "UNKNOWN", confidence: "low", evidence: [`non-English market marker: "${market[0]}"`] };
@@ -110,6 +119,31 @@ export function inferListingCondition(input: {
   const multi = haystack.match(MULTI_RE);
   if (multi) {
     return { tier: "UNKNOWN", confidence: "low", evidence: [`multi-card / lot marker: "${multi[0]}"`] };
+  }
+
+  // 3.5 ASPECT-FIRST PATH (ADR-057). When eBay item specifics are available they
+  // are authoritative for BOTH market (language) and condition — preferred over
+  // the title heuristics below. This is the like-for-like correctness gate.
+  if (input.aspects !== undefined) {
+    if (input.aspects === null) {
+      // getItem attempted but returned nothing — we can't verify market/condition.
+      return { tier: "UNKNOWN", confidence: "low", evidence: ["item specifics unavailable (getItem failed)"] };
+    }
+    const mkt = marketFromAspects(input.aspects);
+    if (!mkt.isEnglish) {
+      // The core fix: a Japanese listing whose title has no language word still
+      // excludes here via Language: Japanese.
+      return { tier: "UNKNOWN", confidence: "high", evidence: [`market gate: ${mkt.reason}`] };
+    }
+    const cond = conditionFromAspects(input.aspects);
+    if (cond.tier !== "UNKNOWN" && !(cond.tier === "GRADED" && !cond.gradeKey)) {
+      return { tier: cond.tier, confidence: "high", evidence: [mkt.reason, cond.evidence], gradeKey: cond.gradeKey };
+    }
+    // English confirmed, but the listing has no structured Card Condition/Grade
+    // aspect (common on vintage listings). Fall THROUGH to the title-based
+    // condition logic below — the market gate is already satisfied, so a
+    // title-derived condition is still same-market like-for-like (PREFER aspects,
+    // don't lose coverage when they're absent).
   }
 
   // 4. Graded slab with a NAMED service — strongest single-card signal, and we

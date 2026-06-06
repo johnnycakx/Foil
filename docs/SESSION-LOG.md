@@ -8,6 +8,19 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-05 — Buy-signal like-for-like via eBay item specifics: condition coverage + language/market gate (ADR-057)
+
+**Correctness fix (false cross-market deals) + coverage lift, before the X bot posts live. Built + gated; NOT pushed (awaiting John).**
+- **P0 premise — blocked then unblocked.** The live probe couldn't auth: `EBAY_DEVELOPER_CERT_ID` was missing from `.env.local` and `vercel env pull` returns it empty (Sensitive). Stopped + reported (R-009 pattern); **John added the cert**, then the probe confirmed: `item_summary/search` exposes **no** item specifics (only coarse top-level `condition`); **`getItem.localizedAspects`** exposes `Card Condition` ("Near Mint or Better"…), `Language`, `Graded`/`Grade`, `Country/Region`. The cited **Japanese Alakazam `358584162488`**: title `"…SV2a: Pokemon Card 151 203/165 NM"` (no language word) but `Language = Japanese` — the cross-market false-positive is real. PokeTrace is region-partitioned (we fetch `?market=US`), so English-reference ⇒ English-listing only.
+- **Build:** `getListingAspects` (Browse `getItem`, R-008 compute-time read, no persist; `EpnBestListing.itemId` added) + pure `lib/buy-signal/aspects.ts` (market gate = Language must be English; condition = eBay Card Condition enum + graded `PSA_10`-style keys). `condition-infer` is **aspect-first**: language gate → prefer Card Condition/Grade aspect → fall through to title parsing when English-but-no-condition-aspect (preserves vintage coverage). `aspects===null` (getItem failed) → UNKNOWN (never a false deal). Wired into the per-card page + deals cron; existing condition + symmetric-outlier guards unchanged.
+- **MEASURE (PATTERN I-009, live before/after over 207 curated cards):** BEFORE (title-only) **5 BELOW** → AFTER (aspect-gated) **3 BELOW**. **2 false positives removed** — `base6-6-dark-persian` (best listing was a Flareon multi-card lot; BELOW→AT) and `swsh12pt5-18-charizard-v` (`lang=null`, unconfirmable → BELOW→UNKNOWN). 0 gained this run; Alakazam's current best listing reads `Language: Japanese` → correctly excluded. **Board honestly shrinks 5→3** (fewer deals we can vouch for — the point). Graded slabs now classify via the Grade aspect (the live-smoke showed PSA-9 slabs read GRADED→PSA_9, outlier-guarded).
+- **Latent gate gap fixed:** `npm test` is a hardcoded file list; the B.4/B.6 deals tests + this goal's aspect test were never in it (so they hadn't run in CI). Added all four → suite **781→812**.
+- **Gates:** probe ✅ · unit tests on the aspect reader incl. the real Japanese-Alakazam shape (14) ✅ · live-smoke 8/8 (run with `--env-file=.env.local`) ✅ · `npm test` **812 pass / 0 fail / 15 skip** · compliance:check **6/6** (R-008: aspects read at compute time, never persisted — EBAY-COMPLIANCE maintenance entry) · tsc clean · build clean · design:lint **0 new** · /security-review (below). Probe + measure scripts deleted. **Not pushed.**
+- **R-012 note:** the buy-signal path now makes 2 Browse calls per compute (search + getItem); deals cron ~414/day (was ~207), still well under ~5,000.
+- **Docs:** ADR-057; ROADMAP F4; EBAY-COMPLIANCE maintenance-log; this entry.
+
+---
+
 ## 2026-06-05 — Deal click-time redirect (lands on the actual listing) + self-hosted hero images (ADR-056)
 
 **Conversion + polish before driving creator traffic. Built + gated, NOT pushed (awaiting John).**

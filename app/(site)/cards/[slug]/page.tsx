@@ -12,7 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { affiliateSearchUrl, buildCustomId, type EpnBestListing } from "@/lib/affiliate/epn";
-import { getBestListing } from "@/lib/affiliate/ebay-browse";
+import { getBestListing, getListingAspects } from "@/lib/affiliate/ebay-browse";
 import { CARD_CATALOG, getCatalogEntry, relatedCardsForSlug, cardTier } from "@/lib/cards/catalog";
 import { LongTailListingFallback } from "@/components/cards/long-tail-listing-fallback";
 import { MetadataOnlyListing } from "@/components/cards/metadata-only-listing";
@@ -255,9 +255,17 @@ export default async function CardPage({
   const BUY_SIGNAL_ENABLED = true;
   let buySignal = null;
   if (tier === "curated" && best) {
+    // Like-for-like gate (ADR-057): read the chosen listing's eBay item
+    // specifics (Card Condition + Language) via getItem and feed them to the
+    // signal — authoritative over title parsing, and excludes non-English
+    // (cross-market) listings. null on getItem failure → conservative UNKNOWN.
+    const listingAspects = best.itemId
+      ? await getListingAspects({ itemId: best.itemId, surface: "page_render" })
+      : null;
     const cardSignal = await computeCardBuySignal({
       variants: card.variants,
       listingTitle: best.title,
+      listingAspects,
       askPrice: best.price,
       selectedVariant,
     });

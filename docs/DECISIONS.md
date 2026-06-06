@@ -1860,6 +1860,30 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 
 **Cross-refs.** `app/go/deal/[slug]/route.ts`, `lib/deals/redirect.ts`, `components/deals/deals-board.tsx`, `lib/__tests__/deals-redirect.test.ts`, `public/hero/*.webp`, `app/(site)/page.tsx`, `lib/supabase/public-routes.ts`, `lib/telemetry/browse-calls.ts`, [ADR-054](#adr-054--todays-best-deals-leaderboard-precompute-and-cache-derived-metadata-never-persist-ebay-listing-data), [R-008](RISKS.md), [R-012](RISKS.md).
 
+## ADR-057 — Buy-signal like-for-like via eBay item specifics: condition coverage + language/market gate
+
+**Date:** 2026-06-05
+**Status:** Accepted. Hardens [ADR-053](#adr-053--buy-signal-mvp--gate-13-anti-hype) (buy-signal) / PATTERN I-009. Correctness fix before the X bot posts live.
+
+**Context.** The buy signal inferred the listing's condition from the eBay **title** only. Two failure modes: (1) **cross-market false deals** — a Japanese-market listing whose title has no language word (live example: Alakazam ex item `358584162488`, title `"…SV2a: Pokemon Card 151 203/165 NM"`) was scored against the **English** PokeTrace sold reference, flashing a fake "below sold" deal; (2) **coverage loss** — listings whose condition lives only in eBay item specifics (not the title) read as UNKNOWN. **P0 live probe (2026-06-05) confirmed:** `item_summary/search` exposes **no** item specifics (only a coarse top-level `condition`); only **`getItem.localizedAspects`** returns `Card Condition`, `Language`, `Graded`/`Grade`, `Country/Region` — and the Japanese Alakazam's `Language` aspect is `Japanese` despite the English-looking title. PokeTrace's sold reference is region-partitioned (our path fetches `?market=US`), so the English reference must only be compared to English listings.
+
+**Decision.**
+1. **Read item specifics at compute time** (`lib/affiliate/ebay-browse.ts::getListingAspects`) — a `getItem` call for the chosen best listing, flattened to a name→value map. `EpnBestListing` now carries `itemId` for this. **R-008:** `cache:"no-store"`, response read then discarded, nothing persisted (same posture as the search call).
+2. **Pure aspect reader** (`lib/buy-signal/aspects.ts`): `marketFromAspects` (v1 gate: `Language` must be explicitly `English`; missing/other → exclude) + `conditionFromAspects` (maps the eBay raw `Card Condition` enum — "Near Mint or Better"→NM, "Lightly Played (Excellent)"→LP, … — and graded slabs → grade-specific `PSA_10` etc. from `Graded`/`Professional Grader`/`Grade`).
+3. **Aspect-first inference** (`condition-infer.ts`): when aspects are supplied they're authoritative — **language gate first** (non-English → UNKNOWN), then **prefer the Card Condition/Grade aspect**; if English but no structured condition aspect, **fall through to title parsing** (market already gated, so a title-derived condition is still same-market — preserves coverage). `aspects===null` (getItem failed) → UNKNOWN (never a false deal); `aspects===undefined` → title-only (back-compat). The existing condition + symmetric outlier guards are unchanged — language is an ADDITIONAL like-for-like gate.
+4. **Wired** into both compute sites: the per-card page (`page_render`) and the deals-refresh cron (`deals_cron`) fetch aspects for the best listing and pass them to `computeCardBuySignal`.
+
+**MEASURE (PATTERN I-009, live before/after over 207 curated cards).** BEFORE (title-only): **5 BELOW**. AFTER (aspect-gated): **3 BELOW**. Two false positives dropped: a `base6-6-dark-persian` whose best listing was actually a **Flareon multi-card lot** (BELOW→AT), and a `swsh12pt5-18-charizard-v` whose listing had **no confirmable Language** (BELOW→UNKNOWN, the conservative exclude). 0 new deals gained this run; the Japanese Alakazam's current best listing reads `Language: Japanese` → correctly excluded. **The board honestly shrinks 5→3** — fewer deals we can vouch for, which is the point.
+
+**Consequences.**
+- Quota (R-012): the buy-signal path now makes **2 Browse calls per compute** (search + getItem) instead of 1 — deals cron ~414/day (was ~207), per-card page +1 per curated render. Still well under the ~5,000/day ceiling; attributed under the existing surfaces. The redirect path is unchanged (1 call, no aspects).
+- Compliance stays 6/6: `getListingAspects` lives in the allowed `ebay-browse.ts`, uses `cache:"no-store"`, persists nothing (EBAY-COMPLIANCE maintenance-log entry added).
+- The English Charizard probe had **no** Card Condition aspect → the title-fallback (within the English gate) is load-bearing for vintage coverage.
+- **Fixed a latent gate gap:** `npm test` is a hardcoded file list; the B.4/B.6 deals tests + this goal's aspect test were never added, so they weren't running in CI. Added all four — suite 781→**812**.
+- Follow-up (F4): a same-language reference for non-English markets would let Japanese listings be classified against Japanese sold data instead of excluded; v1 is English-only.
+
+**Cross-refs.** `lib/buy-signal/aspects.ts`, `lib/buy-signal/condition-infer.ts`, `lib/buy-signal/card-signal.ts`, `lib/affiliate/ebay-browse.ts` (`getListingAspects`), `lib/affiliate/epn.ts` (`itemId`), `lib/deals/refresh-batch.ts`, `app/(site)/cards/[slug]/page.tsx`, `app/api/cron/deals-refresh/route.ts`, `lib/__tests__/buy-signal-aspects.test.ts`, `lib/__tests__/buy-signal-live-smoke.test.ts`, [ADR-053](#adr-053--buy-signal-mvp--gate-13-anti-hype), [R-008](RISKS.md), [R-012](RISKS.md), PATTERN I-009.
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

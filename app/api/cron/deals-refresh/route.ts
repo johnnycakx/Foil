@@ -16,7 +16,7 @@
 // PUBLIC_ROUTES (via the /api/cron prefix) and does its own bearer gate.
 
 import { NextResponse } from "next/server";
-import { getBestListing } from "@/lib/affiliate/ebay-browse";
+import { getBestListing, getListingAspects } from "@/lib/affiliate/ebay-browse";
 import { buildCustomId } from "@/lib/affiliate/epn";
 import { getCardMetadata } from "@/lib/cards/sdk";
 import { CARD_CATALOG, cardTier } from "@/lib/cards/catalog";
@@ -51,6 +51,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     entries,
     getCardMetadata,
     getBestListing,
+    getListingAspects: ({ itemId }) => getListingAspects({ itemId, surface: "deals_cron" }),
     computeSignal: computeCardBuySignal,
     customIdFor: (slug) => buildCustomId({ tier: "deals", slug }),
     upsertRows: async (rows: DealUpsertRow[]) => {

@@ -19,7 +19,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { getCardMetadata } from "../cards/sdk.ts";
-import { getBestListing } from "../affiliate/ebay-browse.ts";
+import { getBestListing, getListingAspects } from "../affiliate/ebay-browse.ts";
 import { inferListingCondition } from "../buy-signal/condition-infer.ts";
 import { resolveConditionMatchedReference } from "../buy-signal/reference.ts";
 import { classifyConditionMatched } from "../buy-signal/compute.ts";
@@ -67,7 +67,10 @@ for (const card of FLAGSHIPS) {
       return;
     }
 
-    const inferred = inferListingCondition({ title: best.title });
+    // ADR-057: exercise the live aspect-gated path (Card Condition + Language)
+    // — the same getItem read production uses, not title-only.
+    const listingAspects = best.itemId ? await getListingAspects({ itemId: best.itemId, surface: "page_render" }) : null;
+    const inferred = inferListingCondition({ title: best.title, aspects: listingAspects });
     const matched = await resolveConditionMatchedReference(meta.variants, undefined, inferred.tier, inferred.gradeKey);
     const sig = classifyConditionMatched({
       askPrice: best.price,
