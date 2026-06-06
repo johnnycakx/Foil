@@ -1,0 +1,20 @@
+{
+  "_observed": "REGRESSION FIXTURE (the production bug). eBay getItem localizedAspects for item 117223259644 — the JAPANESE Neo Genesis Typhlosion that the English Typhlosion page (neo1-17) wrongly surfaced + redirected to on 2026-06-06. Captured live via the build-step-0 probe (scripts/probe-listing-aspects.ts, deleted after). The verified-listing resolver MUST reject this candidate: Language=Japanese (hard gate, the decisive signal); ALSO Set='2000 Neo Genesis' (eBay's string, not the SDK 'Neo Genesis') and Card Number='No. 157' (≠ the English #17) corroborate the reject. topCondition='Ungraded'. See docs/DESIGN-VERIFIED-LISTING-RESOLVER.md + docs/probe-findings-listing-aspects-2026-06-06.md.",
+  "itemId": "v1|117223259644|0",
+  "legacyItemId": "117223259644",
+  "title": "Typhlosion 2000 Neo Genesis Holo Rare Japanese #No. 157",
+  "price": { "value": "40.25", "currency": "USD" },
+  "topCondition": "Ungraded",
+  "localizedAspects": [
+    { "type": "STRING", "name": "Rarity", "value": "Rare" },
+    { "type": "STRING", "name": "Type", "value": "TCG/CCG" },
+    { "type": "STRING", "name": "Game", "value": "Pokemon" },
+    { "type": "STRING", "name": "Set", "value": "2000 Neo Genesis" },
+    { "type": "STRING", "name": "Character", "value": "Typhlosion" },
+    { "type": "STRING", "name": "Language", "value": "Japanese" },
+    { "type": "STRING", "name": "Manufacturer", "value": "Nintendo" },
+    { "type": "STRING", "name": "Year Manufactured", "value": "2000" },
+    { "type": "STRING", "name": "Card Number", "value": "No. 157" },
+    { "type": "STRING", "name": "Finish", "value": "Holo" }
+  ]
+}

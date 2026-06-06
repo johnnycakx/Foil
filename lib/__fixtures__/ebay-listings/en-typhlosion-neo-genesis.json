@@ -1,0 +1,26 @@
+{
+  "_observed": "POSITIVE FIXTURE — a real ENGLISH Neo Genesis Typhlosion that the resolver SHOULD accept (identity passes). Captured live via the build-step-0 probe (deleted after). Language=English (passes the hard gate); Set='Neo Genesis' (matches the SDK setName for this card); Card Number='18/111' (numerator 18 — note eBay/listings number Neo Genesis Typhlosion as 18/111, which the catalog slug neo1-17 may disagree with — flagged in the probe findings as a catalog-number reconciliation item, NOT a resolver bug); Finish='Holo'. This particular listing is a graded PSA 6 (Graded=Yes), so it doubles as a GRADED-path positive. NOTE graded detection nuance: this one DOES carry Graded=Yes, but the probe found other graded slabs (BGS/PSA) where Graded was blank and only 'Grading Company'/'Grade' were present — goal #1's graded gate must check all three + the top-level condition='Graded'. See docs/probe-findings-listing-aspects-2026-06-06.md.",
+  "itemId": "v1|257548819927|0",
+  "title": "Pokemon Typhlosion Neo Genesis Unlimited Holo #18 PSA 6",
+  "price": { "value": "90.00", "currency": "USD" },
+  "topCondition": "Graded",
+  "localizedAspects": [
+    { "type": "STRING", "name": "Set", "value": "Neo Genesis" },
+    { "type": "STRING", "name": "HP", "value": "100" },
+    { "type": "STRING", "name": "Retreat Cost", "value": "CC" },
+    { "type": "STRING", "name": "Graded", "value": "Yes" },
+    { "type": "STRING", "name": "Rarity", "value": "Holo Rare" },
+    { "type": "STRING", "name": "Game", "value": "Pokémon TCG" },
+    { "type": "STRING", "name": "Language", "value": "English" },
+    { "type": "STRING", "name": "Illustrator", "value": "Ken Sugimori" },
+    { "type": "STRING", "name": "Card Name", "value": "Typhlosion" },
+    { "type": "STRING", "name": "Manufacturer", "value": "Wizards of the Coast" },
+    { "type": "STRING", "name": "Stage", "value": "Stage 2" },
+    { "type": "STRING", "name": "Features", "value": "Unlimited" },
+    { "type": "STRING", "name": "Card Type", "value": "Pokémon" },
+    { "type": "STRING", "name": "Card Number", "value": "18/111" },
+    { "type": "STRING", "name": "Additional Description", "value": "Typhlosion" },
+    { "type": "STRING", "name": "Finish", "value": "Holo" },
+    { "type": "STRING", "name": "Country of Origin", "value": "United States" }
+  ]
+}
