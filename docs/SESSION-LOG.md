@@ -15,7 +15,8 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 - **Premise correction surfaced:** the goal expected the uninstall to clear "2 moderate npm vulns they pulled in" — it didn't. Those 2 are **PostCSS via Next's internal node_modules**, pre-existing and unrelated to chromium; not force-fixed (would force-change Next, out of scope). Reported, not silently dropped.
 - **Kept unchanged:** dry-run default (`X_BOT_LIVE=false`), rotation, Gates 12/13, single X boundary, bearer-gated 14:00 UTC cron, docs/social-drafts output.
 - **Gates:** P0 premise ✅ · `npm test` **823 / 0 fail** · tsc clean · `npm run build` clean (`/api/cron/x-post` = ƒ; **no chromium bundled** — 0 sparticuz refs in build output, so the function-size delta is back to ~baseline) · compliance **6/6** · design:lint 0-new.
-- **Docs:** ADR-058 amendment (Satori-only confirmed + the round-trip + the unrelated-vuln note); this entry. Not pushed (awaiting John).
+- **Docs:** ADR-058 amendment (Satori-only confirmed + the round-trip + the unrelated-vuln note); this entry.
+- **DEPLOYED + dry-run-verified (John authorized, commit `93d63fc`).** `/api/cron/x-post` live (401 without the bearer = deployed + gated). Triggered with the bearer (X_BOT_LIVE unset) → `{ok:true, live:false, posted:false, reason:"dry_run"}` — **posted NOTHING to X** (the safety invariant holds in prod). The generated deal-of-day post was voice-clean and exact: "Typhlosion Neo Genesis, PSA 6. Recent condition-matched sales hit $156 as of today. Current listings sit 42% below that as of today. Worth pulling up yourself to confirm. foiltcg.com/cards/neo1-17-typhlosion". Live posting still OFF pending John's X-app + OAuth1 tokens + console spending cap (runbook).
 
 ---
 
