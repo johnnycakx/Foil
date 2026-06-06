@@ -8,6 +8,30 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-06 — X bot: dropped the Playwright/chromium path, Satori is the sole image source (ADR-058 amendment)
+
+**Reverted the Playwright screenshot path to Satori-only** (John's call — my original premise-check recommendation). The brief Playwright addition (`lib/social/screenshot.ts` + `playwright-core` + `@sparticuz/chromium`, added to satisfy the literal spec wording) carried a ~50MB chromium dep + Vercel function-size/deploy risk not worth it for a dry-run feature.
+- **Removed:** `lib/social/screenshot.ts`; `captureScreenshot` import/usage in the cron route (renderImage now calls `renderDealsImage`/`renderSpotlightImage` only) and in the local dry-run script (back to text-only draft); the 2 screenshot unit tests. `npm uninstall @sparticuz/chromium playwright-core` — both absent from package.json + lock + node_modules, not resolvable, 0 refs in `.next/server`.
+- **Premise correction surfaced:** the goal expected the uninstall to clear "2 moderate npm vulns they pulled in" — it didn't. Those 2 are **PostCSS via Next's internal node_modules**, pre-existing and unrelated to chromium; not force-fixed (would force-change Next, out of scope). Reported, not silently dropped.
+- **Kept unchanged:** dry-run default (`X_BOT_LIVE=false`), rotation, Gates 12/13, single X boundary, bearer-gated 14:00 UTC cron, docs/social-drafts output.
+- **Gates:** P0 premise ✅ · `npm test` **823 / 0 fail** · tsc clean · `npm run build` clean (`/api/cron/x-post` = ƒ; **no chromium bundled** — 0 sparticuz refs in build output, so the function-size delta is back to ~baseline) · compliance **6/6** · design:lint 0-new.
+- **Docs:** ADR-058 amendment (Satori-only confirmed + the round-trip + the unrelated-vuln note); this entry. Not pushed (awaiting John).
+
+---
+
+## 2026-06-05 — Built the daily X content bot (dry-run-first, own-posts-only) — ADR-058
+
+**Built + gated; NOT pushed; live posting NOT enabled (both need John).** Daily X bot that screenshots-equivalent the live deals + rotates angles, dry-run by default.
+- **P0 premise check corrected 3 load-bearing mechanics** the goal specified that the runtime forbids: (a) **Playwright doesn't run in a Vercel cron** (only `playwright-core` resolves; real chromium = ~50MB `@sparticuz` dep + 250MB-function-limit risk for a maybe-never-live feature) → used **Satori/next-og** (the proven `opengraph-image` path) to compose the portrait image from the `buy_signals` cache (R-008-safe, deterministic, zero heavy dep); (b) **a Vercel cron can't write `docs/social-drafts/`** (read-only fs) → dry-run delivers to **Discord `#content-engine`** (text + the actual PNG via multipart), with a **local script** for disk drafts; (c) **X creds absent** + posting needs user-context + **$0.20/post-with-URL** → documented the full setup in a runbook, dry-run proceeds without creds.
+- **Modules:** `lib/social/{angles,post-text,post-image,x-client,bot,data}.ts(x)` — pure angle rotation (deal/spotlight/educational by UTC day, graceful thin-board fallback); Sonnet text gen re-prompted on any `voiceCheck` violation (Gate 12 no-em-dash + Gate 13 anti-hype, "as of today", char limit, link); Satori 1080×1350 renderers; the single X API boundary (`x-client.ts`, OAuth 1.0a, soft-fail, verify-on-enable); the orchestrator with the dry-run/live switch.
+- **Safety (mirrors ADR-011 never-auto-send):** `X_BOT_LIVE` default false; `runXBot` calls the X poster **only** when `live===true` — **unit-test pins "live=false never calls the poster."** Kill-switch = the env var.
+- **Cron** `/api/cron/x-post` daily 14:00 UTC (after deals-refresh), bearer-gated, soft-fail.
+- **Gates:** premise ✅ · `npm test` **823 pass / 0 fail** (new `x-bot.test.ts`: rotation, dry-run-never-posts, live-posts, voice-gate retry, boundary soft-fail) · compliance 6/6 · tsc + build clean (`/api/cron/x-post` compiled) · design:lint 0-new · /security-review (below).
+- **Docs:** ADR-058; R-019 (X automation ToS + cost runaway); ROADMAP X1; ENV-VARS (`X_BOT_LIVE` + `X_*`); runbook `docs/runbooks/x-bot.md`; this entry. `docs/social-drafts/` gitignored.
+- **Remaining (John):** review dry-run drafts; create the X app + OAuth1 user tokens + a console **spending cap**; smoke-test the poster once; set `X_BOT_LIVE=true`.
+
+---
+
 ## 2026-06-05 — Fixed the deals_cron Browse-telemetry gap (real cause: a stale CHECK constraint)
 
 **Followup from the F4 deploy finding (browse_calls had 0 `deals_cron` rows ever).** I first guessed a fire-and-forget flush race and shipped an opt-in `awaitLog` flag (commit `02c9eb7`) — but the live verify still showed **0 `deals_cron` rows**, disproving that theory (and the cron got *faster*, not slower). **Real root cause, found by inspecting the prod table:** `browse_calls` carries `CHECK (surface = ANY (ARRAY['page_render','wishlist_cron','manual']))` — it was never widened when the `BrowseSurface` union gained `deals_cron` (ADR-054) and `deals_redirect` (ADR-056). So every deals insert violated the check and `logBrowseCall` (soft-fail) dropped it. Proof it wasn't a flush issue: `manual`=412 (my measure script) and fire-and-forget `page_render`=1629 rows logged fine — only the constraint-excluded surfaces were lost. **Fix:** migration `20260606060000_browse_calls_surface_check.sql` widens the CHECK to include `deals_cron` + `deals_redirect` (non-destructive). The earlier `awaitLog` change is kept as a small complementary flush guarantee for long crons (it did nothing on its own — the inserts still failed the check until the constraint was fixed). Gates: `npm test` 813/0-fail, compliance 6/6, tsc + build clean, design:lint 0-new. Migration applied to prod + live-verified `deals_cron` rows now land.

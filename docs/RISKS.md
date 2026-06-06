@@ -291,6 +291,21 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 ---
 
+## R-019 — X automation ToS + API cost runaway
+
+**Severity:** Medium
+**Status:** `mitigating` (added 2026-06-05 / [ADR-058](DECISIONS.md#adr-058--daily-x-content-bot-dry-run-first-own-posts-only-satori-image-not-playwright))
+
+**The risk.** Two failure modes from the daily X bot: (a) **ToS** — X's automation rules permit scheduled own-account posting but penalize automated engagement (bulk replies, follows, likes, DMs, aggressive posting); overstepping risks the Foil account. (b) **Cost runaway** — X API is pay-per-use in 2026; a post with a URL is **$0.20/request**, and a bug that loops or retries could rack up charges fast.
+
+**Why mitigating (not accepted).** Structural guards ship with the bot: (1) **own-account scheduled posts only** — the bot has no reply/follow/like/DM code path; it calls only POST `/2/tweets` once per daily cron. (2) **Dry-run default** — `X_BOT_LIVE=false` means nothing posts until John reviews drafts + flips the switch (mirrors ADR-011). (3) **Single posting boundary** (`lib/social/x-client.ts`) that soft-fails (no retry storm). (4) **One post/day** cadence. (5) The runbook requires a **console spending cap** before enabling live (a hard ceiling X enforces server-side).
+
+**Trigger to escalate.** First whichever: X flags/limits the Foil account; the API credit balance drops faster than ~$0.20/day (indicates more than the daily post is firing); any code adds an engagement (reply/follow/like) call path.
+
+**Mitigation playbook.** Flip `X_BOT_LIVE=false` (kill-switch, instant). Lower/verify the console spending cap. Audit `lib/social/x-client.ts` for any call beyond the single daily create-post. Keep cadence at one scheduled post/day; never add engagement automation without re-reading X's automation ToS.
+
+---
+
 ## How to log a new risk
 
 1. Next available ID (`R-NNN`, monotonically increasing).

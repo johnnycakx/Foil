@@ -1884,6 +1884,34 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 
 **Cross-refs.** `lib/buy-signal/aspects.ts`, `lib/buy-signal/condition-infer.ts`, `lib/buy-signal/card-signal.ts`, `lib/affiliate/ebay-browse.ts` (`getListingAspects`), `lib/affiliate/epn.ts` (`itemId`), `lib/deals/refresh-batch.ts`, `app/(site)/cards/[slug]/page.tsx`, `app/api/cron/deals-refresh/route.ts`, `lib/__tests__/buy-signal-aspects.test.ts`, `lib/__tests__/buy-signal-live-smoke.test.ts`, [ADR-053](#adr-053--buy-signal-mvp--gate-13-anti-hype), [R-008](RISKS.md), [R-012](RISKS.md), PATTERN I-009.
 
+## ADR-058 — Daily X content bot: dry-run-first, own-posts-only, Satori image (not Playwright)
+
+**Date:** 2026-06-05
+**Status:** Accepted. Built dry-run-default. Mirrors the never-auto-send posture of [ADR-011](#adr-011--newsletter-drafts-auto-generated-never-auto-sent) / [R-001](RISKS.md#r-001--content-engine-fabrication). New risk [R-019](RISKS.md#r-019--x-automation-tos--api-cost-runaway).
+
+**Context.** Drive daily X traffic by posting a branded image of the live deal data + rotating angles, from the Foil account. Three premise realities surfaced in the P0 check that reshaped the literal spec:
+1. **Playwright doesn't run in a Vercel cron** without a heavy serverless-chromium dep (`@sparticuz/chromium`, ~50MB, 250MB-function-limit blast radius) — for a dry-run feature that may never go live.
+2. **A Vercel cron can't write to `docs/social-drafts/`** (read-only fs except `/tmp`).
+3. **X creds are absent**, and posting needs **user-context** auth (app-only Bearer can't post); a post **with a URL costs $0.20** (pay-per-use, 2026).
+
+**Decision.**
+1. **Image via `next/og` (Satori), not a Playwright screenshot.** The codebase already renders serverless images this way (`app/opengraph-image.tsx`). `lib/social/post-image.tsx` composes a 1080×1350 portrait from the **buy_signals cache** (deals board) or the PokeTrace sold reference (spotlight) — visually equivalent (date + foiltcg.com + "below by %" in-frame), deterministic, zero heavy deps, **R-008-safe** (no eBay listing data rendered or persisted).
+2. **Rotating angles** (`lib/social/angles.ts`, pure): deal-of-day → price-spotlight → educational, by UTC day, with graceful fallback when the board is thin.
+3. **Voice-gated text** (`lib/social/post-text.ts`): one Sonnet call, re-prompted on any `voiceCheck` violation (Gate 12 no-em-dash + Gate 13 anti-hype), char-limited, "as of today" on prices, ends with the link. Posts link to foiltcg.com (our own site, which carries the affiliate disclosure near its CTAs), so no in-tweet FTC disclosure is required.
+4. **Single posting boundary** (`lib/social/x-client.ts`): the ONLY module that calls the X API — POST `/2/tweets` + v1.1 media upload, OAuth 1.0a user-context, soft-fail. Flagged verify-on-enable (X media-upload auth is migrating).
+5. **Dry-run default + kill-switch** (`lib/social/bot.ts`, `X_BOT_LIVE` env, default false). `runXBot` invokes the X poster **only** when `live === true`; dry-run routes the draft to Discord `#content-engine` (text + the actual PNG via multipart) for review. A unit test pins "live=false never calls the poster." Setup + enablement in [docs/runbooks/x-bot.md](runbooks/x-bot.md).
+6. **Cron** `/api/cron/x-post` daily 14:00 UTC (after deals-refresh), bearer-gated, soft-fail. Local `scripts/x-post-dryrun.ts` writes text drafts to `docs/social-drafts/` (gitignored) where disk works.
+
+**Consequences.**
+- No code path posts to X while `X_BOT_LIVE !== "true"` (test-pinned). John reviews drafts, completes the X-app + spending-cap setup, smoke-tests the poster once, then flips the switch.
+- Satori vs Playwright: composed, not a literal page screenshot. Reassess if a true screenshot is ever needed (would require the chromium dep or the residential box).
+- Cost is bounded by 1 post/day + a console spending cap (R-019); ToS posture is own-account scheduled posts only, no engagement automation.
+- New env: `X_BOT_LIVE` + `X_API_KEY`/`X_API_SECRET`/`X_ACCESS_TOKEN`/`X_ACCESS_SECRET` (ENV-VARS). New `npm test` entry `x-bot.test.ts`.
+
+**Amendment (2026-06-06) — Satori-only confirmed after a brief Playwright round-trip.** To satisfy the goal's literal "headless-browser screenshot" wording, a Playwright path (`lib/social/screenshot.ts` via `playwright-core` + `@sparticuz/chromium`, screenshot-primary with Satori fallback) was added, then **removed by an explicit follow-up decision**: the ~50MB chromium dep + Vercel function-size/deploy risk isn't worth it for a dry-run feature whose composed Satori card is visually sufficient. The Satori `renderDealsImage`/`renderSpotlightImage` is now the SOLE image source for every angle; `screenshot.ts` + both deps are deleted. (Note: the 2 moderate npm vulns observed during that round-trip are PostCSS-via-Next, pre-existing and unrelated to chromium — not cleared by the uninstall, not in scope to force-fix.)
+
+**Cross-refs.** `lib/social/{angles,post-text,post-image,x-client,bot,data}.ts(x)`, `app/api/cron/x-post/route.ts`, `lib/notifications/discord.ts` (`postSocialDraft` + `postDiscordImage`), `scripts/x-post-dryrun.ts`, `docs/runbooks/x-bot.md`, [ADR-011](#adr-011--newsletter-drafts-auto-generated-never-auto-sent), [ADR-054](#adr-054--todays-best-deals-leaderboard-precompute-and-cache-derived-metadata-never-persist-ebay-listing-data), [R-001](RISKS.md), [R-008](RISKS.md), [R-019](RISKS.md).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

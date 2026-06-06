@@ -196,6 +196,76 @@ export async function postContentPublished(
   });
 }
 
+export type SocialDraftInput = {
+  /** "deal_of_day" | "price_spotlight" | "educational". */
+  angle: string;
+  /** The full generated post text (already voice-gated). */
+  text: string;
+  /** The page the post links to. */
+  link: string;
+  /** Whether a portrait image was rendered (the image itself isn't attached —
+   *  Discord webhooks need multipart; the review ping carries the text + a note). */
+  hasImage: boolean;
+  /** True when this is a dry-run draft (not posted to X). */
+  dryRun: boolean;
+};
+
+/**
+ * Post an X-bot DRAFT for review to Discord (#content-engine). Used by the
+ * dry-run path (X_BOT_LIVE=false) so John sees the day's generated post + angle
+ * without anything reaching X. Soft-fail per the lib contract.
+ */
+export async function postSocialDraft(
+  webhookUrl: string,
+  ev: SocialDraftInput,
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<PostWebhookResult> {
+  return postWebhook({
+    webhookUrl,
+    embeds: [
+      {
+        title: ev.dryRun ? "🧪 X post DRAFT (dry-run, not posted)" : "✅ X post sent",
+        color: COLOR_GREEN_OK,
+        timestamp: new Date().toISOString(),
+        fields: [
+          { name: "Angle", value: ev.angle, inline: true },
+          { name: "Chars", value: String(ev.text.length), inline: true },
+          { name: "Image", value: ev.hasImage ? "rendered" : "none", inline: true },
+          { name: "Text", value: ev.text.slice(0, 1000), inline: false },
+          { name: "Link", value: ev.link, inline: false },
+        ],
+      },
+    ],
+    fetchImpl: opts.fetchImpl,
+  });
+}
+
+/**
+ * Attach a rendered PNG to a Discord channel via multipart (webhooks accept a
+ * file part + payload_json). Used by the X-bot dry-run so John SEES the portrait
+ * image before enabling live posting. Soft-fail; never throws.
+ */
+export async function postDiscordImage(
+  webhookUrl: string,
+  input: { filename: string; png: Uint8Array; content?: string; fetchImpl?: typeof fetch },
+): Promise<PostWebhookResult> {
+  if (!webhookUrl) return { ok: false, error: "missing_webhook_url" };
+  try {
+    const form = new FormData();
+    form.append("payload_json", JSON.stringify({ username: DISCORD_USERNAME, content: input.content ?? "" }));
+    form.append(
+      "files[0]",
+      new Blob([input.png as unknown as BlobPart], { type: "image/png" }),
+      input.filename,
+    );
+    const fetchFn = input.fetchImpl ?? fetch;
+    const res = await fetchFn(webhookUrl, { method: "POST", body: form });
+    return res.ok ? { ok: true, status: res.status } : { ok: false, status: res.status, error: `HTTP ${res.status}` };
+  } catch (err) {
+    return { ok: false, error: (err as Error).message };
+  }
+}
+
 export type ErrorEventInput = {
   source: string; // e.g. "content-engine", "subscribe-action", "ci-workflow"
   errorType: string; // e.g. "BeehiivApiError", "GenerationFailedAfterRetries"
