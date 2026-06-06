@@ -93,6 +93,26 @@ test("searchItems: rejects empty query without hitting the network", async () =>
   );
 });
 
+test("searchItems: awaitLog:true flushes the telemetry insert before returning (deals_cron gap fix)", async () => {
+  const { fetch: fetchImpl } = fakeFetch([tokenJson(), json({ itemSummaries: [] })]);
+  await withEnv(
+    { EBAY_DEVELOPER_APP_ID: "appid", EBAY_DEVELOPER_CERT_ID: "cert" },
+    async () => {
+      __resetTokenCacheForTests();
+      let flushed = false;
+      const logImpl = async () => {
+        await Promise.resolve();
+        flushed = true;
+        return { ok: true };
+      };
+      await searchItems({ query: "charizard", fetchImpl, surface: "deals_cron", logImpl, awaitLog: true });
+      // With awaitLog, the un-awaited fire-and-forget race is gone: the insert
+      // has completed by the time searchItems resolves.
+      assert.equal(flushed, true);
+    },
+  );
+});
+
 test("searchItems: soft-fails when OAuth credentials are missing", async () => {
   await withEnv(
     { EBAY_DEVELOPER_APP_ID: undefined, EBAY_DEVELOPER_CERT_ID: undefined },

@@ -71,7 +71,9 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   const result = await scanWatchlists({
     supabase: supabaseLike,
-    getBestListing,
+    // awaitLog: flush Browse telemetry before the cron function suspends
+    // (fire-and-forget drops it in a cron context — same gap as deals_cron).
+    getBestListing: (i) => getBestListing({ ...i, awaitLog: true }),
     sendEmail: async (input) => {
       const res = await sendTransactionalEmail({
         to: input.to,

@@ -262,6 +262,9 @@ export type GetBestListingInput = {
   /** Watchlist condition token (lib/cards/conditions.ts). Same handling as
    *  `variant`. Consumed by lib/affiliate/ebay-browse.ts; EPN ignores it. */
   condition?: string;
+  /** AWAIT the Browse telemetry insert before returning (cron callers set true
+   *  so it flushes before the function suspends). Consumed by ebay-browse.ts. */
+  awaitLog?: boolean;
 };
 
 /**

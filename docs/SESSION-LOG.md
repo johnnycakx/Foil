@@ -8,6 +8,12 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-05 — Fixed the deals_cron (+ wishlist_cron) Browse-telemetry flush gap
+
+**Followup from the F4 deploy finding (browse_calls had 0 `deals_cron` rows ever).** Root cause: `searchItems` / `getListingAspects` log via fire-and-forget `void log(...)` — correct for page renders (never block), but in a **cron** the function returns its HTTP response and the serverless instance suspends before the un-awaited insert flushes (the awaited `buy_signals` upsert lands; the dropped telemetry didn't). Fix: an opt-in **`awaitLog`** flag on `searchItems`/`getBestListing`/`getListingAspects` — when set, the telemetry promise is awaited before return; default stays fire-and-forget so the page hot path is unchanged. Both cron routes (`deals-refresh`, `wishlist-alerts`) now pass `awaitLog: true`, so their Browse calls flush before the run ends. New test pins the flush (`ebay-browse.test.ts`). Gates: `npm test` 813/0-fail, compliance 6/6, tsc + build clean, design:lint 0-new. Deployed + live-verified that `deals_cron` rows now land.
+
+---
+
 ## 2026-06-05 — Buy-signal like-for-like via eBay item specifics: condition coverage + language/market gate (ADR-057)
 
 **Correctness fix (false cross-market deals) + coverage lift, before the X bot posts live. Built + gated; NOT pushed (awaiting John).**

@@ -49,6 +49,10 @@ export type SearchItemsInput = {
   /** Test injection — override logBrowseCall so we can pin the call
    *  shape without writing to Supabase. */
   logImpl?: typeof logBrowseCall;
+  /** AWAIT the telemetry insert before returning (default false = fire-and-
+   *  forget). Cron callers set this so the log flushes before the serverless
+   *  function suspends; page renders leave it false to never block. */
+  awaitLog?: boolean;
 };
 
 /**
@@ -82,6 +86,17 @@ export async function searchItems(input: SearchItemsInput): Promise<EpnSearchRes
   const log = input.logImpl ?? logBrowseCall;
   const startedAt = Date.now();
 
+  // Telemetry emit. Default: fire-and-forget (never block a page render). When
+  // `awaitLog` is set (cron callers), AWAIT the insert so it flushes before the
+  // serverless function suspends — otherwise the un-awaited promise is dropped
+  // when the cron returns its response (the deals_cron telemetry-gap fix). The
+  // .catch keeps logging soft-fail in both modes.
+  const awaitLog = input.awaitLog ?? false;
+  const emit = async (success: boolean): Promise<void> => {
+    const p = log({ surface, success, latency_ms: Date.now() - startedAt }).catch(() => {});
+    if (awaitLog) await p;
+  };
+
   const fetchFn = input.fetchImpl ?? fetch;
   let response: Response;
   try {
@@ -96,15 +111,11 @@ export async function searchItems(input: SearchItemsInput): Promise<EpnSearchRes
       cache: "no-store",
     });
   } catch (err) {
-    // Fire-and-forget — never await on the hot path. The .catch keeps an
-    // unhandled rejection from escaping.
-    void log({ surface, success: false, latency_ms: Date.now() - startedAt }).catch(() => {});
+    await emit(false);
     return { ok: false, error: `fetch_failed: ${(err as Error).message}` };
   }
 
-  const latencyMs = Date.now() - startedAt;
-  const httpSuccess = response.ok;
-  void log({ surface, success: httpSuccess, latency_ms: latencyMs }).catch(() => {});
+  await emit(response.ok);
 
   if (!response.ok) {
     return { ok: false, status: response.status, error: `http_${response.status}` };
@@ -247,6 +258,7 @@ export async function getBestListing(input: GetBestListingInput): Promise<EpnBes
     limit: 25,
     fetchImpl: input.fetchImpl,
     surface: input.surface,
+    awaitLog: input.awaitLog,
   });
   if (!result.ok || result.hits.length === 0) return null;
 
@@ -290,6 +302,9 @@ export type GetListingAspectsInput = {
   fetchImpl?: typeof fetch;
   surface?: BrowseSurface;
   logImpl?: typeof logBrowseCall;
+  /** AWAIT the telemetry insert before returning (cron callers set true so it
+   *  flushes before the serverless function suspends). Default fire-and-forget. */
+  awaitLog?: boolean;
 };
 
 /**
@@ -309,6 +324,11 @@ export async function getListingAspects(input: GetListingAspectsInput): Promise<
   const fetchFn = input.fetchImpl ?? fetch;
   const url = `${BROWSE_ITEM_ENDPOINT}/${encodeURIComponent(input.itemId)}`;
   const startedAt = Date.now();
+  const awaitLog = input.awaitLog ?? false;
+  const emit = async (success: boolean): Promise<void> => {
+    const p = log({ surface, success, latency_ms: Date.now() - startedAt }).catch(() => {});
+    if (awaitLog) await p; // cron: flush before the function suspends.
+  };
 
   let response: Response;
   try {
@@ -322,11 +342,11 @@ export async function getListingAspects(input: GetListingAspectsInput): Promise<
       cache: "no-store", // R-008: never cache listing data.
     });
   } catch (err) {
-    void log({ surface, success: false, latency_ms: Date.now() - startedAt }).catch(() => {});
+    await emit(false);
     return null;
   }
 
-  void log({ surface, success: response.ok, latency_ms: Date.now() - startedAt }).catch(() => {});
+  await emit(response.ok);
   if (!response.ok) return null;
 
   let body: unknown;

@@ -50,8 +50,10 @@ export async function GET(request: Request): Promise<NextResponse> {
   const result = await refreshDeals({
     entries,
     getCardMetadata,
-    getBestListing,
-    getListingAspects: ({ itemId }) => getListingAspects({ itemId, surface: "deals_cron" }),
+    // awaitLog: flush Browse telemetry before the cron function suspends
+    // (fire-and-forget drops it; see the deals_cron telemetry-gap fix).
+    getBestListing: (i) => getBestListing({ ...i, awaitLog: true }),
+    getListingAspects: ({ itemId }) => getListingAspects({ itemId, surface: "deals_cron", awaitLog: true }),
     computeSignal: computeCardBuySignal,
     customIdFor: (slug) => buildCustomId({ tier: "deals", slug }),
     upsertRows: async (rows: DealUpsertRow[]) => {
