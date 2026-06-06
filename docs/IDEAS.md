@@ -19,6 +19,19 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-06-06
+category: infra
+status: captured
+---
+## Auto-ping Google when the catalog/sitemap expands (sitemap-freshness monitor)
+
+When the catalog grows (207 → 1,007, and Wave 2 → ~5K coming), `sitemap.xml` updates instantly but Google may not re-read it for weeks — so newly-added per-card pages sit undiscovered. A lightweight monitor (or a step in the expand-catalog pipeline) could detect a URL-count jump and re-submit/ping the sitemap (GSC API or the deprecated-but-working ping endpoint), and optionally surface "Google last read sitemap N days ago vs current URL count" to `#deploys` so staleness is visible, not silent.
+
+**Context:** Surfaced 2026-06-06 in the GSC review during the roadmap-reconciliation goal. The live sitemap had **1,023 URLs but Google last read it 2026-05-22 at 209 URLs** (pre-expansion) — an ~800-page indexing gap that nothing flagged; John had to manually resubmit + request indexing. Distinct from the `/deals`-missing-from-sitemap defect (fixed this session) — this is about *freshness/discovery latency*, not *completeness*. Ties into the "it is a distribution problem" frame ([ADR-059](DECISIONS.md#adr-059--utility-first-positioning--subscription-ready-not-paywalled)).
+
+---
+
+---
 date: 2026-06-04
 category: product
 status: captured

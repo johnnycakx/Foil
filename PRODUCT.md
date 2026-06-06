@@ -32,6 +32,13 @@ the recommendation enough to click through, and subscribes to an alert. Day-90
 target is $1.5K MRR; the early growth engine is SEO content + the best-deals
 newsletter.
 
+**Positioning (utility-first, 2026-06-06 — ADR-059).** Lead with the utility,
+not the scarcity: "the best price on any Pokémon card you want, instantly, free."
+The deals board + the X bot are the hook/traffic engine; the per-card pages are
+the revenue engine; affiliate bootstraps and subscription (recurring instant
+alerts) is the margin lever, flipped on once an audience exists. The free funnel
+is never paywalled.
+
 ## Brand Personality
 
 **Trusted collector concierge.** Three words: confident, knowledgeable, calm. The

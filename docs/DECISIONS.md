@@ -1912,6 +1912,28 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 
 **Cross-refs.** `lib/social/{angles,post-text,post-image,x-client,bot,data}.ts(x)`, `app/api/cron/x-post/route.ts`, `lib/notifications/discord.ts` (`postSocialDraft` + `postDiscordImage`), `scripts/x-post-dryrun.ts`, `docs/runbooks/x-bot.md`, [ADR-011](#adr-011--newsletter-drafts-auto-generated-never-auto-sent), [ADR-054](#adr-054--todays-best-deals-leaderboard-precompute-and-cache-derived-metadata-never-persist-ebay-listing-data), [R-001](RISKS.md), [R-008](RISKS.md), [R-019](RISKS.md).
 
+## ADR-059 — Utility-first positioning + subscription-ready (not paywalled)
+
+**Date:** 2026-06-06
+**Status:** Accepted. Strategy record, not a code change. Refines [ADR-020](#adr-020--pivot-to-buyer-side-deal-finder-positioning) (buyer-side deal-finder) without superseding it. Sources: [PLAN-2026-06-05.md](PLAN-2026-06-05.md), [BUSINESS-MODEL-2026-06-05.md](BUSINESS-MODEL-2026-06-05.md), [CONTEXT-HANDOFF-2026-06-05.md](CONTEXT-HANDOFF-2026-06-05.md).
+
+**Context.** The `/deals` board shipped with only ~3–4 trustworthy deals (honest after condition+language gating), which prompted the right question: how does Foil actually make money long-term? The answer, worked out in the 2026-06-05 Cowork strategy session: the product is **largely built** — ~1,007 per-card best-listing + affiliate pages, the deals board, the buy-signal differentiator, the content/newsletter engine, EPN tracking. The bottleneck is **not features, it is traffic/distribution** (GSC showed ~7 of 220 pages indexed; organic traffic near zero). Two further realities: (a) affiliate is a thin, high-volume game — ~$10 RPM, so ~150,000 visitors/mo for $1,500/mo; (b) the **same $1,500/mo is ~150 subscribers at $10/mo** — one paying subscriber ≈ 1,000 monthly affiliate visitors.
+
+**Decision.** Reframe the positioning and the monetization model:
+1. **Lead with the utility, not the scarcity.** The headline is "**the best price on any Pokémon card you want, instantly, free.**" The deals board + the X bot are the **hook / traffic engine**, not the whole product. The ~1,007 per-card pages are the **revenue engine** — affiliate earns on *every* card a visitor lands on, not just the few below market. "Best price on any card" is a far bigger TAM than "today's 3 deals," same assets, broader funnel.
+2. **Affiliate bootstraps; subscription is the margin lever.** Affiliate (EPN) is the baseline that pays the bills on free/organic traffic. A recurring **instant-alerts subscription (~$10/mo)** is where the margin is, flipped on once an audience exists. Framed "support the site + get deals first," **never** the founder-member tier ([B.5 subsumed](ROADMAP.md)).
+3. **Do NOT paywall the free funnel.** The free tier (per-card pages, the deals board, browse/search, the weekly newsletter, hourly/daily watchlist alerts) is what ranks in Google, what the X bot drives traffic to, and what earns trust. It stays free.
+4. **Build the subscription SEAM now, flip later.** An entitlement/tier check at the alert-frequency + watch-count boundaries (default free); watchlists stay email-anchored but structured so a user/account + tier flag layers on cleanly; instrument engaged-free-user count + which limits users hit, so the flip is triggered by a measurable demand signal, not a guess. (ROADMAP **SUB** row.)
+5. **Board richness comes from catalog scale, never looser filters.** The eBay Growth Check + catalog expansion are the real board-fattening levers; the structured-matching backbone (Set + Number + Finish) tightens accuracy, it does not loosen the bar.
+
+**Consequences.**
+- It is a **distribution problem**: effort prioritizes traffic (SEO/indexing, the X bot, the newsletter, catalog scale) over more product. Fix the conversion leaks first (click-time redirect ✅ B.6, F4 coverage ✅) before pouring traffic in.
+- The defensible moat is **SEO position + owned email audience + founder credibility + the buy-signal smarts**, not the affiliate links themselves (eBay can change EPN terms on short notice — [R-007](RISKS.md)).
+- ROADMAP reconciled this session: utility-first note added to PRODUCT.md; new rows **SM** (structured-matching backbone), **SUB** (subscription seam + instant-alerts wedge, gated), **X-bot go-live** (John-manual); **B.5** clarified as subsumed (recurring sub primary, one-time unlock optional).
+- No code or schema change in this ADR — it records the frame the subsequent build goals execute against.
+
+**Cross-refs.** [ADR-020](#adr-020--pivot-to-buyer-side-deal-finder-positioning), [ADR-054](#adr-054--todays-best-deals-leaderboard-precompute-and-cache-derived-metadata-never-persist-ebay-listing-data), [ADR-057](#adr-057--buy-signal-like-for-like-via-ebay-item-specifics-condition-coverage--languagemarket-gate), [ADR-058](#adr-058--daily-x-content-bot-dry-run-first-own-posts-only-satori-image-not-playwright), PLAN-2026-06-05, BUSINESS-MODEL-2026-06-05, [R-007](RISKS.md), [R-012](RISKS.md).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).
