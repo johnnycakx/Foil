@@ -72,6 +72,18 @@ function gradeKeyFor(service: string, grade: string): string {
   return `${service.toUpperCase()}_${grade.replace(".", "_")}`;
 }
 
+/**
+ * Does the text carry a non-English market marker (language word / "jpn")?
+ * The single source of truth for the title-level market gate — the verified-
+ * listing resolver's Language fallback (used when the eBay Language item-specific
+ * is absent, which the probe found happens on a slice of listings) reuses THIS
+ * predicate so the title-market rule can't drift between the buy-signal inference
+ * and the resolver.
+ */
+export function titleSuggestsForeignMarket(text: string | null | undefined): boolean {
+  return MARKET_RE.test(text ?? "");
+}
+
 function pushIf(ev: string[], cond: boolean, note: string): void {
   if (cond) ev.push(note);
 }

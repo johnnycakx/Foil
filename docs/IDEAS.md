@@ -19,6 +19,19 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-06-07
+category: infra
+status: captured
+---
+## Catalog-data integrity check (the resolver's Set/Number corroboration as a QA tool)
+
+The verified-listing resolver's calibration sweep surfaced a real catalog bug nobody had noticed: the 16 `base2-*` (Base Set 2) entries carry corrupted baked metadata (`base2-1-clefable` = `setName:"Jungle"`, `number:"1"` while the market says 17). The resolver's Set/Number corroboration is, in effect, a market-cross-check on our own catalog. Idea: run the resolver (or just its identity gates) across the catalog periodically and FLAG cards whose catalog set/number disagrees with what the market consistently reports — a cheap, automated catalog-QA pass that catches bad SDK/baked data before it nulls out live listings or mislabels a page. Could gate catalog-expansion waves.
+
+**Context:** Surfaced 2026-06-07 in the verified-listing-resolver goal #1 calibration ([calibration-resolver-2026-06.md](calibration-resolver-2026-06.md)). The base2 defect was the single biggest false-reject driver in the sweep; correcting it is a goal-#2 prerequisite. The broader pattern — our identity gates double as a data-integrity probe — is the reusable idea.
+
+---
+
+---
 date: 2026-06-06
 category: infra
 status: captured

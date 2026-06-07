@@ -1,5 +1,14 @@
 // Quality-aware "best listing" picker. See ADR-026.
 //
+// DEMOTION NOTE (DESIGN-VERIFIED-LISTING-RESOLVER.md §5, Tranche A #1): these
+// gates are now a PRE-FILTER. They rank + narrow candidates cheaply (a cost
+// optimizer) for the verified-listing resolver (lib/listing/resolve.ts), which
+// applies the real admission gate (eBay item-specifics identity). Title parsing
+// here MAY drop junk but MUST NEVER be the sole basis to admit a listing for
+// display. Current consumers (per-card page, /go, wishlist cron, deals cron)
+// still call getBestListing directly until goals #2/#3 migrate them onto the
+// resolver — so behavior is unchanged this goal; this is the intent marker.
+//
 // Replaces the previous lowest-price-wins selector that inlined in
 // `lib/affiliate/ebay-browse.ts::getBestListing`. The lowest-price selector
 // shipped a real product bug — a wishlist alert sent "$1.75 Venusaur ex 151

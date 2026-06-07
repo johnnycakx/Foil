@@ -360,3 +360,66 @@ export async function getListingAspects(input: GetListingAspectsInput): Promise<
   const aspects = aspectsFromLocalized(localized);
   return Object.keys(aspects).length > 0 ? aspects : null;
 }
+
+/**
+ * Richer getItem read for the verified-listing resolver (DESIGN-VERIFIED-LISTING-
+ * RESOLVER.md). Like `getListingAspects` but ALSO returns the top-level
+ * `condition` ("Graded" / "Ungraded") — the build-step-0 probe found graded
+ * slabs that leave the `Graded` aspect blank but carry `condition: "Graded"`, so
+ * the resolver's graded gate needs it. Same R-008 posture (cache:"no-store", read
+ * at compute time, nothing persisted), same telemetry, same soft-fail → null.
+ *
+ * Returns `null` only when getItem itself fails (auth/4xx/5xx/network). When the
+ * call succeeds but carries no aspects, returns `{ aspects:{}, topCondition }`
+ * so the resolver can still use the top-level condition.
+ */
+export async function getListingDetail(
+  input: GetListingAspectsInput,
+): Promise<{ aspects: Record<string, string>; topCondition: string | null } | null> {
+  if (!input.itemId?.trim()) return null;
+
+  const accessToken = await getAccessToken({ fetchImpl: input.fetchImpl });
+  if (!accessToken) return null;
+
+  const surface: BrowseSurface = input.surface ?? "manual";
+  const log = input.logImpl ?? logBrowseCall;
+  const fetchFn = input.fetchImpl ?? fetch;
+  const url = `${BROWSE_ITEM_ENDPOINT}/${encodeURIComponent(input.itemId)}`;
+  const startedAt = Date.now();
+  const awaitLog = input.awaitLog ?? false;
+  const emit = async (success: boolean): Promise<void> => {
+    const p = log({ surface, success, latency_ms: Date.now() - startedAt }).catch(() => {});
+    if (awaitLog) await p;
+  };
+
+  let response: Response;
+  try {
+    response = await fetchFn(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken.token}`,
+        Accept: "application/json",
+        "X-EBAY-C-MARKETPLACE-ID": MARKETPLACE_ID,
+      },
+      cache: "no-store", // R-008.
+    });
+  } catch {
+    await emit(false);
+    return null;
+  }
+
+  await emit(response.ok);
+  if (!response.ok) return null;
+
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    return null;
+  }
+  const b = body as { localizedAspects?: Array<{ name?: unknown; value?: unknown }>; condition?: unknown } | null;
+  const localized = Array.isArray(b?.localizedAspects) ? b!.localizedAspects : [];
+  const aspects = aspectsFromLocalized(localized);
+  const topCondition = typeof b?.condition === "string" ? b.condition : null;
+  return { aspects, topCondition };
+}
