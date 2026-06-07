@@ -50,3 +50,42 @@ Aspect presence at scale **confirms the probe**: vintage Set 394/408, Number 382
 
 ## Quota
 ~1,550 calls for the full calibration (2 full sweeps + 1 slice + smokes), under the 3,000 budget. Steady-state per resolve: 1 search + ~1.5 getItem amortized (≈2.5), worst case 5 — matches the design §4 model.
+
+---
+
+# Correction addendum (2026-06-07) — the "16 base2 corrupted entries" finding was a MISREAD; the catalog is clean
+
+A follow-up goal opened to "reconcile the 16 corrupted `base2-*` catalog entries." The P0 premise check **disproved the corruption premise** with authoritative evidence. Recording the correction here because this doc is the deliverable John reviews for the goal #2 go/no-go, and recommendation #1 above is now **void**.
+
+## What was actually wrong: the audit read `base2` as "Base Set 2"
+In **pokemontcg.io** — the bake's own source — the WOTC set ids map (verified live 2026-06-07 against `api.pokemontcg.io/v2/sets/*`):
+
+| SDK set id | Set name | Released |
+|---|---|---|
+| `base1` | Base | 1999/01/09 |
+| **`base2`** | **Jungle** | 1999/06/16 |
+| `base3` | Fossil | 1999/10/10 |
+| **`base4`** | **Base Set 2** | 2000/02/24 |
+| `base5` | Team Rocket | 2000/04/24 |
+
+`base2` **is Jungle**, not Base Set 2 (that's `base4`). `cards/base2-1` returns `Clefable, #1, set Jungle, Rare Holo` — **byte-identical to the baked entry.** The bake script (`scripts/bake-card-metadata.ts`) is a straight per-id fetch with **no join/offset/merge**, so re-baking reproduces the exact same values. **The proposed FIX (re-bake) is a no-op; there is nothing to reconcile.**
+
+## Catalog-QA sweep (the "identity gates double as a catalog-QA probe" idea, run cheaply)
+Swept all **1,007** baked cards for the defect class: **0** setId↔setName mismatches (vs the baked `sets` map), **0** id/setId/number desyncs, **0** orphan setIds, **0** numbers over set total, **0** sibling-setName splits. The catalog is clean. Pinned by `lib/__tests__/catalog-qa.test.ts` (in the `npm test` runner) so a real future corruption — or a "reconcile base2 → Base Set 2" change that would reintroduce a wrong-print bug — fails the build.
+
+## What the "+16 offset" actually is: Jungle's holo/non-holo numbering
+Jungle prints each of its 16 rares twice — **holo #1–16** and the **non-holo #17–32** of the same Pokémon (Clefable holo **#1** / non-holo **#17**; Electrode holo **#2** / non-holo **#18**; …). A consistent **+16**. The 14/16 base2 "false-rejects" were the resolver **correctly** rejecting the cheaper **non-holo** print on a **holo** card's page (a #17 listing is a different card from the #1 holo — exactly the wrong-print class the Number gate exists to stop). **Loosening the Number gate would reintroduce the production bug.**
+
+**Live confirmation (2026-06-07, ~15 calls, derived facts only — no listing data persisted):**
+- `base2-1-clefable` (holo #1): all 4 cheapest candidates were the non-holo `17/64` print → correctly rejected `number 1 ≠ 17` → honest null.
+- `base2-2-electrode` (holo #2): all 4 cheapest were the non-holo `18/64` print → correctly rejected `2 ≠ 18`.
+- `base2-17-clefable` (non-holo #17): the **same `17/64` print that the #1 page rejects VERIFIES here** — the decision is correct in *both* directions.
+- `base2-11-snorlax` (holo #11): VERIFIED — a holo `11/64` listing was within the cheapest-k. So when the holo print is in-budget, it resolves.
+
+## Corrected guidance for goal #2 (supersedes recommendations #1–#2 above)
+1. ~~Reconcile the 16 base2 entries~~ → **VOID.** Nothing is corrupt; re-baking is a no-op. The base2 nulls are not a data defect.
+2. The base2 holo nulls are a **candidate-starvation** case (the holo print exists but sits below the cheapest-`k=4`, behind the cheaper non-holo reprints), not a gate flaw. This is the **k / finish-aware-query** question — measured on the null slice in the certification loop below and reported as a goal #2 design input (k=4 is John's recorded design decision, so this addendum reports rather than changes it).
+3. **Keep the honest null** — unchanged; still the design's point.
+4. **Spot-check the verified side** — done continuously in the certification loop (zero false-accepts observed).
+
+**Net for the go/no-go:** the headline coverage stands (**66.7–68.1% raw**); the "72.3% defensible / recover ~10–14 via base2 fix" line is **withdrawn** — those base2 cards are correct decisions (honest nulls / starvation), not a recoverable data defect. Coverage is not the bar; **decision accuracy** is. The certification loop addendum (appended below when it closes) carries the final decision-accuracy statement.

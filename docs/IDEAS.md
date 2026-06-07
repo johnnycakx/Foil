@@ -21,13 +21,13 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 date: 2026-06-07
 category: infra
-status: captured
+status: triaged
 ---
 ## Catalog-data integrity check (the resolver's Set/Number corroboration as a QA tool)
 
-The verified-listing resolver's calibration sweep surfaced a real catalog bug nobody had noticed: the 16 `base2-*` (Base Set 2) entries carry corrupted baked metadata (`base2-1-clefable` = `setName:"Jungle"`, `number:"1"` while the market says 17). The resolver's Set/Number corroboration is, in effect, a market-cross-check on our own catalog. Idea: run the resolver (or just its identity gates) across the catalog periodically and FLAG cards whose catalog set/number disagrees with what the market consistently reports — a cheap, automated catalog-QA pass that catches bad SDK/baked data before it nulls out live listings or mislabels a page. Could gate catalog-expansion waves.
+The resolver's identity gates double as a data-integrity probe: run them (or a cheap structural check) across the catalog periodically and FLAG cards whose catalog set/number disagrees with reality before bad data nulls out live listings or mislabels a page. Could gate catalog-expansion waves. **A live market-cross-check must distinguish legitimate market noise from real defects** — the holo/non-holo reprint gap (Jungle holo #1 vs non-holo #17), secret rares (136/135), and cross-set reprints all look like "the market disagrees" but are correct. The cheap, deterministic FIRST instance shipped 2026-06-07: `lib/__tests__/catalog-qa.test.ts` (offline structural QA — setId↔setName consistency vs the baked `sets` map, id/setId/number consistency, no sibling-setName splits, + WOTC ground-truth pins). The LIVE market-cross-check remains the open idea.
 
-**Context:** Surfaced 2026-06-07 in the verified-listing-resolver goal #1 calibration ([calibration-resolver-2026-06.md](calibration-resolver-2026-06.md)). The base2 defect was the single biggest false-reject driver in the sweep; correcting it is a goal-#2 prerequisite. The broader pattern — our identity gates double as a data-integrity probe — is the reusable idea.
+**Context (CORRECTED 2026-06-07):** This idea was first captured citing the "16 corrupted `base2-*` entries" the calibration flagged — but that was a **MISREAD**, not a catalog bug. In pokemontcg.io (the bake's source) `base2` IS "Jungle" (Base Set 2 is `base4`); the +16 offset was Jungle's holo(#1–16)/non-holo(#17–32) numbering, so the resolver was correctly rejecting a different print. The catalog-QA sweep then found the catalog **clean** (0 inconsistencies across 1,007 cards). See the "Correction addendum" in [calibration-resolver-2026-06.md](calibration-resolver-2026-06.md). The episode is itself the case for the idea: an automated QA pass (now partly realized as the test above) would have caught — or correctly cleared — this without a goal cycle.
 
 ---
 
