@@ -76,14 +76,41 @@ function aspect(a: ListingAspects, name: string): string | null {
   return typeof v === "string" && v.length > 0 ? v : null;
 }
 
-/** Graded detection per the probe: ANY of the graded signals, not just `Graded: Yes`. */
+/** Numeric grade shape: 1-10, optional .5, optional "GEM MINT" prefix. A bare
+ *  "Grade" aspect only counts as a slab signal when it looks like THIS — not a
+ *  card number ("9") that happens to be numeric is fine, but a condition phrase
+ *  ("Heavily Played (Poor)") or other stray text is not a grade. (The card-number
+ *  collision is handled by the explicit-raw veto below, which fires first.) */
+const NUMERIC_GRADE_RE = /^(?:gem[\s-]*mint[\s-]*)?(?:10|[1-9](?:\.5)?)$/i;
+
+/**
+ * Graded detection per the probe: ANY of the graded signals, not just
+ * `Graded: Yes`. CALIBRATION 2026-06 refinement (false-positive fix, NOT a
+ * loosening — real slabs are still detected by every strong signal): an explicit
+ * `Graded: No` or a top-level condition of `Ungraded` VETOES a bare/noisy `Grade`
+ * aspect. Raw listings were observed carrying a stray `Grade` holding the CARD
+ * NUMBER ("9") or a CONDITION phrase ("Heavily Played (Poor)") while the listing
+ * said `Graded: No` / `Ungraded` — those are raw cards and must NOT read as
+ * slabs (the neo2-9-poliwrath false-reject). The veto only ever overrides the
+ * weak bare-`Grade` signal; the strong signals (top `Graded`, `Graded: Yes`,
+ * Grading Company / Professional Grader / Grader) are authoritative and win
+ * outright, so a real slab can never be vetoed into "raw" (zero false-accept).
+ */
 export function detectGraded(aspects: ListingAspects, topCondition: string | null): boolean {
-  if (aspect(aspects, "Graded") && /^yes$/i.test(aspect(aspects, "Graded")!)) return true;
-  if (aspect(aspects, "Grade")) return true;
+  const top = (topCondition ?? "").toLowerCase();
+  const gradedAspect = aspect(aspects, "Graded");
+  // STRONG, authoritative slab signals — never vetoed.
+  if (top === "graded") return true;
+  if (gradedAspect && /^yes$/i.test(gradedAspect)) return true;
   if (aspect(aspects, "Grading Company")) return true;
   if (aspect(aspects, "Professional Grader")) return true;
   if (aspect(aspects, "Grader")) return true;
-  if ((topCondition ?? "").toLowerCase() === "graded") return true;
+  // EXPLICIT RAW signals veto the weak bare-`Grade` aspect below.
+  if ((gradedAspect && /^no$/i.test(gradedAspect)) || top === "ungraded") return false;
+  // A bare `Grade` with no grading service is a slab signal only when it is a
+  // real numeric grade (the probe's blank-`Graded` slab case).
+  const grade = aspect(aspects, "Grade");
+  if (grade && NUMERIC_GRADE_RE.test(grade.trim())) return true;
   return false;
 }
 

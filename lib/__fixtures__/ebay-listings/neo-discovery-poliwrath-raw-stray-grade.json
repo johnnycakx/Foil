@@ -1,0 +1,16 @@
+{
+  "_observed": "FALSE-REJECT FIXTURE (calibration 2026-06-07). A real RAW English Neo Discovery Poliwrath #9 holo (Graded='No', top-level condition 'Ungraded', Card Number '9/75', Language English) that the verified-listing resolver WRONGLY rejected as graded for an ANY_RAW request, because the listing carries a stray 'Grade'='9' aspect (the CARD NUMBER leaking into eBay's Grade field) and detectGraded treated any 'Grade' aspect as a slab. The fix: an explicit Graded='No' / 'Ungraded' vetoes a bare Grade aspect. This listing MUST be detected as RAW and pass ANY_RAW. Captured live via the certification sweep (scripts/audit-resolver.ts, deleted after). Sibling candidate in the same search carried Grade='Heavily Played (Poor)' (a condition phrase, not a grade) — also raw. See docs/calibration-resolver-2026-06.md certification addendum.",
+  "itemId": "v1|298185008402|0",
+  "title": "Poliwrath Neo Discovery 9 Unlimited Ultra Holo Rare Pokémon TCG",
+  "price": { "value": "12.00", "currency": "USD" },
+  "topCondition": "Ungraded",
+  "localizedAspects": [
+    { "type": "STRING", "name": "Set", "value": "Neo Discovery" },
+    { "type": "STRING", "name": "Card Number", "value": "9/75" },
+    { "type": "STRING", "name": "Language", "value": "English" },
+    { "type": "STRING", "name": "Finish", "value": "Holo" },
+    { "type": "STRING", "name": "Features", "value": "Unlimited|Unlimited Edition" },
+    { "type": "STRING", "name": "Graded", "value": "No" },
+    { "type": "STRING", "name": "Grade", "value": "9" }
+  ]
+}

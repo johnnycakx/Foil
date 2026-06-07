@@ -121,6 +121,42 @@ test("Graded grade-specificity: a PSA 9 slab does NOT satisfy a PSA 10 request",
   assert.equal(verifyIdentity({ target, aspects: a, topCondition: "Graded", title: "PSA 9 Charizard", condition: psa10 }).pass, false);
 });
 
+// --- Graded detection: explicit-raw veto of a stray Grade aspect (calibration 2026-06) ---
+
+test("detectGraded: explicit Graded=No vetoes a stray numeric Grade aspect (raw card)", () => {
+  // neo2-9-poliwrath: a raw holo whose eBay 'Grade' aspect held the CARD NUMBER ('9').
+  const a = aspects([["Set", "Neo Discovery"], ["Card Number", "9/75"], ["Language", "English"], ["Graded", "No"], ["Grade", "9"]]);
+  assert.equal(detectGraded(a, "Ungraded"), false);
+});
+
+test("detectGraded: a condition-phrase Grade ('Heavily Played (Poor)') is not a slab", () => {
+  const a = aspects([["Graded", "No"], ["Grade", "Heavily Played (Poor)"]]);
+  assert.equal(detectGraded(a, "Ungraded"), false);
+});
+
+test("detectGraded: top-level 'Ungraded' vetoes a stray Grade even without a Graded aspect", () => {
+  assert.equal(detectGraded(aspects([["Set", "Crown Zenith"], ["Grade", "10"]]), "Ungraded"), false);
+});
+
+test("detectGraded: STRONG signals are NEVER vetoed (a real slab stays graded)", () => {
+  // Grading Company wins even if Graded says 'No' (mis-tagged real slab) — zero false-accept.
+  assert.equal(detectGraded(aspects([["Grading Company", "PSA"], ["Grade", "9"], ["Graded", "No"]]), "Ungraded"), true);
+  // top-level 'Graded' wins.
+  assert.equal(detectGraded(aspects([["Grade", "8"]]), "Graded"), true);
+  // blank Graded + numeric Grade (the probe's blank-Graded slab) still graded.
+  assert.equal(detectGraded(aspects([["Grading Company", "BGS"], ["Grade", "9.5"]]), null), true);
+  assert.equal(detectGraded(aspects([["Grade", "10"]]), null), true);
+});
+
+test("verifyIdentity: the raw Neo Discovery Poliwrath #9 (stray Grade=9) PASSES ANY_RAW", () => {
+  const f = loadFixture("neo-discovery-poliwrath-raw-stray-grade.json");
+  const target: IdentityTarget = { setName: "Neo Discovery", setId: "neo2", number: "9", name: "Poliwrath" };
+  const v = verifyIdentity({ target, aspects: f.aspects, topCondition: f.topCondition, title: f.title, condition: "ANY_RAW" });
+  assert.equal(v.pass, true, v.reason);
+  assert.equal(gate(v, "graded_condition").pass, true, "explicit Graded=No → raw, not a slab");
+  assert.equal(v.verifiedAspects.graded, false);
+});
+
 test("Language fallback: absent aspect + foreign title rejects; clean title passes", () => {
   const target: IdentityTarget = { setName: "Plasma Storm", setId: "bw11", number: "136", name: "Charizard" };
   const foreign = aspects([["Set", "Uragano Plasma"], ["Card Number", "136/135"]]);
