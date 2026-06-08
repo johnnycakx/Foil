@@ -89,3 +89,50 @@ Jungle prints each of its 16 rares twice — **holo #1–16** and the **non-holo
 4. **Spot-check the verified side** — done continuously in the certification loop (zero false-accepts observed).
 
 **Net for the go/no-go:** the headline coverage stands (**66.7–68.1% raw**); the "72.3% defensible / recover ~10–14 via base2 fix" line is **withdrawn** — those base2 cards are correct decisions (honest nulls / starvation), not a recoverable data defect. Coverage is not the bar; **decision accuracy** is. The certification loop addendum (appended below when it closes) carries the final decision-accuracy statement.
+
+---
+
+# Certification addendum (2026-06-07) — decision-accuracy certification of the resolver
+
+**Goal:** certify **100% DECISION accuracy** — every admit and every identity-gate reject the resolver makes is provably correct — NOT 100% coverage. An honest null on a card with no verifiable listing is a correct decision; no gate was loosened to manufacture coverage. Method: a full live sweep → classify EVERY reject with cited evidence (aspects / full getItem / fixture) → fix true false-rejects + pin → re-audit → measure the recoverable-coverage levers. Live budget for the whole loop: **~1,610 / 2,500 calls**, logged via `browse_calls` (surface `manual`). No eBay listing data persisted (R-008); the dumps were ephemeral OS-temp files, deleted at loop end.
+
+## Decision-accuracy statement (the deliverable)
+On the post-fix full sweep (207 curated, k=4, ANY_RAW):
+
+| | count | certification |
+|---|---|---|
+| **Verified admits** | **149** | **0 false-accepts** — every admit has a matching Card Number aspect (numerator == SDK, zero-pad tolerant), English-or-absent Language, and is not a graded slab. |
+| **Identity-gate rejects** | **56** | **0 false-rejects** — every reject hand-audited to a genuinely different card (wrong print / foreign / graded slab / different set), confirmed against the listing's own eBay aspects. |
+| **Prefilter nulls** | **2** | NOT identity-gate decisions — see "out of scope" below. |
+
+**Every identity decision the resolver makes is provably correct.** The one false-reject found was fixed; the verified side is clean.
+
+## Coverage (reported, not chased)
+| Sweep | Verified | Null | Coverage | Calls |
+|---|---|---|---|---|
+| Pre-fix (k=4) | 144 | 63 | **69.6%** | 686 |
+| **Post-fix (k=4)** | **149** | **58** | **72.0%** | 680 |
+
+Run-to-run delta is live-listing rotation (±3) plus the +1 from the fix below. Post-fix null distribution: **37 number · 8 language · 6 set · 5 graded · 2 prefilter**.
+
+## The one FALSE reject — found, fixed, pinned, flipped
+**`neo2-9-poliwrath`** (a $12 raw English Neo Discovery #9 **holo**) was wrongly rejected as graded for an ANY_RAW request. Root cause: `detectGraded` treated ANY `Grade` aspect as a slab signal, and this raw listing carried a stray `Grade="9"` (the CARD NUMBER leaking into eBay's Grade field); a sibling carried `Grade="Heavily Played (Poor)"` (a condition phrase). **Fix (`fix(listing)` commit):** an explicit `Graded="No"` or top-level `Ungraded` now **vetoes the weak bare-`Grade` signal**, while the STRONG signals (top `Graded`, `Graded="Yes"`, Grading Company / Professional Grader / Grader) remain authoritative and win outright. Resolver-only (`lib/listing/identity.ts`); the live buy-signal classifier is untouched. Pinned by an R-010 fixture + 5 unit tests. Live re-run: `neo2-9` flips null→verified; genuine slabs (`base6-3` CGC9/PSA6, `swsh9-18` PSA9) stay correctly null.
+
+**Why the fix is zero-false-accept (validated, not asserted):** the post-fix sweep surfaced **6 PSA slabs the seller had mis-tagged `Graded="No"`** (`base3-13-muk`, `swsh12pt5-19`, `base4-1-alakazam`, `gym1-14`, `neo1-14`, …) — each carrying `Professional Grader = "PSA"`. A naive "Graded=No ⇒ raw" veto would have **admitted all 6 as raw (false-accepts)**. Because the strong signal wins before the veto, they stay correctly graded. The fix recovers the genuine raw false-reject without admitting a single mis-tagged slab.
+
+## Out of scope (reported as goal #2 inputs, per the loop's stop-and-report limits)
+1. **Prefilter false-nulls — `base6-1-alakazam`, `base6-4-dark-blastoise` (and the Legendary Collection set generally).** The shared picker's `TITLE_JUNK_KEYWORDS` includes `"collection"`, which collides with the **set name "Legendary Collection"** and drops every such listing; the price-outlier filter additionally drops cheap holos against a reverse-holo/slab-inflated median. These are cost-optimizer (picker) drops *before* the identity gate, not gate decisions — genuine cheap listings exist ($25–45 Alakazam holos; $15 Dark Blastoise). **Fix touches `lib/affiliate/listing-picker.ts`, which the live consumers share → goal #2** (and risks reintroducing the ADR-026 junk-listing bug if loosened naively). Recommend: exempt the card's own set name from the junk-keyword match + reconsider the outlier filter for bimodal-price cards.
+2. **Candidate starvation — the dominant *recoverable* null class.** The catalog card is the **holo** (vintage #1–16) or the **regular** (modern), but cheaper non-holo reprints / secret-rares fill the cheapest-`k=4`. Two levers measured on the null slice:
+   - **Finish-aware query (highest-value, SAFE):** appending the finish word to the search recovered **12/12 sampled vintage holos** (Jungle/Fossil/Team Rocket/Gym). Spot-checked clean — the verified candidates carry the **correct Card Number aspect** (`01/64`=#1, `1/62`=#1, `8/82`=#8) and `Finish="Holo"`; the resolver correctly trusts the structured aspect over misleading seller *titles* ("17/64", "16/62"). Zero false-accept in the sample. This safely addresses most of the 37-card number-null bucket. Recommend implementing in goal #2 (bias the query by the catalog card's finish/rarity).
+   - **k=6/k=8 (modest):** k=8 recovered **3/10** graded+modern nulls (`shaymin-v` at rank 6, `giratina-v-alt-art` raw at rank 4; one was rotation) at up to +4 getItem/card. All flips were correct admits. Lower yield than finish-query.
+   - k=4 is John's recorded design decision and a finish-aware query is a search-construction change → both **reported, not implemented** this goal.
+3. **Contradictory-listing rejects (correct under null-beats-unverified).** A few rejects are listings whose structured aspect contradicts their title — e.g. `neo1-12-pichu` (title "Neo Genesis 12/111", but Set aspect = "Astral Radiance"); `neo1-17-typhlosion` (title "#17/111", but Card Number aspect = "111", the set size). The resolver refuses these (it trusts the verified aspect; the data is self-contradictory). Correct/conservative. Noted as a design nuance: when Number matches exactly and the title corroborates the set, John may later choose to down-weight a mismatched Set aspect — a goal #2 judgment, NOT a fix here. **`neo1-17` confirmed a real card** (SDK: Neo Genesis has Typhlosion #17 *and* #18, both Rare Holo) — the 2026-06-06 catalog-reconciliation flag is resolved (two real cards, not an error).
+
+## Not recoverable (correct refusals — the product working as designed)
+8 **language** nulls (Japanese/German/Italian, confirmed by the Language aspect or `(Jp)`/`Italian`/`No.xxx` markers) and 5 **graded** nulls (genuine PSA/CGC/BGS slabs, raw copy beyond k or a slab-only market). These are the honest "no verified English raw listing right now" — the design's whole point.
+
+## Projected goal-#2 ceiling (if the SAFE levers land, no gate loosening)
+149 verified today + ~25 (finish-aware query) + ~2–6 (picker "collection" fix) + ~2–3 (k bump) ≈ **~85–90% coverage**, with the residual being correct refusals (foreign-market, slab-only, contradictory-data). **The accuracy bar is already met at k=4; coverage is a goal-#2 lever set, not an accuracy problem.**
+
+## Exit
+Zero known false-rejects (the one found is fixed + pinned); zero false-accepts observed; every audited identity reject is evidence-classified CORRECT; all fixes carry regression tests. Loop closed. **John reviews this before goal #2** (per-card page migration onto the resolver).
