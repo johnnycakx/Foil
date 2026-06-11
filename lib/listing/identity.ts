@@ -28,10 +28,12 @@ import { titleSuggestsForeignMarket } from "../buy-signal/condition-infer.ts";
 import { inferListingCondition, type ListingConditionTier } from "../buy-signal/condition-infer.ts";
 import { setMatches, numberMatches, finishForVariantKey, normalizeFinish } from "./normalize.ts";
 
-/** Raw tiers (NM..DMG), ANY_RAW (any non-graded), or a specific graded grade. */
+/** Raw tiers (NM..DMG), ANY_RAW (any non-graded), ANY_GRADED (any slab — the
+ *  wishlist "Any (Graded)" token; goal #3), or a specific graded grade. */
 export type ResolveCondition =
   | "NM" | "LP" | "MP" | "HP" | "DMG"
   | "ANY_RAW"
+  | "ANY_GRADED"
   | { graded: { service: "PSA" | "BGS" | "CGC" | "SGC"; grade: string } };
 
 /** What the card IS — the expected identity, from catalog + SDK metadata. */
@@ -136,7 +138,7 @@ export function gradedGradeKey(aspects: ListingAspects): string | null {
 
 type RawCondition = "NM" | "LP" | "MP" | "HP" | "DMG" | "ANY_RAW";
 function conditionIsRaw(c: ResolveCondition): c is RawCondition {
-  return typeof c === "string";
+  return typeof c === "string" && c !== "ANY_GRADED";
 }
 
 /**
@@ -229,6 +231,15 @@ export function verifyIdentity(input: {
           const pass = inf.tier === condition;
           gates.push({ gate: "graded_condition", hard: true, present: inf.tier !== "UNKNOWN", pass, reason: pass ? `raw tier ${inf.tier} == ${condition}` : `raw tier ${inf.tier} != requested ${condition}` });
         }
+      }
+    } else if (condition === "ANY_GRADED") {
+      // Any slab qualifies — the listing must BE graded (same detectGraded
+      // signal stack as the specific-grade path; identity gates unchanged).
+      if (!graded) {
+        gates.push({ gate: "graded_condition", hard: true, present: true, pass: false, reason: "graded condition requested but listing is not graded" });
+      } else {
+        listingCondition = "GRADED";
+        gates.push({ gate: "graded_condition", hard: true, present: true, pass: true, reason: "graded (any service/grade)" });
       }
     } else {
       // Graded condition requested.

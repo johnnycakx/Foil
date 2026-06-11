@@ -169,6 +169,29 @@ test("Language fallback: absent aspect + foreign title rejects; clean title pass
   assert.equal(vC.pass, true, vC.reason);
 });
 
+// --- ANY_GRADED (wishlist "Any (Graded)" token — goal #3) --------------------
+
+test("ANY_GRADED: any genuine slab passes the graded gate; raw listings reject", () => {
+  const target: IdentityTarget = { setName: "Base", setId: "base1", number: "4", name: "Charizard" };
+  const slab = aspects([["Set", "Base Set"], ["Card Number", "4/102"], ["Language", "English"], ["Grading Company", "CGC"], ["Grade", "8"]]);
+  const vSlab = verifyIdentity({ target, aspects: slab, topCondition: "Graded", title: "CGC 8 Charizard Base Set", condition: "ANY_GRADED" });
+  assert.equal(vSlab.pass, true, vSlab.reason);
+  assert.equal(vSlab.condition, "GRADED");
+
+  const raw = aspects([["Set", "Base Set"], ["Card Number", "4/102"], ["Language", "English"], ["Card Condition", "Near Mint or Better"]]);
+  const vRaw = verifyIdentity({ target, aspects: raw, topCondition: "Ungraded", title: "Charizard Base Set NM", condition: "ANY_GRADED" });
+  assert.equal(vRaw.pass, false, "a raw listing can't satisfy a graded watch");
+  assert.equal(gate(vRaw, "graded_condition").pass, false);
+});
+
+test("ANY_GRADED: identity gates still apply — a Japanese slab rejects on Language", () => {
+  const target: IdentityTarget = { setName: "Base", setId: "base1", number: "4", name: "Charizard" };
+  const jpSlab = aspects([["Set", "Base Set"], ["Card Number", "4/102"], ["Language", "Japanese"], ["Grading Company", "PSA"], ["Grade", "9"]]);
+  const v = verifyIdentity({ target, aspects: jpSlab, topCondition: "Graded", title: "PSA 9 Charizard", condition: "ANY_GRADED" });
+  assert.equal(v.pass, false);
+  assert.equal(gate(v, "language").pass, false);
+});
+
 test("Finish gate: hard only when a variant is requested", () => {
   const a = aspects([["Set", "Evolving Skies"], ["Card Number", "215/203"], ["Language", "English"], ["Finish", "Holo"], ["Card Condition", "Near Mint or Better"]]);
   const base: IdentityTarget = { setName: "Evolving Skies", setId: "swsh7", number: "215", name: "Umbreon" };

@@ -9,9 +9,13 @@ import { aspectsFromLocalized } from "../buy-signal/aspects.ts";
 import type { CardMetadata } from "../cards/sdk.ts";
 import type { CatalogEntry } from "../cards/catalog.ts";
 import type { EpnProductHit } from "../affiliate/epn.ts";
+import { readFileSync } from "node:fs";
 import {
   resolveVerifiedListingWith,
   prefilterCandidates,
+  buildResolveQuery,
+  finishQueryTerms,
+  conditionQueryTerms,
   type ResolveDeps,
   type ListingDetail,
 } from "../listing/resolve.ts";
@@ -127,4 +131,137 @@ test("prefilterCandidates drops junk and sorts cheapest-first", () => {
   ];
   const out = prefilterCandidates(hits, "ANY_RAW");
   assert.deepEqual(out.map((h) => h.itemId), ["b", "a"]); // junk gone, ascending
+});
+
+// ---------------------------------------------------------------------------
+// Finish-aware query lever (goal #2/#3 — certified-safe: the query term only
+// changes which candidates are FETCHED; admission stays identity-gated).
+// ---------------------------------------------------------------------------
+
+test("finishQueryTerms: vintage 'Rare Holo' rarity biases the query with Holo", () => {
+  assert.deepEqual(finishQueryTerms({ rarity: "Rare Holo" }), ["Holo"]);
+  assert.deepEqual(finishQueryTerms({ rarity: "rare holo" }), ["Holo"]);
+});
+
+test("finishQueryTerms: modern/non-holo rarities add NO term (no unmeasured starvation)", () => {
+  assert.deepEqual(finishQueryTerms({ rarity: "Rare Holo VMAX" }), []);
+  assert.deepEqual(finishQueryTerms({ rarity: "Common" }), []);
+  assert.deepEqual(finishQueryTerms({ rarity: null }), []);
+  assert.deepEqual(finishQueryTerms({}), []);
+});
+
+test("finishQueryTerms: an explicit requested variant always wins over rarity", () => {
+  assert.deepEqual(finishQueryTerms({ rarity: "Common", requestedVariant: "reverse-holofoil" }), ["Reverse Holo"]);
+  assert.deepEqual(
+    finishQueryTerms({ rarity: "Rare Holo", requestedVariant: "1st-edition-holofoil" }),
+    ["1st Edition", "Holo"],
+  );
+});
+
+test("buildResolveQuery: ANY_RAW + no holo rarity → the bare certified query, unchanged", () => {
+  const q = buildResolveQuery({ name: "Pikachu", setName: "Jungle", rarity: "Common", condition: "ANY_RAW" });
+  assert.equal(q, "Pikachu Jungle");
+});
+
+test("buildResolveQuery: vintage holo + ANY_RAW appends the quoted finish term", () => {
+  const q = buildResolveQuery({ name: "Clefable", setName: "Jungle", rarity: "Rare Holo", condition: "ANY_RAW" });
+  assert.equal(q, 'Clefable Jungle "Holo"');
+});
+
+test("buildResolveQuery: condition bias terms append for specific tiers + grades", () => {
+  assert.equal(
+    buildResolveQuery({ name: "Charizard", setName: "Base", rarity: null, condition: "NM" }),
+    'Charizard Base "Near Mint" "NM"',
+  );
+  assert.equal(
+    buildResolveQuery({
+      name: "Charizard", setName: "Base", rarity: null,
+      condition: { graded: { service: "PSA", grade: "10" } },
+    }),
+    'Charizard Base "PSA 10"',
+  );
+});
+
+test("conditionQueryTerms: ANY_RAW is empty; ANY_GRADED mirrors the any-graded include set", () => {
+  assert.deepEqual(conditionQueryTerms("ANY_RAW"), []);
+  assert.deepEqual(conditionQueryTerms("ANY_GRADED"), ["PSA", "BGS", "CGC", "SGC"]);
+});
+
+test("the finish term never relaxes admission: a holo-biased query still rejects a wrong-number listing", async () => {
+  // The query lever changes WHAT we fetch; the identity gates are untouched.
+  // A non-holo 17/64 listing surfacing on a holo #1 card still rejects on Number.
+  const d = deps({
+    card: { name: "Clefable", setName: "Jungle", number: "1", rarity: "Rare Holo" },
+    hits: [hit("nonholo", 10, "Clefable Jungle 17/64")],
+    details: {
+      nonholo: detail([["Set", "Jungle"], ["Card Number", "17/64"], ["Language", "English"], ["Card Condition", "Near Mint or Better"]]),
+    },
+  });
+  const { listing, trace } = await resolveVerifiedListingWith(d, "base2-1-clefable", "ANY_RAW");
+  assert.equal(listing, null);
+  assert.equal(trace.candidates[0].verdict, "rejected");
+});
+
+// ---------------------------------------------------------------------------
+// THE production regression, on the page's own card (goal MEASURE #1): the
+// English neo1-17 page must never resolve the JAPANESE item 117223259644 —
+// pinned with the real captured fixture as the sole candidate.
+// ---------------------------------------------------------------------------
+
+test("REGRESSION neo1-17: the real JP fixture 117223259644 resolves to null, never to the item", async () => {
+  const fixture = JSON.parse(
+    readFileSync(new URL("../__fixtures__/ebay-listings/jp-typhlosion-117223259644.json", import.meta.url), "utf8"),
+  ) as {
+    itemId: string;
+    title: string;
+    price: { value: string; currency: string };
+    topCondition: string;
+    localizedAspects: Array<{ name: string; value: string }>;
+  };
+
+  const d = deps({
+    pokeId: "neo1-17",
+    card: { id: "neo1-17", name: "Typhlosion", setName: "Neo Genesis", number: "17", rarity: "Rare Holo" },
+    hits: [{
+      title: fixture.title,
+      itemUrl: `https://www.ebay.com/itm/${fixture.itemId}`,
+      itemId: fixture.itemId,
+      image: null,
+      price: parseFloat(fixture.price.value),
+      currency: fixture.price.currency,
+    }],
+    details: {
+      [fixture.itemId]: {
+        aspects: aspectsFromLocalized(fixture.localizedAspects),
+        topCondition: fixture.topCondition,
+      },
+    },
+  });
+
+  const { listing, trace } = await resolveVerifiedListingWith(d, "neo1-17-typhlosion", "ANY_RAW");
+  assert.equal(listing, null, "the JP item must NEVER be the page's verified listing");
+  assert.equal(trace.candidates[0].verdict, "rejected");
+  // Rejected on hard identity gates (Language and/or Number), not luck.
+  const failing = trace.candidates[0].gates.filter((g) => !g.pass && g.hard).map((g) => g.gate);
+  assert.ok(failing.includes("language") || failing.includes("number"), `failing gates: ${failing.join(",")}`);
+});
+
+// ---------------------------------------------------------------------------
+// ANY_GRADED (wishlist "Any (Graded)" watches) — end-to-end through the
+// orchestrator: a raw listing fails, a slab verifies.
+// ---------------------------------------------------------------------------
+
+test("ANY_GRADED: raw listings reject, a genuine slab verifies", async () => {
+  const slab = detail(
+    [["Set", "Neo Genesis"], ["Card Number", "18/111"], ["Language", "English"], ["Grading Company", "PSA"], ["Grade", "9"]],
+    "Graded",
+  );
+  const d = deps({
+    hits: [hit("raw", 20, "Typhlosion Neo Genesis NM 18/111"), hit("slab", 80, "Typhlosion Neo Genesis PSA 9 18/111")],
+    details: { raw: RAW_NM_18, slab },
+  });
+  const { listing } = await resolveVerifiedListingWith(d, "neo1-18-typhlosion", "ANY_GRADED");
+  assert.ok(listing, "the slab should verify under ANY_GRADED");
+  assert.equal(listing!.itemId, "slab");
+  assert.equal(listing!.condition, "GRADED");
 });
