@@ -1,14 +1,19 @@
-// Contract tests for the wishlist scan orchestrator. Pins:
-//   1. Browse calls deduplicate per card_slug (two rows watching the same
-//      slug → one Browse call).
-//   2. Per-row threshold gate — only rows whose target meets the current
+// Contract tests for the wishlist scan orchestrator (migrated onto the
+// VERIFIED resolver — DESIGN-VERIFIED-LISTING-RESOLVER.md §5, Tranche A #3).
+// Pins:
+//   1. Resolves deduplicate per card_slug (two rows watching the same
+//      slug/combo → one resolve).
+//   2. Per-row threshold gate — only rows whose target meets the VERIFIED
 //      price get an email; others are skipped.
 //   3. Stamps last_notified_at after a successful send.
 //   4. Soft-fails per row — a Resend hiccup on one row doesn't kill the
 //      rest of the batch.
 //   5. Browse-call cap (MAX_BROWSE_CALLS) is enforced and reported via
-//      capHit=true.
+//      capHit=true; getItem spend from the resolver trace counts against it.
 //   6. Missing catalog entry → error logged, slug skipped.
+//   7. THE migration's point: a null (no verified listing) NEVER alerts;
+//      condition tokens map to resolver conditions; variant rows pin
+//      requestedVariant; bgs-10-bl narrows by Black Label title.
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -19,6 +24,7 @@ import {
   type SupabaseLike,
   type WatchlistRow,
 } from "../wishlist/scan-batch.ts";
+import type { VerifiedListing, ResolveTrace } from "../listing/resolve.ts";
 
 const NOW = new Date("2026-05-24T20:00:00Z");
 
@@ -73,21 +79,29 @@ function fakeMetadata(name = "Charizard", setName = "Base", image = "https://img
   });
 }
 
-function fakeListing(price: number, affiliateUrl = "https://www.ebay.com/itm/1?campid=555&customid=foil-wishlist-alert") {
-  return async () => ({
-    title: `Listing @ $${price}`,
-    image: "https://img/listing.jpg",
+function verified(price: number, over: Partial<VerifiedListing> = {}): VerifiedListing {
+  return {
+    itemId: "v1|1|0",
+    affiliateUrl: "https://www.ebay.com/itm/1?campid=555&customid=wl-base1-4-charizard",
     price,
     currency: "USD",
-    affiliateUrl,
-  });
+    title: `Verified listing @ $${price}`,
+    condition: "NM",
+    verifiedAspects: { set: "Base Set", number: "4/102", finish: "Holo", language: "English", graded: false },
+    aspects: {},
+    ...over,
+  };
+}
+
+function fakeResolver(price: number): ScanWatchlistsInput["resolveListing"] {
+  return async () => verified(price);
 }
 
 function baseInput(over: Partial<ScanWatchlistsInput> = {}): ScanWatchlistsInput {
   const { supabase } = fakeSupabase([]);
   return {
     supabase,
-    getBestListing: fakeListing(10),
+    resolveListing: fakeResolver(10),
     sendEmail: async () => ({ ok: true }),
     getCardMetadata: fakeMetadata(),
     now: NOW,
@@ -96,7 +110,7 @@ function baseInput(over: Partial<ScanWatchlistsInput> = {}): ScanWatchlistsInput
   };
 }
 
-test("dedups Browse calls by card_slug — one Browse call per slug regardless of row count", async () => {
+test("dedups resolves by card_slug — one resolve per slug regardless of row count", async () => {
   const { supabase } = fakeSupabase(
     rows([
       { id: "a", email: "a@x.com", card_slug: "base1-4-charizard", target_price_cents: 4000 },
@@ -104,46 +118,138 @@ test("dedups Browse calls by card_slug — one Browse call per slug regardless o
       { id: "c", email: "c@x.com", card_slug: "base1-4-charizard", target_price_cents: 3000 },
     ]),
   );
-  let browseCalls = 0;
-  const getBestListing = (async () => {
-    browseCalls += 1;
-    return fakeListing(35)();
-  }) as ScanWatchlistsInput["getBestListing"];
+  let resolves = 0;
+  const resolveListing: ScanWatchlistsInput["resolveListing"] = async () => {
+    resolves += 1;
+    return verified(35);
+  };
 
-  const out = await scanWatchlists(baseInput({ supabase, getBestListing }));
+  const out = await scanWatchlists(baseInput({ supabase, resolveListing }));
   assert.equal(out.rowsScanned, 3);
   assert.equal(out.slugsConsidered, 1);
-  assert.equal(out.browseCalls, 1);
-  assert.equal(browseCalls, 1);
+  assert.equal(out.browseCalls, 1, "1 search; the fake fired no trace so no getItem spend counted");
+  assert.equal(resolves, 1);
 });
 
-test("splits Browse calls per (variant, condition) — same slug, different variant → 2 calls (Session 49b)", async () => {
-  // Two rows watch the same card but different printings — each is a distinct
-  // eBay query, so they CANNOT dedup the way two default rows do.
+test("splits resolves per (variant, condition) — same slug, different combo → 2 resolves (Session 49b)", async () => {
   const { supabase } = fakeSupabase(
     rows([
       { id: "a", email: "a@x.com", variant: "1st-edition-holofoil", condition: "psa-10" },
       { id: "b", email: "b@x.com", variant: "unlimited-holofoil", condition: "any-raw" },
     ]),
   );
-  const seen: Array<{ variant?: string; condition?: string }> = [];
-  const getBestListing = (async (input: { variant?: string; condition?: string }) => {
-    seen.push({ variant: input.variant, condition: input.condition });
-    return fakeListing(1)();
-  }) as ScanWatchlistsInput["getBestListing"];
+  const seen: Array<{ requestedVariant?: string; condition: unknown }> = [];
+  const resolveListing: ScanWatchlistsInput["resolveListing"] = async (_cardId, condition, opts) => {
+    seen.push({ requestedVariant: opts?.requestedVariant, condition });
+    return verified(1);
+  };
 
-  const out = await scanWatchlists(baseInput({ supabase, getBestListing }));
+  const out = await scanWatchlists(baseInput({ supabase, resolveListing }));
   assert.equal(out.slugsConsidered, 1, "still one distinct slug");
-  assert.equal(out.browseCalls, 2, "but two Browse calls — one per variant/condition combo");
+  assert.equal(out.browseCalls, 2, "but two resolves — one per variant/condition combo");
   assert.equal(out.slugsWithListing, 1, "slug counted once even across combos");
-  // The variant + condition were forwarded to the query builder.
-  assert.ok(seen.some((s) => s.variant === "1st-edition-holofoil" && s.condition === "psa-10"));
-  assert.ok(seen.some((s) => s.variant === "unlimited-holofoil" && s.condition === "any-raw"));
+  // Tokens mapped to resolver shapes: psa-10 → graded PSA 10; any-raw → ANY_RAW.
+  assert.ok(
+    seen.some(
+      (s) =>
+        s.requestedVariant === "1st-edition-holofoil" &&
+        JSON.stringify(s.condition) === JSON.stringify({ graded: { service: "PSA", grade: "10" } }),
+    ),
+  );
+  assert.ok(seen.some((s) => s.requestedVariant === "unlimited-holofoil" && s.condition === "ANY_RAW"));
+});
+
+test("a NULL resolve (no verified listing) NEVER alerts — the migration's core invariant", async () => {
+  const sent: string[] = [];
+  const { supabase, marked } = fakeSupabase(
+    rows([{ id: "a", email: "a@x.com", target_price_cents: 100_000_000 }]),
+  );
+  const out = await scanWatchlists(
+    baseInput({
+      supabase,
+      resolveListing: async () => null, // honest null — e.g. only a Japanese/wrong-print listing exists
+      sendEmail: async (i) => {
+        sent.push(i.to);
+        return { ok: true };
+      },
+    }),
+  );
+  assert.equal(out.alerted, 0);
+  assert.equal(sent.length, 0);
+  assert.equal(marked.length, 0);
+  assert.equal(out.slugsWithListing, 0);
+  assert.equal(out.errors.length, 0, "an honest null is not an error");
+});
+
+test("getItem spend from the resolver trace counts against browseCalls", async () => {
+  const { supabase } = fakeSupabase(rows([{ id: "a", email: "a@x.com" }]));
+  const resolveListing: ScanWatchlistsInput["resolveListing"] = async (_c, _cond, opts) => {
+    // Simulate a resolve that evaluated 3 candidates (3 getItem calls).
+    opts?.onTrace?.({
+      cardId: "base1-4-charizard",
+      condition: "ANY_RAW",
+      searchOk: true,
+      searchHitCount: 10,
+      prefilteredCount: 6,
+      candidatesEvaluated: 3,
+      candidates: [
+        { itemId: "a", price: 1, rank: 0, gates: [], verdict: "rejected", reason: "x" },
+        { itemId: "b", price: 2, rank: 1, gates: [], verdict: "detail_failed", reason: "x" },
+        { itemId: "c", price: 3, rank: 2, gates: [], verdict: "verified", reason: "ok" },
+      ],
+      result: "verified",
+      reason: "ok",
+    } satisfies ResolveTrace);
+    return verified(35);
+  };
+  const out = await scanWatchlists(baseInput({ supabase, resolveListing }));
+  assert.equal(out.browseCalls, 4, "1 search + 3 getItem");
+});
+
+test("unknown condition token → error logged, combo skipped, no resolve", async () => {
+  const { supabase } = fakeSupabase(rows([{ id: "a", email: "a@x.com", condition: "mint-fresh-bro" }]));
+  let resolves = 0;
+  const out = await scanWatchlists(
+    baseInput({
+      supabase,
+      resolveListing: async () => {
+        resolves += 1;
+        return verified(1);
+      },
+    }),
+  );
+  assert.equal(resolves, 0);
+  assert.equal(out.alerted, 0);
+  assert.equal(out.errors.length, 1);
+  assert.match(out.errors[0].error, /unknown_condition_token/);
+});
+
+test("bgs-10-bl narrows by Black Label title — a plain BGS 10 slab never alerts", async () => {
+  const { supabase } = fakeSupabase(
+    rows([
+      { id: "bl", email: "bl@x.com", condition: "bgs-10-bl", target_price_cents: 100_000_000 },
+    ]),
+  );
+  // Verified BGS 10, but the title is NOT Black Label → suppressed.
+  const plain = await scanWatchlists(
+    baseInput({
+      supabase,
+      resolveListing: async () => verified(50, { title: "Charizard Base Set BGS 10 PRISTINE", condition: "GRADED" }),
+    }),
+  );
+  assert.equal(plain.alerted, 0, "plain BGS 10 must not satisfy a Black Label watch");
+
+  // Same verified grade, Black Label in the title → alerts.
+  const bl = await scanWatchlists(
+    baseInput({
+      supabase,
+      resolveListing: async () => verified(50, { title: "Charizard Base Set BGS 10 BLACK LABEL", condition: "GRADED" }),
+    }),
+  );
+  assert.equal(bl.alerted, 1);
 });
 
 test("alerts only the rows whose target meets the current price", async () => {
-  // Two rows watching same slug at $40 and $30 targets; current price = $35
-  // → only the $40 row alerts.
   const sent: Array<{ to: string }> = [];
   const { supabase, marked } = fakeSupabase(
     rows([
@@ -154,7 +260,7 @@ test("alerts only the rows whose target meets the current price", async () => {
   const out = await scanWatchlists(
     baseInput({
       supabase,
-      getBestListing: fakeListing(35),
+      resolveListing: fakeResolver(35),
       sendEmail: async (input) => {
         sent.push({ to: input.to });
         return { ok: true };
@@ -181,7 +287,7 @@ test("soft-fails per row — a Resend hiccup on one row doesn't kill the batch",
   const out = await scanWatchlists(
     baseInput({
       supabase,
-      getBestListing: fakeListing(35),
+      resolveListing: fakeResolver(35),
       sendEmail: async () => {
         callIdx += 1;
         return callIdx === 1 ? { ok: false, error: "rate_limited" } : { ok: true };
@@ -213,22 +319,22 @@ test("respects the Browse-call cap and reports capHit=true", async () => {
   }));
   const { supabase } = fakeSupabase(inputRows);
 
-  let browseCalls = 0;
-  const getBestListing = (async () => {
-    browseCalls += 1;
-    return fakeListing(1)();
-  }) as ScanWatchlistsInput["getBestListing"];
+  let resolves = 0;
+  const resolveListing: ScanWatchlistsInput["resolveListing"] = async () => {
+    resolves += 1;
+    return verified(1);
+  };
 
   const CAP = 3;
   const out = await scanWatchlists(
     baseInput({
       supabase,
-      getBestListing,
+      resolveListing,
       maxBrowseCalls: CAP,
     }),
   );
   assert.equal(out.browseCalls, CAP);
-  assert.equal(browseCalls, CAP);
+  assert.equal(resolves, CAP);
   assert.equal(out.capHit, true);
   // Only the first CAP slugs were evaluated, so alerts are ≤ CAP rows.
   assert.ok(out.alerted <= CAP);
@@ -250,7 +356,7 @@ test("respects the 24h cooldown — rows with recent last_notified_at filtered u
       },
     ]),
   );
-  const out = await scanWatchlists(baseInput({ supabase, getBestListing: fakeListing(35) }));
+  const out = await scanWatchlists(baseInput({ supabase, resolveListing: fakeResolver(35) }));
   assert.equal(out.alerted, 1);
   assert.equal(marked.length, 1);
 });

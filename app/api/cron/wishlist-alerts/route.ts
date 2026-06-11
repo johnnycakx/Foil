@@ -16,7 +16,7 @@
 import { NextResponse } from "next/server";
 import { postWishlistAlertRun } from "@/lib/notifications/discord";
 import { sendTransactionalEmail } from "@/lib/notifications/resend";
-import { getBestListing } from "@/lib/affiliate/ebay-browse";
+import { resolveVerifiedListing } from "@/lib/listing/resolve";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { scanWatchlists, type SupabaseLike, type WatchlistRow } from "@/lib/wishlist/scan-batch";
 
@@ -71,9 +71,12 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   const result = await scanWatchlists({
     supabase: supabaseLike,
-    // awaitLog: flush Browse telemetry before the cron function suspends
-    // (fire-and-forget drops it in a cron context — same gap as deals_cron).
-    getBestListing: (i) => getBestListing({ ...i, awaitLog: true }),
+    // The VERIFIED resolver (Tranche A #3): alerts fire only on identity-
+    // verified condition matches. awaitLog: flush Browse telemetry before the
+    // cron function suspends (fire-and-forget drops it in a cron context —
+    // same gap as deals_cron).
+    resolveListing: (cardId, condition, opts) =>
+      resolveVerifiedListing(cardId, condition, { ...opts, awaitLog: true }),
     sendEmail: async (input) => {
       const res = await sendTransactionalEmail({
         to: input.to,
