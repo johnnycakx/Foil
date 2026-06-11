@@ -19,6 +19,28 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-06-11
+category: product
+status: captured
+---
+## Finish-query expansion ladder — measure-then-extend the resolver's query bias per rarity class
+
+The Tranche A finish-aware query lever is deliberately restricted to the exact WOTC `Rare Holo` rarity (+ explicitly requested variants) because that's the only class the certification measured (12/12 vintage holos recovered, zero false-accepts). The same candidate-starvation mechanism plausibly exists for other classes — modern reverse-holo variants buried under cheaper normals, 1st-Edition listings, graded-heavy modern ultra-rares (the cert's k=8 probe recovered 3/10 of those). Idea: an expansion ladder where each rung (rarity class → query term) ships only after a paired-arm live measure (the per-card back-to-back OFF/ON arms pattern from the 2026-06-11 audit — seconds apart, so every flip is attributable to the term, not listing rotation) proves recovery > starvation for that class. Preserves the certified invariant: query terms only change which candidates are fetched; identity gates stay the sole admission gate.
+
+**Context:** 2026-06-11 Tranche A #2/#3 goal — the full-sweep I-009 measure showed lever ON 81.2% vs OFF 69.1% curated coverage; the lost-arm audit motivated the paired-arm method.
+
+---
+date: 2026-06-09
+category: monetization
+status: captured
+---
+## Pokemon vending machine route (Gage Kushner / "Jessica Wang" partnership pitch) — evaluated, diligence failed
+
+Inbound pitch to John: partner on Pokemon card vending machines (VTM hardware, $2,850–5,000/machine). Cowork diligence on the sent docs found: 2 of 5 attachments duplicated; the "Memphis Pokemon" case study is the machine vendor's (VTM) own marketing PDF with markup mislabeled as margin; the operator P&Ls show uniform ~50% margins with COGS ($4.65–7.09 for Prismatic Evolutions) roughly half of realistic 2026 acquisition cost during the documented supply crunch — contradicted by VTM's own case study ($16.99 COGS for the same SKU); the pitch deck prices ($20–35/pack) contradict the P&Ls ($9–13/pack); the pitcher runs a GoHighLevel coaching funnel (cardvendingblueprint.com, "limited spots") matching FTC vending biz-opp warning patterns. Standalone-vending economics even at face value: ~$300–860/mo gross profit/machine before venue split, fees, restock labor — 1–2yr payback, not passive. If vending exposure is ever wanted: buy one machine direct from VTM post-launch, source via the existing TCGplayer storefront, skip the middleman; the route data could feed Foil content.
+
+**Context:** Email from "Jessica Wang" (yanaiwang44@gmail.com) 2026-06-09 with P&Ls + case study after a call; Gage Kushner YouTube (634 subs, "#1 Pokémon Vending Operator In America"). Evaluated in Cowork against PriceCharting/TCGplayer market data + FTC biz-opp criteria. Key timing conflict: MVP sprint ends 8/7, soft launch 9/21 — founder-manual queue (X-bot go-live, eBay Growth Check submission, resolver cert review) is already the bottleneck.
+
+---
 date: 2026-06-07
 category: infra
 status: triaged
