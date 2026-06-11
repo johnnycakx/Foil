@@ -157,6 +157,23 @@ test("verifyIdentity: the raw Neo Discovery Poliwrath #9 (stray Grade=9) PASSES 
   assert.equal(v.verifiedAspects.graded, false);
 });
 
+test("Language fallback: the bare ITA abbreviation rejects (2026-06-11 paired-audit false-accept)", () => {
+  // Real observed listing: Italian Houndoom with NO Language aspect and NO
+  // Card Number aspect — only the title fallback can catch it. Caught live by
+  // the Tranche A I-009 paired audit; pinned so the gap stays closed.
+  const target: IdentityTarget = { setName: "Neo Discovery", setId: "neo2", number: "4", name: "Houndoom" };
+  const a = aspects([["Set", "Neo Discovery"], ["Finish", "Holo"]]);
+  const v = verifyIdentity({
+    target,
+    aspects: a,
+    topCondition: "Ungraded",
+    title: "POKÉMON NEO DISCOVERY UNLIMITED HOUNDOOM HOLO 4/75 LP ITA",
+    condition: "ANY_RAW",
+  });
+  assert.equal(gate(v, "language").pass, false, "bare ITA must read as a foreign-market marker");
+  assert.equal(v.pass, false);
+});
+
 test("Language fallback: absent aspect + foreign title rejects; clean title passes", () => {
   const target: IdentityTarget = { setName: "Plasma Storm", setId: "bw11", number: "136", name: "Charizard" };
   const foreign = aspects([["Set", "Uragano Plasma"], ["Card Number", "136/135"]]);

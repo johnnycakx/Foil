@@ -51,7 +51,11 @@ export type ConditionInference = {
   gradeKey?: string;
 };
 
-const MARKET_RE = /\b(japanese|japan|korean|korea|chinese|china|german|deutsch|french|fran[cç]ais|italian|italiano|spanish|espa[nñ]ol|portuguese|jpn|jp)\b/i;
+// `ita` added 2026-06-11: the Tranche A I-009 paired audit caught a real
+// Italian listing ("HOUNDOOM HOLO 4/75 LP ITA", no Language aspect) admitted
+// through the title fallback — sellers abbreviate Italian as ITA the way they
+// abbreviate Japanese as JPN. Tightening only (can exclude, never admit).
+const MARKET_RE = /\b(japanese|japan|korean|korea|chinese|china|german|deutsch|french|fran[cç]ais|italian|italiano|ita|spanish|espa[nñ]ol|portuguese|jpn|jp)\b/i;
 const NOT_REAL_RE = /\b(proxy|fake|repro|reproduction|orica|altered|art\s*card|custom)\b/i;
 // "lot", "bundle", "playset", "set of", "lot of", "x4", "(4)", "complete set",
 // and a bare plural "cards" (a single card is "card").

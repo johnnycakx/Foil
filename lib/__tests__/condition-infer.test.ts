@@ -70,6 +70,15 @@ test("infer: market guard beats a graded grade (Japanese PSA 10 -> UNKNOWN, wron
   assert.match(r.evidence[0], /market/);
 });
 
+test("infer: the bare ITA abbreviation is a market marker (2026-06-11 paired-audit catch)", () => {
+  // Real observed Italian listing with no language word beyond the ITA tag.
+  const r = inferListingCondition({ title: "POKÉMON NEO DISCOVERY UNLIMITED HOUNDOOM HOLO 4/75 LP ITA" });
+  assert.equal(r.tier, "UNKNOWN");
+  assert.match(r.evidence[0], /market/);
+  // And ITA must not false-positive on normal English titles.
+  assert.notEqual(inferListingCondition({ title: "Houndoom 4/75 Neo Discovery Holo LP" }).evidence[0], "non-English market marker");
+});
+
 // --- #32.3: grade-token disambiguation + grade-specific gradeKey ---
 
 test("infer: 'NM 7' is a bare grade with no service -> UNKNOWN, NOT Near Mint (the #32.3 bug)", () => {
