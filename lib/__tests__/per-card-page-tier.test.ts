@@ -40,9 +40,13 @@ test("cardTier: honors an explicit longtail tier when present", () => {
 test("/cards/[slug]: Browse call gated to the curated tier; page forced dynamic (ADR-047)", () => {
   const src = read("app/(site)/cards/[slug]/page.tsx");
   assert.match(src, /const\s+tier\s*=\s*cardTier\(slug\)/);
-  // getBestListing only inside the curated branch (not longtail/metadata-only).
+  // The VERIFIED resolver only inside the curated branch (not longtail/
+  // metadata-only) — Tranche A #2: the page never calls the title-only picker.
   assert.match(src, /if \(tier === "curated"\) \{/);
-  assert.match(src, /getBestListing\(/);
+  assert.match(src, /resolveVerifiedListing\(/);
+  assert.doesNotMatch(src, /getBestListing/, "the unverified picker must not return to the page");
+  assert.doesNotMatch(src, /getListingAspects/, "badge reads the resolver's verdict — no second getItem");
+  assert.doesNotMatch(src, /inferConditionLabel/, "the third redundant title heuristic stays deleted");
   // R-008: the page is force-dynamic (ISR is incompatible with its searchParams
   // read — DYNAMIC_SERVER_USAGE), so the live eBay listing is never cached.
   assert.match(src, /export const dynamic = "force-dynamic"/);
@@ -54,9 +58,12 @@ test("/cards/[slug]: longtail renders the fallback; curated renders the live blo
   assert.match(src, /tier === "longtail" \? \(\s*<LongTailListingFallback/);
 });
 
-test("/cards/[slug]: longtail schema omits Offer, keeps AggregateOffer when priced", () => {
+test("/cards/[slug]: no live Offer without a verified listing — AggregateOffer fallback when priced", () => {
   const src = read("app/(site)/cards/[slug]/page.tsx");
-  assert.match(src, /else if \(tier === "longtail"\)/);
+  // Live Offer ONLY from the verified resolve; longtail + curated-null fall
+  // back to the baked TCGplayer AggregateOffer (zero eBay calls, design §4).
+  assert.match(src, /if \(verified\) \{/);
+  assert.match(src, /else if \(tier === "longtail" \|\| tier === "curated"\)/);
   assert.match(src, /aggregateOfferFromTcgplayer/);
   assert.match(src, /"@type": "AggregateOffer"/);
 });

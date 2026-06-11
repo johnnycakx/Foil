@@ -32,12 +32,17 @@ function humanize(variant: string): string {
 
 type Props = {
   card: CardMetadata;
-  /** Optional — passed through to PriceRangeBar so each bar can mark
-   *  the current eBay listing's spot in the range. */
+  /** Optional — the verified live listing's price. Rendered as a marker ONLY
+   *  on the variant named by `currentBestVariantKey` (never across all
+   *  variants — those are different cards with different markets; the design's
+   *  §5 named defect). */
   currentBestPriceUsd?: number | null;
+  /** The tcgplayerPrices key the verified listing's finish matched, or null
+   *  when no unambiguous match exists → no marker anywhere. */
+  currentBestVariantKey?: string | null;
 };
 
-export function CardVariantsSection({ card, currentBestPriceUsd }: Props) {
+export function CardVariantsSection({ card, currentBestPriceUsd, currentBestVariantKey }: Props) {
   const entries = Object.entries(card.tcgplayerPrices);
   if (entries.length === 0) return null;
 
@@ -68,8 +73,10 @@ export function CardVariantsSection({ card, currentBestPriceUsd }: Props) {
         </span>
       </div>
       <p className="mt-2 text-sm text-foil-slate">
-        The TCGplayer low / mid / high range per printing. The dark marker on
-        each bar is the current best live eBay listing for comparison.
+        The TCGplayer low / mid / high range per printing.
+        {currentBestVariantKey && currentBestPriceUsd != null
+          ? " The dark marker shows the verified live eBay listing on its matching printing."
+          : null}
       </p>
 
       <ul className="mt-6 space-y-6">
@@ -104,7 +111,7 @@ export function CardVariantsSection({ card, currentBestPriceUsd }: Props) {
               </div>
               <PriceRangeBar
                 price={price}
-                currentPriceUsd={currentBestPriceUsd ?? null}
+                currentPriceUsd={variant === currentBestVariantKey ? currentBestPriceUsd ?? null : null}
                 updatedAt={card.tcgplayerUpdatedAt}
               />
             </li>

@@ -19,9 +19,9 @@ test("catalog has ≥1 metadata-only card (the tier is exercised live)", () => {
   for (const c of mo) assert.equal(cardTier(c.slug), "metadata-only");
 });
 
-test("/cards/[slug]: metadata-only skips getBestListing AND the sold-history panel", () => {
+test("/cards/[slug]: metadata-only skips the live resolve AND the sold-history panel", () => {
   const src = read("app/(site)/cards/[slug]/page.tsx");
-  // getBestListing is gated to curated only — metadata-only never calls it.
+  // resolveVerifiedListing is gated to curated only — metadata-only never calls it.
   assert.match(src, /if \(tier === "curated"\) \{/);
   // Variants + SoldHistoryPanel are skipped for metadata-only.
   assert.match(src, /tier !== "metadata-only" &&/);
@@ -31,10 +31,10 @@ test("/cards/[slug]: metadata-only skips getBestListing AND the sold-history pan
 
 test("/cards/[slug]: metadata-only schema is Product with NO offers", () => {
   const src = read("app/(site)/cards/[slug]/page.tsx");
-  // Offer only when `best` (curated); AggregateOffer only for longtail.
-  // metadata-only matches neither → no offers branch runs for it.
-  assert.match(src, /if \(best\) \{/);
-  assert.match(src, /else if \(tier === "longtail"\)/);
+  // Offer only when `verified` (curated); AggregateOffer for longtail +
+  // curated-null. metadata-only matches neither → no offers branch runs for it.
+  assert.match(src, /if \(verified\) \{/);
+  assert.match(src, /else if \(tier === "longtail" \|\| tier === "curated"\)/);
   // No `tier === "metadata-only"` clause adds offers.
   assert.doesNotMatch(src, /tier === "metadata-only"[\s\S]{0,120}offers/);
 });

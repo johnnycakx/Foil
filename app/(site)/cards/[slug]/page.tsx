@@ -11,8 +11,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { affiliateSearchUrl, buildCustomId, type EpnBestListing } from "@/lib/affiliate/epn";
-import { getBestListing, getListingAspects } from "@/lib/affiliate/ebay-browse";
+import { affiliateSearchUrl, buildCustomId } from "@/lib/affiliate/epn";
+import { resolveVerifiedListing, type VerifiedListing } from "@/lib/listing/resolve";
+import { normalizeFinish, finishForVariantKey } from "@/lib/listing/normalize";
 import { CARD_CATALOG, getCatalogEntry, relatedCardsForSlug, cardTier } from "@/lib/cards/catalog";
 import { LongTailListingFallback } from "@/components/cards/long-tail-listing-fallback";
 import { MetadataOnlyListing } from "@/components/cards/metadata-only-listing";
@@ -36,7 +37,7 @@ import { computeCardBuySignal } from "@/lib/buy-signal/card-signal";
 // ISR is deferred until variant/condition selection moves client-side (see
 // ADR-047 "What shipped" + RISKS R-013). `force-dynamic` is the known-good
 // mode and the R-008 guarantee (eBay listing data is never cached): every
-// render re-fetches live, paired with getBestListing's own `cache: "no-store"`.
+// render re-fetches live, paired with the resolver's own `cache: "no-store"`.
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -64,24 +65,24 @@ function formatPrice(price: number, currency: string): string {
   }
 }
 
-// Heuristic condition + grade extraction from an EPN listing title. EPN
-// doesn't expose structured condition data on its V1 surface, so we infer
-// from common abbreviations. Falls back to null on no match — page just
-// hides the badge.
-function inferConditionLabel(title: string | undefined): { label: string; tone: "grade" | "raw" } | null {
-  if (!title) return null;
-  const t = title.toUpperCase();
-  // Graded slabs come first — they're the strongest signal.
-  const graded = t.match(/\b(PSA|BGS|CGC|SGC)\s*([0-9]{1,2}(?:\.5)?)\b/);
-  if (graded) return { label: `${graded[1]} ${graded[2]}`, tone: "grade" };
-  // Then common raw condition shorthands.
-  if (/\bNM-?MT\b|\bMINT\b/.test(t)) return { label: "Near Mint", tone: "raw" };
-  if (/\bNM\b/.test(t)) return { label: "Near Mint", tone: "raw" };
-  if (/\bLP\b/.test(t)) return { label: "Lightly Played", tone: "raw" };
-  if (/\bMP\b/.test(t)) return { label: "Moderately Played", tone: "raw" };
-  if (/\bHP\b/.test(t)) return { label: "Heavily Played", tone: "raw" };
-  if (/\bDMG\b|\bDAMAGED\b/.test(t)) return { label: "Damaged", tone: "raw" };
-  return null;
+// Condition badge from the resolver's VERIFIED condition tier (the listing's
+// own item specifics, not a title heuristic — the old inline title parser was
+// the third redundant condition heuristic and is deleted per
+// DESIGN-VERIFIED-LISTING-RESOLVER.md §5). UNKNOWN → null → badge hidden.
+const CONDITION_BADGE_LABELS: Record<string, string> = {
+  NM: "Near Mint",
+  LP: "Lightly Played",
+  MP: "Moderately Played",
+  HP: "Heavily Played",
+  DMG: "Damaged",
+  GRADED: "Graded",
+};
+
+function conditionBadgeFor(verified: VerifiedListing | null): { label: string; tone: "grade" | "raw" } | null {
+  if (!verified) return null;
+  const label = CONDITION_BADGE_LABELS[verified.condition];
+  if (!label) return null;
+  return { label, tone: verified.condition === "GRADED" ? "grade" : "raw" };
 }
 
 // Build an AggregateOffer from the baked TCGplayer price ranges (ADR-046).
@@ -164,31 +165,32 @@ export default async function CardPage({
   const card = await getCardMetadata({ id: entry.pokemonTcgId });
   const tier = cardTier(slug);
 
-  // Render-time Browse fetch — curated tier only (ADR-046/047). Long-tail +
-  // metadata-only cards skip the eBay Browse call (bounds the per-render Browse
-  // quota as the catalog scales). R-008 (never cache eBay listing data) is held
-  // by force-dynamic above + getBestListing's own `cache: "no-store"`.
+  // Render-time VERIFIED resolve — curated tier only (ADR-046/047; the tier
+  // branch retires in Tranche B #6). ONE resolveVerifiedListing call drives BOTH
+  // the "Best current listing" display AND the buy-signal badge — the single
+  // verdict the design exists for (DESIGN-VERIFIED-LISTING-RESOLVER.md §5): an
+  // identity-verified listing (set, number, language, raw-vs-graded checked
+  // against the listing's own item specifics) or an honest null. Null beats
+  // unverified-cheapest, always. R-008 (never cache eBay listing data) is held
+  // by force-dynamic above + the resolver's `cache: "no-store"` reads.
   // Soft-fails to null on error.
   // Per-card + per-tier + per-creator EPN attribution (ROADMAP #32.3 follow-up).
   // `src` (a creator/campaign tag from the inbound link, e.g. ?src=pokerev) is
-  // untrusted — buildCustomId sanitizes it. Each tier gets its own code so the
-  // EPN report segments by card, tier, and creator instead of one foil-card-page
-  // blob.
+  // untrusted — buildCustomId sanitizes it.
   const ebayQuery = `${card.name} ${card.setName}`;
-  let best: EpnBestListing | null = null;
+  let verified: VerifiedListing | null = null;
   if (tier === "curated") {
-    best = await getBestListing({
-      cardName: card.name,
-      setName: card.setName,
+    verified = await resolveVerifiedListing(slug, "ANY_RAW", {
       customId: buildCustomId({ tier: "curated", slug, src }),
       surface: "page_render",
+      requestedVariant: selectedVariant,
     });
   }
 
-  // Curated-tier "best unavailable" fallback (the longtail + metadata-only
+  // Curated-tier no-verified-listing fallback (the longtail + metadata-only
   // tiers build their own tier-coded search URLs at render time below).
   const fallbackUrl = affiliateSearchUrl(ebayQuery, buildCustomId({ tier: "curated", slug, src }));
-  const condition = best ? inferConditionLabel(best.title) : null;
+  const condition = conditionBadgeFor(verified);
 
   const canonical = `${siteUrl()}/cards/${slug}`;
   const productSchema: Record<string, unknown> = {
@@ -199,21 +201,22 @@ export default async function CardPage({
     sku: slug,
     mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
   };
-  if (best) {
+  if (verified) {
     productSchema.offers = [
       {
         "@type": "Offer",
-        priceCurrency: best.currency,
-        price: best.price.toFixed(2),
+        priceCurrency: verified.currency,
+        price: verified.price.toFixed(2),
         availability: "https://schema.org/InStock",
-        url: best.affiliateUrl,
+        url: verified.affiliateUrl,
         seller: { "@type": "Organization", name: "eBay" },
       },
     ];
-  } else if (tier === "longtail") {
-    // Long-tail pages omit the live Offer (no Browse call) but keep an
-    // AggregateOffer when the baked TCGplayer price range is available
-    // (ADR-046) — Product still carries a price signal for rich results.
+  } else if (tier === "longtail" || tier === "curated") {
+    // No live verified Offer (longtail skips the Browse call; curated may
+    // honestly resolve null) — keep an AggregateOffer when the baked TCGplayer
+    // price range is available (ADR-046; design §4 schema-check) so Product
+    // still carries a price signal for rich results with zero eBay calls.
     const agg = aggregateOfferFromTcgplayer(card.tcgplayerPrices, canonical);
     if (agg) productSchema.offers = agg;
   }
@@ -254,23 +257,33 @@ export default async function CardPage({
   // leaderboard can never silently disagree (I-008 guard).
   const BUY_SIGNAL_ENABLED = true;
   let buySignal = null;
-  if (tier === "curated" && best) {
-    // Like-for-like gate (ADR-057): read the chosen listing's eBay item
-    // specifics (Card Condition + Language) via getItem and feed them to the
-    // signal — authoritative over title parsing, and excludes non-English
-    // (cross-market) listings. null on getItem failure → conservative UNKNOWN.
-    const listingAspects = best.itemId
-      ? await getListingAspects({ itemId: best.itemId, surface: "page_render" })
-      : null;
+  if (tier === "curated" && verified) {
+    // ONE verdict, ONE getItem (design §5): the badge reads the SAME aspect map
+    // the resolver verified the displayed listing with — no separate aspect
+    // fetch, and the badge can never describe a different listing than the one
+    // shown/clicked. The classifier's own market + condition gates (ADR-057)
+    // still run unchanged on those aspects.
     const cardSignal = await computeCardBuySignal({
       variants: card.variants,
-      listingTitle: best.title,
-      listingAspects,
-      askPrice: best.price,
+      listingTitle: verified.title,
+      listingAspects: verified.aspects,
+      askPrice: verified.price,
       selectedVariant,
     });
     buySignal = cardSignal.signal;
   }
+
+  // Variants-panel marker (design §5 named defect, safe minimum for Tranche A):
+  // the old code passed ONE unverified picker price as the "current best" marker
+  // across EVERY variant. Now the marker renders ONLY on the single TCGplayer
+  // variant whose finish matches the verified listing's own Finish aspect — and
+  // not at all when the finish is absent/ambiguous (no marker beats a wrong
+  // marker). True per-variant resolution is Tranche B #5.
+  const verifiedFinish = verified ? normalizeFinish(verified.verifiedAspects.finish) : null;
+  const finishMatchedVariantKeys = verifiedFinish
+    ? Object.keys(card.tcgplayerPrices).filter((k) => finishForVariantKey(k) === verifiedFinish)
+    : [];
+  const markerVariantKey = finishMatchedVariantKeys.length === 1 ? finishMatchedVariantKeys[0] : null;
 
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-5 pt-10 pb-20 sm:px-8 sm:pt-16">
@@ -343,8 +356,14 @@ export default async function CardPage({
             metadata-only tier (no priced/sold data; ADR-047). */}
         {tier !== "metadata-only" && (
           <>
-            {/* Variants + market range (TCGplayer) — Session 41 / ADR-030. */}
-            <CardVariantsSection card={card} currentBestPriceUsd={best?.price ?? null} />
+            {/* Variants + market range (TCGplayer) — Session 41 / ADR-030.
+                Marker only on the verified listing's matching finish variant
+                (or none) — never one price across all variants. */}
+            <CardVariantsSection
+              card={card}
+              currentBestPriceUsd={markerVariantKey ? verified?.price ?? null : null}
+              currentBestVariantKey={markerVariantKey}
+            />
 
             {/* Buy signal (ROADMAP #32.1 / ADR-053 / I-009) — condition-matched
                 read of the live ask vs the same-condition 30-day sold average.
@@ -416,17 +435,17 @@ export default async function CardPage({
             ) : null}
           </div>
 
-          {best ? (
+          {verified ? (
             <>
               <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                 <div className="min-w-0">
                   <p className="font-display text-4xl font-bold tabular-nums text-foil-navy sm:text-5xl">
-                    {formatPrice(best.price, best.currency)}
+                    {formatPrice(verified.price, verified.currency)}
                   </p>
-                  <p className="mt-2 line-clamp-2 text-sm text-foil-slate">{best.title}</p>
+                  <p className="mt-2 line-clamp-2 text-sm text-foil-slate">{verified.title}</p>
                 </div>
                 <a
-                  href={best.affiliateUrl}
+                  href={verified.affiliateUrl}
                   target="_blank"
                   rel="sponsored noopener noreferrer"
                   className="inline-flex shrink-0 items-center justify-center rounded-full bg-foil-navy px-6 py-3 text-sm font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40"
@@ -435,15 +454,20 @@ export default async function CardPage({
                 </a>
               </div>
               <p className="mt-5 text-[11px] uppercase tracking-wider text-foil-slate">
-                Live listing · Prices update on every page load · Affiliate-tracked — Foil earns a commission on eBay purchases that originate from this link.
+                Live listing · Identity-verified against the listing&apos;s own item specifics · Prices update on every page load · Affiliate-tracked — Foil earns a commission on eBay purchases that originate from this link.
               </p>
             </>
           ) : (
             <>
+              {/* Honest null (the design's core promise): no verified listing
+                  beats showing the unverified cheapest — never link a listing
+                  we couldn't confirm is this exact card. */}
               <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm text-foil-slate">
-                  Live deal data is briefly unavailable. Browse current eBay
-                  listings while we re-sync.
+                  No verified listing right now. We checked the cheapest live
+                  eBay listings and couldn&apos;t confirm an exact match for
+                  this card — rather than show you a maybe-wrong one, browse
+                  the live search yourself.
                 </p>
                 <a
                   href={fallbackUrl}
@@ -507,13 +531,16 @@ export default async function CardPage({
               {card.rarity ? <> in the set, printed as {card.rarity}</> : null}.
               Pricing varies widely by condition, print run, and grading
               authority — the Best Current Listing block above shows the
-              lowest live eBay listing across raw and graded variants.
+              lowest live eBay listing we could verify is this exact card
+              (set, collector number, and language checked against the
+              listing&apos;s own item specifics).
             </p>
             <p>
-              Foil surfaces the lowest current eBay listing on every page
-              load — no caching of listing data, no stale snapshots. The Best
-              Current Listing block above reflects live state at the moment
-              you opened this page.
+              Foil verifies the lowest current eBay listing on every page
+              load — no caching of listing data, no stale snapshots. When no
+              listing passes verification, we say so instead of showing a
+              maybe-wrong one. The block above reflects live state at the
+              moment you opened this page.
             </p>
           </div>
         </section>
