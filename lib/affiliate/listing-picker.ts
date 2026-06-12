@@ -97,6 +97,68 @@ export const CONDITION_JUNK_KEYWORDS: readonly string[] = [
   "water damage",
 ];
 
+/** Set-aware junk patterns — the set-aware mode's replacement teeth for the
+ *  bare junk keywords it suppresses, plus multi-item/merch shapes observed in
+ *  the 2026-06-12 base6 paired sweep. Evaluated against BOTH the original title
+ *  AND the set-stripped one ("24 Legendary Collection Cards" only reads as a
+ *  card count once the set phrase is removed), and ONLY when a `setName` is
+ *  supplied to `rejectTitleJunk` — behavior for every set-blind caller is
+ *  unchanged.
+ *
+ *  Why: when the card's own set name contains a junk keyword ("Legendary
+ *  Collection"), the keyword is suppressed for occurrences inside the set-name
+ *  phrase — but a REAL multi-card lot on that set's page ("Entire Legendary
+ *  Collection, 110 cards") must still drop. Each pattern below traces to an
+ *  observed production title (R-010 fixtures pin the load-bearing ones). */
+export const SET_AWARE_JUNK_PATTERNS: readonly RegExp[] = [
+  // "entire/whole/huge/massive/complete/full/my ... collection" — possessive-
+  // lot phrasing ("my entire Legendary Collection"). Up to 3 intervening words
+  // so the set name itself can sit inside the phrase.
+  /\b(?:entire|whole|huge|massive|complete|full|my)\s+(?:[\w'&.-]+\s+){0,3}collection\b/i,
+  // "collection lot" / "collection of 50" — lot-of-N phrasing.
+  /\bcollection\s+(?:lot|bundle|of\s+\d)/i,
+  // Card-count phrasing: "110 cards", "50+ cards", "12x cards". A single-card
+  // title's collector number ("1/110") never puts a bare count directly
+  // before the word "cards". Observed: "Great Gift For Kids 24 Legendary
+  // Collection Cards + Rare Nidoking" (a lot, admitted via absent aspects).
+  /\b\d{1,4}\+?\s*(?:x\s*)?cards\b/i,
+  // Piece-count merch phrasing. Observed: "3PCS Legendary Color Potion -
+  // Dragon Adventures" (a Roblox virtual item, zero aspects).
+  /\b\d{1,4}\s*pcs\b/i,
+  // You-pick / choose-your-card multi-listings — one listing fronting many
+  // cards; the specific card's identity is never verifiable from it.
+  // Observed: "Legendary Collection Set 80-89/110 YOU PICK! NM+",
+  // "Legendary Collection 2002 WOTC NM/LP: Choose Your Own".
+  /\b(?:you|u)[\s-]*pick\b/i,
+  /\bchoose\s+your\b/i,
+  /\bpick\s+(?:your|a|any)\b/i,
+  // Non-card merchandise that carries no identifying aspects and so would
+  // sail through absence-tolerant corroboration. Observed: "Pikachu's
+  // Legendary Collection - Pokemon Plushies"; the 2026-06-11 lever measure's
+  // factory-sealed deck box (base6-19-zapdos).
+  /\bplush/i,
+  /\bdeck\s*box\b/i,
+  /\bfactory\s+sealed\b/i,
+];
+
+/** Escape a literal string for use inside a RegExp. */
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Remove every occurrence of the card's own set-name phrase from a title
+ * (case-insensitive, whitespace-run tolerant), replacing with a space so no
+ * accidental token joins can mint a new keyword match. "Alakazam Legendary
+ * Collection 1/110 Holo" → "Alakazam   1/110 Holo".
+ */
+export function stripSetName(title: string, setName: string): string {
+  const tokens = setName.trim().split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return title;
+  const re = new RegExp(tokens.map(escapeRegExp).join("\\s+"), "gi");
+  return title.replace(re, " ");
+}
+
 /** Special-case " HP " regex: rejects "Heavily Played" abbreviation forms
  *  ("in HP", "NM/HP", "HP condition", trailing-token "HP") but NOT the
  *  Pokémon HP stat ("Charizard HP 120", "HP 100", etc.). The Pokémon HP
@@ -156,20 +218,48 @@ function lowered(title: string): string {
   return title.toLowerCase();
 }
 
+/** Set-aware options for `rejectTitleJunk` (the "collection" prefilter
+ *  collision fix). When `setName` is provided, junk keywords and the Pokemon
+ *  mention cap are evaluated on the title WITH the set-name phrase stripped,
+ *  so a keyword that is a token of the card's own set name ("Legendary
+ *  Collection") can no longer reject a legitimate single-card listing — and
+ *  LOT_CONTEXT_PATTERNS run on the original title so real lots still drop.
+ *  Omitted → behavior is byte-identical to the set-blind picker (every
+ *  existing caller). */
+export type TitleJunkOptions = {
+  setName?: string;
+};
+
 /**
  * Stage 2: title-quality. Rejects bulk / multi-card / proxy / fake
  * keywords AND titles with > POKEMON_MENTION_CAP "pokemon"/"pokémon"
- * mentions.
+ * mentions. Set-aware when `opts.setName` is given (see TitleJunkOptions).
  */
-export function rejectTitleJunk(hits: readonly EpnProductHit[]): EpnProductHit[] {
+export function rejectTitleJunk(hits: readonly EpnProductHit[], opts: TitleJunkOptions = {}): EpnProductHit[] {
+  const setName = opts.setName?.trim();
   return hits.filter((h) => {
-    const t = lowered(h.title);
+    // In set-aware mode, scan a copy of the title with the card's own
+    // set-name phrase removed — its tokens are identity, not junk signal.
+    const scanTitle = setName ? stripSetName(h.title, setName) : h.title;
+    const t = lowered(scanTitle);
     for (const kw of TITLE_JUNK_KEYWORDS) {
       if (t.includes(kw)) return false;
     }
+    // Lot/multi-item protection the stripped keyword can no longer provide:
+    // checked against BOTH title forms, set-aware mode only. (The original
+    // catches "...collection lot"; the stripped form catches counts the set
+    // phrase interrupts — "24 Legendary Collection Cards" → "24 Cards".)
+    if (setName) {
+      for (const re of SET_AWARE_JUNK_PATTERNS) {
+        if (re.test(h.title) || re.test(scanTitle)) return false;
+      }
+    }
     // Count both 'pokemon' and 'pokémon' mentions. Combine via a single
     // regex with the unicode flag so the diacritic is handled correctly.
-    const pokemonMatches = h.title.match(/pok[eé]mon/gi);
+    // Counted on the stripped title in set-aware mode — a set name that
+    // itself contains "Pokémon" ("Pokémon GO") is identity, not a
+    // multi-card signal.
+    const pokemonMatches = scanTitle.match(/pok[eé]mon/gi);
     if (pokemonMatches && pokemonMatches.length > POKEMON_MENTION_CAP) return false;
     return true;
   });
@@ -245,6 +335,12 @@ export type PickOptions = {
   include?: readonly string[];
   exclude?: readonly string[];
   skipConditionJunk?: boolean;
+  /** The card's own set name — opts into set-aware title-junk matching (see
+   *  TitleJunkOptions). Only the verified-listing resolver passes this; the
+   *  set-blind consumers (deals cron via getBestListing) stay unchanged
+   *  because they lack the downstream identity gate that makes the wider
+   *  candidate pool safe. */
+  setName?: string;
 };
 
 /**
@@ -261,7 +357,7 @@ export function pickBestListing(
 ): EpnProductHit | null {
   if (hits.length === 0) return null;
   const a = rejectPriceOutliers(hits);
-  const b = rejectTitleJunk(a);
+  const b = rejectTitleJunk(a, { setName: opts.setName });
   const c = opts.skipConditionJunk ? b : rejectConditionJunk(b);
   const d = rejectByKeywords(c, opts.include ?? [], opts.exclude ?? []);
   return lowestPrice(d);

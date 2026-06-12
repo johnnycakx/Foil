@@ -19,6 +19,28 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-06-12
+category: product
+status: captured
+---
+## Absent-aspects admission channel — the resolver's remaining false-accept surface (Tranche B input)
+
+A listing with NO identifying aspects at all (no Set/Number/Language/Graded) passes every corroborating gate on absence and verifies if its title survives the prefilter — the 2026-06-12 base6 audit caught plushies, a Roblox virtual item, you-pick multi-listings, and a title-only PSA slab riding this channel (all now dropped by observed-shape prefilter patterns, but that's whack-a-mole by construction). The principled lever is an identity-gate design change — e.g. require ≥1 corroborating aspect present, OR title-number/name corroboration as a fallback admission requirement when ALL aspects are absent — which touches the corroborating-semantics decision John made 2026-06-06, so it's a Tranche B checkpoint input, not a unilateral fix. Counter-pressure to weigh: the 2026-06-12 sweep also verified a genuine aspect-less Magnemite whose title was an exact single-card match — a hard present-aspect requirement would null it.
+
+**Context:** 2026-06-12 "collection" prefilter fix — the spot-audit's 6 newly admitted false-accepts ALL had absent or near-absent aspects; the per-gate `present` telemetry the resolver already records is the measurement surface.
+
+---
+date: 2026-06-12
+category: product
+status: captured
+---
+## /deals can't surface Legendary Collection until the deals cron leaves the set-blind picker
+
+The set-aware prefilter fix is deliberately NOT wired into `getBestListing` (the deals cron's path) because that path has no downstream identity gate — so every Legendary Collection card still nulls out of the `/deals` board today (the `"collection"` collision lives on there). Don't wire `setName` into the picker for it; the right fix is Tranche B #4 (migrate the deals refresh cron onto `resolveVerifiedListing`), which makes the question moot and gets the board the same 17→104 recall lift with verified admissions.
+
+**Context:** 2026-06-12 "collection" prefilter fix scope decision — recall levers are only audit-safe behind the identity gate.
+
+---
 date: 2026-06-11
 category: product
 status: captured

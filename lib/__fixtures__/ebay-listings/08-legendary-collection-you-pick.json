@@ -1,0 +1,8 @@
+{
+  "_observed": "2026-06-12 base6 paired sweep. A you-pick multi-listing (one listing fronting ten different cards) that briefly verified for base6-80-magnemite once the 'collection' keyword was suppressed — its aspects carried Language=English and Finish=Regular but no Set/Number, so absence-tolerant corroboration admitted it. The specific card's identity is never verifiable from a you-pick listing; the /\\b(?:you|u)[\\s-]*pick\\b/ pattern in SET_AWARE_JUNK_PATTERNS drops it pre-getItem.",
+  "title": "Pokemon Cards 2002 Legendary Collection Set 80-89/110 YOU PICK! NM+",
+  "itemUrl": "https://www.ebay.com/itm/lc-you-pick-008",
+  "image": "https://img.example/lc-you-pick-008.jpg",
+  "price": 4.00,
+  "currency": "USD"
+}

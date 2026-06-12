@@ -134,6 +134,84 @@ test("prefilterCandidates drops junk and sorts cheapest-first", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Set-aware pre-filter (the "collection" collision fix, 2026-06-12) + the two
+// audit-driven drop stages. Fixture titles are production-observed (R-010,
+// lib/__fixtures__/ebay-listings/06-11). Identity gates + k untouched: every
+// stage here only DROPS candidates before getItem; admission is unchanged.
+// ---------------------------------------------------------------------------
+
+const LC_ID = { setName: "Legendary Collection", cardName: "Alakazam" };
+
+test("set-aware prefilter: legit Legendary Collection single survives; set-blind call still drops it", () => {
+  const single = hit("s1", 25, "Alakazam 1/110 Legendary Collection Holo"); // fixture 06
+  assert.deepEqual(prefilterCandidates([single], "ANY_RAW", LC_ID).map((h) => h.itemId), ["s1"]);
+  assert.deepEqual(prefilterCandidates([single], "ANY_RAW"), [], "legacy set-blind behavior pinned");
+});
+
+test("set-aware prefilter: real gift-lot still dropped with Legendary Collection context", () => {
+  const lot = hit("l1", 82.88, "Great Gift For Kids 24 Legendary Collection Cards + Rare Nidoking 31/110 Pokemon"); // fixture 07
+  assert.deepEqual(prefilterCandidates([lot], "ANY_RAW", { setName: "Legendary Collection", cardName: "Nidoking" }), []);
+});
+
+test("title-graded drop: a 'PSA 8' TITLE with raw-looking aspects never reaches getItem on a raw target", async () => {
+  // Fixture 10: the slab's getItem aspects carry NO graded signal — only the
+  // title says PSA 8. Without the prefilter drop it would verify under ANY_RAW.
+  const slab = hit("slab1", 45.15, "Pokemon PSA 8 Tentacruel #66 Legendary Collection 2002 English");
+  const d = deps({
+    card: { name: "Tentacruel", setName: "Legendary Collection", number: "66" },
+    hits: [slab],
+    details: { slab1: detail([["Set", "Legendary Collection"]], null) },
+  });
+  const { listing, trace } = await resolveVerifiedListingWith(d, "base6-66-tentacruel", "ANY_RAW");
+  assert.equal(listing, null);
+  assert.equal(trace.prefilteredCount, 0, "dropped pre-getItem");
+  assert.equal(trace.candidatesEvaluated, 0);
+});
+
+test("title-graded drop does NOT apply to graded targets (ANY_GRADED keeps slab-titled candidates)", () => {
+  const slab = hit("slab1", 45.15, "Pokemon PSA 8 Tentacruel #66 Legendary Collection 2002 English");
+  const out = prefilterCandidates([slab], "ANY_GRADED", { setName: "Legendary Collection", cardName: "Tentacruel" });
+  assert.deepEqual(out.map((h) => h.itemId), ["slab1"]);
+});
+
+test("name corroboration: a multi-variation listing fronted by ANOTHER card's title is dropped pre-getItem", async () => {
+  // Fixture 11: title says Mysterious Fossil, but the listing's Card Number
+  // aspect read 79/110 — it verified for base6-79-machop with all gates green.
+  const wrongName = hit("mv1", 65, "Mysterious Fossil 109/110 Legendary Collection Reverse Holo");
+  const d = deps({
+    card: { name: "Machop", setName: "Legendary Collection", number: "79" },
+    hits: [wrongName],
+    details: { mv1: detail([["Set", "Legendary Collection"], ["Card Number", "79/110"], ["Finish", "Reverse Holo"], ["Language", "English"]]) },
+  });
+  const { listing, trace } = await resolveVerifiedListingWith(d, "base6-79-machop", "ANY_RAW");
+  assert.equal(listing, null);
+  assert.equal(trace.prefilteredCount, 0, "dropped pre-getItem");
+});
+
+test("name corroboration: diacritics + punctuation normalize (Pokémon Breeder ~ 'Pokemon Breeder' title)", () => {
+  const breeder = hit("b1", 54.99, "NM Reverse Holo Pokemon Breeder 102/110 Legendary Collection");
+  const out = prefilterCandidates([breeder], "ANY_RAW", { setName: "Legendary Collection", cardName: "Pokémon Breeder" });
+  assert.deepEqual(out.map((h) => h.itemId), ["b1"]);
+});
+
+test("end-to-end: Legendary Collection single resolves VERIFIED through the full pipeline (the base6 fix)", async () => {
+  const single = hit("s1", 25, "Alakazam 1/110 Legendary Collection Holo");
+  const lot = hit("l1", 12, "Great Gift For Kids 24 Legendary Collection Cards + Rare Alakazam 1/110 Pokemon");
+  const d = deps({
+    card: { name: "Alakazam", setName: "Legendary Collection", number: "1" },
+    hits: [single, lot],
+    details: {
+      s1: detail([["Set", "Legendary Collection"], ["Card Number", "1/110"], ["Finish", "Holo"], ["Language", "English"]]),
+      l1: detail([["Set", "Legendary Collection"]], null), // absent aspects — would sail through if it reached getItem
+    },
+  });
+  const { listing, trace } = await resolveVerifiedListingWith(d, "base6-1-alakazam", "ANY_RAW");
+  assert.ok(listing, "the genuine single verifies");
+  assert.equal(listing!.itemId, "s1");
+  assert.equal(trace.prefilteredCount, 1, "the cheaper lot was dropped pre-getItem, single survives");
+});
+
+// ---------------------------------------------------------------------------
 // Finish-aware query lever (goal #2/#3 — certified-safe: the query term only
 // changes which candidates are FETCHED; admission stays identity-gated).
 // ---------------------------------------------------------------------------

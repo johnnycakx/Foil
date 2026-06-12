@@ -1,0 +1,8 @@
+{
+  "_observed": "2026-06-12 base6 paired sweep. Non-card merchandise (plushies) whose title contains the set name and the card name — it briefly verified for base6-86-pikachu because a non-card item carries ZERO identifying aspects, so every corroborating gate passed on absence. The /\\bplush/ pattern in SET_AWARE_JUNK_PATTERNS drops it pre-getItem. Same failure class as the factory-sealed deck box observed on base6-19-zapdos in the 2026-06-11 lever measure.",
+  "title": "Pikachu's Legendary Collection - Pokemon Plushies - Pikachu Latios Latias Lapras",
+  "itemUrl": "https://www.ebay.com/itm/lc-plush-009",
+  "image": "https://img.example/lc-plush-009.jpg",
+  "price": 34.95,
+  "currency": "USD"
+}

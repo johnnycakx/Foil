@@ -1,0 +1,8 @@
+{
+  "_observed": "2026-06-12 base6 paired sweep. A REAL multi-card lot on a Legendary Collection page — 24 assorted cards bundled with the rare. With the bare 'collection' keyword suppressed in set-aware mode, this briefly verified for base6-31-nidoking (its getItem aspects: Set present, Number/Finish/Language ABSENT — absence-tolerant corroboration let it through). The card-count pattern in SET_AWARE_JUNK_PATTERNS must drop it: '24 Legendary Collection Cards' only reads as a count once the set phrase is stripped ('24 Cards'), which is why the patterns scan BOTH title forms.",
+  "title": "Great Gift For Kids 24 Legendary Collection Cards + Rare Nidoking 31/110 Pokemon",
+  "itemUrl": "https://www.ebay.com/itm/lc-gift-lot-007",
+  "image": "https://img.example/lc-gift-lot-007.jpg",
+  "price": 82.88,
+  "currency": "USD"
+}

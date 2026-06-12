@@ -27,7 +27,7 @@ import { buildAffiliateUrl } from "../affiliate/epn.ts";
 import type { BrowseSurface } from "../telemetry/browse-calls.ts";
 import { rejectPriceOutliers, rejectTitleJunk, rejectConditionJunk } from "../affiliate/listing-picker.ts";
 import type { ListingAspects } from "../buy-signal/aspects.ts";
-import type { ListingConditionTier } from "../buy-signal/condition-infer.ts";
+import { inferListingCondition, type ListingConditionTier } from "../buy-signal/condition-infer.ts";
 import { ebayKeywordsForCondition, type ConditionToken } from "../cards/conditions.ts";
 import { variantEbayKeywords } from "../poketrace/variant.ts";
 import { verifyIdentity, type ResolveCondition, type IdentityTarget, type GateDecision } from "./identity.ts";
@@ -166,16 +166,72 @@ export function buildResolveQuery(input: {
   return `${base} ${terms.map((t) => `"${t}"`).join(" ")}`.trim();
 }
 
+/** Card context for set-aware pre-filtering (the "collection" collision fix +
+ *  its audit-driven precision guards). All fields optional — omitted fields
+ *  disable their stage, so legacy 2-arg calls behave set-blind. */
+export type PrefilterIdentity = {
+  /** The card's own set name — opts the title-junk gate into set-aware
+   *  matching (a junk keyword can't fire from inside the set-name phrase). */
+  setName?: string;
+  /** The card's name — candidates whose title carries NO substantial token of
+   *  it are dropped before getItem. Catches eBay multi-variation listings whose
+   *  fronting title is a DIFFERENT card ("Mysterious Fossil 109/110" carrying a
+   *  Card Number aspect of 79/110, observed verifying for base6-79-machop). A
+   *  drop-only heuristic: no tokens / odd names → stage is a no-op. */
+  cardName?: string;
+};
+
+/** Normalized name tokens (≥3 chars, diacritics stripped) for corroboration. */
+function nameTokens(cardName: string): string[] {
+  return cardName
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((t) => t.length >= 3);
+}
+
+function titleMentionsName(title: string, tokens: readonly string[]): boolean {
+  if (tokens.length === 0) return true; // lenient: can't corroborate → keep
+  const t = title.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  return tokens.some((tok) => t.includes(tok));
+}
+
 /**
  * Pre-filter (title-only) — NARROWS and RANKS, never admits. Runs the demoted
  * picker gates as a cost optimizer to avoid spending getItem calls on obvious
  * junk, then sorts cheapest-first. Condition-junk is skipped when the target is
  * a played/graded condition (those listings would be wrongly dropped).
+ *
+ * `identity` (the card's own set + name, from catalog metadata) opts into
+ * set-aware matching — the "collection" ↔ "Legendary Collection" collision fix.
+ * Recall-only at the gate level: it widens the candidate pool the identity
+ * gates then verify; admission is unchanged. Two audit-driven DROP stages
+ * guard the widened pool (2026-06-12 base6 paired sweep, R-010 fixtures):
+ *   - title-graded drop: a raw-condition target skips candidates whose TITLE
+ *     reads as a slab ("PSA 8 Tentacruel") — mis-tagged slabs carry no graded
+ *     aspects, so the identity gate can't see them (observed false-accept).
+ *   - name corroboration: see PrefilterIdentity.cardName.
  */
-export function prefilterCandidates(hits: readonly EpnProductHit[], condition: ResolveCondition): EpnProductHit[] {
+export function prefilterCandidates(
+  hits: readonly EpnProductHit[],
+  condition: ResolveCondition,
+  identity: PrefilterIdentity = {},
+): EpnProductHit[] {
   const a = rejectPriceOutliers(hits);
-  const b = rejectTitleJunk(a);
-  const c = isPlayedOrGraded(condition) ? b : rejectConditionJunk(b);
+  const b = rejectTitleJunk(a, { setName: identity.setName });
+  let c = isPlayedOrGraded(condition) ? b : rejectConditionJunk(b);
+  // Raw target → drop apparent slabs by TITLE (reuses the certified grade-token
+  // disambiguation in inferListingCondition; aspect-tagged slabs are caught by
+  // the identity gate regardless — this only stops aspect-LESS slabs).
+  const wantsRaw = typeof condition === "string" && condition !== "ANY_GRADED";
+  if (wantsRaw) {
+    c = c.filter((h) => inferListingCondition({ title: h.title }).tier !== "GRADED");
+  }
+  if (identity.cardName) {
+    const tokens = nameTokens(identity.cardName);
+    c = c.filter((h) => titleMentionsName(h.title, tokens));
+  }
   return [...c].sort((x, y) => x.price - y.price);
 }
 
@@ -245,7 +301,7 @@ export async function resolveVerifiedListingWith(
   trace.searchOk = true;
   trace.searchHitCount = search.hits.length;
 
-  const ranked = prefilterCandidates(search.hits, condition);
+  const ranked = prefilterCandidates(search.hits, condition, { setName: meta.setName, cardName: meta.name });
   trace.prefilteredCount = ranked.length;
 
   const candidates = ranked.slice(0, k);

@@ -1,0 +1,8 @@
+{
+  "_observed": "2026-06-12 base6 paired sweep (NEXT-GOAL 'collection' prefilter collision fix). A legitimate single-card Legendary Collection listing the set-blind prefilter KILLED: TITLE_JUNK_KEYWORDS' 'collection' matched the card's own set name, so base6-1-alakazam false-nulled (the certification addendum's input (a) defect). With set-aware matching (setName='Legendary Collection'), the set phrase is stripped before junk scanning and this listing survives; the live resolver then verified it via getItem aspects (Set + Number 1/110 + Finish Holo + English).",
+  "title": "Alakazam 1/110 Legendary Collection Holo",
+  "itemUrl": "https://www.ebay.com/itm/lc-single-006",
+  "image": "https://img.example/lc-single-006.jpg",
+  "price": 25.00,
+  "currency": "USD"
+}

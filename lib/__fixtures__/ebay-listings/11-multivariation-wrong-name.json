@@ -1,0 +1,8 @@
+{
+  "_observed": "2026-06-12 base6 paired sweep. An eBay multi-variation listing fronted by a DIFFERENT card's title ('Mysterious Fossil 109/110') while its getItem Card Number aspect read 79/110 — it verified for base6-79-machop with every gate green (Set + Number + Finish + Language all present and matching the Machop target). The displayed/clicked listing title would have been the wrong card. The resolver prefilter's name-corroboration stage drops candidates whose title carries no substantial token of the target card's name ('machop'), pre-getItem. Lenient by construction: token-less names disable the stage.",
+  "title": "Mysterious Fossil 109/110 Legendary Collection Reverse Holo",
+  "itemUrl": "https://www.ebay.com/itm/lc-multivar-011",
+  "image": "https://img.example/lc-multivar-011.jpg",
+  "price": 65.00,
+  "currency": "USD"
+}

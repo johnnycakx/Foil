@@ -204,6 +204,74 @@ test("rejectTitleJunk: production lot-listing fixture caught by 'lot' AND 'colle
 });
 
 // ---------------------------------------------------------------------------
+// rejectTitleJunk — set-aware mode (the "collection" prefilter collision fix,
+// 2026-06-12). Fixtures 06-11 are production titles observed in the base6
+// paired sweep; each `_observed` field cites the case.
+// ---------------------------------------------------------------------------
+
+const LC = { setName: "Legendary Collection" };
+const LC_SINGLE = FIXTURES["06-legendary-collection-single-alakazam.json"];
+const LC_GIFT_LOT = FIXTURES["07-legendary-collection-gift-lot.json"];
+const LC_YOU_PICK = FIXTURES["08-legendary-collection-you-pick.json"];
+const LC_PLUSH = FIXTURES["09-legendary-collection-plush-merch.json"];
+
+test("set-aware: legit Legendary Collection single SURVIVES with set context (the base6 false-null fix)", () => {
+  assert.equal(rejectTitleJunk([LC_SINGLE], LC).length, 1);
+});
+
+test("set-aware: same single is still dropped WITHOUT set context (set-blind callers unchanged)", () => {
+  assert.deepEqual(rejectTitleJunk([LC_SINGLE]), []);
+});
+
+test("set-aware: observed gift-lot (24 cards + rare) still dropped WITH Legendary Collection context", () => {
+  // The count only reads once the set phrase is stripped: "24 [set] Cards" → "24 Cards".
+  assert.deepEqual(rejectTitleJunk([LC_GIFT_LOT], LC), []);
+});
+
+test("set-aware: classic collection-lot fixture still dropped WITH Legendary Collection context", () => {
+  assert.deepEqual(rejectTitleJunk([LOT_LISTING], LC), []);
+});
+
+test("set-aware: 'entire collection' possessive-lot phrasing still dropped", () => {
+  const hit = synthHit(120, "My entire Legendary Collection for sale Pokemon");
+  assert.deepEqual(rejectTitleJunk([hit], LC), []);
+});
+
+test("set-aware: observed you-pick multi-listing dropped", () => {
+  assert.deepEqual(rejectTitleJunk([LC_YOU_PICK], LC), []);
+});
+
+test("set-aware: observed 'Choose Your Own' multi-listing dropped", () => {
+  const hit = synthHit(4.99, "Pokemon Legendary Collection 2002 WOTC NM/LP: Choose Your Own");
+  assert.deepEqual(rejectTitleJunk([hit], LC), []);
+});
+
+test("set-aware: observed plush merch dropped", () => {
+  assert.deepEqual(rejectTitleJunk([LC_PLUSH], LC), []);
+});
+
+test("set-aware: observed piece-count merch (3PCS Roblox item) dropped", () => {
+  const hit = synthHit(39.92, "3PCS Legendary Color Potion - Dragon Adventures D.A - CHEAPEST (FAST DELIVERY!)");
+  assert.deepEqual(rejectTitleJunk([hit], LC), []);
+});
+
+test("set-aware: deck box / factory sealed merch dropped (2026-06-11 lever-measure class)", () => {
+  const box = synthHit(45, "Pokemon Legendary Collection Factory Sealed Deck Box WOTC");
+  assert.deepEqual(rejectTitleJunk([box], LC), []);
+});
+
+test("set-aware: set name containing 'Pokémon' no longer trips the mention cap (same collision class)", () => {
+  const hit = synthHit(50, "Charizard Pokémon GO Pokémon Card Holo");
+  assert.deepEqual(rejectTitleJunk([hit]), [], "set-blind: 2 mentions → dropped (pinned)");
+  assert.equal(rejectTitleJunk([hit], { setName: "Pokémon GO" }).length, 1, "set-aware: set-phrase mention is identity");
+});
+
+test("set-aware: non-colliding junk keywords still fire with set context (proxy/fake unaffected)", () => {
+  const hit = synthHit(50, "Charizard Legendary Collection proxy card");
+  assert.deepEqual(rejectTitleJunk([hit], LC), []);
+});
+
+// ---------------------------------------------------------------------------
 // rejectConditionJunk
 // ---------------------------------------------------------------------------
 

@@ -1,0 +1,8 @@
+{
+  "_observed": "2026-06-12 base6 paired sweep. A graded slab whose getItem aspects carry NO graded signal at all (no Graded/Grade/Grading Company/Professional Grader, top-level condition not 'Graded') — only the TITLE says 'PSA 8'. detectGraded correctly read the aspects as raw, so it briefly verified for base6-66-tentacruel under ANY_RAW. The resolver prefilter's title-graded drop (reusing inferListingCondition's certified grade-token disambiguation) now skips apparent slabs before getItem when the target condition is raw. Identity gates untouched: aspect-tagged slabs were always caught; this only stops aspect-LESS slabs.",
+  "title": "Pokemon PSA 8 Tentacruel #66 Legendary Collection 2002 English",
+  "itemUrl": "https://www.ebay.com/itm/lc-psa8-title-010",
+  "image": "https://img.example/lc-psa8-title-010.jpg",
+  "price": 45.15,
+  "currency": "USD"
+}
