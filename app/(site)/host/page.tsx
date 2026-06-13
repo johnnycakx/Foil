@@ -17,13 +17,14 @@
 // absence until then. All rules pinned by lib/__tests__/vending-surfaces.test.ts.
 
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { HostLeadForm } from "@/components/vending/host-lead-form";
 
 export const dynamic = "force-static";
 export const revalidate = 86400;
 
-const PAGE_TITLE = "Host a Foil Pokémon card vending machine — it costs you nothing";
+const PAGE_TITLE = "Host a Foil Pokémon card vending machine: it costs you nothing";
 
 const PAGE_DESCRIPTION =
   "Foil places, stocks, and services a Pokémon card vending machine in your business. You give it three square feet and an outlet, and receive a 10–15% revenue share of gross sales, paid monthly.";
@@ -183,19 +184,38 @@ export default function HostPage() {
         <h2 id="host-infra" className="font-display text-xl font-bold tracking-[-0.02em] text-foil-navy sm:text-2xl">
           The hardware does the work
         </h2>
-        <ul className="mt-5 space-y-3">
-          {[
-            "Commercial-grade touchscreen machines. The screen describes each pack and does the selling; nothing about it needs your attention.",
-            "Fully cashless, monitored in real time. Every sale is tracked, and we see when a machine runs low before it ever sits empty.",
-            "A guaranteed-drop refund sensor. If a customer pays and product doesn't drop, they're refunded automatically and the screen says so on the spot.",
-            "A support code on every machine. Customers report any issue directly to us, never to your staff. You never handle a refund or a complaint.",
-          ].map((line) => (
-            <li key={line} className="flex items-start gap-2.5 rounded-2xl border border-foil-navy/10 bg-foil-cream p-4 text-sm leading-relaxed text-foil-navy shadow-sm shadow-foil-navy/5 sm:text-base">
-              <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-foil-gold" />
-              {line}
-            </li>
-          ))}
-        </ul>
+        <div className="mt-5 grid gap-6 sm:grid-cols-[minmax(0,1fr)_15rem] sm:items-start">
+          <ul className="space-y-3">
+            {[
+              "Commercial-grade touchscreen machines. The screen describes each pack and does the selling; nothing about it needs your attention.",
+              "Fully cashless, monitored in real time. Every sale is tracked, and we see when a machine runs low before it ever sits empty.",
+              "A guaranteed-drop refund sensor. If a customer pays and product doesn't drop, they're refunded automatically and the screen says so on the spot.",
+              "A support code on every machine. Customers report any issue directly to us, never to your staff. You never handle a refund or a complaint.",
+            ].map((line) => (
+              <li key={line} className="flex items-start gap-2.5 rounded-2xl border border-foil-navy/10 bg-foil-cream p-4 text-sm leading-relaxed text-foil-navy shadow-sm shadow-foil-navy/5 sm:text-base">
+                <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-foil-gold" />
+                {line}
+              </li>
+            ))}
+          </ul>
+          {/* Product/model imagery (Goal B) — neutral reference photo of the
+              machine MODEL, not a placement or install (docs/vending/02 §6). */}
+          <figure className="mx-auto w-full max-w-[15rem]">
+            <div className="overflow-hidden rounded-2xl border border-foil-navy/10 bg-foil-cream p-1.5 shadow-lg shadow-foil-navy/10">
+              <Image
+                src="/vending/machine-tower-2.webp"
+                alt="The freestanding tower, a touchscreen Pokémon card vending machine"
+                width={1199}
+                height={1599}
+                className="h-auto w-full rounded-xl object-cover"
+                sizes="(min-width: 640px) 15rem, 70vw"
+              />
+            </div>
+            <figcaption className="mt-2 text-center text-xs text-foil-slate">
+              Our touchscreen card machine (product model shown).
+            </figcaption>
+          </figure>
+        </div>
       </section>
 
       {/* §5b element 3: operating proof, not promises — no testimonials until real */}
@@ -205,7 +225,7 @@ export default function HostPage() {
         </h2>
         <div className="mt-5 rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-7">
           <p className="text-sm leading-relaxed text-foil-slate sm:text-base">
-            Foil is run by John Craig, a Level 4 TCGplayer seller — real, verifiable
+            Foil is run by John Craig, a Level 4 TCGplayer seller, with real, verifiable
             Pokémon-product credibility and sourcing behind every machine. We place and
             operate the machines ourselves: we own them, stock them, service them, and
             stand behind every transaction. As placements go live, their locations and

@@ -15,7 +15,7 @@ function siteUrl(): string {
   return (process.env.NEXT_PUBLIC_SITE_URL ?? "https://foiltcg.com").replace(/\/$/, "");
 }
 
-const PAGE_TITLE = "Bay Area service areas — Pokémon card vending machine placement";
+const PAGE_TITLE = "Bay Area service areas: Pokémon card vending machine placement";
 const PAGE_DESCRIPTION =
   "Foil places and operates Pokémon card vending machines for businesses across the North Bay and East Bay. See the cities we serve, closest first.";
 
@@ -62,7 +62,7 @@ export default function ServiceAreasPage() {
         </h1>
         <p className="mt-5 max-w-prose text-base leading-relaxed text-foil-slate sm:text-lg">
           We place and operate Pokémon card vending machines for businesses in the North
-          Bay and East Bay, working closest cities first — the nearer your venue, the
+          Bay and East Bay, working closest cities first: the nearer your venue, the
           faster the restocks and the quicker we respond if anything needs attention.
           Find your city below.
         </p>

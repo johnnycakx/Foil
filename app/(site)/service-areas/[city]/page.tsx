@@ -125,7 +125,7 @@ export default async function CityPage({ params }: PageProps) {
           {[
             "A 10–15% revenue share of gross sales, paid monthly.",
             "Zero cost: no purchase, no lease, no fees. We carry it all.",
-            "Completely hands-off — we install, stock, restock, and support it.",
+            "Completely hands-off: we install, stock, restock, and support it.",
             "A risk-free trial month, no contract required to start.",
           ].map((item) => (
             <li key={item} className="flex items-start gap-2.5 text-sm leading-relaxed text-foil-navy sm:text-base">

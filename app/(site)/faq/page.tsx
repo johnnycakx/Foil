@@ -10,7 +10,7 @@ import { faqPageSchema, schemaGraph, serializeJsonLd } from "@/lib/seo/schema-he
 export const dynamic = "force-static";
 export const revalidate = 86400;
 
-const PAGE_TITLE = "Host a Pokémon card vending machine — frequently asked questions";
+const PAGE_TITLE = "Host a Pokémon card vending machine: frequently asked questions";
 const PAGE_DESCRIPTION =
   "Answers for business owners considering a Foil Pokémon card vending machine: cost, space, payouts, contracts, reliability, and what we handle for you.";
 

@@ -89,7 +89,7 @@ export const SERVICE_CITIES: readonly ServiceCity[] = [
     slug: "vacaville",
     name: "Vacaville",
     county: "Solano County",
-    lead: "A Pokémon card machine for your Vacaville business — we stock it, you earn from it.",
+    lead: "A Pokémon card machine for your Vacaville business: we stock it, you earn from it.",
     paragraphs: [
       "Vacaville pulls regional shoppers to the Premium Outlets and the Nut Tree area, and that destination retail traffic, plus the family entertainment and arcades nearby, is a strong match for a card machine. People who are already out browsing and waiting are the people who buy a pack on impulse.",
       "Foil owns and operates the machine for Vacaville hosts. We size it to your space, install it in about an hour without disrupting your day, keep it stocked with a rotating mix of sealed packs, and handle refunds and support directly so your team is never pulled in. All you supply is the space and the outlet.",
@@ -121,7 +121,7 @@ export const SERVICE_CITIES: readonly ServiceCity[] = [
     ],
     faqs: [
       {
-        question: "I run a smoke shop in Vallejo — is this a fit?",
+        question: "I run a smoke shop in Vallejo. Is this a fit?",
         answer:
           "Smoke and vape shops are one of the strongest fits. They have steady adult foot traffic and impulse-purchase behavior, and a sealed-card machine is a completely different category from your existing products, so it adds rather than competes.",
       },
@@ -141,7 +141,7 @@ export const SERVICE_CITIES: readonly ServiceCity[] = [
     paragraphs: [
       "Walnut Creek's downtown around Broadway Plaza and North Main is one of the East Bay's busiest shopping and dining districts, with BART feeding a constant flow of browsers, diners, and weekend crowds. A sleek, jukebox-sized card machine fits that polished retail environment without looking like a clunky snack machine.",
       "Foil handles the entire operation for Walnut Creek hosts. We deliver and mount the machine (wall, pedestal, or freestanding, no drilling required for the freestanding option), keep it stocked, run the cashless payments, and field every customer issue ourselves. Your bars, restaurants, and shops get an amenity, not a chore.",
-      "Around 60% of Pokémon buyers are adults 25–40 with disposable income — a demographic Walnut Creek has in abundance. The machine draws that collector traffic and gives your regulars one more reason to linger, while you earn a share of every sale.",
+      "Around 60% of Pokémon buyers are adults 25 to 40 with disposable income, a demographic Walnut Creek has in abundance. The machine draws that collector traffic and gives your regulars one more reason to linger, while you earn a share of every sale.",
     ],
     faqs: [
       {
@@ -169,14 +169,14 @@ export const SERVICE_CITIES: readonly ServiceCity[] = [
     ],
     faqs: [
       {
-        question: "I already have a snack or drink machine — does this compete?",
+        question: "I already have a snack or drink machine. Does this compete?",
         answer:
           "Not at all. A sealed trading-card machine is a completely different category, so it complements what you already have rather than competing with it, and it tends to draw a different, higher-spend customer.",
       },
       {
         question: "What kinds of Concord venues do best?",
         answer:
-          "Bowling alleys and entertainment centers, barbershops, convenience stores, and comic or hobby shops all do well — anywhere with consistent foot traffic and a little dwell time.",
+          "Bowling alleys and entertainment centers, barbershops, convenience stores, and comic or hobby shops all do well, anywhere with consistent foot traffic and a little dwell time.",
       },
     ],
     nearby: ["walnut-creek", "pleasant-hill", "martinez"],
@@ -189,13 +189,13 @@ export const SERVICE_CITIES: readonly ServiceCity[] = [
     paragraphs: [
       "Benicia's historic First Street downtown and the marina draw a loyal local crowd plus weekend visitors, and the city's tight-knit small-business scene is exactly where a distinctive amenity stands out. A Pokémon card machine gives a First Street shop, café, or barbershop something the next town doesn't have.",
       "Foil runs the whole thing for Benicia hosts. We deliver and set up the machine, keep it stocked with sealed packs, handle the cashless payments and every customer issue, and restock on a schedule that fits your hours. You contribute the space and the outlet, nothing else, and earn a monthly share.",
-      "The footprint is small and the install is quick — about an hour, with no disruption to your day and no drilling required if you choose the freestanding option. For a smaller Benicia storefront, that low-commitment, low-footprint profile is the whole point.",
+      "The footprint is small and the install is quick (about an hour), with no disruption to your day and no drilling required if you choose the freestanding option. For a smaller Benicia storefront, that low-commitment, low-footprint profile is the whole point.",
     ],
     faqs: [
       {
         question: "Is Benicia's smaller foot traffic enough for a machine?",
         answer:
-          "Often, yes — a loyal repeat local base and a distinctive product can outperform a busier but indifferent location. We start with a risk-free trial, and if a spot isn't a fit we simply relocate the machine at no cost to you.",
+          "Often, yes: a loyal repeat local base and a distinctive product can outperform a busier but indifferent location. We start with a risk-free trial, and if a spot isn't a fit we simply relocate the machine at no cost to you.",
       },
       {
         question: "Can the machine go in a historic First Street building without drilling?",
@@ -212,7 +212,7 @@ export const SERVICE_CITIES: readonly ServiceCity[] = [
     lead: "A no-cost, fully-serviced Pokémon card machine for Suisun City businesses.",
     paragraphs: [
       "Suisun City's Waterfront District, the Harbor Theatre area, and the train-depot corridor anchor a walkable downtown with steady community foot traffic. A card machine in a waterfront café, a barbershop, or a convenience store fits naturally into that come-and-stay rhythm.",
-      "We own and operate the machine for Suisun City hosts at zero cost: install, stocking, restocking, cashless payments, refunds, and support are all handled by Foil. You provide about three square feet and a standard outlet. There's no fee, no lease, and no work on your end — just a monthly revenue share.",
+      "We own and operate the machine for Suisun City hosts at zero cost: install, stocking, restocking, cashless payments, refunds, and support are all handled by Foil. You provide about three square feet and a standard outlet. There's no fee, no lease, and no work on your end, just a monthly revenue share.",
       "Adjacent to Fairfield and the I-80 corridor, Suisun City sits squarely in our home service radius, which means fast restocks and quick response if anything ever needs attention. Proximity is part of why the nearest cities get our first and best service.",
     ],
     faqs: [
