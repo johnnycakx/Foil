@@ -94,19 +94,51 @@ test("FTC hard NOs: no income projections / passive-income / operator recruitmen
   }
 });
 
-test("the published terms appear verbatim on /host (John verdict 2026-06-12)", () => {
-  const src = readFile("app/(site)/host/page.tsx");
-  assert.match(src, /10–15% revenue share of gross sales, paid monthly/, "the decided rev-share line must be published verbatim");
+// Strip JS line/block comments + JSX comments so these rules can be DOCUMENTED
+// in comments (e.g. "no percentage or gross/net") without tripping the scan.
+// Only rendered copy is checked.
+function strippedSource(rel: string): string {
+  return readFile(rel)
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, "")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^\s*\/\/.*$/gm, "");
+}
+
+// The public vending surfaces whose RENDERED copy must stay clean.
+const VENDING_RENDERED_FILES: readonly string[] = [
+  "app/(site)/page.tsx",
+  "app/(site)/host/page.tsx",
+  "components/vending/host-lead-form.tsx",
+  "app/(site)/faq/page.tsx",
+  "app/(site)/service-areas/page.tsx",
+  "app/(site)/service-areas/[city]/page.tsx",
+  "lib/vending/faq.ts",
+  "lib/vending/cities.ts",
+];
+
+test("no revenue-share percentage or gross/net figure is published (2026-06-13 OFF-SITE decision)", () => {
+  // The rev-share number is a call topic, not a website claim: no percentage,
+  // no dollar figure, no "gross"/"net" in rendered copy. The site frames the
+  // value and routes to a call instead. (Instruction supersedes the old
+  // "publish 10–15% verbatim" pin — John verdict 2026-06-13.)
+  for (const rel of VENDING_RENDERED_FILES) {
+    const src = strippedSource(rel);
+    assert.doesNotMatch(src, /10\s?[–-]\s?15|10 to 15/, `revenue-share percentage rendered in ${rel}`);
+    assert.doesNotMatch(src, /\bgross\b/i, `"gross" rendered in ${rel}`);
+    assert.doesNotMatch(src, /\bnet (?:profit|sales)\b/i, `"net profit/sales" rendered in ${rel}`);
+  }
 });
 
-test("no liability/insurance claim on /host until John confirms the policy (Gate 13)", () => {
-  // The §5b playbook wants an operator-carried liability line, but claiming
-  // coverage Foil doesn't hold yet is a fabrication. This pin flips to a
-  // positive assertion once the policy exists (founder-manual item).
-  for (const rel of HOST_FUNNEL_FILES) {
-    const src = readFile(rel);
-    // Word-boundary so "Reliability" (a legit form label) can't false-positive.
-    assert.doesNotMatch(src, /\b(?:insurance|insured|liability)\b/i, `coverage claim in ${rel} — gated on the real policy existing`);
+test("no insurance/liability claim and no placeholder text on the vending surfaces (2026-06-13 OFF-SITE decision)", () => {
+  // Insurance + liability are a call / in-person topic, removed from the public
+  // site entirely; no [PLACEHOLDER] ships in rendered copy. Comments are exempt
+  // (they document the rule), so strip them first. Word-boundary so
+  // "reliability" / "Reliability" (a legit form label) can't false-positive.
+  for (const rel of VENDING_RENDERED_FILES) {
+    const src = strippedSource(rel);
+    assert.doesNotMatch(src, /\binsur\w*/i, `insurance claim rendered in ${rel}`);
+    assert.doesNotMatch(src, /\bliab(?:le|ility)\b/i, `liability claim rendered in ${rel}`);
+    assert.doesNotMatch(src, /\[PLACEHOLDER/i, `placeholder text rendered in ${rel}`);
   }
 });
 

@@ -130,9 +130,9 @@ export type LocalBusinessInput = {
   addressRegion?: string;
   /** Base country, e.g. "US". */
   addressCountry?: string;
-  /** Base city. Omitted while it's an unconfirmed [PLACEHOLDER] — a
-   *  Service-Area Business hides the street address but Google still wants a
-   *  base locality for verification; we leave it out rather than invent one. */
+  /** Base city. Omitted while the base city is unconfirmed: a Service-Area
+   *  Business hides the street address but Google still wants a base locality
+   *  for verification; we leave it out rather than invent one. */
   addressLocality?: string;
   /** Public contact phone — omitted until John confirms a real number. */
   telephone?: string;

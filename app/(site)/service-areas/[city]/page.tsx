@@ -123,7 +123,7 @@ export default async function CityPage({ params }: PageProps) {
         </h2>
         <ul className="mt-4 space-y-2.5">
           {[
-            "A 10–15% revenue share of gross sales, paid monthly.",
+            "A monthly revenue share, walked through on a quick call.",
             "Zero cost: no purchase, no lease, no fees. We carry it all.",
             "Completely hands-off: we install, stock, restock, and support it.",
             "A risk-free trial month, no contract required to start.",

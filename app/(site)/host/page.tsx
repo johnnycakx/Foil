@@ -27,7 +27,7 @@ export const revalidate = 86400;
 const PAGE_TITLE = "Host a Foil Pokémon card vending machine: it costs you nothing";
 
 const PAGE_DESCRIPTION =
-  "Foil places, stocks, and services a Pokémon card vending machine in your business. You give it three square feet and an outlet, and receive a 10–15% revenue share of gross sales, paid monthly.";
+  "Foil places, stocks, and services a Pokémon card vending machine in your business. You give it three square feet and an outlet, and earn a monthly revenue share. We walk through the details on a quick call.";
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
@@ -140,20 +140,21 @@ export default function HostPage() {
         </div>
       </section>
 
-      {/* §5b element 2: the published terms — John verdict 2026-06-12, verbatim */}
+      {/* §5b element 2: how you get paid. The revenue-share number is a call
+          topic (2026-06-13 OFF-SITE decision), so no percentage or gross/net
+          figure is published here; the page frames the value and routes to a call. */}
       <section aria-labelledby="host-terms" className="mb-14">
         <h2 id="host-terms" className="font-display text-xl font-bold tracking-[-0.02em] text-foil-navy sm:text-2xl">
-          The terms, in plain text
+          How you get paid
         </h2>
         <div className="mt-5 rounded-2xl border border-foil-gold/40 bg-foil-gold/10 p-6 sm:p-8">
           <p className="font-display text-2xl font-bold tracking-[-0.02em] text-foil-navy sm:text-3xl">
-            10–15% revenue share of gross sales, paid monthly.
+            You earn a share of every sale, paid monthly.
           </p>
           <p className="mt-3 max-w-prose text-sm leading-relaxed text-foil-slate sm:text-base">
-            Where your venue lands in that band is set by foot traffic, agreed before
-            install, and written down. There are no fees, no costs, and nothing for you
-            to buy, ever. We publish the number because hiding it reads like a
-            negotiation trap, and because we would rather you compare us.
+            There are no fees, no costs, and nothing for you to buy, ever. The machine
+            earns from space you already have. We&apos;ll walk through the revenue share
+            with you on a quick call and put it in writing before anything is installed.
           </p>
         </div>
       </section>

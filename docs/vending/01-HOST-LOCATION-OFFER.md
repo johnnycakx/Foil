@@ -65,9 +65,9 @@ to spend on an impulse.
 
 1. **Completely hands-off.** Foil installs, stocks, restocks, services, and handles every customer
    issue. The host's staff never touch it.
-2. **Zero cost, zero liability.** No purchase, no lease, no fees. The machine is fully insured by Foil;
-   the host is not on the hook for damage, theft, or malfunction. Foil covers licensing, insurance, and
-   compliance.
+2. **Zero cost, hands-off.** No purchase, no lease, no fees. Foil owns, stocks, and services the machine
+   and handles the business licensing and sales-tax compliance for operating it. (Insurance/liability
+   specifics are a call topic — NOT published on the site; see the OFF-SITE note in the FAQ.)
 3. **Passive income.** The host earns a revenue share every month for space they're already paying for.
 4. **New foot traffic + an experience.** A Pokémon machine pulls in collectors and a new customer
    type, creates buzz, and adds something competitors don't have.
@@ -128,11 +128,14 @@ Just the space (about 3–4 sq ft), a standard power outlet, and wifi. We handle
 Nothing. There's no purchase, lease, or fee. The machine draws about as much power as a TV
 (~$4/month).
 
-**Do I need any licenses or insurance?**
-No. We handle all licensing, insurance, and compliance. The machine is fully insured on our end.
-
-**Am I liable if it's damaged or broken into?**
-No. Anything that happens to the machine is on us to handle and replace. You're not on the hook.
+> **OFF-SITE — DO NOT PUBLISH (decision 2026-06-13).** The two questions below (licenses/insurance and
+> liability) are **removed from the public website**. Insurance/liability is a call/in-person topic, and Foil
+> must not publish any "fully insured / not liable" claim until coverage is actually in force (README
+> open-actions: get GL + equipment coverage before first placement). Keep these as John's call answers only.
+>
+> _Call-only "do I need licenses/insurance?":_ "Nothing on your end — it's our equipment and our
+> responsibility to operate." _Call-only "am I liable?":_ "It's our property; keeping it running is on us. We'll
+> put the specifics in the placement agreement."
 
 **Does it have to be drilled into the wall?**
 Not at all. Wall-mount, pedestal, or freestanding — whatever works best for your space. The freestanding

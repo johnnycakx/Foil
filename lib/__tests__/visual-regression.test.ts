@@ -389,11 +389,16 @@ test("Home page: orphan CardPeek decorations removed (ADR-038)", () => {
   assert.doesNotMatch(src, /CardPeek/, "CardPeek (component + invocations) should be gone");
 });
 
-test("Vending homepage: the published rev-share terms appear, no Pokeball bullet (ADR-055)", () => {
+test("Vending homepage: rev-share number is NOT published, routes to a call, no Pokeball (2026-06-13 OFF-SITE decision)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // The decided host terms (John verdict 2026-06-12) are published on the
-  // homepage hero, and the retired Pokeball bullet stays gone.
-  assert.match(src, /10–15% revenue share of gross sales, paid monthly/, "published terms on the homepage");
+  // The revenue-share number is a call topic, not a website claim (supersedes
+  // the old "publish 10–15% verbatim" pin). No percentage / "gross" in rendered
+  // copy; the page routes the rev-share to a call. Strip comments first so the
+  // rule can be documented in comments.
+  const rendered = src.replace(/\{\/\*[\s\S]*?\*\/\}/g, "").replace(/^\s*\/\/.*$/gm, "");
+  assert.doesNotMatch(rendered, /10\s?[–-]\s?15/, "no rev-share percentage on the homepage");
+  assert.doesNotMatch(rendered, /\bgross\b/i, "no 'gross' on the homepage");
+  assert.match(rendered, /walk through the revenue share/i, "homepage routes the rev-share to a call");
   assert.doesNotMatch(src, /<PokeballMark\b/, "no PokeballMark bullets remain");
 });
 

@@ -80,7 +80,7 @@ export const SERVICE_CITIES: readonly ServiceCity[] = [
       {
         question: "What does it cost a Fairfield host?",
         answer:
-          "Nothing. There is no purchase, lease, or fee. The machine draws about as much power as a TV (roughly $4 a month). You receive a 10–15% revenue share of gross sales, paid monthly.",
+          "Nothing. There is no purchase, lease, or fee. The machine draws about as much power as a TV (roughly $4 a month). You earn a monthly revenue share on top of that, which we'll walk through on a quick call.",
       },
     ],
     nearby: ["suisun-city", "vacaville", "benicia"],
@@ -164,7 +164,7 @@ export const SERVICE_CITIES: readonly ServiceCity[] = [
     lead: "A fully-managed Pokémon card vending machine for your Concord business.",
     paragraphs: [
       "Concord moves a lot of people: Todos Santos Plaza and the downtown around it, the Sunvalley shopping center, and the Monument corridor's dense retail all see steady daily traffic. Bowling alleys, barbershops, convenience stores, and family entertainment venues across the city are exactly the high-flow, few-spare-feet spaces a card machine is built for.",
-      "We do the work and carry the cost. Foil delivers, installs, stocks, and services the machine, processes the cashless transactions, and handles refunds and support through the on-machine code. You provide roughly three square feet and a standard outlet, and receive a monthly revenue share of gross sales.",
+      "We do the work and carry the cost. Foil delivers, installs, stocks, and services the machine, processes the cashless transactions, and handles refunds and support through the on-machine code. You provide roughly three square feet and a standard outlet, and receive a monthly revenue share.",
       "Because cards don't expire and the machine holds a large amount of product, a Concord placement needs restocking only every week or two, not several times a week like a snack machine. It's genuinely passive on your end.",
     ],
     faqs: [

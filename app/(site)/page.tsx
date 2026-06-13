@@ -5,11 +5,12 @@
 // form. The deal-finder is dormant (noindex + unlinked); this is now the
 // public face of foiltcg.com.
 //
-// HONESTY (Goal A guardrails + strategy §5b): no earnings projections, no
-// "passive income" vocabulary, no fabricated scale/testimonials, no insurance
-// claim until the policy is confirmed (that lives, [PLACEHOLDER]-gated, on
-// /faq). The published terms are the 10–15% revenue-share band only. This is a
-// vending surface: it never borrows the deal-finder's trust vocabulary.
+// HONESTY (docs/vending/02 §6 + the 2026-06-13 OFF-SITE decision): no earnings
+// projections, no "passive income" vocabulary, no fabricated scale/testimonials,
+// no insurance or liability claim (that is a call / in-person topic, never a
+// website claim), and no revenue-share number (a call topic too: no percentage,
+// no gross/net). No placeholder text in rendered copy. This is a vending
+// surface: it never borrows the deal-finder's trust vocabulary.
 
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -129,8 +130,8 @@ function Hero() {
           </div>
 
           <p className="mt-5 text-xs text-foil-slate">
-            A 10–15% revenue share of gross sales, paid monthly. Risk-free trial, no
-            contract required.
+            You earn a share of every sale, paid monthly. Risk-free trial, no contract,
+            and we&apos;ll walk through the revenue share on a quick call.
           </p>
         </div>
 
@@ -171,7 +172,7 @@ function ValueProps() {
     },
     {
       title: "A monthly revenue share",
-      body: "You earn 10–15% of gross sales every month, paid your way, for space you're already paying for. Sales analytics show you exactly what's selling.",
+      body: "You earn a monthly share of every sale, paid your way, for space you're already paying for. We'll walk through the revenue share on a quick call, and sales analytics show you exactly what's selling.",
     },
     {
       title: "New foot traffic and a talking point",

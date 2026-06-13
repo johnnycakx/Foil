@@ -3,13 +3,13 @@
 // Single source of truth for: the /faq page, the homepage FAQ teaser, and the
 // FAQPage JSON-LD on both. Answers are truthful and host-framed.
 //
-// HONESTY (Goal A guardrails + strategy §5b): the operator liability-insurance
-// claim is NOT yet confirmed (founder-manual: get the $1M/occurrence policy
-// before the first placement). So the licensing/insurance answer carries a
-// visible [PLACEHOLDER] rather than asserting "fully insured" — an unconfirmed
-// fact ships marked, never invented. John fills it in Goal B once the policy
-// exists. No income projections, no "passive income" vocabulary, no deal
-// vocabulary (these surfaces never borrow the deal-finder's trust words).
+// HONESTY (docs/vending/02 §6 + the 2026-06-13 OFF-SITE decision): insurance
+// and liability are NOT a website topic — they're handled on a call / in person,
+// and no "fully insured / not liable" claim is published until coverage is in
+// force. The revenue-share number is also a call topic, so neither a percentage
+// nor "gross/net" appears here. No income projections, no "passive income"
+// vocabulary, no deal vocabulary (these surfaces never borrow the deal-finder's
+// trust words). No placeholder text ships in rendered copy.
 
 export type HostFaq = { question: string; answer: string };
 
@@ -37,17 +37,7 @@ export const HOST_FAQS: readonly HostFaq[] = [
   {
     question: "How do I get paid?",
     answer:
-      "A monthly revenue share of 10 to 15% of gross sales, paid by your preferred method: direct deposit, ACH, check, Zelle, Venmo, or Cash App. You also get sales analytics so you can see exactly what's selling.",
-  },
-  {
-    question: "Do I need any licenses or insurance?",
-    answer:
-      "You don't need to obtain any licenses or carry any insurance of your own to host the machine. It's our equipment and our responsibility to run, including the business licensing and sales-tax compliance for operating it. [PLACEHOLDER: John to confirm operator liability coverage before we publish that the machine itself is fully insured.]",
-  },
-  {
-    question: "Am I liable if it's damaged or broken into?",
-    answer:
-      "The machine is our property, so operating it and keeping it running is on us, not on you. [PLACEHOLDER: John to confirm the operator liability/property coverage before we state that damage, theft, or malfunction is fully covered on our end.]",
+      "A monthly revenue share, paid by your preferred method: direct deposit, ACH, check, Zelle, Venmo, or Cash App. We'll walk through the revenue share with you on a quick call. You also get sales analytics so you can see exactly what's selling.",
   },
   {
     question: "Does it have to be drilled into the wall?",
