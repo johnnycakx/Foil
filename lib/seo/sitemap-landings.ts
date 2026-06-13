@@ -32,23 +32,18 @@ export type LandingPath = {
   changeFrequency: SitemapChangeFrequency;
 };
 
+// VENDING PIVOT (docs/vending Goal A §3): the sitemap contains ONLY the new
+// vending host lead-gen surfaces plus the general legal pages. Every
+// deal-finder route (/cards, /deals, /blog, /start, /newsletter,
+// /pricing-methodology, the three pillars, /machines, /legal/ebay-api-compliance)
+// is dormant — noindexed + unlinked — and deliberately absent here so the
+// already-indexed URLs drop out of Google over time. app/sitemap.ts layers the
+// /service-areas/[city] pages on top of this list.
 export const LANDING_PATHS: readonly LandingPath[] = [
   { path: "/", priority: 1.0, changeFrequency: "weekly" },
-  { path: "/japanese-pokemon-cards-value", priority: 0.9, changeFrequency: "monthly" },
-  { path: "/pokemon-card-value-calculator", priority: 0.9, changeFrequency: "monthly" },
-  { path: "/pokemon-card-condition-guide", priority: 0.9, changeFrequency: "monthly" },
-  { path: "/blog", priority: 0.7, changeFrequency: "weekly" },
-  { path: "/newsletter", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/start", priority: 0.95, changeFrequency: "weekly" },
-  // "Today's best deals" leaderboard (ADR-054). The X-bot screenshot surface +
-  // homepage primary CTA; the deals-refresh cron rewrites the board daily, so
-  // changefreq is daily. Was missing from the sitemap through 2026-06-06 — the
-  // one real defect the GSC review surfaced.
-  { path: "/deals", priority: 0.9, changeFrequency: "daily" },
-  // Buy-signal methodology / trust page (ADR-053) every buy-signal badge links
-  // to. Public + crawlable but was also absent from the sitemap.
-  { path: "/pricing-methodology", priority: 0.5, changeFrequency: "monthly" },
-  { path: "/legal/ebay-api-compliance", priority: 0.5, changeFrequency: "monthly" },
-  { path: "/legal/privacy", priority: 0.4, changeFrequency: "yearly" },
-  { path: "/legal/terms", priority: 0.4, changeFrequency: "yearly" },
+  { path: "/host", priority: 0.9, changeFrequency: "monthly" },
+  { path: "/service-areas", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/faq", priority: 0.7, changeFrequency: "monthly" },
+  { path: "/legal/privacy", priority: 0.3, changeFrequency: "yearly" },
+  { path: "/legal/terms", priority: 0.3, changeFrequency: "yearly" },
 ];

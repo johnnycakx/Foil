@@ -1,7 +1,13 @@
 import type { MetadataRoute } from "next";
-import { getAllPosts } from "./(site)/blog/posts-meta";
-import { CARD_CATALOG } from "@/lib/cards/catalog";
 import { LANDING_PATHS } from "@/lib/seo/sitemap-landings";
+import { CITY_SLUGS } from "@/lib/vending/cities";
+
+// VENDING PIVOT (docs/vending Goal A §3): the sitemap now contains ONLY the
+// vending host lead-gen surfaces — the fixed landing set (LANDING_PATHS) plus
+// one /service-areas/[city] entry per published city. The deal-finder's blog
+// posts (getAllPosts) and ~1,000 per-card pages (CARD_CATALOG) are deliberately
+// NO LONGER layered on: those routes are dormant (noindex + unlinked) so their
+// already-indexed URLs drop out of Google. The code for them stays in-tree.
 
 function siteUrl(): string {
   return (
@@ -20,23 +26,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: entry.priority,
   }));
 
-  const posts: MetadataRoute.Sitemap = getAllPosts().map((post) => ({
-    url: `${base}/blog/${post.slug}`,
-    lastModified: new Date(post.updated ?? post.date),
-    changeFrequency: "monthly",
-    priority: 0.6,
-  }));
-
-  // V1 deal-finder per-card landing pages — the programmatic SEO surface
-  // (ADR-020 + ADR-021). One URL per catalog entry; changefreq daily because
-  // the EPN-driven "best listing" block updates on every page load, even
-  // though the catalog metadata itself is stable.
-  const cards: MetadataRoute.Sitemap = CARD_CATALOG.map((entry) => ({
-    url: `${base}/cards/${entry.slug}`,
+  const cities: MetadataRoute.Sitemap = CITY_SLUGS.map((slug) => ({
+    url: `${base}/service-areas/${slug}`,
     lastModified: now,
-    changeFrequency: "daily",
-    priority: 0.8,
+    changeFrequency: "monthly",
+    priority: 0.7,
   }));
 
-  return [...landings, ...posts, ...cards];
+  return [...landings, ...cities];
 }

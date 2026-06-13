@@ -132,6 +132,9 @@ export async function generateMetadata({
   return {
     title: titleFor(card),
     description: descriptionFor(card),
+    // Dormant under the vending pivot (docs/vending Goal A §3): per-card
+    // deal-finder pages de-indexed + off the sitemap. Code preserved in-tree.
+    robots: { index: false, follow: false },
     alternates: { canonical: `/cards/${slug}` },
     openGraph: {
       type: "website",

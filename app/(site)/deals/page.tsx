@@ -24,6 +24,9 @@ const DESCRIPTION =
   "Live eBay listings priced below their recent condition-matched sold price, ranked daily. Built by a Level-4 TCGplayer seller. Free to use.";
 
 export const metadata: Metadata = {
+  // Dormant under the vending pivot (docs/vending Goal A §3): de-indexed,
+  // unlinked, and off the sitemap. Code preserved in-tree.
+  robots: { index: false, follow: false },
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/deals" },

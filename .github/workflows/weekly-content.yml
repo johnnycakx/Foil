@@ -15,9 +15,17 @@
 
 name: weekly-content
 on:
-  schedule:
-    - cron: "3 14 * * 1" # Mondays 14:03 UTC
-    - cron: "3 14 * * 4" # Thursdays 14:03 UTC
+  # VENDING PIVOT (docs/vending Goal A §4): the autonomous content engine is
+  # disabled — its deal-finder topics target the now-dormant public product, and
+  # auto-publishing would burn Anthropic/Brave/Supabase calls on dead pages. The
+  # Mon/Thu schedule is commented out so the workflow no longer fires on its own;
+  # repo variable AUTO_PUBLISH_WEEKLY_POSTS=false is the second guard (a manual
+  # dispatch routes drafts to _pending/ instead of committing). Re-enable by
+  # uncommenting the schedule when the engine is repointed to vending topics
+  # (Goal C in docs/vending/03-CLAUDE-CODE-PROMPTS.md).
+  # schedule:
+  #   - cron: "3 14 * * 1" # Mondays 14:03 UTC
+  #   - cron: "3 14 * * 4" # Thursdays 14:03 UTC
   workflow_dispatch: {}  # manual trigger from Actions tab
 
 permissions:

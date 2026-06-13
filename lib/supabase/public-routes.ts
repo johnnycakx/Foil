@@ -92,6 +92,18 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // (already covered by the /api/cron prefix).
   { kind: "exact", path: "/deals" },
 
+  // Vending surfaces. /host is the venue-acquisition funnel; /faq is the host
+  // FAQ; /service-areas is the Bay-Area hub + its /service-areas/[city] pages
+  // (prefix). All anonymous-friendly marketing surfaces; the /host lead form
+  // writes through a Server Action on the page. /machines is the buyer-facing
+  // locator hub (prefix: /machines/[location] pages arrive in Phase V-2) — it's
+  // dormant/noindexed under the host-lead-gen pivot (docs/vending Goal A) but
+  // the route stays public so it resolves when revived.
+  { kind: "prefix", path: "/machines" },
+  { kind: "exact", path: "/host" },
+  { kind: "exact", path: "/faq" },
+  { kind: "prefix", path: "/service-areas" },
+
   // /start onboarding page (Task #20 / Session 38). Multi-card watchlist
   // signup — the new headline Twitter-CTA target. The page + the /api/start
   // POST + the /api/cards/search GET (typeahead) all must be reachable

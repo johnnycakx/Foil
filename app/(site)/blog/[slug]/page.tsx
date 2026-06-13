@@ -41,6 +41,9 @@ export async function generateMetadata({
   return {
     title: `${post.title} | Foil`,
     description: post.description,
+    // Dormant under the vending pivot (docs/vending Goal A §3): blog posts
+    // de-indexed + off the sitemap. Content preserved in-tree.
+    robots: { index: false, follow: false },
     alternates: { canonical: urlPath },
     openGraph: {
       type: "article",

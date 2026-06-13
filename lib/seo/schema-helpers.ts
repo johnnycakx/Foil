@@ -116,6 +116,87 @@ export function breadcrumbListSchema(items: readonly BreadcrumbSchemaItem[]) {
   } as const;
 }
 
+export type LocalBusinessInput = {
+  /** Business name (the brand). */
+  name: string;
+  /** Absolute site URL (used as @id + url). */
+  url: string;
+  /** One-line description for the listing. */
+  description: string;
+  /** Cities served — emitted as areaServed City nodes. Drives local intent. */
+  areaServed: readonly string[];
+  /** Base region, e.g. "CA". Service-Area Business: region is known even
+   *  when the exact base city is not yet confirmed. */
+  addressRegion?: string;
+  /** Base country, e.g. "US". */
+  addressCountry?: string;
+  /** Base city. Omitted while it's an unconfirmed [PLACEHOLDER] — a
+   *  Service-Area Business hides the street address but Google still wants a
+   *  base locality for verification; we leave it out rather than invent one. */
+  addressLocality?: string;
+  /** Public contact phone — omitted until John confirms a real number. */
+  telephone?: string;
+  /** Profile/storefront links (GBP, TCGplayer) once available. */
+  sameAs?: readonly string[];
+};
+
+/**
+ * schema.org/LocalBusiness for a Service-Area Business (doc 04 §3). For an SAB
+ * we OMIT streetAddress and lean on `areaServed` to connect the brand to local
+ * intent ("pokemon vending machine near me" / "[city] ..."). Every field is
+ * only emitted when it's a confirmed fact — no invented address, phone, or
+ * geo. This schema is also a strong AEO signal in 2026 for "best [service]
+ * near me" answers.
+ */
+export function localBusinessSchema(input: LocalBusinessInput) {
+  const base = stripTrailingSlash(input.url);
+  const address: Record<string, string> = { "@type": "PostalAddress" };
+  if (input.addressLocality) address.addressLocality = input.addressLocality;
+  if (input.addressRegion) address.addressRegion = input.addressRegion;
+  if (input.addressCountry) address.addressCountry = input.addressCountry;
+
+  return {
+    "@type": "LocalBusiness",
+    "@id": `${base}/#localbusiness`,
+    name: input.name,
+    url: base,
+    description: input.description,
+    areaServed: input.areaServed.map((city) => ({ "@type": "City", name: city })),
+    ...(Object.keys(address).length > 1 ? { address } : {}),
+    ...(input.telephone ? { telephone: input.telephone } : {}),
+    ...(input.sameAs && input.sameAs.length > 0 ? { sameAs: [...input.sameAs] } : {}),
+  } as const;
+}
+
+export type ServiceSchemaInput = {
+  /** Service name, e.g. "Pokémon card vending machine placement". */
+  name: string;
+  description: string;
+  /** Provider brand name. */
+  providerName: string;
+  /** Absolute site URL. */
+  url: string;
+  /** Cities served. */
+  areaServed: readonly string[];
+};
+
+/**
+ * schema.org/Service describing the host-placement offering, tied to the
+ * provider LocalBusiness. Reinforces the "what we do + where" signal on the
+ * homepage and city pages.
+ */
+export function serviceSchema(input: ServiceSchemaInput) {
+  const base = stripTrailingSlash(input.url);
+  return {
+    "@type": "Service",
+    serviceType: input.name,
+    name: input.name,
+    description: input.description,
+    provider: { "@type": "LocalBusiness", name: input.providerName, "@id": `${base}/#localbusiness` },
+    areaServed: input.areaServed.map((city) => ({ "@type": "City", name: city })),
+  } as const;
+}
+
 function stripTrailingSlash(s: string): string {
   return s.replace(/\/$/, "");
 }

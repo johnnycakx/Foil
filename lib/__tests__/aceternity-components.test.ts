@@ -158,15 +158,16 @@ test("Sparkles: container is aria-hidden + pointer-events:none (decorative-only)
 
 test("Homepage Hero: solid cream — no gradient/Card3D/Magnetic/Sparkles (ADR-038)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // Session 47.1 / ADR-038 removed the BackgroundGradientAnimation
-  // corner-shimmer (stray amber glow). The hero is solid cream; the
-  // grail fan is static (Card3D + magnetic CTA already gone in ADR-037).
+  // The hero is solid cream with no Aceternity motion primitives. (Vending
+  // pivot: the grail-card hero was replaced by the host pitch; the no-motion
+  // invariant carries over.)
   assert.doesNotMatch(src, /BackgroundGradientAnimation/);
   assert.doesNotMatch(src, /<Card3D\b/);
   assert.doesNotMatch(src, /<MagneticLink\b/);
   assert.doesNotMatch(src, /<Sparkles\b/);
-  // The primary CTA is a plain Link to /start.
-  assert.match(src, /<Link[^>]*href=["']\/start["']/);
+  // The primary CTA is a plain Link to the lead form; secondary to /service-areas.
+  assert.match(src, /<Link[^>]*href=["']#host-form["']/);
+  assert.match(src, /<Link[^>]*href=["']\/service-areas["']/);
 });
 
 test("Homepage Hero: H1 carries font-display class (Fraunces)", () => {
@@ -175,12 +176,10 @@ test("Homepage Hero: H1 carries font-display class (Fraunces)", () => {
   assert.match(src, /<h1[^>]*font-display/);
 });
 
-test("Homepage Hero: includes the 8-card grail showcase", () => {
+test("Homepage Hero: vending host pitch, not the deal-finder grail showcase", () => {
+  // The pivot replaced the 8-card grail showcase with the host pitch. Pin the
+  // absence of HERO_CARDS so the deal-finder hero can't creep back.
   const src = readFile("app/(site)/page.tsx");
-  // 8 hand-curated entries in HERO_CARDS. Count only entries with a
-  // string id literal (not the type annotation's `{ id: string;`).
-  const heroCardsBlock = src.match(/HERO_CARDS[^]*?\];/);
-  assert.ok(heroCardsBlock, "HERO_CARDS array must exist");
-  const matches = (heroCardsBlock![0].match(/\{\s*id:\s*["']/g) ?? []).length;
-  assert.equal(matches, 8, "HERO_CARDS should have exactly 8 entries");
+  assert.doesNotMatch(src, /HERO_CARDS/, "the deal-finder grail showcase must be gone");
+  assert.match(src, /A Pokémon card vending machine in your business/, "vending H1 copy present");
 });

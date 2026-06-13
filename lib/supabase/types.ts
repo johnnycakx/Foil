@@ -197,6 +197,90 @@ export type Database = {
         }>;
         Relationships: [];
       };
+      host_leads: {
+        Row: {
+          id: string;
+          name: string;
+          business_name: string;
+          venue_type: string;
+          city: string;
+          email: string;
+          phone: string | null;
+          foot_traffic: string;
+          hours_of_access: string | null;
+          placement_outlet: string | null;
+          sells_cards: string | null;
+          priority: string | null;
+          notes: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          business_name: string;
+          venue_type: string;
+          city: string;
+          email: string;
+          phone?: string | null;
+          foot_traffic: string;
+          hours_of_access?: string | null;
+          placement_outlet?: string | null;
+          sells_cards?: string | null;
+          priority?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<{
+          id: string;
+          name: string;
+          business_name: string;
+          venue_type: string;
+          city: string;
+          email: string;
+          phone: string | null;
+          foot_traffic: string;
+          hours_of_access: string | null;
+          placement_outlet: string | null;
+          sells_cards: string | null;
+          priority: string | null;
+          notes: string | null;
+          created_at: string;
+        }>;
+        Relationships: [];
+      };
+      machine_restock_alerts: {
+        Row: {
+          id: string;
+          email: string;
+          location_key: string | null;
+          product_scope: string;
+          city: string | null;
+          tier: string;
+          created_at: string;
+          last_notified_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          location_key?: string | null;
+          product_scope?: string;
+          city?: string | null;
+          tier?: string;
+          created_at?: string;
+          last_notified_at?: string | null;
+        };
+        Update: Partial<{
+          id: string;
+          email: string;
+          location_key: string | null;
+          product_scope: string;
+          city: string | null;
+          tier: string;
+          created_at: string;
+          last_notified_at: string | null;
+        }>;
+        Relationships: [];
+      };
       watchlists: {
         Row: {
           id: string;

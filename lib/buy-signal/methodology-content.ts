@@ -3,7 +3,10 @@
 // 13: anti-hype) scan it in tests. Brand voice: analytical, precise, calm.
 
 export const METHODOLOGY_TITLE = "How Foil computes the buy signal";
-export const METHODOLOGY_LAST_UPDATED = "2026-06-01";
+// Page-level freshness marker (the /pricing-methodology header). Bumped
+// 2026-06-12 for the machine-pricing disclosure section (lib/vending/
+// machine-pricing-content.ts); the buy-signal sections below are unchanged.
+export const METHODOLOGY_LAST_UPDATED = "2026-06-12";
 
 export const METHODOLOGY_INTRO =
   "Some per-card pages show a buy signal: a calm read on whether the current asking price sits below, at, or above what the card has recently sold for. It is not advice and it is not a price prediction. It is one number, computed the same way every time, and the method is laid out here so you can judge it yourself.";

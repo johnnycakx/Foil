@@ -9,6 +9,9 @@ const DESCRIPTION =
 const URL_PATH = "/blog";
 
 export const metadata: Metadata = {
+  // Dormant under the vending pivot (docs/vending Goal A §3): de-indexed,
+  // unlinked, and off the sitemap. Posts preserved in-tree.
+  robots: { index: false, follow: false },
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: URL_PATH },

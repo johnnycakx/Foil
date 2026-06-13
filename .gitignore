@@ -56,3 +56,9 @@ docs/social-drafts/
 # Cowork goal handoff: NEXT-GOAL.md is written by the Cowork strategy session
 # and read by Claude Code as the goal instruction. Transient, never committed.
 docs/goals/
+
+# Vending blueprint source PDFs (John's raw operator material — internal sales
+# scripts, contract templates, rebuttals). The distilled, host-facing context
+# lives in the committed docs/vending/*.md; the raw PDFs stay out of the repo
+# (internal-only tactics must not ship; also avoids binary bloat).
+docs/vending/source-pdfs/

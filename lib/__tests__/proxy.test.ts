@@ -151,6 +151,32 @@ test("/newsletter prefix doesn't bleed (exact route, not prefix)", () => {
   assert.equal(isPublicRoute("/newsletter/anything"), false);
 });
 
+test("vending surfaces /machines + /host are public (Phase V-1, STRATEGY-VENDING-2026-06-12)", () => {
+  // /machines is the locator hub — prefix, because /machines/[location]
+  // pages arrive in V-2 and GBP kiosk rules require a crawlable locator.
+  assert.equal(isPublicRoute("/machines"), true);
+  assert.equal(isPublicRoute("/machines/some-future-location"), true);
+  // /host is the venue-acquisition funnel — exact.
+  assert.equal(isPublicRoute("/host"), true);
+  // Bleed guards: neighbors must stay gated.
+  assert.equal(isPublicRoute("/machinesroom"), false);
+  assert.equal(isPublicRoute("/hosting"), false);
+  assert.equal(isPublicRoute("/host/anything"), false);
+});
+
+test("vending host-lead-gen surfaces /faq + /service-areas[/city] are public (docs/vending Goal A)", () => {
+  // /faq is the host FAQ — exact. /service-areas is the hub + its city pages
+  // (prefix), all crawlable marketing surfaces under the vending pivot.
+  assert.equal(isPublicRoute("/faq"), true);
+  assert.equal(isPublicRoute("/service-areas"), true);
+  assert.equal(isPublicRoute("/service-areas/napa"), true);
+  assert.equal(isPublicRoute("/service-areas/walnut-creek"), true);
+  // Bleed guards: adjacent stems stay gated.
+  assert.equal(isPublicRoute("/faqs"), false);
+  assert.equal(isPublicRoute("/faq-archive"), false);
+  assert.equal(isPublicRoute("/service-areas-internal"), false);
+});
+
 test("per-card landing pages /cards/<slug> are public — buyer-side anonymous-friendly (ADR-020 + ADR-021)", () => {
   assert.equal(isPublicRoute("/cards"), true);
   assert.equal(isPublicRoute("/cards/charizard-base-set-4"), true);

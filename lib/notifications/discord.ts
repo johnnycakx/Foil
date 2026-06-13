@@ -153,6 +153,48 @@ export async function postSubscriberJoined(
   });
 }
 
+export type HostLeadEvent = {
+  businessName: string;
+  venueType: string;
+  city: string;
+  email: string;
+  footTraffic: string;
+  sellsCards: string | null;
+};
+
+/** /host venue-funnel lead (vending Phase V-1). Routed to the #subscribers
+ *  channel webhook (a lead is the same "human raised a hand" class of event;
+ *  a dedicated #leads channel is an optional later split). Email masked like
+ *  every subscriber event; business fields are the founder's follow-up cue. */
+export async function postHostLead(
+  webhookUrl: string,
+  ev: HostLeadEvent,
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<PostWebhookResult> {
+  const fields: DiscordEmbed["fields"] = [
+    { name: "Business", value: ev.businessName, inline: true },
+    { name: "Venue type", value: ev.venueType, inline: true },
+    { name: "City", value: ev.city, inline: true },
+    { name: "Email", value: maskEmail(ev.email), inline: true },
+    { name: "Foot traffic", value: ev.footTraffic, inline: true },
+  ];
+  if (ev.sellsCards) {
+    fields.push({ name: "Already sells cards", value: ev.sellsCards, inline: true });
+  }
+  return postWebhook({
+    webhookUrl,
+    embeds: [
+      {
+        title: "🏪 New host-a-machine lead",
+        color: COLOR_GREEN_OK,
+        timestamp: new Date().toISOString(),
+        fields,
+      },
+    ],
+    fetchImpl: opts.fetchImpl,
+  });
+}
+
 export type ContentEventInput = {
   blogTitle: string;
   blogUrl: string;

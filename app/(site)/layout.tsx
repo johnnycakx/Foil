@@ -10,7 +10,6 @@
 // Session 39 (ADR-029): cream/navy/gold palette. Coral is hover-only.
 
 import Link from "next/link";
-import { FooterEmailCapture } from "@/components/footer-email-capture";
 import { Logo } from "@/components/brand/logo";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
@@ -35,28 +34,27 @@ function SiteHeader() {
           <Logo size="md" />
         </Link>
         <nav className="flex items-center gap-5 text-sm">
+          {/* Vending pivot: nav points only at the host lead-gen surfaces. The
+              deal-finder routes (/deals, /cards, /blog) are dormant — unlinked,
+              noindexed, off the sitemap — but the code is preserved in-tree. */}
           <Link
-            href="/deals"
+            href="/service-areas"
+            className="text-foil-slate transition hover:text-foil-navy"
+          >
+            Service areas
+          </Link>
+          <Link
+            href="/faq"
+            className="text-foil-slate transition hover:text-foil-navy"
+          >
+            FAQ
+          </Link>
+          <Link
+            href="/host"
             className="font-medium text-foil-navy transition hover:text-foil-coral"
           >
-            Today&apos;s deals
+            Host a machine
           </Link>
-          <Link
-            href="/cards"
-            className="text-foil-slate transition hover:text-foil-navy"
-          >
-            Browse cards
-          </Link>
-          <Link
-            href="/blog"
-            className="text-foil-slate transition hover:text-foil-navy"
-          >
-            Blog
-          </Link>
-          {/* F6: no "Sign in" in the main nav — watchlists work with no account,
-              so a sign-in CTA up top only confuses cold visitors. The route +
-              auth flow are untouched; a discreet "Account" link lives in the
-              footer, and /upload still routes to /login at the paywall. */}
         </nav>
       </div>
     </header>
@@ -74,22 +72,36 @@ function SiteFooter() {
           </Link>
         </div>
         <div className="mb-8 max-w-md">
-          <FooterEmailCapture />
+          <p className="text-sm leading-relaxed text-foil-slate">
+            We place and operate Pokémon card vending machines for Bay Area businesses.{" "}
+            <Link
+              href="/host"
+              className="text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
+            >
+              Host one in your space →
+            </Link>
+          </p>
         </div>
         <div className="flex flex-col items-start justify-between gap-3 border-t border-foil-navy/10 pt-6 text-sm text-foil-slate sm:flex-row sm:items-center">
           <p>© {new Date().getFullYear()} Foil TCG, LLC · Built by a Level-4 TCGplayer seller</p>
           <nav className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <Link
-              href="/newsletter"
+              href="/host"
               className="transition hover:text-foil-navy"
             >
-              Newsletter
+              Host a machine
             </Link>
             <Link
-              href="/pricing-methodology"
+              href="/service-areas"
               className="transition hover:text-foil-navy"
             >
-              Methodology
+              Service areas
+            </Link>
+            <Link
+              href="/faq"
+              className="transition hover:text-foil-navy"
+            >
+              FAQ
             </Link>
             <Link
               href="/legal/privacy"
