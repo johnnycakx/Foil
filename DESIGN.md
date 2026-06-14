@@ -352,3 +352,41 @@ reintroduce the Pokeball or any Pokémon-trademark shape.
   and not a panel.
 - **Don't** use side-stripe accents (`border-left`/`border-right` > 1px as a color
   bar) or default to a modal when an inline or progressive reveal would do.
+
+## 7. Vending register (B2B host surfaces) — evolves §§1–6 for `/`, `/host`, `/faq`, `/service-areas`
+
+The deal-finder canon above ("The Dealer's Quiet Backroom") was tuned for quiet
+collector browsing: flat-at-rest, scarce gold, all-cream. That register reads as
+*bleak* for a B2B vending pitch to business owners, who need contrast, energy,
+and confidence. The vending surfaces evolve the canon (ADR-061 supersedes
+ADR-029 **for these surfaces only**; the deal-finder surfaces keep §§1–6 as-is).
+
+**New north star: "the confident local operator."** Energetic but not hype; a
+real Bay-Area operator who shows up, not a flash sale. Still rejects all four
+anti-references (generic-AI-SaaS / crypto-hype / sterile-enterprise / bargain-bin).
+
+**KEEP unchanged:** the cream/navy/gold palette and its hex values, Fraunces
+display + Geist body, the Coral-Hover-Only rule, the No-Pure-Black-Or-White rule,
+the Navy-Tinted-Shadow rule, and `tabular-nums` for figures.
+
+**CHANGE for vending surfaces:**
+- **Cream ↔ navy alternation.** Dark navy (`bg-foil-navy`) feature sections are
+  now sanctioned for rhythm and contrast — at least one per long page (e.g. a
+  "how it works" band). On navy, text is `text-foil-cream`, supporting copy is a
+  cream/slate tint (`text-foil-cream/80`), and gold reads as the accent. This
+  replaces the all-cream surface rule for these pages.
+- **Subtle resting elevation (relaxes Flat-At-Rest).** Feature cards may carry a
+  resting shadow (`shadow-md shadow-foil-navy/10`) and lift further on hover. The
+  page is no longer flat-until-touched; it has gentle standing depth. List rows
+  and non-feature surfaces stay flat.
+- **Gold as a structural accent (relaxes Scarce-Gold ≤10%).** Gold may mark
+  eyebrows, step numbers, key figures, and hairline rules on navy — structural
+  emphasis, not just a single per-view signal. It still never becomes a large
+  fill or a second button color; the Coral-Hover-Only and gold-framing-for-premium
+  rules hold. Aim for "confident accent," not "gold everywhere."
+
+**Imagery (vending):** product/model photos of the machine sit on a **navy
+panel or device-style frame** (dark-on-dark), cropped to read intentional, never
+floating on cream. Captions are neutral and model-only ("our touchscreen card
+machine," "the freestanding tower"); never a named venue, never an implied
+install (docs/vending/02 §6).

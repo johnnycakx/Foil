@@ -1,27 +1,30 @@
-// Homepage — the vending host pitch (vending pivot, docs/vending Goal A §1).
+// Homepage — the vending host pitch (vending pivot, docs/vending Goal A/E).
 //
-// Repurposed from the deal-finder hero to a host-acquisition landing page:
-// hero -> value props -> how it works -> operating proof -> FAQ teaser -> lead
-// form. The deal-finder is dormant (noindex + unlinked); this is now the
-// public face of foiltcg.com.
+// Section spine: hero -> value props -> how it works (dark navy) -> operating
+// proof -> lead form. The deal-finder is dormant (noindex + unlinked); this is
+// the public face of foiltcg.com.
 //
-// HONESTY (docs/vending/02 §6 + the 2026-06-13 OFF-SITE decision): no earnings
-// projections, no "passive income" vocabulary, no fabricated scale/testimonials,
-// no insurance or liability claim (that is a call / in-person topic, never a
-// website claim), and no revenue-share number (a call topic too: no percentage,
-// no gross/net). No placeholder text in rendered copy. This is a vending
-// surface: it never borrows the deal-finder's trust vocabulary.
+// DESIGN (ADR-061 / DESIGN.md §7 — the "confident local operator" vending
+// register): cream↔navy alternation for contrast (the "How it works" band is
+// navy with gold step numbers), subtle resting elevation on the value-prop
+// cards, and gold as a structural accent (eyebrows, step numbers). Palette,
+// fonts, coral-hover-only, and no-pure-black/white are unchanged.
+//
+// HONESTY (docs/vending/02 §6 + the 2026-06-13 OFF-SITE decisions): no earnings
+// projections, no "passive income", no fabricated scale/testimonials, no
+// insurance/liability claim (a call topic), no revenue-share number (a call
+// topic: no percentage, no gross/net), no implied installs, no placeholder text.
+// Machine photos are neutral product/model imagery on a navy frame. This is a
+// vending surface: it never borrows the deal-finder's trust vocabulary.
 
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { HostLeadForm } from "@/components/vending/host-lead-form";
-import { HOST_FAQ_TEASER } from "@/lib/vending/faq";
 import { SERVED_CITY_NAMES, SERVICE_CITIES } from "@/lib/vending/cities";
 import {
   localBusinessSchema,
   serviceSchema,
-  faqPageSchema,
   schemaGraph,
   serializeJsonLd,
 } from "@/lib/seo/schema-helpers";
@@ -57,6 +60,9 @@ export const metadata: Metadata = {
 
 export default function Home() {
   const base = siteUrl();
+  // LocalBusiness + Service only. The FAQPage JSON-LD lives on /faq, where the
+  // FAQ is actually visible (the homepage no longer renders an FAQ block, so
+  // emitting FAQPage here would mismatch the visible content).
   const jsonLd = schemaGraph(
     localBusinessSchema({
       name: "Foil",
@@ -75,7 +81,6 @@ export default function Home() {
       url: base,
       areaServed: SERVED_CITY_NAMES,
     }),
-    faqPageSchema(HOST_FAQ_TEASER),
   );
 
   return (
@@ -88,7 +93,6 @@ export default function Home() {
       <ValueProps />
       <HowItWorks />
       <OperatingProof />
-      <FaqTeaser />
       <LeadSection />
     </>
   );
@@ -97,9 +101,9 @@ export default function Home() {
 function Hero() {
   return (
     <section className="relative isolate overflow-hidden bg-foil-cream">
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 pt-14 pb-16 sm:px-8 sm:pt-20 sm:pb-20 lg:grid-cols-2 lg:gap-12">
+      <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 pt-14 pb-16 sm:px-8 sm:pt-20 sm:pb-24 lg:grid-cols-2 lg:gap-14">
         <div className="text-center lg:text-left">
-          <p className="inline-flex items-center gap-2 rounded-full border border-foil-gold/40 bg-foil-cream/80 px-3 py-1 text-xs font-medium text-foil-navy">
+          <p className="inline-flex items-center gap-2 rounded-full border border-foil-gold/40 bg-foil-gold/10 px-3 py-1 text-xs font-medium text-foil-navy">
             <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
             Pokémon card vending machines · North Bay &amp; East Bay
           </p>
@@ -109,9 +113,8 @@ function Hero() {
           </h1>
 
           <p className="mx-auto mt-5 max-w-xl text-lg text-foil-slate sm:text-xl lg:mx-0">
-            Foil places the machine, keeps it stocked, and keeps it working. You give it
-            three square feet and a standard outlet, and earn a share of every sale, with
-            zero work and nothing to buy.
+            We place, stock, and service the machine. You give it three square feet and an
+            outlet, and earn a share of every sale, with zero work.
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
@@ -130,26 +133,29 @@ function Hero() {
           </div>
 
           <p className="mt-5 text-xs text-foil-slate">
-            You earn a share of every sale, paid monthly. Risk-free trial, no contract,
-            and we&apos;ll walk through the revenue share on a quick call.
+            Risk-free trial, no contract, and we&apos;ll walk through the revenue share on a
+            quick call.
           </p>
         </div>
 
-        {/* Product/model imagery (Goal B) — a neutral reference photo of the
-            machine MODEL, NOT a Foil install or placed location (docs/vending/02
-            §6 honesty guardrails). Generic framing, no venue surfaced, no
-            placement claim. Premium gold-border framing per DESIGN.md. */}
+        {/* Machine photo on a NAVY device frame (DESIGN.md §7 / ADR-061): product
+            model imagery, dark-on-dark so it reads intentional rather than
+            floating on cream. Neutral model-only caption; NOT a Foil install or
+            placed location (docs/vending/02 §6). Cropped slightly toward the lit
+            screen. */}
         <figure className="mx-auto w-full max-w-sm lg:max-w-none">
-          <div className="overflow-hidden rounded-3xl border border-foil-gold/40 bg-foil-cream p-2 shadow-xl shadow-foil-navy/15">
-            <Image
-              src="/vending/machine-tower-1.webp"
-              alt="The freestanding tower, a touchscreen Pokémon card vending machine"
-              width={1199}
-              height={1599}
-              className="h-auto w-full rounded-2xl object-cover"
-              priority
-              sizes="(min-width: 1024px) 36rem, (min-width: 640px) 24rem, 90vw"
-            />
+          <div className="rounded-3xl bg-foil-navy p-3 shadow-xl shadow-foil-navy/30 ring-1 ring-foil-gold/30">
+            <div className="overflow-hidden rounded-2xl">
+              <Image
+                src="/vending/machine-tower-1.webp"
+                alt="The freestanding tower, a touchscreen Pokémon card vending machine"
+                width={1199}
+                height={1599}
+                className="aspect-[4/5] w-full object-cover object-[center_26%]"
+                priority
+                sizes="(min-width: 1024px) 36rem, (min-width: 640px) 24rem, 90vw"
+              />
+            </div>
           </div>
           <figcaption className="mt-3 text-center text-xs text-foil-slate lg:text-left">
             Our freestanding tower model.
@@ -163,48 +169,44 @@ function Hero() {
 function ValueProps() {
   const props = [
     {
+      n: "01",
       title: "Completely hands-off",
-      body: "We install, stock, restock, and service the machine, and handle every customer issue through an on-machine support code. Your staff never touches it.",
+      body: "We install, stock, restock, and service the machine, and handle every customer issue. Your staff never touches it.",
     },
     {
+      n: "02",
       title: "Zero cost, nothing to buy",
-      body: "No purchase, no lease, no fees. The machine draws about as much power as a TV (roughly $4 a month), and that's the only thing it adds to your bill.",
+      body: "No purchase, no lease, no fees. It draws about as much power as a TV, roughly $4 a month.",
     },
     {
+      n: "03",
       title: "A monthly revenue share",
-      body: "You earn a monthly share of every sale, paid your way, for space you're already paying for. We'll walk through the revenue share on a quick call, and sales analytics show you exactly what's selling.",
+      body: "You earn a share of every sale, paid your way. We'll walk through the revenue share on a quick call, with sales analytics so you see what's selling.",
     },
     {
-      title: "New foot traffic and a talking point",
-      body: "A Pokémon machine pulls in collectors (about 60% are adults 25 to 40) and gives your regulars one more reason to stay, come back, and bring someone.",
-    },
-    {
-      title: "Tiny, sleek footprint",
-      body: "Jukebox-sized, not a clunky snack machine. About 3 to 4 square feet, wall-mounted, on a pedestal, or freestanding with no drilling.",
-    },
-    {
-      title: "Risk-free trial",
-      body: "Start with a no-commitment trial month. If it isn't a fit for either side, we pull the machine and relocate it. No contract required.",
+      n: "04",
+      title: "New foot traffic",
+      body: "A Pokémon machine pulls in collectors, about 60% are adults 25 to 40, and gives your regulars a reason to come back.",
     },
   ];
 
   return (
-    <section className="relative isolate overflow-hidden border-y border-foil-navy/10 bg-foil-cream">
-      <div className="relative mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
-        <h2 className="font-display text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">
-          Why business owners say yes
-        </h2>
-        <p className="mt-3 max-w-2xl text-foil-slate">
-          The machine is an amenity that runs itself and pays you a cut. Here&apos;s what
-          you actually get.
+    <section className="bg-foil-cream">
+      <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
+        <p className="text-xs font-medium uppercase tracking-[0.18em] text-foil-gold">
+          Why owners say yes
         </p>
-        <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <h2 className="font-display mt-2 max-w-2xl text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">
+          An amenity that runs itself and pays you.
+        </h2>
+        <ul className="mt-10 grid gap-6 sm:grid-cols-2">
           {props.map((p) => (
             <li
               key={p.title}
-              className="rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 transition hover:shadow-md hover:shadow-foil-navy/10"
+              className="rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-md shadow-foil-navy/10 transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:shadow-foil-navy/15"
             >
-              <h3 className="font-display text-lg font-semibold text-foil-navy">{p.title}</h3>
+              <span className="font-display text-sm font-bold tracking-widest text-foil-gold">{p.n}</span>
+              <h3 className="font-display mt-1 text-lg font-semibold text-foil-navy">{p.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-foil-slate">{p.body}</p>
             </li>
           ))}
@@ -219,48 +221,45 @@ function HowItWorks() {
     {
       num: "1",
       title: "We talk",
-      body: "A quick conversation about your space and your foot traffic. No pressure and no commitment.",
+      body: "A quick chat about your space and foot traffic. No pressure, no commitment.",
     },
     {
       num: "2",
-      title: "We place the machine",
-      body: "We size it to your space, deliver it, mount it, stock it, and test it. Install takes about an hour and doesn't disrupt your day.",
+      title: "We place it",
+      body: "We size, deliver, mount, stock, and test the machine. Install takes about an hour.",
     },
     {
       num: "3",
       title: "It runs itself",
-      body: "Cashless touchscreen, monitored in real time, with an automatic refund if anything ever misfires. Support is on us, via a code on the machine.",
+      body: "Cashless touchscreen, monitored in real time, auto-refunds on any misfire. Support is on us.",
     },
     {
       num: "4",
       title: "You get paid",
-      body: "A monthly revenue share by your preferred method, with sales analytics so you can see exactly how it's doing.",
+      body: "A monthly revenue share by your preferred method, with sales analytics.",
     },
   ];
 
+  // Dark navy contrast band (ADR-061): the energy moment, gold step numbers.
   return (
-    <section className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
-      <h2 className="font-display text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">
-        How it works
-      </h2>
-      <p className="mt-3 max-w-2xl text-foil-slate">
-        Four steps. The only two on your side are the first conversation and giving the
-        machine a few square feet.
-      </p>
-      <ol className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {steps.map((s) => (
-          <li
-            key={s.num}
-            className="rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5"
-          >
-            <span className="font-display inline-flex h-9 w-9 items-center justify-center rounded-full border border-foil-gold/40 bg-foil-gold/10 text-sm font-bold text-foil-navy">
-              {s.num}
-            </span>
-            <h3 className="font-display mt-4 text-lg font-semibold text-foil-navy">{s.title}</h3>
-            <p className="mt-2 text-sm text-foil-slate">{s.body}</p>
-          </li>
-        ))}
-      </ol>
+    <section className="bg-foil-navy">
+      <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+        <p className="text-xs font-medium uppercase tracking-[0.18em] text-foil-gold">
+          How it works
+        </p>
+        <h2 className="font-display mt-2 max-w-2xl text-3xl font-semibold tracking-[-0.01em] text-foil-cream sm:text-4xl">
+          Four steps. Only two are on you.
+        </h2>
+        <ol className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          {steps.map((s) => (
+            <li key={s.num}>
+              <span className="font-display block text-5xl font-bold leading-none text-foil-gold">{s.num}</span>
+              <h3 className="font-display mt-4 text-lg font-semibold text-foil-cream">{s.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-foil-cream/75">{s.body}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
     </section>
   );
 }
@@ -268,8 +267,8 @@ function HowItWorks() {
 function OperatingProof() {
   const points = [
     "Commercial-grade touchscreen machines that describe each pack and do the selling.",
-    "Fully cashless, tracked and monitored in real time, with restock alerts before a machine ever runs empty.",
-    "A guaranteed-drop refund sensor: pay and get nothing, and you're refunded automatically, on the spot.",
+    "Fully cashless, monitored in real time, with restock alerts before a machine runs empty.",
+    "A guaranteed-drop refund sensor: pay and get nothing, and you're refunded automatically.",
     "A support code on every machine so customers reach us directly, never your staff.",
   ];
 
@@ -278,19 +277,16 @@ function OperatingProof() {
       <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
         <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
           <div>
-            <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-foil-navy">
-              <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-foil-gold">
               A real operation, not a metal box
             </p>
-            <h2 className="font-display mt-3 text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">
+            <h2 className="font-display mt-2 text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">
               Built to run itself, and to be trusted.
             </h2>
             <p className="mt-4 max-w-prose text-foil-slate">
               Foil is run by John Craig, a Level-4 TCGplayer seller, with real, verifiable
               Pokémon-product sourcing behind every machine. We own the machines, stock
-              them, and stand behind every transaction. As placements go live, their
-              locations and photos get listed here. We won&apos;t show you testimonials we
-              don&apos;t have yet.
+              them, and stand behind every transaction.
             </p>
           </div>
           <ul className="space-y-3">
@@ -310,36 +306,6 @@ function OperatingProof() {
   );
 }
 
-function FaqTeaser() {
-  return (
-    <section className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
-      <h2 className="font-display text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">
-        Quick answers
-      </h2>
-      <div className="mt-8 grid gap-6 sm:grid-cols-2">
-        {HOST_FAQ_TEASER.map((faq) => (
-          <div
-            key={faq.question}
-            className="rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5"
-          >
-            <h3 className="font-display text-lg font-semibold text-foil-navy">{faq.question}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-foil-slate">{faq.answer}</p>
-          </div>
-        ))}
-      </div>
-      <p className="mt-6 text-sm text-foil-slate">
-        More questions?{" "}
-        <Link
-          href="/faq"
-          className="text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
-        >
-          Read the full host FAQ →
-        </Link>
-      </p>
-    </section>
-  );
-}
-
 function LeadSection() {
   return (
     <section id="host-form" className="mx-auto w-full max-w-3xl px-5 py-16 sm:px-8 sm:py-24">
@@ -349,10 +315,16 @@ function LeadSection() {
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-foil-slate">
           We serve {SERVICE_CITIES.length}+ Bay Area cities, closest first. Tell us about
-          your space and we&apos;ll reach out.
+          your space and we&apos;ll reach out. Questions first?{" "}
+          <Link
+            href="/faq"
+            className="text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
+          >
+            Read the host FAQ →
+          </Link>
         </p>
       </div>
-      <HostLeadForm />
+      <HostLeadForm compact />
     </section>
   );
 }

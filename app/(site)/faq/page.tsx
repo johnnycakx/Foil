@@ -73,17 +73,19 @@ export default function FaqPage() {
         ))}
       </div>
 
-      <div className="mt-12 rounded-2xl border border-foil-gold/40 bg-foil-gold/10 p-6 sm:p-8">
-        <h2 className="font-display text-xl font-bold tracking-[-0.02em] text-foil-navy sm:text-2xl">
+      {/* Navy contrast band (ADR-061 / DESIGN.md §7): inverted cream button so
+          coral stays hover-only. */}
+      <div className="mt-12 rounded-2xl bg-foil-navy p-6 shadow-lg shadow-foil-navy/20 sm:p-8">
+        <h2 className="font-display text-xl font-bold tracking-[-0.02em] text-foil-cream sm:text-2xl">
           Ready to talk it through?
         </h2>
-        <p className="mt-2 max-w-prose text-sm leading-relaxed text-foil-slate sm:text-base">
+        <p className="mt-2 max-w-prose text-sm leading-relaxed text-foil-cream/80 sm:text-base">
           We place and operate the machine end to end; you give it three square feet and
           an outlet, and earn a monthly share. No commitment until terms are in writing.
         </p>
         <Link
           href="/host"
-          className="mt-5 inline-block rounded-xl bg-foil-navy px-6 py-3 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40"
+          className="mt-5 inline-block rounded-xl bg-foil-cream px-6 py-3 text-base font-semibold text-foil-navy shadow-md shadow-foil-navy/30 transition-all hover:-translate-y-0.5 hover:bg-foil-coral hover:text-foil-cream hover:shadow-lg hover:ring-2 hover:ring-foil-gold/40"
         >
           Host a machine
         </Link>

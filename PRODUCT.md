@@ -84,3 +84,27 @@ This should NOT look like any of:
 - **Honor `prefers-reduced-motion`** on every animation and scroll-triggered
   reveal (tracked as an ADR-029 followup).
 - **Mobile-first touch targets** sized for thumb use as the primary input.
+
+## Vending surfaces (B2B host audience — 2026-06-13 pivot)
+
+The public site is now the **Pokémon card vending-machine HOST lead-gen** site
+(the deal-finder is dormant). These surfaces (`/`, `/host`, `/faq`,
+`/service-areas`) address a **different audience** and carry a **different
+personality** from the deal-finder canon above:
+
+- **Users:** small-business and venue owners (gas stations, smoke/vape shops,
+  arcades, barbershops, bowling alleys, breweries, comic/game shops) evaluating
+  whether to let Foil place a card machine for a revenue share. They are not
+  collectors; they want to know it's free, hands-off, and credible.
+- **Personality (vending): "the confident local operator."** Energetic but not
+  hype, a real Bay-Area operator who shows up and does the work. Still calm and
+  trustworthy, never FOMO or "DEALS!" The four anti-references all still apply.
+- **Register:** brand (marketing/lead-gen surfaces). The *visual* canon for these
+  pages is **DESIGN.md §7** (cream↔navy alternation, subtle resting elevation,
+  gold as a structural accent), which evolves §§1–6 for this audience
+  ([ADR-061](docs/DECISIONS.md), superseding ADR-029's quiet-backroom register on
+  these surfaces only).
+- **Honesty (binding):** no earnings/revenue-share numbers on-page (a call
+  topic), no insurance/liability claims (a call topic), no fabricated
+  scale/locations/testimonials, no implied installs; machine photos are neutral
+  product/model imagery. See docs/vending/02 §6.

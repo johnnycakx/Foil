@@ -116,9 +116,9 @@ export default async function CityPage({ params }: PageProps) {
       {/* The offer, worded for this city (doc 04 recipe: same value props, fresh wording). */}
       <section
         aria-labelledby="city-offer"
-        className="mb-12 rounded-2xl border border-foil-gold/40 bg-foil-gold/10 p-6 sm:p-8"
+        className="mb-12 rounded-2xl bg-foil-navy p-6 shadow-lg shadow-foil-navy/20 sm:p-8"
       >
-        <h2 id="city-offer" className="font-display text-xl font-bold tracking-[-0.02em] text-foil-navy sm:text-2xl">
+        <h2 id="city-offer" className="font-display text-xl font-bold tracking-[-0.02em] text-foil-cream sm:text-2xl">
           What a {city.name} host gets
         </h2>
         <ul className="mt-4 space-y-2.5">
@@ -128,7 +128,7 @@ export default async function CityPage({ params }: PageProps) {
             "Completely hands-off: we install, stock, restock, and support it.",
             "A risk-free trial month, no contract required to start.",
           ].map((item) => (
-            <li key={item} className="flex items-start gap-2.5 text-sm leading-relaxed text-foil-navy sm:text-base">
+            <li key={item} className="flex items-start gap-2.5 text-sm leading-relaxed text-foil-cream sm:text-base">
               <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-foil-gold" />
               {item}
             </li>

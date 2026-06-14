@@ -362,7 +362,7 @@ test("Vending homepage: renders the host lead form + the key host CTAs", () => {
   // The homepage is now the primary lead-gen surface: it must render the host
   // lead form and link the core host journey (host / faq / service-areas).
   assert.match(src, /import\s*\{\s*HostLeadForm\s*\}/, "homepage must import the HostLeadForm");
-  assert.match(src, /<HostLeadForm\s*\/>/, "homepage must render the HostLeadForm");
+  assert.match(src, /<HostLeadForm\b[^>]*\/>/, "homepage must render the HostLeadForm");
   assert.match(src, /href="\/service-areas"/, "homepage links to /service-areas");
   assert.match(src, /href="\/faq"/, "homepage links to /faq");
 });
@@ -416,22 +416,29 @@ test("Display font is Fraunces with the SOFT warmth axis (ADR-036)", () => {
 // Session 47 / ADR-037 — hero rework + floral section distinction.
 // ---------------------------------------------------------------------------
 
-test("Vending homepage: the section spine is host pitch (how it works, proof, FAQ teaser)", () => {
+test("Vending homepage: evolved section spine, navy contrast band, no FAQ teaser (ADR-061)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // The deal-finder hero/grail visual is gone; the homepage now renders the
-  // host pitch spine. Pin the section order anchors so a refactor keeps the
-  // lead-gen structure intact.
-  assert.match(src, /How it works/, "how-it-works section present");
-  assert.match(src, /<FaqTeaser \/>/, "FAQ teaser section present");
+  // ADR-061 redesign: spine is hero -> value props -> how it works (dark navy
+  // band) -> operating proof -> lead form. The "Quick answers" FAQ teaser was
+  // cut (the homepage links to /faq instead).
+  assert.match(src, /<ValueProps \/>/, "value-props section present");
+  assert.match(src, /<HowItWorks \/>/, "how-it-works section present");
+  assert.match(src, /<OperatingProof \/>/, "operating-proof section present");
   assert.match(src, /<LeadSection \/>/, "lead form section present");
+  assert.doesNotMatch(src, /<FaqTeaser/, "the homepage Quick-answers FAQ teaser was cut (link to /faq instead)");
+  // At least one dark navy contrast section (ADR-061 cream↔navy alternation).
+  assert.match(src, /bg-foil-navy/, "homepage must carry a dark navy contrast section");
   // No deal-finder hero artifacts crept back.
   assert.doesNotMatch(src, /images\.pokemontcg\.io/, "no external SDK CDN hero images");
   assert.doesNotMatch(src, /function FoilCornerPattern/, "deal-finder watermark section gone");
 });
 
-test("Vending homepage: emits LocalBusiness + FAQPage JSON-LD (local SEO + AEO)", () => {
+test("Vending homepage: emits LocalBusiness + Service JSON-LD; FAQPage lives on /faq (ADR-061)", () => {
   const src = readFile("app/(site)/page.tsx");
   assert.match(src, /localBusinessSchema/, "homepage emits LocalBusiness JSON-LD");
-  assert.match(src, /faqPageSchema/, "homepage emits FAQPage JSON-LD");
+  assert.match(src, /serviceSchema/, "homepage emits Service JSON-LD");
+  // The visible FAQ block was cut from the homepage, so FAQPage JSON-LD moved
+  // off it (structured data must match visible content); /faq keeps its FAQPage.
+  assert.doesNotMatch(src, /faqPageSchema/, "homepage no longer emits FAQPage (no visible FAQ block)");
   assert.match(src, /application\/ld\+json/, "homepage renders a JSON-LD script tag");
 });

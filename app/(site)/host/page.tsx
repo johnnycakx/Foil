@@ -8,13 +8,13 @@
 // lib/__tests__/vending-surfaces.test.ts, which scans full source including
 // comments).
 // FTC HARD NOs (§5b): no host-income projections, no recurring-income-
-// without-work vocabulary, no operator-recruitment content. The published
-// terms are a revenue-share percentage band only, never a dollar figure.
-// COVERAGE LINE GATED: the §5b playbook wants an operator-carried coverage
-// line, but claiming a policy Foil does not hold yet is a fabrication
-// (Gate 13). The line lands only after John confirms the policy exists
-// (founder-manual item, tracked in SESSION-LOG); a negative test pins its
-// absence until then. All rules pinned by lib/__tests__/vending-surfaces.test.ts.
+// without-work vocabulary, no operator-recruitment content.
+// OFF-SITE (2026-06-13): the revenue-share number is a call topic — no
+// percentage and no gross/net on the page. Insurance/liability is also a call
+// topic and is NOT claimed on the site (docs/vending/01 OFF-SITE note). Both
+// are pinned absent by lib/__tests__/vending-surfaces.test.ts.
+// DESIGN: vending register (ADR-061 / DESIGN.md §7) — machine photos sit on a
+// navy device frame, gold as a structural accent.
 
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -202,13 +202,13 @@ export default function HostPage() {
           {/* Product/model imagery (Goal B) — neutral reference photo of the
               machine MODEL, not a placement or install (docs/vending/02 §6). */}
           <figure className="mx-auto w-full max-w-[15rem]">
-            <div className="overflow-hidden rounded-2xl border border-foil-navy/10 bg-foil-cream p-1.5 shadow-lg shadow-foil-navy/10">
+            <div className="rounded-2xl bg-foil-navy p-2 shadow-lg shadow-foil-navy/20 ring-1 ring-foil-gold/30">
               <Image
                 src="/vending/machine-tower-2.webp"
                 alt="The freestanding tower, a touchscreen Pokémon card vending machine"
                 width={1199}
                 height={1599}
-                className="h-auto w-full rounded-xl object-cover"
+                className="aspect-[4/5] w-full rounded-xl object-cover object-[center_26%]"
                 sizes="(min-width: 640px) 15rem, 70vw"
               />
             </div>
@@ -229,9 +229,7 @@ export default function HostPage() {
             Foil is run by John Craig, a Level 4 TCGplayer seller, with real, verifiable
             Pokémon-product credibility and sourcing behind every machine. We place and
             operate the machines ourselves: we own them, stock them, service them, and
-            stand behind every transaction. As placements go live, their locations and
-            photos will be listed here. We won&apos;t show you testimonials we don&apos;t
-            have yet.
+            stand behind every transaction.
           </p>
         </div>
       </section>

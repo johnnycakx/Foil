@@ -72,7 +72,10 @@ const inputClass =
 
 const labelClass = "mb-1.5 block text-xs font-medium uppercase tracking-widest text-foil-slate";
 
-export function HostLeadForm() {
+export function HostLeadForm({ compact = false }: { compact?: boolean } = {}) {
+  // `compact` (homepage) renders only the required fields; the full form with
+  // the optional venue details lives on /host. The Server Action validates the
+  // same required set either way, so the compact path stays valid.
   const [state, formAction, isPending] = useActionState(createHostLead, INITIAL);
 
   if (state.status === "success") {
@@ -99,8 +102,8 @@ export function HostLeadForm() {
         Tell us about your space.
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-foil-slate">
-        Six quick fields, the rest optional. No commitment on either side until terms
-        are agreed in writing.
+        {compact ? "Six quick fields." : "Six quick fields, the rest optional."} No
+        commitment on either side until terms are agreed in writing.
       </p>
 
       {/* Honeypot — hidden from real users, bots fill it. */}
@@ -149,12 +152,14 @@ export function HostLeadForm() {
           </label>
           <input id="host-email" name="email" type="email" required autoComplete="email" disabled={isPending} className={inputClass} />
         </div>
-        <div>
-          <label htmlFor="host-phone" className={labelClass}>
-            Phone (optional)
-          </label>
-          <input id="host-phone" name="phone" type="tel" maxLength={40} autoComplete="tel" disabled={isPending} className={inputClass} />
-        </div>
+        {!compact && (
+          <div>
+            <label htmlFor="host-phone" className={labelClass}>
+              Phone (optional)
+            </label>
+            <input id="host-phone" name="phone" type="tel" maxLength={40} autoComplete="tel" disabled={isPending} className={inputClass} />
+          </div>
+        )}
         <div>
           <label htmlFor="host-traffic" className={labelClass}>
             Daily foot traffic *
@@ -170,54 +175,58 @@ export function HostLeadForm() {
             ))}
           </select>
         </div>
-        <div>
-          <label htmlFor="host-sells-cards" className={labelClass}>
-            Do you already sell trading cards?
-          </label>
-          <select id="host-sells-cards" name="sells_cards" defaultValue="" disabled={isPending} className={inputClass}>
-            <option value="">Prefer not to say</option>
-            <option value="no">No</option>
-            <option value="yes">Yes</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor="host-outlet" className={labelClass}>
-            Space + standard outlet available?
-          </label>
-          <select id="host-outlet" name="placement_outlet" defaultValue="" disabled={isPending} className={inputClass}>
-            <option value="">Not sure yet</option>
-            {OUTLET_ANSWERS.map((o) => (
-              <option key={o} value={o}>
-                {OUTLET_LABELS[o]}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="host-priority" className={labelClass}>
-            What matters most to you?
-          </label>
-          <select id="host-priority" name="priority" defaultValue="" disabled={isPending} className={inputClass}>
-            <option value="">Pick one (optional)</option>
-            {HOST_PRIORITIES.map((p) => (
-              <option key={p} value={p}>
-                {PRIORITY_LABELS[p]}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="sm:col-span-2">
-          <label htmlFor="host-hours" className={labelClass}>
-            Hours the machine would be reachable (optional)
-          </label>
-          <input id="host-hours" name="hours_of_access" type="text" maxLength={160} placeholder="e.g. Mon to Sat, 10am to 9pm" disabled={isPending} className={inputClass} />
-        </div>
-        <div className="sm:col-span-2">
-          <label htmlFor="host-notes" className={labelClass}>
-            Anything else (optional)
-          </label>
-          <textarea id="host-notes" name="notes" rows={3} maxLength={2000} placeholder="Anything about your space, your customers, or your questions." disabled={isPending} className={inputClass} />
-        </div>
+        {!compact && (
+          <>
+            <div>
+              <label htmlFor="host-sells-cards" className={labelClass}>
+                Do you already sell trading cards?
+              </label>
+              <select id="host-sells-cards" name="sells_cards" defaultValue="" disabled={isPending} className={inputClass}>
+                <option value="">Prefer not to say</option>
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="host-outlet" className={labelClass}>
+                Space + standard outlet available?
+              </label>
+              <select id="host-outlet" name="placement_outlet" defaultValue="" disabled={isPending} className={inputClass}>
+                <option value="">Not sure yet</option>
+                {OUTLET_ANSWERS.map((o) => (
+                  <option key={o} value={o}>
+                    {OUTLET_LABELS[o]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="host-priority" className={labelClass}>
+                What matters most to you?
+              </label>
+              <select id="host-priority" name="priority" defaultValue="" disabled={isPending} className={inputClass}>
+                <option value="">Pick one (optional)</option>
+                {HOST_PRIORITIES.map((p) => (
+                  <option key={p} value={p}>
+                    {PRIORITY_LABELS[p]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="sm:col-span-2">
+              <label htmlFor="host-hours" className={labelClass}>
+                Hours the machine would be reachable (optional)
+              </label>
+              <input id="host-hours" name="hours_of_access" type="text" maxLength={160} placeholder="e.g. Mon to Sat, 10am to 9pm" disabled={isPending} className={inputClass} />
+            </div>
+            <div className="sm:col-span-2">
+              <label htmlFor="host-notes" className={labelClass}>
+                Anything else (optional)
+              </label>
+              <textarea id="host-notes" name="notes" rows={3} maxLength={2000} placeholder="Anything about your space, your customers, or your questions." disabled={isPending} className={inputClass} />
+            </div>
+          </>
+        )}
       </div>
 
       <button

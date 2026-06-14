@@ -1063,7 +1063,7 @@ The result is bundle-light, framework-portable, and visually equivalent for our 
 ## ADR-029 — Cream + navy + gold visual identity for collector-niche distinctiveness
 
 **Date:** 2026-05-26
-**Status:** Accepted (supersedes the holographic-rainbow palette from [ADR-028](#adr-028--aceternity-ui-patterns-code-owned-no-npm-vendor-niche-visual-identity) for default surfaces; the Aceternity component scaffolding from ADR-028 remains in place and is *retuned*, not replaced)
+**Status:** Accepted (supersedes the holographic-rainbow palette from [ADR-028](#adr-028--aceternity-ui-patterns-code-owned-no-npm-vendor-niche-visual-identity) for default surfaces; the Aceternity component scaffolding from ADR-028 remains in place and is *retuned*, not replaced). **REGISTER SUPERSEDED 2026-06-13 for the vending surfaces by [ADR-061](#adr-061--vending-register-evolve-the-quiet-backroom-canon-for-the-b2b-host-audience)** — `/`, `/host`, `/faq`, `/service-areas` now use the evolved "confident local operator" register (cream↔navy alternation, subtle resting elevation, gold as a structural accent). The palette/fonts/coral-hover/no-pure-black-white rules below are unchanged; this ADR still governs the dormant deal-finder surfaces.
 
 **Context.** Session 38 ([ADR-028](#adr-028--aceternity-ui-patterns-code-owned-no-npm-vendor-niche-visual-identity)) shipped the Aceternity-pattern interactive primitives (`BackgroundGradientAnimation`, `Card3D`, `MagneticButton`/`MagneticLink`, `Sparkles`) on top of a dark `#0B1428` / coral `#FF6B5C` palette. Founder design review concluded the result still read as "competent indie-SaaS template" rather than "Pokémon TCG collector niche." The blocker: a rainbow-blob full-page backdrop + a high-saturation coral primary on dark = generic 2024-era SaaS aesthetic. Pokemon TCG collectors visually identify with cream/parchment card faces, navy ink, gold foil accents — a palette that pre-dates the SaaS visual canon by decades.
 
@@ -1956,6 +1956,28 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 - Follow-ups (John / later goals): Goal B (real photos, finalize `[PLACEHOLDER]`s incl. base city, install timeline, insurance, revenue-share public treatment); Goal C (content engine reframe to vending/local-SEO topics); Goal D (scout/referral page); Google Business Profile setup (highest-ROI local-SEO lever, John-manual, doc 04 §2).
 
 **Cross-refs.** [ADR-020](#adr-020--pivot-to-buyer-side-deal-finder-positioning), [ADR-059](#adr-059--utility-first-positioning--subscription-ready-not-paywalled), [ADR-014](#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary), [ADR-024](#adr-024--wishlist-alert-cron-on-vercel-cron-jobs-vs-github-actions-or-supabase-edge-functions), [STRATEGY-VENDING-2026-06-12.md](STRATEGY-VENDING-2026-06-12.md), [docs/vending/](vending/).
+
+## ADR-061 — Vending register: evolve the "quiet backroom" canon for the B2B host audience
+
+**Date:** 2026-06-13
+**Status:** Accepted. **Supersedes [ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness)'s "Dealer's Quiet Backroom" register for the vending surfaces only** (`/`, `/host`, `/faq`, `/service-areas[/city]`). ADR-029 still governs the dormant deal-finder surfaces. Relates to [ADR-060](#adr-060--vending-host-lead-gen-pivot-public-surface--vending-deal-finder-dormant) (the pivot). Executes Goal E of [docs/vending/03-CLAUDE-CODE-PROMPTS.md](vending/03-CLAUDE-CODE-PROMPTS.md).
+
+**Context.** A live design review (John, 2026-06-13) found the vending homepage "overwhelming," the site "lacks contrast / feels bleak," and the hero machine photo "awkward floating on cream." Root cause: the surfaces inherited ADR-029's collector-browsing register — Flat-At-Rest + Scarce-Gold-≤10% + all-cream — which is the right quiet for a deal-finder and the wrong energy for a B2B pitch to business owners. The fix is to evolve the canon for this audience, not to abandon the brand.
+
+**Decision.** New north star for the vending surfaces: **"the confident local operator"** — energetic but not hype. KEEP the cream/navy/gold palette + hex, Fraunces/Geist, Coral-Hover-Only, No-Pure-Black-Or-White, Navy-Tinted-Shadow, and all four anti-references (generic-AI-SaaS / crypto-hype / sterile-enterprise / bargain-bin). CHANGE three rules for these surfaces:
+1. **Cream ↔ navy alternation** — dark `bg-foil-navy` feature sections are sanctioned for contrast/rhythm (≥1 per long page; on navy, text is `text-foil-cream`, gold is the accent). Replaces the all-cream surface rule.
+2. **Subtle resting elevation** (relaxes Flat-At-Rest) — feature cards may carry a resting `shadow-md shadow-foil-navy/10` and lift on hover; list rows stay flat.
+3. **Gold as a structural accent** (relaxes Scarce-Gold ≤10%) — gold may mark eyebrows, step numbers, key figures, and rules on navy, not just one signal per view; it never becomes a large fill or a second button color.
+
+The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes in **PRODUCT.md**. Machine photos sit on a navy panel / device frame (dark-on-dark), neutral model-only captions, never implied installs.
+
+**Consequences.**
+- The homepage was redesigned against the evolved canon (Goal E Phase 2): copy trimmed ~40% (value props 6→4, the homepage "Quick answers" FAQ block cut with a link to `/faq`, hero + proof tightened, homepage lead form shortened to the required fields via a `compact` `HostLeadForm` variant; the full form stays on `/host`); a dark-navy "How it works" band with gold step numbers; resting elevation on the value-prop cards; the hero machine photo moved onto a navy device-style frame. The "as placements go live… no testimonials we don't have yet" lines were removed from `/` and `/host` (end on the true credibility line; docs/vending/01 "stay silent on count").
+- Social-share images regenerated for the vending brand (Goal E Phase 3): `app/opengraph-image.tsx` + `app/twitter-image.tsx` now render the host pitch (not "the best price on any Pokémon card") with vending alt text; the homepage FAQPage JSON-LD was dropped (the visible FAQ block is gone — structured data must match visible content; `/faq` keeps its FAQPage).
+- `visual-regression.test.ts` + the design:lint guards were updated to the evolved rules (the homepage section-spine pin no longer requires the FAQ teaser; navy sections + elevated cards are allowed). The Coral-Hover-Only + No-Raw-Hex invariants are unchanged and still enforced.
+- Reversible: the deal-finder surfaces are untouched; reverting is restoring §§1–6 styling on the vending pages.
+
+**Cross-refs.** [ADR-029](#adr-029--cream--navy--gold-visual-identity-for-collector-niche-distinctiveness), [ADR-060](#adr-060--vending-host-lead-gen-pivot-public-surface--vending-deal-finder-dormant), [ADR-036](#adr-036--home-page-warmth-pass-fraunces-display-spark-mark-pricing-removal-lighter-scrim), DESIGN.md §7, PRODUCT.md.
 
 ## How to add an ADR
 
