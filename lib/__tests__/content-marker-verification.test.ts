@@ -18,13 +18,23 @@ import assert from "node:assert/strict";
 const BASE = process.env.CONTENT_VERIFY_BASE_URL;
 const skip = !BASE;
 
-// Blog posts that must render the corrected, voice-clean content.
+// Dormant deal-finder posts (still rendered, noindexed) that must stay clean.
 const BLOG_SLUGS = [
   "how-much-is-my-pokemon-card-worth-a-60-second-checklist",
   "japanese-sar-vs-english-special-illustration-rare",
   "how-to-read-a-japanese-pokemon-card",
   "near-mint-vs-lightly-played-the-difference-that-doubles-a-card-s-price",
 ] as const;
+
+// Live vending posts published 2026-06-15 (ADR-063). Each must render 200 with a
+// distinctive on-page marker (proves the right BODY rendered, not just a 200) and
+// carry none of the FORBIDDEN markers.
+const VENDING_BLOG: { slug: string; marker: RegExp }[] = [
+  // The marker doubles as the "25 to 45" -> "25 to 40" content-fix proof.
+  { slug: "is-a-trading-card-vending-machine-worth-it-for-a-gas-station", marker: /25 to 40/ },
+  { slug: "pokemon-card-vending-machine-placement-in-napa", marker: /business locations across Napa/i },
+  { slug: "how-vending-machine-revenue-share-hosting-works", marker: /revenue-share hosting means Foil/i },
+];
 
 // Markers that MUST be ABSENT from every blog post body (fabrications + hedges
 // the 47.4 fact-check + V.1 voice pass removed). Regexes tolerate $ / en-dash.
@@ -36,6 +46,7 @@ const FORBIDDEN: { label: string; re: RegExp }[] = [
   { label: "dead link /blog/reading-pokemon-card-price-data", re: /\/blog\/reading-pokemon-card-price-data/i },
   { label: "dead link /blog/how-to-read-pokemon-card-collector-numbers", re: /\/blog\/how-to-read-pokemon-card-collector-numbers/i },
   { label: "dead link /blog/how-to-price-pokemon-cards-from-photo", re: /\/blog\/how-to-price-pokemon-cards-from-photo/i },
+  { label: "gas-station pre-fix '25 to 45' age range", re: /25 to 45/ },
 ];
 
 // A sample curated card page must still render (I-006 HTTP layer).
@@ -50,6 +61,17 @@ for (const slug of BLOG_SLUGS) {
   test(`live blog post is clean: ${slug}`, { skip }, async () => {
     const { status, body } = await fetchText(`${BASE}/blog/${slug}?cv=${Date.now()}`);
     assert.equal(status, 200, `${slug} must return 200`);
+    for (const { label, re } of FORBIDDEN) {
+      assert.doesNotMatch(body, re, `${slug} must NOT contain: ${label}`);
+    }
+  });
+}
+
+for (const { slug, marker } of VENDING_BLOG) {
+  test(`live vending post is published + clean: ${slug}`, { skip }, async () => {
+    const { status, body } = await fetchText(`${BASE}/blog/${slug}?cv=${Date.now()}`);
+    assert.equal(status, 200, `${slug} must return 200 (published into POSTS_DIR)`);
+    assert.match(body, marker, `${slug} must render its distinctive on-page marker`);
     for (const { label, re } of FORBIDDEN) {
       assert.doesNotMatch(body, re, `${slug} must NOT contain: ${label}`);
     }
@@ -78,7 +100,7 @@ test("sample curated card page renders (I-006 HTTP layer)", { skip }, async () =
 test("content-marker gate is wired (documents the skip when no base URL)", () => {
   // Always runs: makes the gate visible in the offline suite even when skipped.
   assert.ok(
-    BLOG_SLUGS.length === 4 && FORBIDDEN.length >= 5,
-    "marker spec must cover the 4 posts + the known fabrication/dead-link markers",
+    BLOG_SLUGS.length === 4 && VENDING_BLOG.length === 3 && FORBIDDEN.length >= 5,
+    "marker spec must cover the 4 dormant posts + the 3 live vending posts + the fabrication/dead-link markers",
   );
 });

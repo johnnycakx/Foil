@@ -67,6 +67,35 @@ export function getAllPosts(): PostFrontmatter[] {
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
+// Vending blog surface (ADR-063). The blog index, the [slug] post route's
+// robots metadata, and the sitemap all gate on this: a post is part of the
+// LIVE, indexable vending blog iff its pillar is in VENDING_PILLARS. Posts on
+// any other pillar — the three dormant deal-finder collector pillars
+// (japanese-pokemon-cards-value / pokemon-card-value-calculator /
+// pokemon-card-condition-guide) — stay rendered-but-noindexed, off the blog
+// index, and off the sitemap (vending pivot, ADR-060). Classifying by pillar is
+// self-maintaining: the content engine sets the pillar from docs/seo-strategy.md,
+// which now carries only `host` + `service-areas`. A hand-written vending post
+// MUST set one of these pillars to be indexed.
+export const VENDING_PILLARS: ReadonlySet<string> = new Set([
+  "host",
+  "service-areas",
+]);
+
+export function isVendingPost(fm: Pick<PostFrontmatter, "pillar">): boolean {
+  return !!fm.pillar && VENDING_PILLARS.has(fm.pillar);
+}
+
+/** Live vending posts (the only ones listed on /blog + in the sitemap). */
+export function getVendingPosts(): PostFrontmatter[] {
+  return getAllPosts().filter(isVendingPost);
+}
+
+/** Slugs of the live vending posts — used to layer blog URLs onto the sitemap. */
+export function getVendingPostSlugs(): string[] {
+  return getVendingPosts().map((p) => p.slug);
+}
+
 export function getPostSlugs(): string[] {
   if (!fs.existsSync(POSTS_DIR)) return [];
   return fs.readdirSync(POSTS_DIR).filter(isPostFile).map((f) => f.replace(/\.mdx$/, ""));

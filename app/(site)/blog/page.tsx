@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getAllPosts } from "./posts-meta";
-import { EmailCapture } from "@/components/email-capture";
+import { getVendingPosts } from "./posts-meta";
 
-const TITLE = "Foil Blog — Pokémon TCG deals, pricing, and market reads";
+const TITLE = "Foil Blog — Pokémon card vending machine hosting in the Bay Area";
 const DESCRIPTION =
-  "Field notes on Pokémon card deals, market pricing, condition grading, and what's worth buying right now — from the team building Foil.";
+  "Guides for Bay Area business owners on hosting a Pokémon card vending machine: is it worth it for your venue, how revenue-share hosting works, and where we place machines.";
 const URL_PATH = "/blog";
 
 export const metadata: Metadata = {
-  // Dormant under the vending pivot (docs/vending Goal A §3): de-indexed,
-  // unlinked, and off the sitemap. Posts preserved in-tree.
-  robots: { index: false, follow: false },
+  // Live vending blog surface (ADR-063): indexable. Only vending posts are
+  // listed here (getVendingPosts); the dormant deal-finder posts stay
+  // noindexed + unlisted (vending pivot, ADR-060).
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: URL_PATH },
@@ -43,20 +42,21 @@ function formatDate(iso: string): string {
 }
 
 export default function BlogIndexPage() {
-  const posts = getAllPosts();
+  const posts = getVendingPosts();
 
   return (
     <>
       <main className="mx-auto w-full max-w-4xl flex-1 px-5 pt-12 pb-20 sm:px-8 sm:pt-20">
         <p className="text-xs font-medium uppercase tracking-wider text-foil-gold">
-          Field notes
+          Host guides
         </p>
         <h1 className="font-display mt-3 text-4xl font-bold tracking-[-0.02em] text-foil-navy sm:text-5xl">
           Foil Blog
         </h1>
         <p className="mt-4 max-w-2xl text-lg text-foil-slate">
-          Posts on Pokémon card deals, market pricing, condition grading, and
-          what&apos;s actually worth buying right now — from the team building Foil.
+          Straight answers for Bay Area business owners weighing a Pokémon card
+          vending machine: whether it fits your venue, what it costs you, and how
+          hosting works.
         </p>
 
         {posts.length === 0 ? (
@@ -102,8 +102,24 @@ export default function BlogIndexPage() {
         )}
       </main>
 
-      <section className="mx-auto w-full max-w-4xl px-5 pb-12 sm:px-8">
-        <EmailCapture source="blog-index-footer" variant="footer" />
+      <section className="mx-auto w-full max-w-4xl px-5 pb-16 sm:px-8">
+        <div className="rounded-2xl border border-foil-gold/40 bg-foil-cream p-6 shadow-lg shadow-foil-navy/10 sm:p-8">
+          <h2 className="font-display text-xl font-bold tracking-[-0.02em] text-foil-navy sm:text-2xl">
+            Thinking about hosting a machine?
+          </h2>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-foil-slate">
+            We place and operate Pokémon card vending machines for Bay Area
+            businesses. Zero cost, fully managed, and a monthly revenue share for
+            space you already have.
+          </p>
+          <Link
+            href="/host"
+            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-foil-navy px-5 py-3 text-sm font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40"
+          >
+            Host a machine
+            <span aria-hidden>→</span>
+          </Link>
+        </div>
       </section>
     </>
   );

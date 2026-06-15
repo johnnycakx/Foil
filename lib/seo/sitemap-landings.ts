@@ -32,18 +32,20 @@ export type LandingPath = {
   changeFrequency: SitemapChangeFrequency;
 };
 
-// VENDING PIVOT (docs/vending Goal A §3): the sitemap contains ONLY the new
-// vending host lead-gen surfaces plus the general legal pages. Every
-// deal-finder route (/cards, /deals, /blog, /start, /newsletter,
-// /pricing-methodology, the three pillars, /machines, /legal/ebay-api-compliance)
-// is dormant — noindexed + unlinked — and deliberately absent here so the
-// already-indexed URLs drop out of Google over time. app/sitemap.ts layers the
-// /service-areas/[city] pages on top of this list.
+// VENDING PIVOT (docs/vending Goal A §3): the sitemap contains the vending host
+// lead-gen surfaces, the general legal pages, and (ADR-063) the live vending
+// /blog index. The remaining deal-finder routes (/cards, /deals, /start,
+// /newsletter, /pricing-methodology, the three pillars, /machines,
+// /legal/ebay-api-compliance) are dormant — noindexed + unlinked — and
+// deliberately absent here so the already-indexed URLs drop out of Google.
+// app/sitemap.ts layers the /service-areas/[city] pages AND the per-post
+// /blog/[vending-slug] URLs on top of this list (deal-finder posts excluded).
 export const LANDING_PATHS: readonly LandingPath[] = [
   { path: "/", priority: 1.0, changeFrequency: "weekly" },
   { path: "/host", priority: 0.9, changeFrequency: "monthly" },
   { path: "/service-areas", priority: 0.8, changeFrequency: "monthly" },
   { path: "/faq", priority: 0.7, changeFrequency: "monthly" },
+  { path: "/blog", priority: 0.6, changeFrequency: "weekly" },
   { path: "/legal/privacy", priority: 0.3, changeFrequency: "yearly" },
   { path: "/legal/terms", priority: 0.3, changeFrequency: "yearly" },
 ];

@@ -2001,6 +2001,32 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 
 **Cross-refs.** [ADR-060](#adr-060--vending-host-lead-gen-pivot-public-surface--vending-deal-finder-dormant), [ADR-061](#adr-061--vending-register-evolve-the-quiet-backroom-canon-for-the-b2b-host-audience), [ADR-007](#adr-007--8-quality-gates--3-retries--skip-on-failure-not-fail-the-build), [ADR-050](#adr-050--creator-content-ingestion--attribution-gate), [docs/vending/](vending/).
 
+## ADR-063 — Selective-index vending blog surface (pillar-gated)
+
+**Date:** 2026-06-15
+**Status:** Accepted. Re-enables `/blog` (which [ADR-060](#adr-060--vending-host-lead-gen-pivot-public-surface--vending-deal-finder-dormant) made dormant) for the vending posts produced by [ADR-062](#adr-062--content-engine-reframe-deal-findercollector--vending-host-acquisition--local-seo). One-time manual publish of 3 reviewed drafts; does NOT re-enable autonomy.
+
+**Context.** Goal A (ADR-060) made the entire `/blog` surface dormant — `robots:{index:false}` on the index + `[slug]` routes, no nav link, zero blog URLs in the sitemap — because every post was deal-finder/collector content. ADR-062 reframed the content engine and produced three reviewed vending posts (host-acquisition + local SEO). Publishing them onto the dormant `/blog` would do nothing for SEO (noindex + no sitemap + no nav), so re-enabling the blog surface is in-scope. But un-noindexing `/blog` wholesale would resurface the seven dormant deal-finder posts (off-topic for the pivot). Both post classes live in one `POSTS_DIR`, so the re-enable needs a per-post discriminator.
+
+**Decision.** Re-enable `/blog` as a LIVE vending blog with **per-post selective indexing gated on the post's `pillar`** (`app/(site)/blog/posts-meta.ts`):
+- `VENDING_PILLARS = { host, service-areas }`; `isVendingPost(post)` is true iff `post.pillar ∈ VENDING_PILLARS`. The dormant deal-finder posts carry the three collector pillars and classify false.
+- **Blog index** (`app/(site)/blog/page.tsx`): indexable (robots removed); copy reframed to the host audience; lists `getVendingPosts()` only; the dormant-newsletter `EmailCapture` footer swapped for a `/host` CTA.
+- **`[slug]` route**: `robots:{index:false,follow:false}` applied ONLY when `!isVendingPost(post)` (deal-finder posts stay noindexed, still render); `related` filtered to the same class; the inline newsletter `EmailCapture` + the `/pricing-methodology` footer link (both dormant deal-finder funnels) swapped for a `/host` CTA + host-FAQ link **on vending posts only** (deal-finder posts keep the legacy newsletter, untouched). `generateStaticParams` still returns all slugs so deal-finder pages render dormant.
+- **Sitemap**: `/blog` index added to `LANDING_PATHS`; `app/sitemap.ts` layers one `/blog/[slug]` per vending post (`getVendingPosts`). Deal-finder posts + the ~1k card pages stay off.
+- **Nav/footer**: a `/blog` link added to both (`app/(site)/layout.tsx`).
+- **Publish**: the 3 reviewed drafts `git mv`'d from `_pending/` into `POSTS_DIR`; the gas-station post's "25 to 45" age range standardized to "25 to 40".
+
+**Why pillar-gating** (vs. deleting the deal-finder posts, a separate directory, or a per-post `noindex` flag): the content engine already sets `pillar` from `docs/seo-strategy.md`, which now carries only `host` + `service-areas`, so new vending posts auto-classify and a deal-finder post can never accidentally index. It is the smallest, self-maintaining seam and keeps the deal-finder posts in-tree + reversible. A hand-written vending post MUST set `pillar=host|service-areas` to be indexed (documented in `posts-meta.ts`).
+
+**Consequences.**
+- Live: `/blog` + the 3 vending posts are indexable, linked (nav + footer), and in the sitemap. All internal links verified against real pages (`/host`, `/faq`, and the `/service-areas/{fairfield,napa,vallejo}` city pages all exist) — no broken links.
+- The 7 dormant deal-finder posts still render (preserved) but stay noindexed, unlisted, and off the sitemap — dormancy unchanged, no content touched.
+- Tests: `sitemap.test.ts` moves `/blog` to the present set; new `blog-vending-surface.test.ts` pins the pillar partition + that the 3 drafts landed in `POSTS_DIR`; `content-marker-verification.test.ts` extended to verify the 3 live vending posts (200 + a distinctive on-page marker + the 25-to-40 fix) — John runs it post-deploy. `visual-regression` `PUBLIC_SURFACES` unchanged (palette pins still hold on the blog pages).
+- Autonomy untouched: `AUTO_PUBLISH_WEEKLY_POSTS=false`, Mon/Thu cron commented out. This is a manual publish, not a cadence change.
+- Reversible: re-noindex `/blog` + drop it from `LANDING_PATHS` + revert the nav link.
+
+**Cross-refs.** [ADR-060](#adr-060--vending-host-lead-gen-pivot-public-surface--vending-deal-finder-dormant), [ADR-062](#adr-062--content-engine-reframe-deal-findercollector--vending-host-acquisition--local-seo), [ADR-049](#adr-049--content-pipeline-writeread-pinning--content-marker-verification-as-a-standing-closure-gate), [docs/vending/](vending/).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

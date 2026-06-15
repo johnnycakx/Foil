@@ -34,14 +34,20 @@ function SiteHeader() {
           <Logo size="md" />
         </Link>
         <nav className="flex items-center gap-5 text-sm">
-          {/* Vending pivot: nav points only at the host lead-gen surfaces. The
-              deal-finder routes (/deals, /cards, /blog) are dormant — unlinked,
-              noindexed, off the sitemap — but the code is preserved in-tree. */}
+          {/* Vending pivot: nav points at the host lead-gen surfaces + the live
+              vending /blog (ADR-063). The deal-finder routes (/deals, /cards)
+              stay dormant — unlinked, noindexed, off the sitemap — code in-tree. */}
           <Link
             href="/service-areas"
             className="text-foil-slate transition hover:text-foil-navy"
           >
             Service areas
+          </Link>
+          <Link
+            href="/blog"
+            className="text-foil-slate transition hover:text-foil-navy"
+          >
+            Blog
           </Link>
           <Link
             href="/faq"
@@ -96,6 +102,12 @@ function SiteFooter() {
               className="transition hover:text-foil-navy"
             >
               Service areas
+            </Link>
+            <Link
+              href="/blog"
+              className="transition hover:text-foil-navy"
+            >
+              Blog
             </Link>
             <Link
               href="/faq"

@@ -16,8 +16,10 @@ import assert from "node:assert/strict";
 import { LANDING_PATHS } from "../seo/sitemap-landings.ts";
 import { isPublicRoute } from "../supabase/public-routes.ts";
 
-test("vending host surfaces are in the sitemap (docs/vending Goal A §3)", () => {
-  for (const path of ["/", "/host", "/faq", "/service-areas"]) {
+test("vending host surfaces are in the sitemap (docs/vending Goal A §3 + ADR-063 blog)", () => {
+  // /blog is the LIVE vending blog index (ADR-063); the per-post /blog/[slug]
+  // URLs for vending posts are layered on at the app/sitemap.ts dynamic layer.
+  for (const path of ["/", "/host", "/faq", "/service-areas", "/blog"]) {
     assert.ok(
       LANDING_PATHS.some((e) => e.path === path),
       `${path} must be present in the sitemap landing set`,
@@ -28,15 +30,16 @@ test("vending host surfaces are in the sitemap (docs/vending Goal A §3)", () =>
 test("deal-finder routes are ABSENT from the sitemap (dormant under the vending pivot)", () => {
   // The pivot makes the deal-finder dormant: noindexed + unlinked + off the
   // sitemap so its already-indexed URLs drop out of Google. The fixed landing
-  // set must carry none of them (the ~1k /cards/* and /blog/* URLs are dropped
-  // at the app/sitemap.ts layer — they're no longer concatenated on).
+  // set must carry none of them (the ~1k /cards/* URLs and the dormant
+  // deal-finder /blog/* posts are dropped at the app/sitemap.ts layer — only
+  // vending posts are concatenated on, ADR-063). NOTE: /blog (the index) is now
+  // LIVE for the vending blog, so it is NOT in this dormant list.
   const paths = new Set(LANDING_PATHS.map((e) => e.path));
   for (const dormant of [
     "/deals",
     "/pricing-methodology",
     "/newsletter",
     "/start",
-    "/blog",
     "/machines",
     "/japanese-pokemon-cards-value",
     "/pokemon-card-value-calculator",

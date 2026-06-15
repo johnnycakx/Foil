@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAllPosts, getPost, getPostSlugs } from "../posts-meta";
+import { getAllPosts, getPost, getPostSlugs, isVendingPost } from "../posts-meta";
 import {
   articleSchema,
   faqPageSchema,
@@ -41,9 +41,10 @@ export async function generateMetadata({
   return {
     title: `${post.title} | Foil`,
     description: post.description,
-    // Dormant under the vending pivot (docs/vending Goal A §3): blog posts
-    // de-indexed + off the sitemap. Content preserved in-tree.
-    robots: { index: false, follow: false },
+    // Selective indexing (ADR-063): live vending posts (pillar host /
+    // service-areas) are indexable; the dormant deal-finder posts stay
+    // noindexed (vending pivot, ADR-060) but still render in-tree.
+    ...(isVendingPost(post) ? {} : { robots: { index: false, follow: false } }),
     alternates: { canonical: urlPath },
     openGraph: {
       type: "article",
@@ -85,9 +86,13 @@ export default async function BlogPostPage({
     notFound();
   }
 
+  const isVending = isVendingPost(post);
+  // Related stays within the same class — a live vending post never surfaces a
+  // dormant deal-finder post (ADR-063) and vice versa.
   const allPosts = getAllPosts();
   const related = allPosts
     .filter((p) => p.slug !== post.slug)
+    .filter((p) => isVendingPost(p) === isVending)
     .filter(
       (p) =>
         (post.pillar && p.pillar === post.pillar) ||
@@ -145,7 +150,29 @@ export default async function BlogPostPage({
               this just no-renders. */}
           {post.faq && post.faq.length > 0 && <FAQ items={post.faq} />}
 
-          <EmailCapture source={`blog-${post.slug}`} variant="inline" />
+          {isVending ? (
+            <section className="not-prose mt-14 rounded-2xl border border-foil-gold/40 bg-foil-cream p-6 shadow-lg shadow-foil-navy/10 sm:p-8">
+              <h2 className="font-display text-xl font-bold tracking-[-0.02em] text-foil-navy sm:text-2xl">
+                Want a machine in your space?
+              </h2>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-foil-slate">
+                We handle install, stocking, and support. You provide the space
+                and earn a monthly revenue share. We will walk through the details
+                on a quick call.
+              </p>
+              <Link
+                href="/host"
+                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-foil-navy px-5 py-3 text-sm font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40"
+              >
+                Host a machine
+                <span aria-hidden>→</span>
+              </Link>
+            </section>
+          ) : (
+            // Dormant deal-finder post: keep the legacy newsletter capture
+            // (noindexed, unlisted; not touched beyond exclusion, ADR-063).
+            <EmailCapture source={`blog-${post.slug}`} variant="inline" />
+          )}
         </article>
 
         {related.length > 0 && (
@@ -172,9 +199,15 @@ export default async function BlogPostPage({
         )}
 
         <footer className="mt-12 border-t border-foil-navy/10 pt-6">
-          <Link href="/pricing-methodology" className="text-sm font-medium text-foil-navy underline-offset-4 hover:text-foil-coral hover:underline">
-            How Foil computes the buy signal
-          </Link>
+          {isVending ? (
+            <Link href="/faq" className="text-sm font-medium text-foil-navy underline-offset-4 hover:text-foil-coral hover:underline">
+              Questions about hosting? Read the host FAQ
+            </Link>
+          ) : (
+            <Link href="/pricing-methodology" className="text-sm font-medium text-foil-navy underline-offset-4 hover:text-foil-coral hover:underline">
+              How Foil computes the buy signal
+            </Link>
+          )}
         </footer>
       </main>
     </>
