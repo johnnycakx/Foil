@@ -1,104 +1,106 @@
-# Foil SEO Strategy — Topic Clusters
+# Foil SEO Strategy — Topic Clusters (vending host-acquisition + local SEO)
 
 **Owner:** John Craig
-**Last reviewed:** 2026-05-20
+**Last reviewed:** 2026-06-15
 **Status:** Living doc — update when shipping any new pillar or cluster post.
 
-> **2026-05-20 update:** merged 8 additional seed keywords into the existing three pillars (rather than spinning up a fourth). Two keywords (*pokemon card price checker*, *best pokemon cards to buy now*) are absorbed into existing cluster posts — see in-line notes on Pillar 2 posts #1 and #7. Six keywords got dedicated new cluster posts: Pillar 1 #11; Pillar 2 #11–#14; Pillar 3 #11. Pillar 2 now runs at 14 cluster posts — above the 6–10 guideline but justified by its head-term volume; revisit if any subset shows weak SERP overlap during the first ranking review.
+> **2026-06-15 reframe (ADR-062 / docs/vending Goal C):** the content engine was repointed from
+> deal-finder/collector topics (which drew the WRONG audience — "near mint vs lightly played,"
+> "venusaur ex") to **vending HOST-acquisition + local SEO**. The reader is now a Bay-Area business or
+> location owner deciding whether to host a Pokémon card vending machine, NOT a card collector. The old
+> three collector pillars (Japanese cards, valuation, conditions) are retired from the backlog; the live
+> deal-finder blog posts stay in-tree but dormant (noindexed). The autonomous Mon/Thu schedule stays
+> disabled and `AUTO_PUBLISH_WEEKLY_POSTS=false` — drafts route to `_pending/` for John's review until he
+> re-enables cadence. Source of truth for copy/voice/honesty: `docs/vending/01-HOST-LOCATION-OFFER.md`,
+> `docs/vending/02-WEBSITE-REPURPOSE-PLAN.md §4`, `docs/vending/04-LOCAL-SEO-AND-TOOLS.md`.
 
-Foil's SEO bet is topic clusters: a small number of authoritative **pillar pages** each surrounded by 6–10 deeply linked **cluster posts** that target long-tail variants of the pillar keyword. Cluster posts link up to their pillar with consistent anchor text; the pillar links down to every cluster post. The goal is to dominate the "Pokémon card valuation" intent surface — particularly the corners (Japanese, condition grading, graded comps) where Foil's product has a structural advantage over a generic price aggregator.
+Foil's SEO bet is topic clusters: a small number of authoritative **pillar pages** each surrounded by
+deeply linked **cluster posts** that target long-tail variants of the pillar intent. Cluster posts link up
+to their pillar; the pillar links down to its cluster posts. For the vending business the bet has two
+halves: (1) **host-acquisition intent** — owners researching "is a vending machine worth it for my [venue]"
+and "free vending machine placement" — funneled to `/host`; and (2) **local intent** — owners searching
+"[Bay-Area city] vending machine placement / company" — funneled to the matching `/service-areas/[city]`
+page. Local SEO is central here: Foil is a service-area business across the Bay Area (doc 04).
 
----
-
-## Pillar 1 — Japanese Pokémon Cards
-
-**URL:** `/japanese-pokemon-cards-value`
-**Primary keyword:** *japanese pokemon cards value*
-**Status:** Pillar exists (shipped 2026-05-19), needs cluster build-out.
-**Why this pillar:** Japanese-set scanning is Foil's most defensible product wedge — most generic apps can't read sv3a/s4 set codes. Search demand is strong, English-speaking buyer confusion is high.
-
-### Cluster posts (target 6–10)
-
-1. **How to read a Japanese Pokémon card** — anatomy of the printed text (set code, collector number, rarity symbol) with annotated images. Long-tail: *how to read japanese pokemon cards english.*
-2. **Japanese SAR vs English Special Illustration Rare** — side-by-side rarity comparison, when JP commands a premium. Long-tail: *japanese sar vs english sir pokemon.*
-3. **sv3a Raging Surf — every chase card, by price** — set-specific deep dive. Long-tail: *sv3a raging surf prices.*
-4. **sv4a Shiny Treasure ex — how to spot the SARs that hold value** — set-specific. Long-tail: *shiny treasure ex chase cards.*
-5. **Japanese vs English Pokémon Charizard — which is worth more?** — character-led, very high intent. Long-tail: *japanese charizard worth more than english.*
-6. **What does "Pokémon Card Game Classic" (PCG Classic) mean for collectors** — collectible set, niche. Long-tail: *pokemon card game classic value.*
-7. **Buying Japanese Pokémon cards on Yuyu-tei vs eBay vs TCGplayer** — sourcing guide. Long-tail: *buy japanese pokemon cards online safely.*
-8. **Are Japanese Pokémon booster boxes a good investment?** — broader collector-finance angle. Long-tail: *japanese pokemon booster box investment.*
-9. **How to grade a Japanese Pokémon card with PSA, BGS, and CGC** — graded-comp bridge to Pillar 3. Long-tail: *grade japanese pokemon cards.*
-10. **Spotting fake Japanese Pokémon cards — print quality, fonts, holos** — fraud guide. Long-tail: *fake japanese pokemon cards how to tell.*
-11. **The best Japanese Pokémon card scanner apps in 2026 — what actually identifies sv-era sets** — comparative review post, very high product-funnel intent. Long-tail: *japanese pokemon card scanner.*
+Every cluster post must obey the honesty guardrails (doc 02 §6): no earnings guarantees, no published
+revenue-share percentage, no "fully insured"/liability claim, no fabricated scale/locations/testimonials.
+The quality gates (lib/seo/quality-gates.ts) enforce the structural half of this automatically.
 
 ---
 
-## Pillar 2 — Pokémon Card Valuation (general)
+## Pillar 1 — Hosting a Pokémon Card Vending Machine
 
-**URL:** `/pokemon-card-value-calculator`
-**Primary keyword:** *pokemon card value calculator*
-**Status:** Pillar shipped 2026-05-20, needs cluster build-out.
-**Why this pillar:** Highest-volume keyword in the space. Even modest ranking drives Foil's primary use case (Marketplace pricing check). Competitive — but most competitors are dead static databases, not interactive scanners.
+**URL:** `/host`
+**Primary keyword:** *host a pokemon card vending machine*
+**Status:** `/host` pitch page live (vending Goal A). Cluster build-out begins with this reframe.
+**Why this pillar:** Host-acquisition is the conversion event. These posts answer the owner's real
+questions ("is this worth it for a place like mine," "what does it cost me," "how does it work") and route
+high-intent traffic straight to the `/host` lead form. Most queries here have low competition and clear
+commercial intent.
 
-### Cluster posts (target 6–10)
+### Cluster posts (target 8–12)
 
-1. **How much is my Pokémon card worth? A 60-second checklist** — broad-intent intro. Doubles as the *pokemon card price checker* landing surface — frame the in-page calculator embed as the "price checker tool" in the H1 and meta description. Long-tail: *how much is my pokemon card worth, pokemon card price checker.*
-2. **eBay sold averages vs TCGplayer market — which price is the "real" one?** — pricing-source explainer, very high intent. Long-tail: *ebay sold vs tcgplayer market price.*
-3. **What is a Pokémon card's "NM" condition actually worth?** — bridges Pillar 3. Long-tail: *near mint pokemon card price difference.*
-4. **First Edition vs Unlimited Charizard — why one is worth 100x** — character-led canonical post. Long-tail: *first edition charizard value.*
-5. **Reading a Pokémon card collector number — XXX/YYY explained** — anatomy / decoding post. Long-tail: *pokemon card collector number meaning.*
-6. **Secret rare vs hyper rare vs special art rare — modern rarity tiers explained** — taxonomy. Long-tail: *secret rare vs hyper rare pokemon.*
-7. **The 10 most valuable Pokémon cards in 2026 — and the 5 worth buying right now** — annual evergreen-ish list, scope broadened to absorb *best pokemon cards to buy now* intent (top-10 retrospective + 5 forward-looking picks with a buy-thesis paragraph each). Long-tail: *most valuable pokemon cards 2026, best pokemon cards to buy now.*
-8. **Bulk Pokémon cards — what's the per-card value of a 1,000-card lot?** — sourcing/sell-side. Long-tail: *bulk pokemon card value per card.*
-9. **Holo vs reverse holo vs cosmos holo — value differences** — print-variant. Long-tail: *holo vs reverse holo pokemon worth.*
-10. **How to price a Pokémon card with no set symbol (promo, jumbo, prerelease)** — edge-case. Long-tail: *promo pokemon card value no set symbol.*
-11. **Pokémon card rarity symbols — circle, diamond, star, and every modern oddball** — visual decoder post (distinct from #6, which covers tier *names* not printed *symbols*). Long-tail: *pokemon card rarity symbols.*
-12. **Modern Pokémon set value tier list — Surging Sparks, Prismatic Evolutions, 151, and the rest ranked** — set-by-set EV ranking covering Sword & Shield → Scarlet & Violet. Long-tail: *modern pokemon set value.*
-13. **How to spot a fake Pokémon card — font, texture, the rip test, and the light test** — fraud guide focused on English-language cards (complement to Pillar 1 post #10 on Japanese fakes). Long-tail: *how to spot fake pokemon cards.*
-14. **The Pokémon card market in 2026 — what's driving prices and where it's heading** — state-of-the-market essay; refresh annually. Distinct from #7's product list — this one is narrative/macro. Long-tail: *pokemon card market 2026.*
+1. **Is a trading card vending machine worth it for a gas station?** — venue-specific ROI post, the highest-intent gas-station angle. Long-tail: *vending machine for gas station, trading card vending machine gas station.*
+2. **Is a Pokémon card vending machine worth it for a bar or brewery?** — venue-specific, the bars/breweries angle. Long-tail: *vending machine for a bar, pokemon vending machine in a bar.*
+3. **Should an arcade or barcade add a Pokémon card vending machine?** — venue-specific, arcades/entertainment. Long-tail: *vending machine for an arcade, trading card machine arcade.*
+4. **Does a barbershop or salon make money hosting a vending machine?** — venue-specific, barbershops/salons. Long-tail: *vending machine for a barbershop, barbershop side income.*
+5. **How vending machine revenue-share hosting works** — explainer of the host model end to end. Long-tail: *vending machine revenue share, how vending machine hosting works.*
+6. **Passive income ideas for small business owners in 2026** — broad-intent topic post; positions hosting as one low-effort option without promising earnings. Long-tail: *passive income for small business owners, passive income ideas small business.*
+7. **The best businesses for a vending machine placement** — listicle mapping venue types to fit. Long-tail: *best businesses for a vending machine, best places for vending machines.*
+8. **What does it cost to host a vending machine? (Spoiler: nothing)** — cost-objection post; footprint + ~$4/mo power, no purchase or lease. Long-tail: *cost to host a vending machine, free vending machine placement.*
+9. **Free vending machine placement: how "we handle everything" actually works** — operations explainer for the fully-managed model. Long-tail: *free vending machine placement, fully managed vending machine.*
+10. **Who actually buys from a Pokémon card vending machine?** — counters the "I don't get kids in here" objection with the adult-buyer reality. Long-tail: *who buys pokemon cards, pokemon vending machine customers.*
+11. **Vending machine placement companies: how the host relationship works** — category explainer + how to evaluate an operator. Long-tail: *vending machine placement company, vending machine placement services.*
+12. **How much space does a Pokémon card vending machine need?** — footprint/format post (wall, pedestal, freestanding; ~3 to 4 sq ft). Long-tail: *vending machine size for a store, how much space for a vending machine.*
 
 ---
 
-## Pillar 3 — Pokémon Card Conditions
+## Pillar 2 — Bay Area Vending Machine Placement
 
-**URL:** `/pokemon-card-condition-guide`
-**Primary keyword:** *pokemon card condition guide*
-**Status:** Pillar shipped 2026-05-20, needs cluster build-out.
-**Why this pillar:** Condition is the variable that turns a $5 card into a $500 card. Strong long-tail demand (NM / LP / MP definitions) and a natural funnel into Foil's graded-comp feature.
+**URL:** `/service-areas`
+**Primary keyword:** *bay area vending machine placement*
+**Status:** `/service-areas` hub + 8 Tier-1 city pages live (vending Goal A). Cluster posts deepen the
+local graph and feed each city page.
+**Why this pillar:** Local intent is where a service-area business wins. Each city post targets one
+bounded geo (doc 04 §1, non-overlapping per page), references that city's real venue landscape, and links
+to the matching `/service-areas/[city]` page so the site, copy, and city pages tell one geographic story.
+These are NOT doorway pages — each carries genuinely local substance.
 
 ### Cluster posts (target 6–10)
 
-1. **Near Mint vs Lightly Played — the difference that doubles a card's price** — pillar's most important cluster. Long-tail: *near mint vs lightly played pokemon.*
-2. **PSA 9 vs PSA 10 — is the $200 grading jump worth it?** — grading-economics. Long-tail: *psa 9 vs psa 10 pokemon worth.*
-3. **How to grade your own Pokémon card before sending to PSA** — pre-grade checklist. Long-tail: *how to grade pokemon cards before psa.*
-4. **PSA vs BGS vs CGC vs SGC — which grader gets the best resale?** — head-to-head. Long-tail: *psa vs bgs vs cgc pokemon resale.*
-5. **The "centering" rule: why off-center cards lose 50% of value at the same grade** — single-defect deep dive. Long-tail: *pokemon card centering off center value.*
-6. **Whitening, edgewear, surface scratches — what each defect costs you** — defect taxonomy. Long-tail: *pokemon card whitening edgewear value impact.*
-7. **Should you grade modern cards (Surging Sparks, Prismatic Evolutions)?** — modern-set economics. Long-tail: *grade modern pokemon cards worth it.*
-8. **Sleeving and storage — keeping a card NM for 20 years** — preservation. Long-tail: *how to keep pokemon cards near mint long term.*
-9. **The difference between "ungraded NM" and "PSA 10" pricing on eBay** — pricing-ladder explainer. Bridges Pillar 2. Long-tail: *ungraded nm vs psa 10 ebay price.*
-10. **Are graded Pokémon cards worth more than ungraded?** — beginner-intent. Long-tail: *graded pokemon cards worth more than ungraded.*
-11. **Pokémon card grading explained — from raw to PSA 10 in one diagram** — beginner-intent pillar gateway with a single canonical visual covering the grading ladder. Highest search-volume head term in this cluster — should be the second post built after the pillar itself. Long-tail: *pokemon card grading explained.*
+1. **Pokémon card vending machine placement in Napa** — Napa-specific (downtown/First Street, tasting-room foot traffic, Soscol corridor). Long-tail: *napa vending machine placement, vending machine company napa.*
+2. **Vending machine placement for Fairfield businesses** — Fairfield-specific (I-80 corridor, Solano Town Center, travel plazas). Long-tail: *fairfield vending machine placement, vending machine company fairfield.*
+3. **Pokémon card vending machine placement in Vacaville** — Vacaville-specific (Premium Outlets, Nut Tree, arcades). Long-tail: *vacaville vending machine placement.*
+4. **Vending machine placement in Vallejo** — Vallejo-specific (Georgia Street downtown, waterfront, smoke shops/barbershops). Long-tail: *vallejo vending machine placement.*
+5. **Pokémon card vending machine placement in Walnut Creek** — Walnut Creek-specific (Broadway Plaza, North Main, BART foot traffic). Long-tail: *walnut creek vending machine placement.*
+6. **Vending machine placement in Concord** — Concord-specific (Todos Santos Plaza, Sunvalley, Monument corridor). Long-tail: *concord vending machine placement.*
+7. **How to choose a Bay Area vending machine company** — buyer's-guide for owners evaluating operators; routes to the hub + `/host`. Long-tail: *bay area vending machine company, vending machine company near me.*
+8. **Pokémon card vending machine placement in Benicia and Suisun City** — pairs the two smaller Solano downtowns (First Street, the Waterfront District). Long-tail: *benicia vending machine placement, suisun city vending machine.*
 
 ---
 
 ## Anchor text conventions
 
-The point of consistent anchor text is to give Google a strong, unambiguous signal about which page owns which keyword. **Vary surrounding prose, not the linked phrase.**
+Consistent anchor text gives Google an unambiguous signal about which page owns which intent.
+**Vary surrounding prose, not the linked phrase.**
 
-| Link destination                       | Approved anchor phrases                                                                                       |
-|----------------------------------------|---------------------------------------------------------------------------------------------------------------|
-| `/japanese-pokemon-cards-value`        | "Japanese Pokémon cards value", "valuing Japanese Pokémon cards", "Japanese Pokémon card prices"              |
-| `/pokemon-card-value-calculator`       | "Pokémon card value calculator", "Pokémon card valuation guide", "look up a card's value"                     |
-| `/pokemon-card-condition-guide`        | "Pokémon card condition guide", "card condition grading explained", "NM vs LP vs MP guide"                    |
+| Link destination          | Approved anchor phrases                                                                 |
+|---------------------------|-----------------------------------------------------------------------------------------|
+| `/host`                   | "host a Pokémon card vending machine", "host a machine", "place a machine in your business" |
+| `/faq`                    | "host FAQ", "common host questions", "questions owners ask"                              |
+| `/service-areas`          | "Bay Area vending machine placement", "the cities we serve", "our Bay Area service area" |
+| `/service-areas/[city]`   | "[City] vending machine placement", "vending machines for [City] businesses"             |
 
 **Rules:**
 
-- Cluster posts MUST link to their pillar exactly once with the pillar's primary keyword as the anchor (the first phrase in the table above). Additional contextual links may use the secondary phrases.
-- Pillars MUST link down to every cluster post in their group at least once. Use the cluster's own primary keyword as anchor.
-- Cross-pillar links (e.g. a Pillar 3 post mentioning grading Japanese cards) use the destination pillar's secondary anchor — never its primary keyword from a non-cluster context, to avoid keyword cannibalization.
-- Never use "click here", "read more", "this page", or naked URLs as anchor text for an internal link. Use `TopicLink` in MDX to make these links visually consistent.
-- Reserve homepage-anchor `"Foil"` for the brand mention in author / footer / about contexts — not as a topic signal.
+- Cluster posts MUST link to their pillar once with the pillar's primary keyword as anchor.
+- A city cluster post MUST also link to the matching `/service-areas/[city]` page (the conversion target).
+- Every post links to a conversion page (`/host`, `/faq`, or a `/service-areas/[city]` page) at least once —
+  the quality gate (V-link) enforces this.
+- Never link to the dormant deal-finder (`/cards`, `/start`, `/deals`, `/upload`, `/newsletter`, the old
+  collector pillars). A link to one of those fails the link-existence gate.
+- Never use "click here", "read more", or naked URLs as anchor text. Use `TopicLink` in MDX for visual
+  consistency.
 
 ---
 
@@ -106,17 +108,25 @@ The point of consistent anchor text is to give Google a strong, unambiguous sign
 
 Every cluster MDX post should:
 
-1. Open with a 1–2 sentence answer to the post's primary keyword — the *featured-snippet* answer.
+1. Open with a 1–2 sentence answer to the post's primary keyword (the featured-snippet answer), in the
+   confident-local-operator voice.
 2. Within the first ~300 words, link to its pillar once using the pillar's primary keyword anchor.
-3. Use `<Callout variant="tip">` or `<Callout variant="warning">` at least once to break up scannable scrolling.
-4. Embed `<CardScannerEmbed />` once, mid-article — the conversion event we're optimizing for.
-5. Close with a "Keep reading" section linking to 2–3 sibling clusters via `<TopicLink>`.
-6. Use frontmatter: `title`, `description`, `date` (ISO), `tags` (array), `pillar` (matching the pillar URL slug, e.g. `japanese-pokemon-cards-value`).
+3. Reference the Bay Area or a served city at least once (local relevance; quality gate V-geo).
+4. Use `<Callout variant="tip">` or `<Callout variant="warning">` at least once to break up the page.
+5. Include at least one link to a conversion page (`/host`, `/faq`, or a `/service-areas/[city]` page).
+6. Close with a "Keep reading" section linking to 2–3 sibling clusters via `<TopicLink>`.
+7. Use frontmatter: `title`, `description`, `date` (ISO), `tags` (array), `pillar` (matching the pillar URL
+   slug, e.g. `host` or `service-areas`).
+8. **Do NOT** use `<CardScannerEmbed>` (deal-finder component) and **do NOT** print a revenue-share
+   percentage, an earnings guarantee, or an insurance/liability claim (honesty gates).
 
 ---
 
-## Out of scope for V1 SEO
+## Out of scope for V1 vending SEO
 
-- Programmatic SEO (per-card landing pages) — wait for organic ranking signal on the three pillars before scaling.
-- Backlink outreach — defer until at least 5 clusters per pillar are published.
-- Non-Pokémon TCG pillars (MTG, Yu-Gi-Oh) — Foil is Pokémon-only at launch (see `CLAUDE.md`).
+- Collector/deal-finder topics (card valuation, grading, Japanese-set decoding) — retired with the pivot;
+  the existing posts stay noindexed and dormant.
+- City pages beyond the Tier-1 home radius — expand into Tier-2 (doc 01) only as real placements give
+  local proof to add. Quality over volume; Google penalizes thin duplicate city content.
+- Backlink outreach — defer until at least 4–5 cluster posts per pillar are published.
+- Non-Pokémon vending verticals (snacks, drinks) — Foil is the Pokémon-card category specifically.

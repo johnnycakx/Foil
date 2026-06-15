@@ -19,6 +19,19 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-06-15
+category: content
+status: captured
+---
+## Newsletter draft-generator still collector-voiced — reframe for vending before newsletters resume
+
+Goal C ([ADR-062](DECISIONS.md#adr-062--content-engine-reframe-deal-findercollector--vending-host-acquisition--local-seo)) reframed the BLOG content engine (SYSTEM_PROMPT + gates + backlog) to vending host-acquisition, but the **newsletter** path (`lib/newsletter/draft-generator.ts`) was deliberately left untouched — it still has the collector/deal-finder voice + its own gate set (the source-figure provenance gate, em-dash, banned-phrase). If John ever resumes the best-deals digest as a vending host newsletter, the newsletter SYSTEM_PROMPT + gates need the same reframe (audience = host owners, honesty guardrails, no rev-share %, conversion links to /host). Note: the newsletter step is currently dead anyway (the blog pipeline routes to `_pending` and the workflow's newsletter step is gated on `BEEHIIV_*`), so this is a clean follow-up, not a regression. Small lift; mirrors the blog reframe.
+
+**Context:** 2026-06-15 Goal C content-engine reframe — `voice-check.ts` (the newsletter's voice lens) kept its `FOIL_DATA_CITATION_TRIGGERS` detector when the blog gate that shared it was retired, which surfaced the seam: the newsletter still assumes collector content.
+
+---
+
+---
 date: 2026-06-12
 category: product
 status: captured

@@ -19,7 +19,23 @@
 // runs through gate (e) (BANNED_PHRASES); this function is for tests + manual
 // voice linting.
 
-import { FOIL_DATA_CITATION_TRIGGERS, bannedPhraseMatches } from "./quality-gates.ts";
+import { bannedPhraseMatches } from "./quality-gates.ts";
+
+// Proprietary-data citation triggers for detector A. Lives here now: the blog
+// gate (d) that also used these was retired with the vending reframe (ADR-062),
+// leaving this voice lens as the sole consumer. Detector A simply doesn't fire
+// on vending copy (which cites no Foil scan data), but the lens stays intact for
+// the newsletter pipeline + any deal-finder text it's still run against.
+const FOIL_DATA_CITATION_TRIGGERS: readonly string[] = [
+  "Foil's scan data",
+  "Foil's data",
+  "across our scans",
+  "cards processed",
+  "scanned by Foil",
+  "Foil scanned",
+  "Foil identifies",
+  "Foil's identification",
+];
 
 export type VoiceViolationKind =
   | "unsourced_proprietary_stat"
