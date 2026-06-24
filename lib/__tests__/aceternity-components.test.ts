@@ -165,7 +165,8 @@ test("Homepage Hero: solid cream — no gradient/Card3D/Magnetic/Sparkles (ADR-0
   assert.doesNotMatch(src, /<Card3D\b/);
   assert.doesNotMatch(src, /<MagneticLink\b/);
   assert.doesNotMatch(src, /<Sparkles\b/);
-  // The primary CTA is a plain Link to /start.
+  // The hero keeps a plain Link to /start (now a demoted *secondary* link —
+  // the primary CTA is the EmailCapture, G-EMAIL / ADR-065).
   assert.match(src, /<Link[^>]*href=["']\/start["']/);
 });
 

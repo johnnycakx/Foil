@@ -88,13 +88,13 @@ export default function PokemonCardConditionGuidePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }}
       />
       <article className="mx-auto w-full max-w-3xl px-5 py-12 sm:px-8 sm:py-20">
-        <p className="text-xs font-medium uppercase tracking-wider text-[#FF6B5C]">
+        <p className="text-xs font-medium uppercase tracking-wider text-foil-gold">
           Guide · Updated May 2026
         </p>
-        <h1 className="mt-4 text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl">
+        <h1 className="font-display mt-4 text-4xl font-semibold leading-[1.1] tracking-[-0.01em] text-foil-navy sm:text-5xl">
           Pokémon Card Condition Guide: NM, LP, MP, HP, and the Graded Ladder
         </h1>
-        <p className="mt-6 text-lg text-zinc-300">
+        <p className="mt-6 text-lg text-foil-slate">
           Condition is the variable that turns a $5 Pokémon card into a $500 card. This guide breaks
           down the TCGplayer raw-condition tiers as they&apos;re actually applied in the market, the
           defects that move a card down a tier, and the graded ladder from PSA 7 to PSA 10 — plus
@@ -296,7 +296,7 @@ export default function PokemonCardConditionGuidePage() {
             submit.{" "}
             <Link
               href="#waitlist"
-              className="text-[#FFB6A8] underline decoration-[#FF6B5C]/40 underline-offset-4 hover:text-[#FF6B5C]"
+              className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral"
             >
               Join the waitlist
             </Link>{" "}
@@ -306,19 +306,19 @@ export default function PokemonCardConditionGuidePage() {
           <h2>Related guides</h2>
           <ul>
             <li>
-              <Link href="/pokemon-card-value-calculator" className="text-[#FF6B5C] underline decoration-[#FF6B5C]/40 underline-offset-4 hover:decoration-[#FF6B5C]">
+              <Link href="/pokemon-card-value-calculator" className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral">
                 Pokémon card value calculator
               </Link>{" "}
               — the three printed fields you have to read off any card to price it correctly.
             </li>
             <li>
-              <Link href="/japanese-pokemon-cards-value" className="text-[#FF6B5C] underline decoration-[#FF6B5C]/40 underline-offset-4 hover:decoration-[#FF6B5C]">
+              <Link href="/japanese-pokemon-cards-value" className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral">
                 Japanese Pokémon cards value
               </Link>{" "}
               — why Japanese SARs grade higher on average and when JP prints command a premium.
             </li>
             <li>
-              <Link href="/blog" className="text-[#FF6B5C] underline decoration-[#FF6B5C]/40 underline-offset-4 hover:decoration-[#FF6B5C]">
+              <Link href="/blog" className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral">
                 Foil blog
               </Link>{" "}
               — field notes on Pokémon card valuation, scanning, and grading.
@@ -329,8 +329,8 @@ export default function PokemonCardConditionGuidePage() {
           <div className="mt-6 space-y-6">
             {FAQ.map(({ q, a }) => (
               <div key={q}>
-                <h3 className="text-lg font-semibold text-white">{q}</h3>
-                <p className="mt-2 text-zinc-300">{a}</p>
+                <h3 className="font-display text-lg font-semibold text-foil-navy">{q}</h3>
+                <p className="mt-2 text-foil-navy/85">{a}</p>
               </div>
             ))}
           </div>
@@ -338,25 +338,25 @@ export default function PokemonCardConditionGuidePage() {
 
         <div
           id="waitlist"
-          className="mt-16 rounded-3xl border border-[#FF6B5C]/30 bg-gradient-to-br from-[#101D38] via-[#0B1428] to-[#101D38] p-8 sm:p-12"
+          className="mt-16 rounded-3xl border border-foil-gold/40 bg-foil-cream p-8 shadow-xl shadow-foil-navy/10 sm:p-12"
         >
-          <h2 className="max-w-2xl text-2xl font-bold tracking-tight sm:text-3xl">
+          <h2 className="font-display max-w-2xl text-2xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-3xl">
             Spot the next grading candidate before someone else does.
           </h2>
-          <p className="mt-3 max-w-2xl text-zinc-300">
-            Foil shows the raw NM price <em className="not-italic font-medium text-white">and</em>{" "}
+          <p className="mt-3 max-w-2xl text-foil-slate">
+            Foil shows the raw NM price <em className="not-italic font-medium text-foil-navy">and</em>{" "}
             the highest graded comp on every card you scan — so the moment you see a $30 card with a
             $1,500 PSA 10 behind it, you know to slow down and inspect.{" "}
             <Link
               href="/upload"
-              className="text-[#FFB6A8] underline decoration-[#FF6B5C]/40 underline-offset-4 hover:text-[#FF6B5C]"
+              className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral"
             >
               Try the scanner
             </Link>{" "}
             once you&apos;re in.
           </p>
           <div className="mt-6 max-w-xl">
-            <EmailCapture source="condition_guide" variant="inline" headline="Get the weekly best-deals newsletter." />
+            <EmailCapture source="pillar_condition_guide" variant="inline" headline="Get the weekly best-deals newsletter." />
           </div>
         </div>
       </article>
@@ -366,7 +366,7 @@ export default function PokemonCardConditionGuidePage() {
 
 function Prose({ children }: { children: React.ReactNode }) {
   return (
-    <div className="prose-foil mt-10 max-w-none text-zinc-300 [&_code]:rounded [&_code]:bg-white/10 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-sm [&_code]:text-[#FFC7BA] [&_h2]:mt-12 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:text-white sm:[&_h2]:text-3xl [&_h3]:mt-8 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-white [&_p]:mt-4 [&_p]:leading-relaxed [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5 [&_li]:leading-relaxed [&_strong]:text-white">
+    <div className="mt-10 max-w-none text-foil-navy/85 [&_code]:rounded [&_code]:bg-foil-navy/10 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-sm [&_code]:text-foil-navy [&_h2]:mt-12 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:tracking-[-0.01em] [&_h2]:text-foil-navy sm:[&_h2]:text-3xl [&_h3]:mt-8 [&_h3]:font-display [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-foil-navy [&_p]:mt-4 [&_p]:leading-relaxed [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5 [&_li]:leading-relaxed [&_strong]:text-foil-navy">
       {children}
     </div>
   );

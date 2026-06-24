@@ -29,6 +29,14 @@ const PUBLIC_SURFACES: readonly string[] = [
   "app/(site)/cards/sets/[set-id]/page.tsx",
   "app/(site)/blog/page.tsx",
   "app/(site)/blog/[slug]/page.tsx",
+  // G-EMAIL / ADR-065: the three SEO pillar pages were ported from the
+  // pre-Session-39 dark palette (white/zinc text on cream — a live contrast
+  // bug) to cream/navy/gold while raising email capture on the ranking
+  // surfaces. Adding them here extends the no-raw-hex + coral-hover-only
+  // invariants so they can't drift back.
+  "app/(site)/japanese-pokemon-cards-value/page.tsx",
+  "app/(site)/pokemon-card-value-calculator/page.tsx",
+  "app/(site)/pokemon-card-condition-guide/page.tsx",
   "app/(site)/legal/privacy/page.tsx",
   "app/(site)/legal/terms/page.tsx",
   "app/(site)/legal/ebay-api-compliance/page.tsx",
@@ -104,6 +112,30 @@ test("Homepage: H1 is single-color navy with no inline coral split (ADR-029)", (
   const h1Block = src.match(/<h1\b[^>]*text-foil-navy[^>]*>[\s\S]*?<\/h1>/);
   assert.ok(h1Block, "H1 with text-foil-navy must exist");
   assert.doesNotMatch(h1Block![0], /<span\b[^>]*text-[^>]*>/);
+});
+
+test("Homepage: email capture is the PRIMARY hero CTA, deal links demoted to secondary (G-EMAIL / ADR-065)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  // The newsletter is the primary conversion (STRATEGY-AUDIENCE-MOAT). The
+  // hero must render an EmailCapture tagged homepage_hero, and it must appear
+  // BEFORE the demoted "See today's best deals" deal link so the email field
+  // is visually + structurally the primary action.
+  assert.match(src, /<EmailCapture\s+source="homepage_hero"/, "hero must render EmailCapture source=homepage_hero");
+  const heroCaptureIdx = src.indexOf('source="homepage_hero"');
+  const dealsLinkIdx = src.indexOf("See today&apos;s best deals");
+  assert.ok(heroCaptureIdx > -1 && dealsLinkIdx > -1, "both the hero capture and the deal link must exist");
+  assert.ok(
+    heroCaptureIdx < dealsLinkIdx,
+    "the hero EmailCapture must precede the demoted deal links (primary before secondary)",
+  );
+  // The big navy deal button is gone from the hero — the deal links are now
+  // text links. Pin that the hero no longer leads with a navy CTA button by
+  // checking the deal link is not a rounded navy button fill.
+  assert.doesNotMatch(
+    src,
+    /href="\/deals"\s+className="rounded-xl bg-foil-navy/,
+    "the /deals link must no longer be the primary navy button in the hero",
+  );
 });
 
 test("Homepage: hero has no BackgroundGradientAnimation / corner-shimmer (ADR-038 — solid cream)", () => {

@@ -111,17 +111,21 @@ function Hero() {
         ))}
       </div>
 
-      {/* Pitch block — centered beneath the card fan. No scrim needed: the
-          cards no longer overlap the text. */}
+      {/* Pitch block — centered beneath the card fan. Email capture is the
+          PRIMARY CTA (G-EMAIL / ADR-065): the owned newsletter list is the
+          compounding moat (STRATEGY-AUDIENCE-MOAT). The deal-finder utility
+          stays credible but is demoted to the secondary "reason to subscribe."
+          No scrim needed: the cards no longer overlap the text. */}
       <div className="relative mx-auto w-full max-w-3xl px-5 pt-10 pb-20 text-center sm:px-8 sm:pt-12 sm:pb-28">
         <p className="inline-flex items-center gap-2 rounded-full border border-foil-gold/40 bg-foil-cream/80 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">
           <FoilCornerMark px={13} />
           Live · tracking {cardCount} cards across {setCount} sets
         </p>
 
-        {/* Headline — single-color navy, Fraunces display (ADR-036). */}
+        {/* Headline — single-color navy, Fraunces display (ADR-036). Leads with
+            knowledge/value for the research-intent audience, then the drop. */}
         <h1 className="font-display mx-auto mt-6 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-[-0.01em] text-foil-navy sm:text-5xl md:text-6xl">
-          Tell me a Pokémon card. I&apos;ll find you the best live deal.
+          Know what any Pokémon card is really worth — and when it drops.
         </h1>
 
         <p className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-foil-navy/10 bg-foil-cream/70 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">
@@ -131,41 +135,46 @@ function Hero() {
 
         <p className="mx-auto mt-5 max-w-xl text-lg text-foil-slate sm:text-xl">
           Foil scans eBay&apos;s live listings, filters out the keyword-stuffed
-          junk, and surfaces the single best-value listing for the card you want.
-          Want it cheaper? Set a target price and we&apos;ll email you the moment
-          a real listing drops to it.
+          junk, and tracks what every card is actually selling for. Get the
+          weekly best-deals drop — real listings, real prices, one email a week
+          from a Level-4 TCGplayer seller.
         </p>
 
-        <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+        {/* Primary CTA: the newsletter. The email field sits in the hero,
+            above the fold (source="homepage_hero"). The component's own mt-14
+            provides the gap from the subcopy above. */}
+        <div className="mx-auto max-w-xl text-left">
+          <EmailCapture
+            source="homepage_hero"
+            variant="inline"
+            headline="Get the weekly best-deals drop."
+          />
+        </div>
+
+        {/* Secondary: the deal-finder utility is the reason to subscribe.
+            Demoted to text links so the email field stays the primary action.
+            All three utility entry points are kept (deals / catalog / watchlist). */}
+        <div className="mt-6 flex flex-col items-center justify-center gap-x-5 gap-y-2 text-sm sm:flex-row sm:flex-wrap">
+          <span className="text-foil-slate">Want to dive in now?</span>
           <Link
             href="/deals"
-            className="rounded-xl bg-foil-navy px-6 py-3.5 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40"
+            className="font-medium text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
           >
             See today&apos;s best deals →
           </Link>
           <Link
-            href="/start"
-            className="text-sm text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
-          >
-            Start tracking cards →
-          </Link>
-          <Link
             href="/cards"
-            className="text-sm text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
+            className="text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
           >
             Browse the catalog →
           </Link>
-        </div>
-
-        <p className="mt-5 text-xs text-foil-slate">
-          Free. No spam, ever. Prefer just the weekly best-deals digest?{" "}
-          <a
-            href="#waitlist"
+          <Link
+            href="/start"
             className="text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
           >
-            Grab the newsletter below.
-          </a>
-        </p>
+            Start tracking cards →
+          </Link>
+        </div>
       </div>
     </section>
   );
@@ -365,8 +374,8 @@ function FinalCTA() {
           Never overpay for a Pokémon card again.
         </h2>
         <p className="mt-3 max-w-2xl text-foil-slate">
-          Get on the waitlist and we&apos;ll email you the moment early access
-          opens, plus the weekly best-deals digest in the meantime.
+          One email a week: the best live deals we found, the cards on the move,
+          and one sharp valuation note. No spam, unsubscribe anytime.
         </p>
         <div className="mt-6 max-w-xl">
           <EmailCapture source="homepage_final_cta" variant="inline" headline="Get the weekly best-deals newsletter." />

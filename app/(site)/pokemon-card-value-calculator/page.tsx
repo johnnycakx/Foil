@@ -88,13 +88,13 @@ export default function PokemonCardValueCalculatorPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaGraph) }}
       />
       <article className="mx-auto w-full max-w-3xl px-5 py-12 sm:px-8 sm:py-20">
-        <p className="text-xs font-medium uppercase tracking-wider text-[#FF6B5C]">
+        <p className="text-xs font-medium uppercase tracking-wider text-foil-gold">
           Guide · Updated May 2026
         </p>
-        <h1 className="mt-4 text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl">
+        <h1 className="font-display mt-4 text-4xl font-semibold leading-[1.1] tracking-[-0.01em] text-foil-navy sm:text-5xl">
           Pokémon Card Value Calculator: How to Price Any Card Without Guessing
         </h1>
-        <p className="mt-6 text-lg text-zinc-300">
+        <p className="mt-6 text-lg text-foil-slate">
           You&apos;re looking at a Pokémon card and want to know what it&apos;s actually worth — not
           what someone is asking, what it really sells for. This guide walks through the three fields
           you have to read off the card, where to look up the price, how condition adjusts the
@@ -270,7 +270,7 @@ export default function PokemonCardValueCalculatorPage() {
             guessing.{" "}
             <Link
               href="#waitlist"
-              className="text-[#FFB6A8] underline decoration-[#FF6B5C]/40 underline-offset-4 hover:text-[#FF6B5C]"
+              className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral"
             >
               Join the waitlist
             </Link>{" "}
@@ -280,19 +280,19 @@ export default function PokemonCardValueCalculatorPage() {
           <h2>Related guides</h2>
           <ul>
             <li>
-              <Link href="/japanese-pokemon-cards-value" className="text-[#FF6B5C] underline decoration-[#FF6B5C]/40 underline-offset-4 hover:decoration-[#FF6B5C]">
+              <Link href="/japanese-pokemon-cards-value" className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral">
                 Japanese Pokémon cards value
               </Link>{" "}
               — pricing Japanese sets in USD and reading sv-era set codes.
             </li>
             <li>
-              <Link href="/pokemon-card-condition-guide" className="text-[#FF6B5C] underline decoration-[#FF6B5C]/40 underline-offset-4 hover:decoration-[#FF6B5C]">
+              <Link href="/pokemon-card-condition-guide" className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral">
                 Pokémon card condition guide
               </Link>{" "}
               — NM vs LP vs MP grading, defect taxonomy, and when grading is worth it.
             </li>
             <li>
-              <Link href="/blog" className="text-[#FF6B5C] underline decoration-[#FF6B5C]/40 underline-offset-4 hover:decoration-[#FF6B5C]">
+              <Link href="/blog" className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral">
                 Foil blog
               </Link>{" "}
               — field notes on Pokémon card valuation, scanning, and grading.
@@ -303,8 +303,8 @@ export default function PokemonCardValueCalculatorPage() {
           <div className="mt-6 space-y-6">
             {FAQ.map(({ q, a }) => (
               <div key={q}>
-                <h3 className="text-lg font-semibold text-white">{q}</h3>
-                <p className="mt-2 text-zinc-300">{a}</p>
+                <h3 className="font-display text-lg font-semibold text-foil-navy">{q}</h3>
+                <p className="mt-2 text-foil-navy/85">{a}</p>
               </div>
             ))}
           </div>
@@ -312,25 +312,25 @@ export default function PokemonCardValueCalculatorPage() {
 
         <div
           id="waitlist"
-          className="mt-16 rounded-3xl border border-[#FF6B5C]/30 bg-gradient-to-br from-[#101D38] via-[#0B1428] to-[#101D38] p-8 sm:p-12"
+          className="mt-16 rounded-3xl border border-foil-gold/40 bg-foil-cream p-8 shadow-xl shadow-foil-navy/10 sm:p-12"
         >
-          <h2 className="max-w-2xl text-2xl font-bold tracking-tight sm:text-3xl">
+          <h2 className="font-display max-w-2xl text-2xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-3xl">
             Stop pricing cards in three browser tabs.
           </h2>
-          <p className="mt-3 max-w-2xl text-zinc-300">
+          <p className="mt-3 max-w-2xl text-foil-slate">
             Snap one photo. Foil reads the printed name, set code, and collector number, pulls live
             eBay sold averages, TCGplayer market price, and graded comps, and gives you a single
             number — with the full breakdown one tap away.{" "}
             <Link
               href="/upload"
-              className="text-[#FFB6A8] underline decoration-[#FF6B5C]/40 underline-offset-4 hover:text-[#FF6B5C]"
+              className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral"
             >
               Try the scanner
             </Link>{" "}
             once you&apos;re in.
           </p>
           <div className="mt-6 max-w-xl">
-            <EmailCapture source="value_calculator_guide" variant="inline" headline="Get the weekly best-deals newsletter." />
+            <EmailCapture source="pillar_value_calculator" variant="inline" headline="Get the weekly best-deals newsletter." />
           </div>
         </div>
       </article>
@@ -340,7 +340,7 @@ export default function PokemonCardValueCalculatorPage() {
 
 function Prose({ children }: { children: React.ReactNode }) {
   return (
-    <div className="prose-foil mt-10 max-w-none text-zinc-300 [&_code]:rounded [&_code]:bg-white/10 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-sm [&_code]:text-[#FFC7BA] [&_h2]:mt-12 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:text-white sm:[&_h2]:text-3xl [&_h3]:mt-8 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-white [&_p]:mt-4 [&_p]:leading-relaxed [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5 [&_li]:leading-relaxed [&_strong]:text-white">
+    <div className="mt-10 max-w-none text-foil-navy/85 [&_code]:rounded [&_code]:bg-foil-navy/10 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-sm [&_code]:text-foil-navy [&_h2]:mt-12 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:tracking-[-0.01em] [&_h2]:text-foil-navy sm:[&_h2]:text-3xl [&_h3]:mt-8 [&_h3]:font-display [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-foil-navy [&_p]:mt-4 [&_p]:leading-relaxed [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5 [&_li]:leading-relaxed [&_strong]:text-foil-navy">
       {children}
     </div>
   );

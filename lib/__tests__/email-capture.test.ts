@@ -183,3 +183,35 @@ test("createWatchlist action: gates the Beehiiv subscribe on opt_in_newsletter, 
   const before = src.slice(Math.max(0, subscribeIdx - 400), subscribeIdx);
   assert.match(before, /\btry\s*\{/);
 });
+
+// ---------------------------------------------------------------------------
+// G-EMAIL / ADR-065 — homepage reorient (email-capture-primary) + inline
+// capture on the ranking content surfaces. Each surface keeps a distinct
+// `source` so blog / pillar / hero / footer signups segment apart in Beehiiv.
+// ---------------------------------------------------------------------------
+
+test("homepage: hero EmailCapture is tagged source='homepage_hero' (primary CTA)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  assert.match(src, /<EmailCapture\s+source="homepage_hero"/);
+});
+
+test("homepage: final-CTA EmailCapture retains source='homepage_final_cta'", () => {
+  const src = readFile("app/(site)/page.tsx");
+  assert.match(src, /source="homepage_final_cta"/);
+});
+
+test("blog post body: non-vending inline EmailCapture tagged source='blog_inline'", () => {
+  const src = readFile("app/(site)/blog/[slug]/page.tsx");
+  assert.match(src, /source="blog_inline"/);
+  // The vending branch must NOT carry the blog_inline capture (host CTA only).
+  assert.match(src, /href="\/host"/, "vending branch keeps the host CTA");
+});
+
+test("pillar pages: each ranking page carries a distinct pillar_* capture source tag", () => {
+  const condition = readFile("app/(site)/pokemon-card-condition-guide/page.tsx");
+  const value = readFile("app/(site)/pokemon-card-value-calculator/page.tsx");
+  const japanese = readFile("app/(site)/japanese-pokemon-cards-value/page.tsx");
+  assert.match(condition, /source="pillar_condition_guide"/);
+  assert.match(value, /source="pillar_value_calculator"/);
+  assert.match(japanese, /source="pillar_japanese_value"/);
+});

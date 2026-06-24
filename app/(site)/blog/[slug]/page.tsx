@@ -169,9 +169,12 @@ export default async function BlogPostPage({
               </Link>
             </section>
           ) : (
-            // Dormant deal-finder post: keep the legacy newsletter capture
-            // (noindexed, unlisted; not touched beyond exclusion, ADR-063).
-            <EmailCapture source={`blog-${post.slug}`} variant="inline" />
+            // Deal-finder post (primary + indexed since ADR-064). A single
+            // end-of-post newsletter capture — email is the primary conversion
+            // for this research-intent audience (G-EMAIL / ADR-065). Tagged
+            // `blog_inline` so every blog-body signup segments together in
+            // Beehiiv, distinct from the footer / hero / pillar sources.
+            <EmailCapture source="blog_inline" variant="inline" />
           )}
         </article>
 
