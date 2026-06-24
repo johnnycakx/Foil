@@ -14,10 +14,15 @@ export function EmailCapture({
   source,
   variant,
   headline,
+  subtext,
 }: {
   source: string;
   variant: Variant;
   headline?: string;
+  // Optional override for the inline supporting line (footer variant has none).
+  // Lets a surface state its own concrete "what lands in your inbox" promise
+  // instead of the generic default. Defaults to the existing copy.
+  subtext?: string;
 }) {
   const [state, setState] = useState<SubscribeActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -76,7 +81,8 @@ export function EmailCapture({
       </h2>
       {!isFooter && (
         <p className="mt-2 text-sm text-foil-slate">
-          Card price moves, Japanese-set drops, and one sharp valuation note in your inbox. No spam.
+          {subtext ??
+            "Card price moves, Japanese-set drops, and one sharp valuation note in your inbox. No spam."}
         </p>
       )}
 

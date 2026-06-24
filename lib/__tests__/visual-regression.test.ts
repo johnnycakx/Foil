@@ -138,6 +138,32 @@ test("Homepage: email capture is the PRIMARY hero CTA, deal links demoted to sec
   );
 });
 
+test("Homepage: no 'Level-4' / 'TCGplayer Verified Seller' jargon anywhere in the file (homepage-v2, ADR-065)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  // The insider seller-credential jargon means nothing to a cold visitor; it's
+  // replaced by the founder credit. Pin the negative across the whole file
+  // (copy + comments) so a refactor can't reintroduce it.
+  assert.doesNotMatch(src, /Level-4/i, "'Level-4' jargon must not appear on the homepage");
+  assert.doesNotMatch(src, /TCGplayer Verified Seller/i, "'TCGplayer Verified Seller' jargon must not appear on the homepage");
+});
+
+test("Homepage: founder credit renders the headshot with descriptive alt text (homepage-v2, ADR-065)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  // The founder presence is the trust signal that replaced the jargon badge —
+  // a face beats a credential nobody parses, and it seeds the X content pipeline.
+  assert.match(src, /src=["']\/founder\/john-craig\.webp["']/, "founder headshot src must be /founder/john-craig.webp");
+  assert.match(src, /alt=["']John Craig, founder of Foil["']/, "founder image needs descriptive alt text");
+  assert.match(src, /Built by John Craig/, "founder byline must name John Craig");
+  // The headshot file must actually exist (no broken ref).
+  const file = join(ROOT, "public/founder/john-craig.webp");
+  assert.ok(existsSync(file), "founder headshot must exist at public/founder/john-craig.webp");
+  // And the stray @512 variant must be gone (goal cleanup).
+  assert.ok(
+    !existsSync(join(ROOT, "public/founder/john-craig@512.webp")),
+    "the stray john-craig@512.webp must be deleted",
+  );
+});
+
 test("Homepage: hero has no BackgroundGradientAnimation / corner-shimmer (ADR-038 — solid cream)", () => {
   const src = readFile("app/(site)/page.tsx");
   // Session 47.1 removed the corner-shimmer gradient — it read as a stray
@@ -432,10 +458,12 @@ test("Home page: orphan CardPeek decorations removed (ADR-038)", () => {
 
 test("Hero pills: bullets use the foil-corner mark, no Pokeball (ADR-055)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // The Live pill + the Verified-Seller pill use <FoilCornerMark /> as the
-  // bullet (the navy Pokeball bullet is retired). At least two instances.
+  // The Live pill uses <FoilCornerMark /> as its bullet (the navy Pokeball
+  // bullet is retired). Homepage-v2 (ADR-065) removed the second "Verified
+  // Seller" pill — its trust function moved to the founder credit (headshot +
+  // byline) — so the bar is now >=1 mark, not >=2.
   const marks = (src.match(/<FoilCornerMark\b/g) ?? []).length;
-  assert.ok(marks >= 2, "expected >=2 FoilCornerMark bullets (Live + trust pills)");
+  assert.ok(marks >= 1, "expected >=1 FoilCornerMark bullet (the Live pill)");
   assert.match(src, /import \{ FoilCornerMark \} from "@\/components\/brand\/logo"/);
   assert.doesNotMatch(src, /<PokeballMark\b/, "no PokeballMark bullets remain");
 });

@@ -7,9 +7,9 @@ import { EmailCapture } from "@/components/email-capture";
 import { CARD_CATALOG, setIdsInCatalog } from "@/lib/cards/catalog";
 import { FoilCornerMark } from "@/components/brand/logo";
 
-const SITE_TITLE = "Foil — The best price on any Pokémon card";
+const SITE_TITLE = "Foil: the best price on any Pokémon card";
 const SITE_DESCRIPTION =
-  "Search any Pokémon card and instantly see the best live deal on eBay — curated by price, condition, and seller quality. Free wishlist alerts when your cards drop. Built by a Level-4 TCGplayer Verified Seller. TCGplayer coming soon.";
+  "Stop guessing what your Pokémon cards are worth and overpaying on eBay. Foil watches the market and emails you the best card deals and price moves every week. Free, no spam.";
 
 export const metadata: Metadata = {
   title: SITE_TITLE,
@@ -111,51 +111,63 @@ function Hero() {
         ))}
       </div>
 
-      {/* Pitch block — centered beneath the card fan. Email capture is the
-          PRIMARY CTA (G-EMAIL / ADR-065): the owned newsletter list is the
-          compounding moat (STRATEGY-AUDIENCE-MOAT). The deal-finder utility
-          stays credible but is demoted to the secondary "reason to subscribe."
-          No scrim needed: the cards no longer overlap the text. */}
+      {/* Pitch block — ONE message (homepage-v2 distill, G-EMAIL / ADR-065):
+          subscribe to get the best deals + price moves by email. The deal-finder
+          is the proof, demoted to secondary links below. The founder credit (a
+          face + a plain byline) replaces the old seller-credential jargon badge:
+          a face beats a credential nobody parses, and it seeds the X content
+          pipeline. No scrim needed: the cards no longer overlap the text. */}
       <div className="relative mx-auto w-full max-w-3xl px-5 pt-10 pb-20 text-center sm:px-8 sm:pt-12 sm:pb-28">
         <p className="inline-flex items-center gap-2 rounded-full border border-foil-gold/40 bg-foil-cream/80 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">
           <FoilCornerMark px={13} />
           Live · tracking {cardCount} cards across {setCount} sets
         </p>
 
-        {/* Headline — single-color navy, Fraunces display (ADR-036). Leads with
-            knowledge/value for the research-intent audience, then the drop. */}
+        {/* Headline — single-color navy, Fraunces display (ADR-036). The promise:
+            stop guessing / stop overpaying. */}
         <h1 className="font-display mx-auto mt-6 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-[-0.01em] text-foil-navy sm:text-5xl md:text-6xl">
-          Know what any Pokémon card is really worth — and when it drops.
+          Stop guessing what your cards are worth and overpaying on eBay.
         </h1>
 
-        <p className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-foil-navy/10 bg-foil-cream/70 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">
-          <FoilCornerMark px={13} />
-          Built by a Level-4 TCGplayer Verified Seller
-        </p>
-
         <p className="mx-auto mt-5 max-w-xl text-lg text-foil-slate sm:text-xl">
-          Foil scans eBay&apos;s live listings, filters out the keyword-stuffed
-          junk, and tracks what every card is actually selling for. Get the
-          weekly best-deals drop — real listings, real prices, one email a week
-          from a Level-4 TCGplayer seller.
+          Foil watches the market and emails you the best deals and price moves
+          every week.
         </p>
 
-        {/* Primary CTA: the newsletter. The email field sits in the hero,
-            above the fold (source="homepage_hero"). The component's own mt-14
-            provides the gap from the subcopy above. */}
+        {/* Primary action: subscribe. The concrete email promise (exactly what
+            lands in the inbox) sits at the field (source="homepage_hero"). The
+            component's own mt-14 provides the gap from the subhead above. */}
         <div className="mx-auto max-w-xl text-left">
           <EmailCapture
             source="homepage_hero"
             variant="inline"
-            headline="Get the weekly best-deals drop."
+            headline="Get the weekly drop, free."
+            subtext="One email a week: the best live card deals right now, the cards on the move, and one sharp valuation note. No spam."
           />
         </div>
 
-        {/* Secondary: the deal-finder utility is the reason to subscribe.
-            Demoted to text links so the email field stays the primary action.
-            All three utility entry points are kept (deals / catalog / watchlist). */}
-        <div className="mt-6 flex flex-col items-center justify-center gap-x-5 gap-y-2 text-sm sm:flex-row sm:flex-wrap">
-          <span className="text-foil-slate">Want to dive in now?</span>
+        {/* Founder presence: replaces the old seller-credential jargon badge.
+            Slim credit (avatar + plain byline), not a card. */}
+        <div className="mx-auto mt-6 flex max-w-xl items-center gap-3 text-left">
+          <Image
+            src="/founder/john-craig.webp"
+            alt="John Craig, founder of Foil"
+            width={44}
+            height={44}
+            className="h-11 w-11 shrink-0 rounded-full object-cover ring-1 ring-foil-navy/10"
+          />
+          <p className="text-sm text-foil-slate">
+            <span className="font-medium text-foil-navy">Built by John Craig.</span>{" "}
+            I run a Pokémon card store and got tired of digging through eBay junk
+            to find the real deals, so I built Foil to do it for me.
+          </p>
+        </div>
+
+        {/* Secondary: the deal-finder is the proof, and the reason to subscribe.
+            It stays free + indexable; demoted to text links so the email field
+            stays the primary action. All three entry points kept. */}
+        <div className="mt-8 flex flex-col items-center justify-center gap-x-5 gap-y-2 text-sm sm:flex-row sm:flex-wrap">
+          <span className="text-foil-slate">Want to look right now?</span>
           <Link
             href="/deals"
             className="font-medium text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
