@@ -2096,6 +2096,26 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 
 **Cross-refs.** [ADR-065](#adr-065--homepage-reorient-email-capture-is-the-primary-conversion-goal-inline-capture-on-the-ranking-content-surfaces), [ADR-027](#adr-027--unified-email-capture-across-three-surfaces-default-checked-newsletter-opt-in-on-the-watchlist-form), [STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md), [ADR-064](#adr-064--dual-track-site-deal-finder-restored-as-primary-indexed-seo-surface-vending-lead-gen-kept-at-host).
 
+## ADR-067 — Ad-hoc single-video transcript ingestion + the `docs/knowledge/` reference base
+
+**Date:** 2026-06-24
+**Status:** Accepted. Extends [ADR-050](#adr-050--creator-content-ingestion--attribution-gate) (creator-content ingestion + attribution discipline) with (a) an explicit-video ingestion mode and (b) a new committed reference-base concept under `docs/knowledge/`.
+
+**Context.** The creator-ingestion pipeline (`scripts/ingest-transcripts.ts`) is **channel-level + date-windowed**: it pulls `@handle/videos` for the last N days from the `active` rows of `docs/creator-whitelist.md`, and is built for the recurring Pokémon-market-signal digest. We needed to distill a **newsletter-business knowledge base** from 7 *specific*, evergreen, mixed-channel videos (My First Million, Greg Isenberg, Kit, Matt McGarry, Chris Koerner, Creator Spotlight, Brennan Wells) — which the channel/date model can't address (they're old, off-whitelist, and individually chosen). A P0 premise check confirmed: no single-video path existed; `cleanVtt` + `redactForSynthesis` are pure and reusable; this machine is residential so yt-dlp needs no cookies by default (`python -m yt_dlp` available, v2026.03.17).
+
+**Decision.**
+1. **Sibling script `scripts/ingest-videos.ts` (don't touch the channel pipeline).** A `--videos <url1,url2,...>` mode that runs yt-dlp per explicit video (`--write-auto-subs --skip-download --sub-langs en.* --sub-format vtt --no-playlist`, no `--dateafter`/playlist), reuses `cleanVtt` + `redactForSynthesis(…, BANNED_PHRASES)`, and writes cleaned `{video-id}.txt` to `docs/transcripts/_adhoc/` (gitignored, like the rest of `docs/transcripts/`). No cookies by default; `--cookies-from-browser chrome` fallback. Falls back to `python -m yt_dlp` when no bare binary.
+2. **Security boundary = a strict video-id parser.** `parseVideoId()` resolves any input (watch URL / youtu.be / shorts / embed / bare id) to a strict `[A-Za-z0-9_-]{11}` id on a YouTube host, or `null`. Only a **canonical `https://www.youtube.com/watch?v=<id>` URL** built from the validated id is passed to yt-dlp, as a single **argv** element via `spawnSync` (never a shell string). So a hostile "URL" can neither inject yt-dlp flags (the element always starts with `https://`, never `-`) nor reach a shell; anything unparseable is skipped, not run. Pure functions (`parseVideoId`, `canonicalVideoUrl`, `buildVideoYtDlpArgs`) are unit-tested with no network (`lib/__tests__/ingest-videos.test.ts`), mirroring `buildYtDlpArgs`.
+3. **`docs/knowledge/` reference base (committed).** Distilled, evergreen *operating doctrine* (not session logs, not transcript dumps) lives here. First entry: `docs/knowledge/newsletter-business-playbook.md`, organized by theme (list-growth, monetization economics, cadence, deliverability, subject lines, tooling, benchmarks, mistakes) with **per-claim source attribution** and a **creator-claim vs best-practice** label per ADR-050's discipline. A CLAUDE.md "Knowledge base" pointer directs future sessions (Claude Code + Cowork) to read it before newsletter / list-growth / conversion work.
+
+**Consequences.**
+- **Provenance vs commit split:** raw cleaned transcripts stay gitignored under `docs/transcripts/_adhoc/`; only the distilled playbook + the script/test are committed. The distillation paraphrases (ADR-050's >25-word verbatim cap honored); the raw text is retained locally for traceability.
+- **Run outcome:** all 7 videos ingested cleanly (2.7k–17.7k words each, ~67k total; 0 captions-disabled failures). Distillation fanned out one reader per transcript, then synthesized — the playbook attributes every non-obvious claim to a titled+URL'd source.
+- **Copyright posture unchanged:** same synthesis + named-attribution shape as ADR-050; the ad-hoc mode just changes *which* videos, not the redaction/synthesis rules.
+- **Reusable:** future knowledge bases (e.g. local-SEO, paid-acquisition) can be built the same way — ingest specific videos → distill into a new `docs/knowledge/*.md` with attribution.
+
+**Cross-refs.** [ADR-050](#adr-050--creator-content-ingestion--attribution-gate), `scripts/ingest-videos.ts`, `lib/__tests__/ingest-videos.test.ts`, `lib/seo/transcript-clean.ts`, `docs/knowledge/newsletter-business-playbook.md`, [STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md), `docs/creator-whitelist.md`.
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

@@ -279,6 +279,10 @@ The repo carries six docs under docs/ that persist context across Claude Code se
 
 Separately, docs/PATTERNS.md tracks cross-cutting *engineering* patterns spotted during build (not product ideas) — promote a pattern entry to a dedicated ADR after the second instance lands.
 
+Knowledge base
+
+`docs/knowledge/` holds distilled, evergreen reference material (operating doctrine, not session logs). Before any **newsletter / email list-growth / subscriber-conversion / monetization** work — whether you're Claude Code or Cowork (the co-CEO/COO advisor) — read [docs/knowledge/newsletter-business-playbook.md](docs/knowledge/newsletter-business-playbook.md) first. It distills 7 operator videos (My First Million, Greg Isenberg, Kit, Matt McGarry/GrowLetter, Chris Koerner, Creator Spotlight, Brennan Wells) into list-growth, monetization economics, cadence, deliverability, subject lines, tooling, benchmarks, and mistakes-to-avoid, with per-claim source attribution ([ADR-067](docs/DECISIONS.md#adr-067--ad-hoc-single-video-transcript-ingestion--the-docsknowledge-reference-base), extends ADR-050). It was built via the repo's own transcript pipeline (ad-hoc mode: `node --experimental-strip-types scripts/ingest-videos.ts --videos <urls>`); raw transcripts live gitignored under `docs/transcripts/_adhoc/`.
+
 **Hard contract for every goal:**
 
 1. **Read** docs/ROADMAP.md and docs/SESSION-LOG.md AT THE START of work, before touching code. Surface anything relevant to the current goal — pending items, blockers, related prior sessions.
