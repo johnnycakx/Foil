@@ -50,6 +50,8 @@ export const LANDING_PATHS: readonly LandingPath[] = [
   { path: "/start", priority: 0.95, changeFrequency: "weekly" },
   { path: "/deals", priority: 0.9, changeFrequency: "daily" },
   { path: "/pricing-methodology", priority: 0.5, changeFrequency: "monthly" },
+  // Lead-magnet landing (ADR-068) — indexable; the gated asset reveals on subscribe.
+  { path: "/free/pokemon-card-pricing-cheat-sheet", priority: 0.7, changeFrequency: "monthly" },
   // Vending lead-gen — the secondary track at /host (kept live + indexed).
   { path: "/host", priority: 0.9, changeFrequency: "monthly" },
   { path: "/service-areas", priority: 0.8, changeFrequency: "monthly" },

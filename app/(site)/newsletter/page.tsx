@@ -76,6 +76,17 @@ export default function NewsletterPage() {
         subtext="One email a week: the best live card deals right now, the cards on the move, and one sharp valuation note. No spam."
       />
 
+      <p className="mt-4 text-center text-sm text-foil-slate sm:text-left">
+        Want a head start?{" "}
+        <a
+          href="/free/pokemon-card-pricing-cheat-sheet"
+          className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 transition hover:text-foil-coral"
+        >
+          Get the free Pokémon Card Pricing Cheat Sheet
+        </a>
+        .
+      </p>
+
       <section className="mt-14">
         <h2 className="font-display text-xl font-bold tracking-[-0.02em] text-foil-navy sm:text-2xl">
           Recent issues

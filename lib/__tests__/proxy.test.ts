@@ -33,6 +33,17 @@ test("buy-signal methodology page is public (ADR-053)", () => {
   assert.equal(isPublicRoute("/pricing-methodology"), true);
 });
 
+test("lead-magnet pages under /free/* are public + crawlable (ADR-068)", () => {
+  // The magnet landing page must rank and be reachable anonymously; the gated
+  // asset reveals client-side after subscribe. Prefix covers future magnets.
+  assert.equal(isPublicRoute("/free"), true);
+  assert.equal(isPublicRoute("/free/pokemon-card-pricing-cheat-sheet"), true);
+  assert.equal(isPublicRoute("/free/some-future-magnet"), true);
+  // Bleed guard: an adjacent stem must stay gated.
+  assert.equal(isPublicRoute("/freebies"), false);
+  assert.equal(isPublicRoute("/free-stuff"), false);
+});
+
 test("/go/deal/[slug] click-time redirect is public (ADR-056)", () => {
   // Buyer click-through from the leaderboard; must be reachable anonymously.
   assert.equal(isPublicRoute("/go/deal/base1-4-charizard"), true);

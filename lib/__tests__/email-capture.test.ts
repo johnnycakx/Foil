@@ -215,11 +215,18 @@ test("blog post body: non-vending inline EmailCapture tagged source='blog_inline
   assert.match(src, /href="\/host"/, "vending branch keeps the host CTA");
 });
 
-test("pillar pages: each ranking page carries a distinct pillar_* capture source tag", () => {
-  const condition = readFile("app/(site)/pokemon-card-condition-guide/page.tsx");
-  const value = readFile("app/(site)/pokemon-card-value-calculator/page.tsx");
-  const japanese = readFile("app/(site)/japanese-pokemon-cards-value/page.tsx");
-  assert.match(condition, /source="pillar_condition_guide"/);
-  assert.match(value, /source="pillar_value_calculator"/);
-  assert.match(japanese, /source="pillar_japanese_value"/);
+test("pillar pages: surface the lead-magnet CTA, not a generic inline capture (ADR-068, one ask per page)", () => {
+  // ADR-068 replaced the generic pillar_* inline EmailCapture with the stronger,
+  // specific lead-magnet offer (a CTA -> the /free magnet page where the capture
+  // + on-page delivery live). One ask per page (ADR-066) is preserved.
+  const files = [
+    "app/(site)/pokemon-card-condition-guide/page.tsx",
+    "app/(site)/pokemon-card-value-calculator/page.tsx",
+    "app/(site)/japanese-pokemon-cards-value/page.tsx",
+  ];
+  for (const f of files) {
+    const src = readFile(f);
+    assert.match(src, /<LeadMagnetCTA\b/, `${f} must render the LeadMagnetCTA`);
+    assert.doesNotMatch(src, /source="pillar_/, `${f} must no longer carry a pillar_* EmailCapture`);
+  }
 });

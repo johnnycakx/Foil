@@ -79,6 +79,11 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // the trust/defensibility page every buy-signal badge links to.
   { kind: "exact", path: "/pricing-methodology" },
 
+  // Lead-magnet landing pages (ADR-068). Indexable, anonymous-friendly — the
+  // page ranks; the gated asset reveals on subscribe via the existing subscribe
+  // Server Action. Prefix so future magnets under /free/* are public too.
+  { kind: "prefix", path: "/free" },
+
   // Click-time affiliate redirect (ROADMAP B.4 follow-up / ADR-056). /go/deal/
   // [slug] runs a live getBestListing and 302s to the specific item's affiliate
   // URL. Anonymous-friendly (it's a buyer click-through); the destination is

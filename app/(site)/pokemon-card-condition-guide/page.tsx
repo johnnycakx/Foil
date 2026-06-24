@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { EmailCapture } from "@/components/email-capture";
+import { LeadMagnetCTA } from "@/components/lead-magnet-cta";
 
 const TITLE = "Pokémon Card Condition Guide: NM, LP, MP, HP & Graded Tiers Explained | Foil";
 const DESCRIPTION =
@@ -336,29 +336,7 @@ export default function PokemonCardConditionGuidePage() {
           </div>
         </Prose>
 
-        <div
-          id="waitlist"
-          className="mt-16 rounded-3xl border border-foil-gold/40 bg-foil-cream p-8 shadow-xl shadow-foil-navy/10 sm:p-12"
-        >
-          <h2 className="font-display max-w-2xl text-2xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-3xl">
-            Spot the next grading candidate before someone else does.
-          </h2>
-          <p className="mt-3 max-w-2xl text-foil-slate">
-            Foil shows the raw NM price <em className="not-italic font-medium text-foil-navy">and</em>{" "}
-            the highest graded comp on every card you scan — so the moment you see a $30 card with a
-            $1,500 PSA 10 behind it, you know to slow down and inspect.{" "}
-            <Link
-              href="/upload"
-              className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral"
-            >
-              Try the scanner
-            </Link>{" "}
-            once you&apos;re in.
-          </p>
-          <div className="mt-6 max-w-xl">
-            <EmailCapture source="pillar_condition_guide" variant="inline" headline="Get the weekly best-deals newsletter." />
-          </div>
-        </div>
+        <LeadMagnetCTA id="waitlist" />
       </article>
     </>
   );

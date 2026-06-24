@@ -2116,6 +2116,27 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 
 **Cross-refs.** [ADR-050](#adr-050--creator-content-ingestion--attribution-gate), `scripts/ingest-videos.ts`, `lib/__tests__/ingest-videos.test.ts`, `lib/seo/transcript-clean.ts`, `docs/knowledge/newsletter-business-playbook.md`, [STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md), `docs/creator-whitelist.md`.
 
+## ADR-068 — Foil's first lead magnet: the evergreen "Pricing Cheat Sheet" (gated on-page, data-availability-driven choice)
+
+**Date:** 2026-06-24
+**Status:** Accepted. Operationalizes `docs/knowledge/newsletter-business-playbook.md` §1 (lead magnets = best 2025 growth channel; gate a real ICP-matched asset, not clickbait). Builds on the email-capture work ([ADR-065](#adr-065--homepage-reorient-email-capture-is-the-primary-conversion-goal-inline-capture-on-the-ranking-content-surfaces) / [ADR-066](#adr-066--one-email-ask-per-page-the-global-footer-is-navlegaltrust-only-finish-the-level-4-removal-site-wide)) + [STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md).
+
+**Context + the data-availability premise check.** The goal offered a primary concept — "The Pokémon Cards People Overpay For Most," cards whose live ask sits above recent sold — and an evergreen fallback "Pricing Cheat Sheet," with instructions to pick based on what pricing data is *cleanly* available now. Investigation: the sold reference is sourced from **PokeTrace** (`compute.ts` / `refresh-batch.ts`), which was **cancelled 2026-06-16** (keys not restored in Vercel). A direct query of the `buy_signals` cache showed it was last computed **2026-06-13** (11 days stale, pre-cancellation) with **196 UNKNOWN / 6 BELOW / only 5 usable ABOVE** rows. So the "overpay" data is stale, depends on a cancelled API, would yield a 5-entry list, and would silently rot — failing the goal's "genuinely valuable AND buildable now with real (not fabricated) data" bar. Per the goal's explicit fallback rule, we shipped the **evergreen cheat sheet**.
+
+**Decision.**
+1. **The magnet = `/free/pokemon-card-pricing-cheat-sheet`**, an evergreen one-page pricing reference distilled from the *already-published* pillar content (condition guide / value calculator / Japanese value) — every figure (condition multipliers, the 3 fields, the graded ladder, when-to-grade, mistakes) is the same evergreen guidance Foil's pillars already publish, so **zero live-data dependency and zero fabrication**. Cream/navy/gold, founder voice, no em dashes, internally linked to the 3 pillars + `/cards` + `/deals`.
+2. **Indexable page; gated reward.** The page ranks on a real preview (intro + "what's inside" + the full condition-multiplier table). The **complete reference reveals on subscribe**, delivered **on-page** (`LeadMagnetGate`, a client component that reuses the existing `subscribeAction` → `lib/beehiiv.ts`). **No Beehiiv send-API dependency** (free tier 403s it), **no redirect** (reveal in place → no open-redirect surface), **no new email backend**. `source="lead_magnet_cheatsheet"`.
+3. **Surfaced as the capture CTA on the pillars.** The generic `pillar_*` inline `EmailCapture` on all 3 pillars was **replaced** (not added to — one ask per page, ADR-066) by `LeadMagnetCTA`, a stronger specific offer linking to the magnet page (which carries `id="waitlist"` so the pillars' existing in-body anchors still resolve). Plus one tasteful link from `/newsletter`. `/free/*` added to `PUBLIC_ROUTES` (prefix) + the sitemap.
+4. **Honesty discipline (enforced by hand + a test guard).** A real asset, actually delivered. No fake scarcity / urgency / countdown, no fabricated "join N collectors" counts. `lib/__tests__/lead-magnet.test.ts` pins the negatives across the page + gate + CTA.
+
+**Consequences.**
+- **The "overpay" magnet is a follow-up,** unblocked once John restores PokeTrace and the `deals-refresh` cron repopulates `buy_signals` with fresh ABOVE rows. At that point "cards people overpay for" becomes a live, defensible, Foil-unique asset (added to ROADMAP).
+- **Pillars no longer carry the `pillar_*` inline captures** (replaced by the magnet CTA); the magnet page is the single converting surface for that traffic.
+- **Delivery is on-page, not emailed.** Optional John follow-up (manual, not code): wire a Beehiiv welcome automation in the dashboard to also email the asset link.
+- **Scope note:** the goal mentioned "the most relevant blog posts" too; this shipped the 3 pricing pillars (the canonical pricing-research pages where the ICP lands) + `/newsletter`. Extending the magnet CTA to specific pricing blog posts is a low-risk follow-up (left to avoid changing the shared blog template for all posts).
+
+**Cross-refs.** [ADR-065](#adr-065--homepage-reorient-email-capture-is-the-primary-conversion-goal-inline-capture-on-the-ranking-content-surfaces), [ADR-066](#adr-066--one-email-ask-per-page-the-global-footer-is-navlegaltrust-only-finish-the-level-4-removal-site-wide), [ADR-054](#adr-054--todays-best-deals-public-leaderboard), [ADR-027](#adr-027--unified-email-capture-across-three-surfaces-default-checked-newsletter-opt-in-on-the-watchlist-form), `docs/knowledge/newsletter-business-playbook.md`, [STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

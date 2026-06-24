@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { EmailCapture } from "@/components/email-capture";
+import { LeadMagnetCTA } from "@/components/lead-magnet-cta";
 
 const TITLE = "Pokémon Card Value Calculator: How to Price Any Card in 2026 | Foil";
 const DESCRIPTION =
@@ -310,29 +310,7 @@ export default function PokemonCardValueCalculatorPage() {
           </div>
         </Prose>
 
-        <div
-          id="waitlist"
-          className="mt-16 rounded-3xl border border-foil-gold/40 bg-foil-cream p-8 shadow-xl shadow-foil-navy/10 sm:p-12"
-        >
-          <h2 className="font-display max-w-2xl text-2xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-3xl">
-            Stop pricing cards in three browser tabs.
-          </h2>
-          <p className="mt-3 max-w-2xl text-foil-slate">
-            Snap one photo. Foil reads the printed name, set code, and collector number, pulls live
-            eBay sold averages, TCGplayer market price, and graded comps, and gives you a single
-            number — with the full breakdown one tap away.{" "}
-            <Link
-              href="/upload"
-              className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral"
-            >
-              Try the scanner
-            </Link>{" "}
-            once you&apos;re in.
-          </p>
-          <div className="mt-6 max-w-xl">
-            <EmailCapture source="pillar_value_calculator" variant="inline" headline="Get the weekly best-deals newsletter." />
-          </div>
-        </div>
+        <LeadMagnetCTA id="waitlist" />
       </article>
     </>
   );

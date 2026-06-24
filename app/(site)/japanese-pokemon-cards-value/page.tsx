@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { EmailCapture } from "@/components/email-capture";
+import { LeadMagnetCTA } from "@/components/lead-magnet-cta";
 
 const TITLE = "Japanese Pokémon Cards Value: 2026 Guide | Foil";
 const DESCRIPTION =
@@ -261,23 +261,7 @@ export default function JapanesePokemonCardsValuePage() {
           </div>
         </Prose>
 
-        <div id="waitlist" className="mt-16 rounded-3xl border border-foil-gold/40 bg-foil-cream p-8 shadow-xl shadow-foil-navy/10 sm:p-12">
-          <h2 className="font-display max-w-2xl text-2xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-3xl">
-            Join the waitlist — Foil supports Japanese card scanning
-          </h2>
-          <p className="mt-3 max-w-2xl text-foil-slate">
-            Snap one photo of a Japanese binder page or a Mercari listing screenshot. Foil reads the
-            set code, collector number, and rarity symbol on every card and prices each one in USD
-            using live eBay sold data.{" "}
-            <Link href="/upload" className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral">
-              Try the Japanese card scanner
-            </Link>{" "}
-            once you&apos;re in.
-          </p>
-          <div className="mt-6 max-w-xl">
-            <EmailCapture source="pillar_japanese_value" variant="inline" headline="Get the weekly best-deals newsletter." />
-          </div>
-        </div>
+        <LeadMagnetCTA id="waitlist" />
       </article>
     </>
   );

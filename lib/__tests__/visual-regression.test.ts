@@ -42,6 +42,11 @@ const PUBLIC_SURFACES: readonly string[] = [
   "app/(site)/legal/ebay-api-compliance/page.tsx",
   "app/(site)/newsletter/page.tsx",
   "components/email-capture.tsx",
+  // ADR-068: lead-magnet surfaces (landing page + gate + CTA). Same cream/navy/
+  // gold register; the palette + coral-hover-only invariants cover them.
+  "app/(site)/free/pokemon-card-pricing-cheat-sheet/page.tsx",
+  "components/lead-magnet-gate.tsx",
+  "components/lead-magnet-cta.tsx",
   "components/buy-signal-badge.tsx",
   // Session 42 / ADR-031: MDX components rendered inside blog post
   // bodies were missed by the Session 39 sweep — adding them to the
