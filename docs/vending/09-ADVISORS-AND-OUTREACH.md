@@ -58,8 +58,11 @@ Thanks, and looking forward to connecting.
 Best,
 John Craig
 Foil TCG, LLC
-(707) 344-3857 · john.c.craig24@gmail.com
+(707) 344-3857 · john@foiltcg.com
 ```
+
+> Send this from **john@foiltcg.com** (new Google Workspace mailbox, set up 2026-06-13) for a
+> professional first impression — once the mailbox is confirmed live.
 
 ### Chad's answers (fill in after he replies)
 

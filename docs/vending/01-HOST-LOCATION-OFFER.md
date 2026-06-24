@@ -210,6 +210,13 @@ and real infrastructure**, not invented numbers.
 > If a specific proof number doesn't exist yet, **omit it** — do not soften into "we're just starting." The
 > confident operator voice + real infrastructure + real photos carry the established feel without any false
 > or self-undermining claim.
+>
+> **Stay silent on count — neither claim nor disclaim (decision 2026-06-13).** Do NOT publish lines that
+> *admit* a lack of locations/testimonials either — e.g. "as placements go live, their locations and photos
+> get listed here" or "we won't show you testimonials we don't have yet." Those announce zero locations and
+> undermine the established tone. The site should neither claim placements it doesn't have NOR confess it
+> has none. Established voice + real credibility (Level-4 TCGplayer seller, owns/stocks/services machines,
+> commercial-grade hardware) stands on its own.
 
 ---
 

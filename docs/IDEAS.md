@@ -19,6 +19,28 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-06-24
+category: infra
+status: captured
+---
+## Card page (/cards/[slug]) loads semi-slowly — perf pass after the homepage-v2 goal
+
+John observed `/cards/[slug]` (e.g. base1-2-blastoise) renders noticeably slowly on the live site. Likely root cause: the page is `export const dynamic = "force-dynamic"` (the R-008 mechanism — every render re-fetches live data) AND it fans out to multiple live APIs per request (PokeTrace by-uuid + price-history + eBay listing), so TTFB stacks all of them serially/uncached on each hit. Candidate fixes to weigh (без breaking R-008's "always-live listing" intent): parallelize the fetches (`Promise.all`), add a short edge/data cache on the price-history + variant/market-range calls (which don't need to be real-time like the live listing does), stream the page (Suspense boundaries so the card image + static metadata paint before pricing resolves), or revisit the ADR-047 metadata-tier idea. Deferred by John to AFTER the homepage-v2 goal — not a blocker, but it hurts conversion on the exact ranking pages we're driving traffic to.
+
+**Context:** 2026-06-24 live review of the dual-track restore — pricing renders correctly (PokeTrace key still valid), but page load is sluggish. Flagged as a follow-up, not urgent.
+
+---
+date: 2026-06-24
+category: growth
+status: promoted
+---
+## Email list is the north star — reorient the homepage's primary goal to subscription, and mine GSC queries for the content/newsletter calendar
+
+Reaffirms (does not invent) the committed [STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md) direction: the owned email list is the compounding moat ("Twitter is the discovery layer; the email list is the moat"; the 100→1K→10K curve). Make email capture the homepage's PRIMARY CTA (lead with the value/knowledge + newsletter promise; demote the deal-finder buttons to "the reason to subscribe"), and add tasteful inline capture to the ranking blog/pillar pages — because at avg position 18.2 the impressions land on deep pages, not `/`. Use the live GSC queries as the content + newsletter calendar. Promoted to ROADMAP NOW (row G-EMAIL).
+
+**Context:** 2026-06-24 GSC review (3-month: 1.37K impressions, 9 clicks, 0.7% CTR, avg pos 18.2; top queries all informational/research-intent — "lightly played vs near mint," "near mint foil meaning," "are lightly played cards worth buying," "pokemon card value checker," "venusaur 151"). Research-intent + near-zero affiliate CTR = the right conversion for this traffic is an email signup, not a buy click. John raised it as a "new idea"; it's actually his own pre-vending strategy resurfacing, validated by real search data.
+
+---
 date: 2026-06-15
 category: content
 status: captured

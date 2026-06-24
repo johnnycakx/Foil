@@ -69,6 +69,11 @@
 
 **Foil application:** the newsletter monetizes through **affiliate clicks on real deals** (and later Pro conversions), which is exactly the "sell a product, not ad space" model. Sponsored slots are a *later* lever (per STRATEGY-AUDIENCE-MOAT, defer until the list crosses ~1k engaged subs); when they come, sell exclusivity to TCG-adjacent brands, not one-offs. Use beehiiv's 0%-cut paid tier for the Pro product when it ships.
 
+> **Foil decision (2026-06-24, grounded in the beehiiv docs).** beehiiv-native ad revenue (Ad Network, Monetize Boosts) requires **(a) a Scale+ paid plan** and **(b) sending the newsletter through beehiiv** — it "cannot be used with third-party email providers," and earnings come only from opens/clicks on beehiiv-sent emails ([Ad Network FAQ](https://www.beehiiv.com/support/article/17507491038231-ad-network-faq)). Two standing calls:
+> 1. **When the weekly newsletter starts sending, it sends THROUGH beehiiv — never a custom Resend/third-party bypass.** A bypass forfeits all future beehiiv ad eligibility for $0 saved. (Resend stays for transactional/wishlist-alert mail only; the *newsletter* send is beehiiv's.)
+> 2. **beehiiv Ad Network is a remnant-inventory afterthought for Foil, NOT a goal to architect toward.** Selling ad space is the lower-value model §0 warns against; Foil's send inventory is worth far more carrying its OWN affiliate deals + Pro (the ~$200 vs ~$6–20 CPM gap, §2), and third-party ads would compete with the affiliate CTA for the click. Do not upgrade to Scale to chase ads until the list is large + engaged AND native ads are confirmed to beat the affiliate/Pro inventory (likely never).
+> Subscribers already land in beehiiv via `lib/beehiiv.ts` (the custom on-site capture posts to beehiiv's API), so **no capture re-plumbing or MCP routing is needed for "future readiness"** — the beehiiv MCP is for reporting/visibility only.
+
 ---
 
 ## 3. Cadence & content structure
