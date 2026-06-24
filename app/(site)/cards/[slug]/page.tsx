@@ -491,11 +491,11 @@ export default async function CardPage({
         </>
         )}
 
-        {/* Trust line near the buy CTA (F3): surfaces the LLC + the Level-4
-            seller credential — the authority a cold creator-driven visitor
-            needs before entering an email or clicking an affiliate link. */}
+        {/* Trust line near the buy CTA (F3): the LLC + a plain founder credit,
+            the authority a cold creator-driven visitor needs before entering an
+            email or clicking an affiliate link (email-ask-cleanup, ADR-066). */}
         <p className="mt-4 text-center text-[11px] text-foil-slate sm:text-left">
-          Foil TCG, LLC · Built by a Level-4 TCGplayer seller
+          Foil TCG, LLC · Built by John Craig
         </p>
 
         <section

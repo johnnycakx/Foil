@@ -266,7 +266,7 @@ export default function HostPage() {
         </h2>
         <div className="mt-5 rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-7">
           <p className="text-sm leading-relaxed text-foil-slate sm:text-base">
-            Foil is run by John Craig, a Level 4 TCGplayer seller, with real, verifiable
+            Foil is run by John Craig, with real, verifiable
             Pokémon-product credibility and sourcing behind every machine. We place and
             operate the machines ourselves: we own them, stock them, service them, and
             stand behind every transaction.

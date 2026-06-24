@@ -61,6 +61,8 @@ The email step is the highest-leverage conversion gate on the entire funnel. **E
 | `/newsletter` landing page | Newsletter-only intent (Twitter CTA target) | Single email field, sample newsletter excerpts, social proof |
 | Footer mini-form on every page | Passive capture from any visitor | Compact single-line form |
 
+> **Amendment (2026-06-24, [ADR-066](DECISIONS.md#adr-066--one-email-ask-per-page-the-global-footer-is-navlegaltrust-only-finish-the-level-4-removal-site-wide)):** the **footer mini-form was retired** — an always-on footer ask competed with each page's primary CTA and made every page a multi-ask surface. The model is now: the watchlist form (price alert), the `/newsletter` dedicated page, and **one contextual ask per marketing page** (the hero or a single CTA, e.g. the homepage hero + `/deals`). The footer is nav/legal/trust only.
+
 All three write to the same Beehiiv list, tagged with `source` for later segmentation. Tagging enables future lifecycle email automation (welcome series, re-engagement, dormant-subscriber recovery — see "Out of scope" below).
 
 **On the default-checked checkbox.** This is a legal + UX question, not just preference. Default-checked is legal under US CAN-SPAM if the box is visible and uncheckable before submit; default-checked is NOT legal under GDPR. Foil is currently US-focused (Pokémon TCG buyers are largely US/UK/AU/CA English-speaking). Default-checked is the right call today; flip to default-unchecked when EU expansion becomes a focus.

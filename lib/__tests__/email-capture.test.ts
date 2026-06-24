@@ -1,10 +1,14 @@
 // Email-capture drift guards (Task #18 / Session 37).
 //
-// Unified email-capture flow has four surfaces, each tagged with a distinct
-// `source` string for downstream Beehiiv segmentation:
-//   - Watchlist form on /cards/[slug] → 'watchlist-form' (opt-in checkbox)
-//   - /newsletter landing page → 'newsletter-landing'
-//   - Footer email capture (every (site) page) → 'footer'
+// Unified email-capture flow, ONE ask per page (email-ask-cleanup, ADR-066),
+// each surface tagged with a distinct `source` for downstream Beehiiv segmentation:
+//   - Watchlist form on /cards/[slug] → 'watchlist-form' (opt-in checkbox; a
+//     price alert, not a newsletter ask — kept)
+//   - /newsletter landing page → 'newsletter-landing' (the dedicated capture)
+//   - Homepage hero → 'homepage_hero'; /deals → 'deals_board'; blog body →
+//     'blog_inline'; pillars → 'pillar_*'
+//   - The global footer email form was REMOVED — the footer is nav/legal/trust
+//     only (the 'footer' source is retired).
 //
 // These tests are STRUCTURAL drift guards, not behavioural tests — they
 // verify the source-tag literal appears at each call site and that the
@@ -21,7 +25,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = new URL("../..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
@@ -118,18 +122,27 @@ test("newsletter page: links to /legal/privacy (transparency footer)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Footer email capture — source='footer'
+// One email ask per page (email-ask-cleanup, ADR-066): the global footer email
+// form was removed (footer = nav/legal/trust only); the homepage asks once.
 // ---------------------------------------------------------------------------
 
-test("footer email capture: wraps EmailCapture with source='footer'", () => {
-  const src = readFile("components/footer-email-capture.tsx");
-  assert.match(src, /source\s*=\s*["']footer["']/);
-  assert.match(src, /variant\s*=\s*["']footer["']/);
+test("(site) layout: footer renders NO email capture (nav/legal/trust only)", () => {
+  const src = readFile("app/(site)/layout.tsx");
+  assert.doesNotMatch(src, /FooterEmailCapture/, "footer email form was removed");
+  assert.doesNotMatch(src, /<EmailCapture\b/, "no inline EmailCapture in the global footer/layout");
 });
 
-test("(site) layout: renders the FooterEmailCapture component", () => {
-  const src = readFile("app/(site)/layout.tsx");
-  assert.match(src, /FooterEmailCapture/);
+test("footer-email-capture component is deleted", () => {
+  assert.ok(
+    !existsSync(join(ROOT, "components/footer-email-capture.tsx")),
+    "components/footer-email-capture.tsx should no longer exist",
+  );
+});
+
+test("homepage: renders exactly ONE EmailCapture (the hero ask)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  const count = (src.match(/<EmailCapture\b/g) ?? []).length;
+  assert.equal(count, 1, `homepage must make exactly one email ask, found ${count}`);
 });
 
 test("(site) layout: footer surfaces Privacy + Terms + Newsletter links", () => {
@@ -193,11 +206,6 @@ test("createWatchlist action: gates the Beehiiv subscribe on opt_in_newsletter, 
 test("homepage: hero EmailCapture is tagged source='homepage_hero' (primary CTA)", () => {
   const src = readFile("app/(site)/page.tsx");
   assert.match(src, /<EmailCapture\s+source="homepage_hero"/);
-});
-
-test("homepage: final-CTA EmailCapture retains source='homepage_final_cta'", () => {
-  const src = readFile("app/(site)/page.tsx");
-  assert.match(src, /source="homepage_final_cta"/);
 });
 
 test("blog post body: non-vending inline EmailCapture tagged source='blog_inline'", () => {

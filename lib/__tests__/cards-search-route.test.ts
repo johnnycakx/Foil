@@ -247,13 +247,3 @@ test("bake script registered in package.json `bake:cards`", () => {
   const src = readFile("package.json");
   assert.match(src, /"bake:cards"\s*:\s*"node[^"]+scripts\/bake-card-metadata\.ts"/);
 });
-
-test("FooterEmailCapture: suppresses on /start via usePathname check", () => {
-  const src = readFile("components/footer-email-capture.tsx");
-  // The suppress-list must include /start.
-  assert.match(src, /SUPPRESS_ON_ROUTES[\s\S]*?["']\/start["']/);
-  // usePathname is the mechanism — anchored on the import + return-null path.
-  assert.match(src, /from\s+["']next\/navigation["']/);
-  assert.match(src, /usePathname/);
-  assert.match(src, /return null/);
-});

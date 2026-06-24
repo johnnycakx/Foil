@@ -21,7 +21,7 @@ export const revalidate = 86400;
 
 const TITLE = "Start tracking cards — Foil";
 const DESCRIPTION =
-  "Tell us the Pokémon TCG cards you want. We email when each one drops to your target price. Built by a Level-4 TCGplayer Verified Seller.";
+  "Tell us the Pokémon TCG cards you want. We email when each one drops to your target price.";
 
 export const metadata: Metadata = {
   title: TITLE,

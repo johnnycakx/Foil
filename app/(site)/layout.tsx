@@ -9,8 +9,8 @@
 //
 // Session 39 (ADR-029): cream/navy/gold palette. Coral is hover-only.
 
+import Image from "next/image";
 import Link from "next/link";
-import { FooterEmailCapture } from "@/components/footer-email-capture";
 import { Logo } from "@/components/brand/logo";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
@@ -82,11 +82,20 @@ function SiteFooter() {
             <Logo size="md" />
           </Link>
         </div>
-        <div className="mb-8 max-w-md">
-          <FooterEmailCapture />
-        </div>
+        {/* Footer is nav / legal / trust only (email-ask-cleanup, ADR-066) — the
+            footer email form was removed so each page makes ONE email ask. The
+            "Newsletter" link below routes intent-driven visitors to /newsletter. */}
         <div className="flex flex-col items-start justify-between gap-3 border-t border-foil-navy/10 pt-6 text-sm text-foil-slate sm:flex-row sm:items-center">
-          <p>© {new Date().getFullYear()} Foil TCG, LLC · Built by a Level-4 TCGplayer seller</p>
+          <div className="flex items-center gap-2.5">
+            <Image
+              src="/founder/john-craig.webp"
+              alt="John Craig, founder of Foil"
+              width={28}
+              height={28}
+              className="h-7 w-7 shrink-0 rounded-full object-cover ring-1 ring-foil-navy/10"
+            />
+            <p>© {new Date().getFullYear()} Foil TCG, LLC · Built by John Craig</p>
+          </div>
           <nav className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <Link
               href="/newsletter"

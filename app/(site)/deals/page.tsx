@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
 
 const TITLE = "Today's best Pokémon card deals | Foil";
 const DESCRIPTION =
-  "Live eBay listings priced below their recent condition-matched sold price, ranked daily. Built by a Level-4 TCGplayer seller. Free to use.";
+  "Live eBay listings priced below their recent condition-matched sold price, ranked daily. Free to use.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -109,22 +109,20 @@ export default async function DealsPage() {
       </p>
 
       <p className="mt-4 text-center text-[11px] text-foil-slate">
-        Foil TCG, LLC · Built by a Level-4 TCGplayer seller
+        Foil TCG, LLC · Built by John Craig
       </p>
 
-      {/* Newsletter CTA (copy doc). */}
-      <section className="mt-12 rounded-3xl border border-foil-gold/40 bg-foil-cream p-6 shadow-xl shadow-foil-navy/10 sm:p-8">
-        <h2 className="font-display text-2xl font-semibold tracking-[-0.01em] text-foil-navy">
-          Get the week&apos;s best deals, free.
-        </h2>
-        <p className="mt-2 text-sm text-foil-slate">
-          One email a week. The biggest below-market listings we found. No spam,
-          unsubscribe anytime.
-        </p>
-        <div className="mt-5 max-w-xl">
-          <EmailCapture source="deals_board" variant="inline" headline="Get the weekly best-deals newsletter." />
-        </div>
-      </section>
+      {/* Newsletter CTA — ONE ask (email-ask-cleanup, ADR-066). The EmailCapture
+          is already a styled gold card, so there is no outer slab wrapper
+          (card-in-card) and no second competing heading. */}
+      <div className="mx-auto max-w-xl">
+        <EmailCapture
+          source="deals_board"
+          variant="inline"
+          headline="Get the weekly drop, free."
+          subtext="One email a week: the best live card deals right now, the cards on the move, and one sharp valuation note. No spam."
+        />
+      </div>
     </main>
   );
 }

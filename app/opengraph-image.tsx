@@ -84,7 +84,7 @@ export default async function Image() {
 
         <div style={{ display: "flex", alignItems: "center", gap: 16, color: SLATE, fontSize: 24 }}>
           <span style={{ color: GOLD, fontWeight: 700, fontFamily: wordmarkFont }}>foiltcg.com</span>
-          <span>· Built by a Level-4 TCGplayer seller</span>
+          <span>· Built by John Craig</span>
         </div>
       </div>
     ),

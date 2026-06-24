@@ -6,8 +6,8 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
+import { join, extname } from "node:path";
 
 const ROOT = new URL("../..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
 
@@ -145,6 +145,33 @@ test("Homepage: no 'Level-4' / 'TCGplayer Verified Seller' jargon anywhere in th
   // (copy + comments) so a refactor can't reintroduce it.
   assert.doesNotMatch(src, /Level-4/i, "'Level-4' jargon must not appear on the homepage");
   assert.doesNotMatch(src, /TCGplayer Verified Seller/i, "'TCGplayer Verified Seller' jargon must not appear on the homepage");
+});
+
+test("Site-wide: no 'Level-4 TCGplayer' / 'TCGplayer Verified Seller' jargon under app/ or components/ (email-ask-cleanup, ADR-066)", () => {
+  // The insider seller-credential badge means nothing to a cold visitor and is
+  // replaced site-wide by the founder presence. Walk every source file and pin
+  // the negative so it can't creep back. NOTE: a BARE "TCGplayer seller" (no
+  // "Level-N") is a legitimate marketplace term used in blog prose — only the
+  // credential badge ("Level-4/Level 4 TCGplayer ..." / "TCGplayer Verified
+  // Seller") is forbidden.
+  const exts = new Set([".ts", ".tsx", ".mdx"]);
+  const offenders: string[] = [];
+  function walk(dir: string) {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === "node_modules" || entry.name === "__tests__") continue;
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (exts.has(extname(entry.name))) {
+        const src = readFileSync(full, "utf8");
+        if (/Level[\s-]?4\s+TCGplayer/i.test(src) || /TCGplayer Verified Seller/i.test(src)) {
+          offenders.push(full);
+        }
+      }
+    }
+  }
+  for (const root of ["app", "components"]) walk(join(ROOT, root));
+  assert.deepEqual(offenders, [], `seller-credential jargon found in: ${offenders.join(", ")}`);
 });
 
 test("Homepage: founder credit renders the headshot with descriptive alt text (homepage-v2, ADR-065)", () => {

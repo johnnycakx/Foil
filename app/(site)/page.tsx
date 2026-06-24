@@ -46,8 +46,6 @@ export default async function Home() {
     <>
       <Hero />
       <HowItWorks />
-      <ExampleResult />
-      <FinalCTA />
     </>
   );
 }
@@ -272,127 +270,6 @@ function HowItWorks() {
   );
 }
 
-function ExampleResult() {
-  return (
-    <section id="example" className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
-      <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-        <div>
-          <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-foil-navy">
-            <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
-            What you actually see
-          </p>
-          <h2 className="font-display mt-3 text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">
-            That Charizard you want? Currently $313 on eBay.
-          </h2>
-          <p className="mt-4 text-foil-slate">
-            Foil doesn&apos;t dump you on a search page. It picks the single best
-            live listing, shows what each condition and grade is worth, and tells
-            you whether to buy now, lowball, or wait for a drop.
-          </p>
-          <ul className="mt-6 space-y-3 text-sm text-foil-slate">
-            <li className="flex items-start gap-3">
-              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
-              <span>
-                <span className="font-medium text-foil-navy">One best deal, not 200 listings.</span>{" "}
-                We score every active listing on price, shipping, condition, and
-                seller rating, then show you the winner.
-              </span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
-              <span>
-                <span className="font-medium text-foil-navy">Wishlist alerts that actually fire.</span>{" "}
-                Tell Foil your target price and we email you the moment a matching
-                listing appears.
-              </span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
-              <span>
-                <span className="font-medium text-foil-navy">Graded vs raw, side by side.</span>{" "}
-                The full grade ladder, raw NM through PSA 10, BGS, and CGC, so you
-                can tell whether the raw is a steal or the slab is.
-              </span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
-              <span>
-                <span className="font-medium text-foil-navy">Japanese and modern covered.</span>{" "}
-                Vintage WOTC, modern Mega ex, Japanese-exclusive sets; if there&apos;s
-                a listing, Foil finds it.
-              </span>
-            </li>
-          </ul>
-        </div>
-
-        <div className="rounded-2xl border border-foil-gold/40 bg-foil-cream p-1 shadow-xl shadow-foil-navy/10">
-          <div className="rounded-xl bg-foil-cream p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-foil-slate">
-                  Best current deal
-                </p>
-                <p className="mt-1 text-4xl font-bold tabular-nums text-foil-navy">$313.51</p>
-                <p className="mt-1 text-xs text-foil-slate">
-                  9% below 30-day avg · top-rated seller · free ship
-                </p>
-              </div>
-              <span className="rounded-full bg-foil-gold/15 px-2.5 py-1 text-xs font-medium text-foil-navy">
-                Good deal
-              </span>
-            </div>
-
-            <div className="mt-6 border-t border-foil-navy/10 pt-5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="truncate font-semibold text-foil-navy">Charizard</p>
-                  <p className="truncate text-sm text-foil-slate">
-                    Base Set · #4/102 · Holo Rare (Unlimited)
-                  </p>
-                  <p className="mt-0.5 text-xs text-foil-slate">Lightly Played · NM verified by seller</p>
-                  <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <span className="text-lg font-semibold tabular-nums text-foil-navy">$313.51</span>
-                    <span className="text-xs text-foil-slate">+ free shipping</span>
-                    <span className="text-xs text-foil-slate">·</span>
-                    <span className="text-xs text-foil-slate">
-                      PSA 10 currently:{" "}
-                      <span className="font-semibold text-foil-navy">$30,100</span>
-                    </span>
-                  </div>
-                </div>
-                <span className="rounded-full bg-foil-navy px-2.5 py-1 text-xs font-medium text-foil-cream transition hover:bg-foil-coral">
-                  Buy →
-                </span>
-              </div>
-            </div>
-
-            <p className="mt-5 rounded-lg border border-foil-gold/30 bg-foil-gold/5 px-3 py-2 text-xs text-foil-navy">
-              Heads up: the raw is $313, but a PSA 10 of the same card recently sold
-              for <span className="font-semibold">$30,100</span>. If the
-              corners look mint, get it graded before reselling.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FinalCTA() {
-  return (
-    <section id="waitlist" className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
-      <div className="rounded-3xl border border-foil-gold/40 bg-foil-cream p-8 shadow-xl shadow-foil-navy/10 sm:p-12">
-        <h2 className="font-display max-w-3xl text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">
-          Never overpay for a Pokémon card again.
-        </h2>
-        <p className="mt-3 max-w-2xl text-foil-slate">
-          One email a week: the best live deals we found, the cards on the move,
-          and one sharp valuation note. No spam, unsubscribe anytime.
-        </p>
-        <div className="mt-6 max-w-xl">
-          <EmailCapture source="homepage_final_cta" variant="inline" headline="Get the weekly best-deals newsletter." />
-        </div>
-      </div>
-    </section>
-  );
-}
+// ExampleResult + FinalCTA removed (email-ask-cleanup, ADR-066): the homepage
+// now makes exactly ONE email ask (the hero). HowItWorks remains as the
+// indexable content body beneath the hero.

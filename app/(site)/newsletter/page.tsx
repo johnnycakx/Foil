@@ -4,7 +4,7 @@
 //
 // Per docs/STRATEGY-AUDIENCE-MOAT.md the value-prop framing is:
 //   "Tell me a card → I email you when it drops; weekly market notes from
-//    a Level-4 TCGplayer seller."
+//    John Craig, who runs a Pokémon card store."
 // Twitter bio compresses this; the page expands it with three concrete
 // sample-newsletter excerpts so a Twitter visitor sees what they'll get.
 
@@ -17,7 +17,7 @@ export const revalidate = 86400;
 const PAGE_TITLE = "Subscribe to Foil — Pokémon TCG deal alerts + weekly market notes";
 
 const PAGE_DESCRIPTION =
-  "Tell us a card and we email you when it drops to your target price. Weekly market notes from a Level-4 TCGplayer seller. One email a week, unsubscribe anytime.";
+  "Tell us a card and we email you when it drops to your target price. Weekly market notes from John Craig, who runs a Pokémon card store. One email a week, unsubscribe anytime.";
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
@@ -64,8 +64,8 @@ export default function NewsletterPage() {
           Tell me a card → I email you when it drops.
         </h1>
         <p className="mt-4 text-base leading-relaxed text-foil-slate sm:text-lg">
-          Weekly market notes from a Level-4 TCGplayer seller. Specific deals, specific data,
-          zero spam. About one email a week. Unsubscribe in one click from any email.
+          Weekly market notes from John Craig, who runs a Pokémon card store. Specific deals,
+          specific data, zero spam. About one email a week. Unsubscribe in one click from any email.
         </p>
       </header>
 
@@ -73,6 +73,7 @@ export default function NewsletterPage() {
         source="newsletter-landing"
         variant="inline"
         headline="Subscribe to the Foil newsletter."
+        subtext="One email a week: the best live card deals right now, the cards on the move, and one sharp valuation note. No spam."
       />
 
       <section className="mt-14">
