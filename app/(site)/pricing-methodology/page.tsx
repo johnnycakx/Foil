@@ -19,10 +19,11 @@ export const metadata: Metadata = {
   description:
     "How Foil's buy signal works: the 30-day sold reference, the below/at/above thresholds, condition filtering, the sample-size floor, and the known limitations.",
   alternates: { canonical: "/pricing-methodology" },
-  // Dormant under the vending pivot (docs/vending Goal A §3): the deal-finder
-  // trust page is de-indexed + off the sitemap. Code (incl. the machine-pricing
-  // disclosure section) preserved in-tree.
-  robots: { index: false, follow: false },
+  // Indexable again (dual-track restore, ADR-064): the deal-finder buy-signal
+  // trust page every buy-signal badge links to. The machine-pricing disclosure
+  // section below is retained so the (dormant) /machines link stays valid and
+  // the two products stay honest about each other.
+  robots: { index: true, follow: true },
 };
 
 export default function PricingMethodologyPage() {

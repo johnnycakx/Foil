@@ -6,7 +6,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = new URL("../..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
@@ -51,19 +51,17 @@ const PUBLIC_SURFACES: readonly string[] = [
   // Session 47.5 / ADR-047: metadata-only listing block (3rd tier) — SDK
   // metadata + two search CTAs, no eBay/PokeTrace.
   "components/cards/metadata-only-listing.tsx",
-  // Vending Phase V-1 (2026-06-12): the /machines locator hub, the /host
-  // venue funnel, and their form components. Same cream/navy/gold register;
-  // the copy firewall for these surfaces lives in vending-surfaces.test.ts.
-  "app/(site)/machines/page.tsx",
+  // Dual-track (ADR-064): the vending lead-gen surfaces at /host stay live and
+  // use the same cream/navy/gold register, so the coral-hover-only + no-raw-hex
+  // invariants cover them too. (Their copy firewall lives in
+  // vending-surfaces.test.ts.)
   "app/(site)/host/page.tsx",
-  "components/vending/restock-alert-form.tsx",
-  "components/vending/host-lead-form.tsx",
-  // Vending pivot (docs/vending Goal A): the host lead-gen surfaces that
-  // replaced the deal-finder as the public face — homepage, FAQ, and the
-  // service-area hub + city pages. Same cream/navy/gold register.
+  "app/(site)/machines/page.tsx",
   "app/(site)/faq/page.tsx",
   "app/(site)/service-areas/page.tsx",
   "app/(site)/service-areas/[city]/page.tsx",
+  "components/vending/host-lead-form.tsx",
+  "components/vending/restock-alert-form.tsx",
 ];
 
 // ---------------------------------------------------------------------------
@@ -338,14 +336,16 @@ test("Site header: uses the <Logo /> brand component (ADR-032)", () => {
 // Session 43 / ADR-033 — Hero card backdrop treatment.
 // ---------------------------------------------------------------------------
 
-test("Vending homepage: hero is the host pitch, navy H1, no deal-finder grail showcase", () => {
-  // The pivot replaced the deal-finder grail-card hero with a host-acquisition
-  // pitch. Pin the new H1 + the absence of the old card showcase so a refactor
-  // can't drag the deal-finder hero back onto the public face of the site.
+test("Hero: grail cards are a full-opacity foreground showcase, not a ghosted backdrop (ADR-037)", () => {
   const src = readFile("app/(site)/page.tsx");
-  assert.match(src, /A Pokémon card vending machine in your business/, "vending H1 copy");
-  assert.doesNotMatch(src, /HERO_CARDS/, "the deal-finder grail showcase must be gone");
-  assert.doesNotMatch(src, /lg:w-40/, "the large grail-card hero visual must be gone");
+  // Session 47 / ADR-037 moved the cards ABOVE the headline at full
+  // opacity — no opacity ghosting, no blur, no desaturation. Pin the
+  // removal of the ADR-036 backdrop treatment so a refactor can't
+  // re-ghost the showcase.
+  assert.doesNotMatch(src, /opacity:\s*0\.(?:28|5)\b/, "hero cards must not be opacity-ghosted");
+  assert.doesNotMatch(src, /filter:\s*["']blur\(/, "hero cards must not be blurred");
+  // Cards render large (up to lg:w-40) as the hero visual.
+  assert.match(src, /lg:w-40/);
 });
 
 test("Hero: the copy-area scrim is gone (ADR-037 — cards no longer overlap text)", () => {
@@ -357,14 +357,23 @@ test("Hero: the copy-area scrim is gone (ADR-037 — cards no longer overlap tex
   assert.doesNotMatch(src, /radial-gradient\(ellipse_at_top_left/, "the ADR-033 radial scrim should be gone");
 });
 
-test("Vending homepage: renders the host lead form + the key host CTAs", () => {
+test("Hero: HERO_CARDS array swapped to the modern-grail seed list (ADR-033)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // The homepage is now the primary lead-gen surface: it must render the host
-  // lead form and link the core host journey (host / faq / service-areas).
-  assert.match(src, /import\s*\{\s*HostLeadForm\s*\}/, "homepage must import the HostLeadForm");
-  assert.match(src, /<HostLeadForm\b[^>]*\/>/, "homepage must render the HostLeadForm");
-  assert.match(src, /href="\/service-areas"/, "homepage links to /service-areas");
-  assert.match(src, /href="\/faq"/, "homepage links to /faq");
+  // Pin the 8 grail IDs so a future "let's freshen the hero" refactor
+  // doesn't silently drop the moonbreon/rayquaza/charizard-rainbow
+  // signal that anchors the launch surface.
+  for (const id of [
+    "swsh7/215",
+    "swsh7/218",
+    "swsh35/74",
+    "swsh11/186",
+    "swsh12/186",
+    "swsh8/269",
+    "swsh4/188",
+    "base1/4",
+  ]) {
+    assert.match(src, new RegExp(id.replace("/", "\\/")), `HERO_CARDS missing ${id}`);
+  }
 });
 
 // ---------------------------------------------------------------------------
@@ -389,16 +398,13 @@ test("Home page: orphan CardPeek decorations removed (ADR-038)", () => {
   assert.doesNotMatch(src, /CardPeek/, "CardPeek (component + invocations) should be gone");
 });
 
-test("Vending homepage: rev-share number is NOT published, routes to a call, no Pokeball (2026-06-13 OFF-SITE decision)", () => {
+test("Hero pills: bullets use the foil-corner mark, no Pokeball (ADR-055)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // The revenue-share number is a call topic, not a website claim (supersedes
-  // the old "publish 10–15% verbatim" pin). No percentage / "gross" in rendered
-  // copy; the page routes the rev-share to a call. Strip comments first so the
-  // rule can be documented in comments.
-  const rendered = src.replace(/\{\/\*[\s\S]*?\*\/\}/g, "").replace(/^\s*\/\/.*$/gm, "");
-  assert.doesNotMatch(rendered, /10\s?[–-]\s?15/, "no rev-share percentage on the homepage");
-  assert.doesNotMatch(rendered, /\bgross\b/i, "no 'gross' on the homepage");
-  assert.match(rendered, /walk through the revenue share/i, "homepage routes the rev-share to a call");
+  // The Live pill + the Verified-Seller pill use <FoilCornerMark /> as the
+  // bullet (the navy Pokeball bullet is retired). At least two instances.
+  const marks = (src.match(/<FoilCornerMark\b/g) ?? []).length;
+  assert.ok(marks >= 2, "expected >=2 FoilCornerMark bullets (Live + trust pills)");
+  assert.match(src, /import \{ FoilCornerMark \} from "@\/components\/brand\/logo"/);
   assert.doesNotMatch(src, /<PokeballMark\b/, "no PokeballMark bullets remain");
 });
 
@@ -416,29 +422,42 @@ test("Display font is Fraunces with the SOFT warmth axis (ADR-036)", () => {
 // Session 47 / ADR-037 — hero rework + floral section distinction.
 // ---------------------------------------------------------------------------
 
-test("Vending homepage: evolved section spine, navy contrast band, no FAQ teaser (ADR-061)", () => {
+test("Hero: the grail showcase renders ABOVE the H1 (ADR-037)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // ADR-061 redesign: spine is hero -> value props -> how it works (dark navy
-  // band) -> operating proof -> lead form. The "Quick answers" FAQ teaser was
-  // cut (the homepage links to /faq instead).
-  assert.match(src, /<ValueProps \/>/, "value-props section present");
-  assert.match(src, /<HowItWorks \/>/, "how-it-works section present");
-  assert.match(src, /<OperatingProof \/>/, "operating-proof section present");
-  assert.match(src, /<LeadSection \/>/, "lead form section present");
-  assert.doesNotMatch(src, /<FaqTeaser/, "the homepage Quick-answers FAQ teaser was cut (link to /faq instead)");
-  // At least one dark navy contrast section (ADR-061 cream↔navy alternation).
-  assert.match(src, /bg-foil-navy/, "homepage must carry a dark navy contrast section");
-  // No deal-finder hero artifacts crept back.
-  assert.doesNotMatch(src, /images\.pokemontcg\.io/, "no external SDK CDN hero images");
-  assert.doesNotMatch(src, /function FoilCornerPattern/, "deal-finder watermark section gone");
+  const cardsIdx = src.search(/HERO_CARDS\.map/);
+  const h1Idx = src.search(/<h1\b/);
+  assert.ok(cardsIdx > -1 && h1Idx > -1, "both the card map and the H1 must exist");
+  assert.ok(cardsIdx < h1Idx, "the HERO_CARDS showcase must render before the H1");
 });
 
-test("Vending homepage: emits LocalBusiness + Service JSON-LD; FAQPage lives on /faq (ADR-061)", () => {
+test("How it works: foil-corner card watermark, that section only, no Pokeball (ADR-055)", () => {
   const src = readFile("app/(site)/page.tsx");
-  assert.match(src, /localBusinessSchema/, "homepage emits LocalBusiness JSON-LD");
-  assert.match(src, /serviceSchema/, "homepage emits Service JSON-LD");
-  // The visible FAQ block was cut from the homepage, so FAQPage JSON-LD moved
-  // off it (structured data must match visible content); /faq keeps its FAQPage.
-  assert.doesNotMatch(src, /faqPageSchema/, "homepage no longer emits FAQPage (no visible FAQ block)");
-  assert.match(src, /application\/ld\+json/, "homepage renders a JSON-LD script tag");
+  assert.doesNotMatch(src, /function PokeballPattern/, "PokeballPattern should be gone");
+  assert.doesNotMatch(src, /foil-pokeball/, "the Pokeball pattern id should be gone");
+  assert.doesNotMatch(src, /#e63946/i, "no Pokémon red in the pattern");
+  assert.match(src, /function FoilCornerPattern/, "FoilCornerPattern component must exist");
+  assert.match(src, /<pattern id="foil-card-pattern"/, "the foil-corner <pattern> tile must exist");
+  // Rendered exactly once — How it works is the only textured section.
+  const uses = (src.match(/<FoilCornerPattern\s*\/>/g) ?? []).length;
+  assert.equal(uses, 1, "FoilCornerPattern should render exactly once (How it works only)");
+  // In-brand two-tone: navy card body + gold folded corner.
+  assert.match(src, /fill="#0f1e3a"/i, "navy card body");
+  assert.match(src, /fill="#c9a24b"/i, "gold folded corner");
+  // Faint watermark so text on top holds AA contrast.
+  assert.match(src, /opacity-\[0\.0\d\]/, "low-opacity watermark");
+});
+
+test("Homepage hero images are self-hosted local webp that exist, no flaky external CDN (ADR-056)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  // The hero must NOT depend on images.pokemontcg.io (it intermittently rendered
+  // the row as broken images in prod). Local /hero/*.webp only.
+  assert.doesNotMatch(src, /https:\/\/images\.pokemontcg\.io/, "hero must not fetch from the external SDK CDN");
+  assert.match(src, /\/hero\/\$\{c\.id\.replace\("\/", "-"\)\}\.webp/, "hero src must be a local /hero/*.webp path");
+  // Every HERO_CARDS id must have a real file in public/hero/ — no broken refs.
+  const ids = [...src.matchAll(/\{\s*id:\s*"([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(ids.length >= 8, `expected >=8 HERO_CARDS ids, found ${ids.length}`);
+  for (const id of ids) {
+    const file = join(ROOT, "public/hero", `${id.replace("/", "-")}.webp`);
+    assert.ok(existsSync(file), `missing self-hosted hero image: public/hero/${id.replace("/", "-")}.webp`);
+  }
 });

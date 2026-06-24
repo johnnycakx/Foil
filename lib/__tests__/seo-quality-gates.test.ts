@@ -1,15 +1,6 @@
 // Quality-gates contract tests. These are the only safety net between
 // Claude's output and a publish-to-main commit in autonomy mode, so every
 // gate gets a positive AND negative case.
-//
-// ADR-062 (vending reframe): the deal-finder data gates — dollar-figure count,
-// Foil-scan-data citation, Foil-data provenance — were retired (they forced
-// collector/pricing content that doesn't fit a host-acquisition post). They are
-// replaced by vending gates: host-benefit clarity, a Bay-Area geo reference, a
-// conversion internal link (/host, /faq, /service-areas[/city]), and a HARD
-// honesty gate (no insurance claim, no published revenue-share %). The general
-// voice/honesty gates (11 attribution, 12 em-dash, 13 anti-hype) are unchanged
-// and tested in attribution-gate.test.ts + copy-gate-anti-hype.test.ts.
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -17,85 +8,81 @@ import {
   BANNED_PHRASES,
   bannedPhraseMatches,
   countInternalLinks,
+  foilDataCitationCount,
   recentDateMatches,
   runQualityGates,
+  uniqueDollarFigures,
   deadInternalLinks,
-  hostBenefitSignals,
-  localGeoReferences,
-  hasConversionInternalLink,
-  vendingHonestyViolations,
+  checkFoilDataProvenance,
+  buildFoilDataAllowedValues,
 } from "../seo/quality-gates.ts";
 import type { GeneratedDraft } from "../seo/content-engine-types.ts";
 
-// A vending host draft that passes every gate. Tests mutate copies of this to
-// exercise one gate at a time. ~1500 words packed with every signal the gates
-// look for: host-benefit language, a Bay-Area geo reference, conversion links,
-// a current-year mention, and a 200+ word host-facing FAQ.
+// A draft that passes every gate. Tests mutate copies of this to exercise
+// one gate at a time.
 function passingDraft(): GeneratedDraft {
+  // ~1500 words packed with every signal the gates look for.
+  // Build to ~1500 words: filler at ~20 words/repeat × 70 repeats = ~1400
+  // words, plus the data-rich postscript below adds ~120 more.
   const filler =
-    "We place and operate the machine for hosts across the Bay Area, and we restock it on a schedule built around your hours so your staff never touches it. " .repeat(52);
+    "This section walks through pricing dynamics, condition impact, grading thresholds, and the buyer psychology behind each price tier. " .repeat(70);
 
   const body =
     filler +
-    "\n\n## What hosting costs you\n" +
-    "Nothing. There is no purchase, lease, or fee, and the machine draws about as much power as a TV. " +
-    "Hosting is a hands-off, no cost amenity that earns a monthly revenue share for space you already pay for. " +
-    "We handle the cashless payments, we restock on a 7-to-14-day cadence, and every refund routes through the on-machine QR code. " +
-    "Foot traffic at a busy Fairfield or Walnut Creek storefront is exactly the impulse-buy crowd this fits. " +
-    "It runs on a risk-free trial month with no contract required. " +
-    "Read the full [host FAQ](/faq) or see how it works on the [host a machine](/host) page. " +
-    "For a local example, see [Napa vending machine placement](/service-areas/napa). " +
-    "In 2026 we are placing machines closest-first across the North Bay and Solano corridor.";
+    "\n\nIn 2026 the market shifted noticeably from 2025 norms. " +
+    "A PSA 10 Charizard from Base Set sold for $30,100 on eBay last quarter. " +
+    "The raw NM equivalent traded around $1,200. With $25 grading fees per card and a ~40% PSA 10 strike rate, the EV math heavily favors submitting clean copies. " +
+    "Foil's scan data across cards processed in the last 30 days shows the median raw grade is roughly PSA 9. " +
+    "Across our scans, the typical chase card pulls a $200-$5,400 comp range depending on centering and surface. " +
+    "Compare with [Pokémon card condition guide](/pokemon-card-condition-guide) for the full grading walkthrough. " +
+    "Also see [Pokémon card value calculator](/pokemon-card-value-calculator) for live prices. " +
+    "The 2025 release of Surging Sparks shifted the modern set EV, and the 2026 reprint of Prismatic Evolutions doubled the supply at retail.";
 
   return {
     candidate: null as unknown as GeneratedDraft["candidate"],
     slug: "test-slug",
     frontmatter: {
-      title: "Host a Pokemon Card Vending Machine in Your Bay Area Shop",
-      description: "How a Bay Area business hosts a fully managed Pokemon card vending machine for a monthly revenue share, with zero cost and zero work.",
-      date: "2026-06-15",
-      tags: ["vending", "host"],
-      pillar: "host",
-      primaryKeyword: "host a pokemon card vending machine",
+      title: "Test Title",
+      description: "Test description.",
+      date: "2026-05-20",
+      tags: ["test"],
+      pillar: "pokemon-card-value-calculator",
+      primaryKeyword: "test",
     },
     body,
     faq: [
       {
-        question: "What does it cost a host?",
+        question: "What is a PSA 10?",
         answer:
-          "Nothing. There is no purchase, no lease, and no fee. The machine draws about as much power as a TV, roughly four dollars a month. You provide about three to four square feet and a standard outlet, and you earn a monthly revenue share on top of that. We walk through the revenue share on a quick call.",
+          "A PSA 10 is the highest grade (Gem Mint) assigned by Professional Sports Authenticator. Cards in PSA 10 slabs have no visible defects to the eye, centering of roughly 55/45 or better, and crisp corners. The PSA 10 grade commands a steep premium over PSA 9 on chase cards, sometimes 5x to 50x the lower-grade price. The grading service inspects centering, corners, edges, and surface independently before assigning the headline grade.",
       },
       {
-        question: "Who handles restocking and customer issues?",
+        question: "How long does PSA grading take?",
         answer:
-          "We do, completely. Foil installs, stocks, restocks, and services every machine, and we handle refunds and support through the on-machine QR code. Your staff never touches it and never fields a complaint. Restocks happen every 7 to 14 days, scheduled around your hours.",
+          "Standard tier turnaround is roughly 30-45 days, costing about $25 per card. Express tiers cut turnaround to under two weeks for $75 per card. Bulk submissions through a TCGplayer or eBay seller account can drop the per-card fee but require batching 20+ cards at once. Walk-through service at PSA events runs another tier above express.",
       },
       {
-        question: "Do I have to sign a contract to host in the Bay Area?",
+        question: "Is BGS better than PSA for Pokemon?",
         answer:
-          "No. Most placements run on a handshake and a risk-free trial month with no commitment. If you would prefer something in writing, we provide a simple placement agreement. If a spot is not a fit, we adjust the product mix and, if needed, relocate the machine at no cost to you.",
-      },
-      {
-        question: "How much space does the machine need?",
-        answer:
-          "About three to four square feet, plus a standard 120V outlet and wifi. The machine is roughly the size of a jukebox, and it can be wall-mounted, on a pedestal, or freestanding with no drilling required. We size it to your space and show you exactly how it looks before anything is installed. The install takes about an hour and does not disrupt your day.",
+          "PSA still commands the strongest resale premium for Pokémon; buyers default to PSA slabs and pay accordingly. BGS 10 Black Label sits above PSA 10 on vintage but BGS 9.5 generally underprices a PSA 10. CGC has closed the gap on Japanese sets but trails on English vintage. Default to PSA for anything you plan to sell within twelve months.",
       },
     ],
     wordCount: 1500,
   };
 }
 
-test("a clean vending draft passes every gate", () => {
+test("a clean draft passes every gate", () => {
   const result = runQualityGates(passingDraft(), "/blog/test-slug");
   assert.deepEqual(result.failures, []);
   assert.equal(result.passed, true);
 });
 
-// Gate 12 field coverage (PATTERNS I-008 fourth instance): an em dash in
-// frontmatter.description must fail (the gate scans title + description too).
+// Gate 12 field coverage (PATTERNS I-008 fourth instance): post 66da22d shipped
+// an em dash in frontmatter.description because the gate only scanned body+faq.
+// The gate now scans title + description too.
 test("Gate 12: an em dash in frontmatter.description fails", () => {
   const draft = passingDraft();
-  draft.frontmatter.description = "Host a machine — earn a monthly share for space you already pay for.";
+  draft.frontmatter.description = "PSA 9 vs PSA 10 worth — we break down the multipliers.";
   const result = runQualityGates(draft, "/blog/test-slug");
   assert.ok(
     result.failures.some((f) => f.includes("em dash") && f.includes("Gate 12")),
@@ -105,7 +92,7 @@ test("Gate 12: an em dash in frontmatter.description fails", () => {
 
 test("Gate 12: an em dash in frontmatter.title fails", () => {
   const draft = passingDraft();
-  draft.frontmatter.title = "Host a Vending Machine — Zero Cost, Zero Work";
+  draft.frontmatter.title = "PSA 9 vs PSA 10 — Is the Premium Worth It?";
   const result = runQualityGates(draft, "/blog/test-slug");
   assert.ok(
     result.failures.some((f) => f.includes("em dash") && f.includes("Gate 12")),
@@ -114,6 +101,8 @@ test("Gate 12: an em dash in frontmatter.title fails", () => {
 });
 
 test("Gate 12: a body-only post with clean frontmatter still passes", () => {
+  // The passingDraft has no em dashes anywhere -> expanding the scan to
+  // title+description must NOT introduce a false positive.
   const result = runQualityGates(passingDraft(), "/blog/test-slug");
   assert.ok(!result.failures.some((f) => f.includes("Gate 12")), `clean draft must not trip Gate 12: ${JSON.stringify(result.failures)}`);
 });
@@ -133,32 +122,66 @@ test("gate (a): rejects over-length body", () => {
   assert.ok(result.failures.some((f) => f.includes("too long")));
 });
 
-// --- Gate (currency): at least one current-year reference (relaxed 2 -> 1) ----
-
-test("gate (currency): rejects a body with no 2025/2026 reference", () => {
+test("gate (b): rejects under 5 unique dollar figures", () => {
   const draft = passingDraft();
-  draft.body = draft.body.replace(/2026/g, "the spring");
+  // Body with only 2 dollar figures
+  draft.body =
+    "The card sells for $50. " .repeat(60) +
+    "\n\nFoil's scan data covers 30 days. The 2025 set had a PSA 10 worth $200. " +
+    "Compare 2026 prices with [the condition guide](/pokemon-card-condition-guide) and [pillar](/pokemon-card-value-calculator).";
   const result = runQualityGates(draft, "/blog/test-slug");
   assert.ok(
-    result.failures.some((f) => f.includes("recent-year")),
+    result.failures.some((f) => f.includes("dollar figures")),
     `failures: ${result.failures.join(" | ")}`,
   );
 });
 
-test("gate (currency): a single 2026 mention satisfies the gate", () => {
+test("uniqueDollarFigures dedupes — $30 mentioned 5 times counts once", () => {
+  assert.equal(uniqueDollarFigures("$30 and $30 and $30 and $40").size, 2);
+});
+
+test("gate (c): rejects under 2 recent-date citations", () => {
   const draft = passingDraft();
+  // Strip out the 2025/2026 mentions
+  draft.body =
+    "Body text with prices $1, $2, $3, $4, $5. Foil's scan data here. " +
+    "[Link1](/a) [Link2](/b)";
+  // No 2025/2026 anywhere
   const result = runQualityGates(draft, "/blog/test-slug");
-  assert.ok(!result.failures.some((f) => f.includes("recent-year")));
+  assert.ok(result.failures.some((f) => f.includes("recent date")));
 });
 
 test("recentDateMatches ignores 2025/2026 inside URLs", () => {
   const matches = recentDateMatches(
-    "See https://example.com/2026-pricing and the current year is 2026",
+    "See https://example.com/2026-pricing — current year is mentioned here: 2026",
   );
+  // Only the bare "2026" outside the URL should count, but our regex now
+  // strips URLs entirely, so 1 match.
   assert.equal(matches.length, 1);
 });
 
-// --- Gate (e): banned phrases -----------------------------------------------
+test("gate (d): rejects when no Foil-data citation present", () => {
+  const draft = passingDraft();
+  // Strip every known Foil-data trigger phrase
+  draft.body = draft.body
+    .replace(/foil's scan data/gi, "industry data")
+    .replace(/across our scans/gi, "across the market")
+    .replace(/cards processed/gi, "cards reviewed");
+  const result = runQualityGates(draft, "/blog/test-slug");
+  assert.ok(
+    result.failures.some((f) => f.toLowerCase().includes("foil")),
+    `failures: ${result.failures.join(" | ")}`,
+  );
+});
+
+test("foilDataCitationCount finds all known trigger phrases", () => {
+  assert.equal(
+    foilDataCitationCount(
+      "Foil's scan data shows X. Across our scans, Y. Cards processed last month numbered 500.",
+    ),
+    3,
+  );
+});
 
 test("gate (e): rejects when ANY banned phrase appears (case-insensitive)", () => {
   const draft = passingDraft();
@@ -171,18 +194,16 @@ test("gate (e): rejects when ANY banned phrase appears (case-insensitive)", () =
 });
 
 test("bannedPhraseMatches returns every offender so the retry prompt is exhaustive", () => {
-  const text = "In conclusion, let's dive in. In today's market this is a game-changer.";
+  const text = "In conclusion, the world of pokemon is changing. As a collector, you know.";
   const hits = bannedPhraseMatches(text);
   assert.ok(hits.includes("in conclusion"));
-  assert.ok(hits.includes("dive in"));
-  assert.ok(hits.includes("in today's market"));
-  assert.ok(hits.includes("game-changer"));
+  assert.ok(hits.includes("the world of pokemon"));
+  assert.ok(hits.includes("as a collector"));
 });
 
-test("BANNED_PHRASES list includes every phrase the gate set names", () => {
-  // Pin the exact list so a future refactor can't silently drop one. The list
-  // is unchanged by the vending reframe (these AI-tell / voice bans are
-  // audience-agnostic).
+test("BANNED_PHRASES list includes every phrase the goal spec names", () => {
+  // Pin the exact list so a future refactor can't silently drop one.
+  // Extended Goal V with the 7 brand-voice bans (docs/BRAND-VOICE.md §5).
   assert.deepEqual([...BANNED_PHRASES], [
     "in conclusion",
     "in summary",
@@ -202,7 +223,11 @@ test("BANNED_PHRASES list includes every phrase the gate set names", () => {
   ]);
 });
 
-// --- Gate (g): FAQ length ----------------------------------------------------
+test("BANNED_PHRASES carries the brand-voice additions (Goal V)", () => {
+  for (const p of ["dive in", "game-changer", "to the moon", "navigate the landscape", "delve", "tapestry", "in today's market"]) {
+    assert.ok(BANNED_PHRASES.includes(p), `missing voice ban: ${p}`);
+  }
+});
 
 test("gate (g): rejects when FAQ section is under 200 words", () => {
   const draft = passingDraft();
@@ -211,15 +236,12 @@ test("gate (g): rejects when FAQ section is under 200 words", () => {
   assert.ok(result.failures.some((f) => f.includes("FAQ section is too short")));
 });
 
-// --- Gate (h): internal links + Gate V-link (conversion link) ----------------
-
 test("gate (h): rejects under 2 internal links", () => {
   const draft = passingDraft();
   // Strip all internal links — replace with external ones (don't count)
   draft.body = draft.body
-    .replace(/\[host FAQ\]\(\/faq\)/g, "[external](https://example.com/a)")
-    .replace(/\[host a machine\]\(\/host\)/g, "[external2](https://example.com/b)")
-    .replace(/\[Napa vending machine placement\]\(\/service-areas\/napa\)/g, "[external3](https://example.com/c)");
+    .replace(/\[Pokémon card condition guide\]\(\/pokemon-card-condition-guide\)/g, "[external](https://wikipedia.org/Pokemon)")
+    .replace(/\[Pokémon card value calculator\]\(\/pokemon-card-value-calculator\)/g, "[external2](https://example.com/x)");
   const result = runQualityGates(draft, "/blog/test-slug");
   assert.ok(result.failures.some((f) => f.includes("internal links")));
 });
@@ -240,32 +262,6 @@ test("countInternalLinks dedupes — same href twice counts once", () => {
   assert.equal(countInternalLinks(body), 2);
 });
 
-test("Gate V-link: a post whose only internal links are sibling blog posts fails", () => {
-  const draft = passingDraft();
-  // Two internal links, but neither is a conversion page (/host, /faq, /service-areas).
-  draft.body = draft.body
-    .replace(/\[host FAQ\]\(\/faq\)/g, "[a sibling post](/blog/best-businesses-for-a-vending-machine)")
-    .replace(/\[host a machine\]\(\/host\)/g, "[another sibling](/blog/how-vending-revenue-share-hosting-works)")
-    .replace(/\[Napa vending machine placement\]\(\/service-areas\/napa\)/g, "the Napa area");
-  const result = runQualityGates(draft, "/blog/test-slug");
-  assert.ok(
-    result.failures.some((f) => f.includes("conversion link") && f.includes("Gate V-link")),
-    `expected a Gate V-link failure, got: ${JSON.stringify(result.failures)}`,
-  );
-});
-
-test("hasConversionInternalLink: /host, /faq, and /service-areas[/city] count; /blog and /cards do not", () => {
-  assert.equal(hasConversionInternalLink("[x](/host)"), true);
-  assert.equal(hasConversionInternalLink("[x](/faq)"), true);
-  assert.equal(hasConversionInternalLink("[x](/service-areas)"), true);
-  assert.equal(hasConversionInternalLink("[x](/service-areas/walnut-creek)"), true);
-  assert.equal(hasConversionInternalLink('<a href="https://foiltcg.com/host">x</a>'), true);
-  assert.equal(hasConversionInternalLink("[x](/blog/some-post)"), false);
-  assert.equal(hasConversionInternalLink("[x](/cards/base1-4-charizard)"), false);
-});
-
-// --- Gate (f): schema validation --------------------------------------------
-
 test("gate (f): rejects draft with empty headline (schema validation)", () => {
   const draft = passingDraft();
   draft.frontmatter.title = "";
@@ -278,149 +274,106 @@ test("gate (f): rejects draft with empty headline (schema validation)", () => {
 
 test("multiple gate failures all surface in one report (no early-exit)", () => {
   const draft = passingDraft();
-  draft.body = "tiny body in conclusion."; // fails word count + banned phrase + benefit + geo + link + ...
+  draft.body = "tiny body in conclusion."; // fails word count + banned phrase + dollar figures + ...
   draft.faq = [];
   const result = runQualityGates(draft, "/blog/test-slug");
+  // Expect ALL the major gate violations, not just the first one — that's
+  // what lets the retry prompt fix everything in one round-trip.
   assert.ok(result.failures.length >= 4);
 });
 
 // ---------------------------------------------------------------------------
-// Gate 9 — internal-link existence (Session 47.4). Repointed at the vending
-// routes (ADR-062): the resolver now resolves /service-areas/[city] slugs, not
-// /cards/ slugs.
+// Gate 9 — internal-link existence (Session 47.4). Anchored on the real dead
+// links the three Session-47.4 smoke-test posts shipped (R-010).
 // ---------------------------------------------------------------------------
 
 test("deadInternalLinks: flags hrefs that don't resolve, passes ones that do", () => {
   const exists = (href: string) =>
-    href === "/host" || href === "/service-areas/napa";
+    href === "/pokemon-card-value-calculator" || href === "/cards/base1-4-charizard";
   const body =
-    "See [host](/host) and [napa](/service-areas/napa) " +
-    "but [dead](/blog/this-post-does-not-exist) and [also dead](/service-areas/nowhere).";
+    "See [calc](/pokemon-card-value-calculator) and [charizard](/cards/base1-4-charizard) " +
+    "but [dead](/blog/reading-pokemon-card-price-data) and [also dead](/cards/nonexistent-slug).";
   const dead = deadInternalLinks(body, exists);
-  assert.deepEqual(dead.sort(), ["/blog/this-post-does-not-exist", "/service-areas/nowhere"].sort());
+  assert.deepEqual(dead.sort(), ["/blog/reading-pokemon-card-price-data", "/cards/nonexistent-slug"].sort());
+});
+
+test("deadInternalLinks: R-010 anchors — the exact links the fabricated posts shipped are dead", () => {
+  // None of these three blog posts exist; the resolver only knows the pillars.
+  const exists = (href: string) => href.startsWith("/pokemon-card-") || href.startsWith("/japanese-");
+  const body =
+    "[a](/blog/reading-pokemon-card-price-data) [b](/blog/how-to-read-pokemon-card-collector-numbers) " +
+    "[c](/blog/how-to-price-pokemon-cards-from-photo)";
+  assert.equal(deadInternalLinks(body, exists).length, 3);
 });
 
 test("gate 9 fires through runQualityGates when a resolver is supplied", () => {
   const draft = passingDraft();
-  draft.body += "\n\nBonus: [dead link](/service-areas/nowhere-city).";
-  const ctx = { internalLinkExists: (h: string) => !h.includes("nowhere-city") };
+  draft.body += "\n\nBonus: [dead link](/blog/this-post-does-not-exist).";
+  const ctx = { internalLinkExists: (h: string) => !h.includes("does-not-exist") };
   const result = runQualityGates(draft, "/blog/test-slug", undefined, ctx);
   assert.ok(result.failures.some((f) => f.includes("Dead internal link")));
 });
 
 test("gate 9 stays silent without a resolver (back-compat)", () => {
   const draft = passingDraft();
-  draft.body += "\n\n[dead](/service-areas/nowhere-city).";
+  draft.body += "\n\n[dead](/blog/this-post-does-not-exist).";
   const result = runQualityGates(draft, "/blog/test-slug"); // no ctx
   assert.ok(!result.failures.some((f) => f.includes("Dead internal link")));
 });
 
 // ---------------------------------------------------------------------------
-// Gate V-benefit — host value-prop clarity (ADR-062).
+// Gate 10 — Foil-data provenance (Session 47.4). Anchored on the exact
+// fabricated sentences from the live posts (R-010).
 // ---------------------------------------------------------------------------
 
-test("hostBenefitSignals counts distinct host-value-prop phrases", () => {
-  const hits = hostBenefitSignals(
-    "It is hands-off and no cost, you earn a monthly revenue share, and we restock it.",
-  );
-  assert.ok(hits.includes("hands-off"));
-  assert.ok(hits.includes("no cost"));
-  assert.ok(hits.includes("revenue share"));
-  assert.ok(hits.includes("we restock"));
-  assert.ok(hits.length >= 4);
+const SNAPSHOT_25_30 = buildFoilDataAllowedValues({
+  totalScans: { count: 25, days: 30 },
+  waitlistTotal: null,
+  waitlistBySource: null,
 });
 
-test("Gate V-benefit: a post that doesn't speak to the host fails", () => {
+test("buildFoilDataAllowedValues: includes raw counts + days", () => {
+  assert.ok(SNAPSHOT_25_30.has("25"));
+  assert.ok(SNAPSHOT_25_30.has("30"));
+  assert.ok(!SNAPSHOT_25_30.has("18"));
+});
+
+test("checkFoilDataProvenance: R-010 anchor — the '~18% spread' fabrication is flagged", () => {
+  const body =
+    "Foil's scan data shows that across 25 cards processed in the last 30 days, the spread " +
+    "between a card's TCGplayer market price and its 30-day eBay sold median averaged roughly 18%.";
+  const offenders = checkFoilDataProvenance(body, SNAPSHOT_25_30);
+  assert.ok(offenders.some((o) => o.includes("18")), `expected 18% flagged, got ${JSON.stringify(offenders)}`);
+});
+
+test("checkFoilDataProvenance: R-010 anchor — the '2× grading rate' fabrication is flagged", () => {
+  const body =
+    "Foil's scan data — across 25 cards processed in the last 30 days — shows users submitting " +
+    "English SIRs for grading at roughly 2× the rate of JP SARs of equivalent cards.";
+  const offenders = checkFoilDataProvenance(body, SNAPSHOT_25_30);
+  assert.ok(offenders.some((o) => o.includes("2")), `expected 2x flagged, got ${JSON.stringify(offenders)}`);
+});
+
+test("checkFoilDataProvenance: legit snapshot-backed sentence passes", () => {
+  const body = "Foil's scan data: across 25 cards processed in the last 30 days.";
+  assert.deepEqual(checkFoilDataProvenance(body, SNAPSHOT_25_30), []);
+});
+
+test("checkFoilDataProvenance: null snapshot → any number in a Foil-data sentence is a fabrication", () => {
+  const body = "Foil's scan data shows a 42% spread across 25 cards processed.";
+  const offenders = checkFoilDataProvenance(body, null);
+  assert.ok(offenders.length > 0);
+});
+
+test("checkFoilDataProvenance: numbers OUTSIDE a Foil-data sentence are ignored", () => {
+  const body = "A PSA 10 Charizard sold for $30,100 in 2026. Market spreads can hit 40% on chase cards.";
+  assert.deepEqual(checkFoilDataProvenance(body, SNAPSHOT_25_30), []);
+});
+
+test("gate 10 fires through runQualityGates when allowed-values supplied", () => {
   const draft = passingDraft();
-  // Strip the host-benefit vocabulary out of body + FAQ.
-  const strip = (s: string) =>
-    s
-      .replace(/hands-off/gi, "simple")
-      .replace(/no cost/gi, "included")
-      .replace(/revenue share/gi, "monthly payment plan")
-      .replace(/we restock/gi, "it gets refilled")
-      .replace(/we handle/gi, "it is handled")
-      .replace(/foot traffic/gi, "visitors")
-      .replace(/risk-free/gi, "low-commitment")
-      .replace(/trial month/gi, "starter period")
-      .replace(/no contract/gi, "flexible terms")
-      .replace(/cashless/gi, "card-based")
-      .replace(/monthly revenue/gi, "monthly amount")
-      .replace(/impulse/gi, "spur-of-the-moment")
-      .replace(/square feet/gi, "a small spot")
-      .replace(/your space/gi, "your store");
-  draft.body = strip(draft.body);
-  draft.faq = draft.faq.map((q) => ({ question: strip(q.question), answer: strip(q.answer) }));
-  const result = runQualityGates(draft, "/blog/test-slug");
-  assert.ok(
-    result.failures.some((f) => f.includes("host-benefit") && f.includes("Gate V-benefit")),
-    `expected a Gate V-benefit failure, got: ${JSON.stringify(result.failures)}`,
-  );
-});
-
-// ---------------------------------------------------------------------------
-// Gate V-geo — local relevance (ADR-062).
-// ---------------------------------------------------------------------------
-
-test("localGeoReferences recognizes the Bay Area + served cities", () => {
-  assert.ok(localGeoReferences("a shop in the Bay Area").includes("bay area"));
-  assert.ok(localGeoReferences("downtown Walnut Creek").includes("walnut creek"));
-  assert.equal(localGeoReferences("a generic small town with no place name").length, 0);
-});
-
-test("Gate V-geo: a post with no Bay-Area reference fails", () => {
-  const draft = passingDraft();
-  const strip = (s: string) =>
-    s
-      .replace(/bay area/gi, "region")
-      .replace(/fairfield/gi, "town")
-      .replace(/walnut creek/gi, "downtown")
-      .replace(/napa/gi, "the city")
-      .replace(/north bay/gi, "the area")
-      .replace(/solano/gi, "the county");
-  draft.body = strip(draft.body);
-  draft.faq = draft.faq.map((q) => ({ question: strip(q.question), answer: strip(q.answer) }));
-  const result = runQualityGates(draft, "/blog/test-slug");
-  assert.ok(
-    result.failures.some((f) => f.includes("Bay-Area location") && f.includes("Gate V-geo")),
-    `expected a Gate V-geo failure, got: ${JSON.stringify(result.failures)}`,
-  );
-});
-
-// ---------------------------------------------------------------------------
-// Gate V-honesty — binding guardrails on generated copy (HARD, ADR-062).
-// ---------------------------------------------------------------------------
-
-test("vendingHonestyViolations: flags a 'fully insured' claim", () => {
-  const v = vendingHonestyViolations("The machine is fully insured against theft.");
-  assert.ok(v.some((x) => x.includes("fully insured")));
-});
-
-test("vendingHonestyViolations: flags a published revenue-share percentage", () => {
-  const v = vendingHonestyViolations("Hosts keep a 15% revenue share every month.");
-  assert.ok(v.some((x) => x.includes("revenue-share %")), `got: ${JSON.stringify(v)}`);
-});
-
-test("vendingHonestyViolations: a 'monthly revenue share' with no percentage is clean", () => {
-  assert.deepEqual(vendingHonestyViolations("You earn a monthly revenue share on every sale."), []);
-});
-
-test("Gate V-honesty: an insurance claim in the body fails", () => {
-  const draft = passingDraft();
-  draft.body += "\n\nDon't worry about damage, the machine is fully insured.";
-  const result = runQualityGates(draft, "/blog/test-slug");
-  assert.ok(
-    result.failures.some((f) => f.includes("Honesty-guardrail") && f.includes("Gate V-honesty")),
-    `expected a Gate V-honesty failure, got: ${JSON.stringify(result.failures)}`,
-  );
-});
-
-test("Gate V-honesty: a published revenue-share % in the body fails", () => {
-  const draft = passingDraft();
-  draft.body += "\n\nYou keep a 12% revenue share of every sale.";
-  const result = runQualityGates(draft, "/blog/test-slug");
-  assert.ok(
-    result.failures.some((f) => f.includes("Honesty-guardrail") && f.includes("Gate V-honesty")),
-    `expected a Gate V-honesty failure for a published %, got: ${JSON.stringify(result.failures)}`,
-  );
+  draft.body += "\n\nFoil's scan data shows a wild 73% premium across our scans.";
+  const ctx = { foilDataAllowedValues: SNAPSHOT_25_30 };
+  const result = runQualityGates(draft, "/blog/test-slug", undefined, ctx);
+  assert.ok(result.failures.some((f) => f.includes("Unverifiable Foil-data claim")));
 });

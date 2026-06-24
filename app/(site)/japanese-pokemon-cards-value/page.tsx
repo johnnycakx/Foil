@@ -10,9 +10,6 @@ const PUBLISHED_AT = "2026-05-19";
 const MODIFIED_AT = "2026-05-19";
 
 export const metadata: Metadata = {
-  // Dormant under the vending pivot (docs/vending Goal A §3): deal-finder
-  // marketing pillar, de-indexed + off the sitemap. Code preserved in-tree.
-  robots: { index: false, follow: false },
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: URL_PATH },

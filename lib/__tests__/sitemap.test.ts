@@ -16,10 +16,19 @@ import assert from "node:assert/strict";
 import { LANDING_PATHS } from "../seo/sitemap-landings.ts";
 import { isPublicRoute } from "../supabase/public-routes.ts";
 
-test("vending host surfaces are in the sitemap (docs/vending Goal A §3 + ADR-063 blog)", () => {
-  // /blog is the LIVE vending blog index (ADR-063); the per-post /blog/[slug]
-  // URLs for vending posts are layered on at the app/sitemap.ts dynamic layer.
-  for (const path of ["/", "/host", "/faq", "/service-areas", "/blog"]) {
+test("both tracks' fixed surfaces are in the sitemap (dual-track, ADR-064)", () => {
+  // Deal-finder (primary) + vending lead-gen (at /host). The per-post
+  // /blog/[slug] URLs, the ~1k /cards/[slug] pages, and the
+  // /service-areas/[city] pages are layered on at the app/sitemap.ts dynamic
+  // layer; this just pins the fixed landing set.
+  for (const path of [
+    // deal-finder primary
+    "/", "/blog", "/deals", "/start", "/newsletter", "/pricing-methodology",
+    "/japanese-pokemon-cards-value", "/pokemon-card-value-calculator",
+    "/pokemon-card-condition-guide",
+    // vending lead-gen
+    "/host", "/faq", "/service-areas",
+  ]) {
     assert.ok(
       LANDING_PATHS.some((e) => e.path === path),
       `${path} must be present in the sitemap landing set`,
@@ -27,27 +36,12 @@ test("vending host surfaces are in the sitemap (docs/vending Goal A §3 + ADR-06
   }
 });
 
-test("deal-finder routes are ABSENT from the sitemap (dormant under the vending pivot)", () => {
-  // The pivot makes the deal-finder dormant: noindexed + unlinked + off the
-  // sitemap so its already-indexed URLs drop out of Google. The fixed landing
-  // set must carry none of them (the ~1k /cards/* URLs and the dormant
-  // deal-finder /blog/* posts are dropped at the app/sitemap.ts layer — only
-  // vending posts are concatenated on, ADR-063). NOTE: /blog (the index) is now
-  // LIVE for the vending blog, so it is NOT in this dormant list.
+test("/machines stays out of the sitemap (indexable but no live locations yet, ADR-064)", () => {
+  // /machines is un-noindexed in the dual-track restore but carries no live
+  // locations to recover, so it is deliberately NOT in the crawl set — no thin
+  // page in the sitemap until machine #1 lands.
   const paths = new Set(LANDING_PATHS.map((e) => e.path));
-  for (const dormant of [
-    "/deals",
-    "/pricing-methodology",
-    "/newsletter",
-    "/start",
-    "/machines",
-    "/japanese-pokemon-cards-value",
-    "/pokemon-card-value-calculator",
-    "/pokemon-card-condition-guide",
-    "/legal/ebay-api-compliance",
-  ]) {
-    assert.ok(!paths.has(dormant), `${dormant} is dormant and must not be in the sitemap`);
-  }
+  assert.ok(!paths.has("/machines"), "/machines must not be in the sitemap until it has live content");
 });
 
 test("every sitemap landing path is a public, crawlable route", () => {

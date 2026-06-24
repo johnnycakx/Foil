@@ -104,9 +104,11 @@ function strippedSource(rel: string): string {
     .replace(/^\s*\/\/.*$/gm, "");
 }
 
-// The public vending surfaces whose RENDERED copy must stay clean.
+// The public vending surfaces whose RENDERED copy must stay clean. NOTE: the
+// homepage (app/(site)/page.tsx) is NOT here anymore — under the dual-track
+// restore (ADR-064) the homepage is the deal-finder again, not a vending
+// surface. /host is the canonical vending landing.
 const VENDING_RENDERED_FILES: readonly string[] = [
-  "app/(site)/page.tsx",
   "app/(site)/host/page.tsx",
   "components/vending/host-lead-form.tsx",
   "app/(site)/faq/page.tsx",

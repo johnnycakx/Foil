@@ -10,6 +10,7 @@
 // Session 39 (ADR-029): cream/navy/gold palette. Coral is hover-only.
 
 import Link from "next/link";
+import { FooterEmailCapture } from "@/components/footer-email-capture";
 import { Logo } from "@/components/brand/logo";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
@@ -34,14 +35,17 @@ function SiteHeader() {
           <Logo size="md" />
         </Link>
         <nav className="flex items-center gap-5 text-sm">
-          {/* Vending pivot: nav points at the host lead-gen surfaces + the live
-              vending /blog (ADR-063). The deal-finder routes (/deals, /cards)
-              stay dormant — unlinked, noindexed, off the sitemap — code in-tree. */}
           <Link
-            href="/service-areas"
+            href="/deals"
+            className="font-medium text-foil-navy transition hover:text-foil-coral"
+          >
+            Today&apos;s deals
+          </Link>
+          <Link
+            href="/cards"
             className="text-foil-slate transition hover:text-foil-navy"
           >
-            Service areas
+            Browse cards
           </Link>
           <Link
             href="/blog"
@@ -49,18 +53,19 @@ function SiteHeader() {
           >
             Blog
           </Link>
-          <Link
-            href="/faq"
-            className="text-foil-slate transition hover:text-foil-navy"
-          >
-            FAQ
-          </Link>
+          {/* Dual-track (ADR-064): the deal-finder is the primary surface; the
+              vending lead-gen business lives at /host. Keep one clear entry
+              point so vending isn't orphaned. */}
           <Link
             href="/host"
-            className="font-medium text-foil-navy transition hover:text-foil-coral"
+            className="text-foil-slate transition hover:text-foil-navy"
           >
             Host a machine
           </Link>
+          {/* F6: no "Sign in" in the main nav — watchlists work with no account,
+              so a sign-in CTA up top only confuses cold visitors. The route +
+              auth flow are untouched; a discreet "Account" link lives in the
+              footer, and /upload still routes to /login at the paywall. */}
         </nav>
       </div>
     </header>
@@ -78,42 +83,28 @@ function SiteFooter() {
           </Link>
         </div>
         <div className="mb-8 max-w-md">
-          <p className="text-sm leading-relaxed text-foil-slate">
-            We place and operate Pokémon card vending machines for Bay Area businesses.{" "}
-            <Link
-              href="/host"
-              className="text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
-            >
-              Host one in your space →
-            </Link>
-          </p>
+          <FooterEmailCapture />
         </div>
         <div className="flex flex-col items-start justify-between gap-3 border-t border-foil-navy/10 pt-6 text-sm text-foil-slate sm:flex-row sm:items-center">
           <p>© {new Date().getFullYear()} Foil TCG, LLC · Built by a Level-4 TCGplayer seller</p>
           <nav className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <Link
+              href="/newsletter"
+              className="transition hover:text-foil-navy"
+            >
+              Newsletter
+            </Link>
+            <Link
+              href="/pricing-methodology"
+              className="transition hover:text-foil-navy"
+            >
+              Methodology
+            </Link>
+            <Link
               href="/host"
               className="transition hover:text-foil-navy"
             >
               Host a machine
-            </Link>
-            <Link
-              href="/service-areas"
-              className="transition hover:text-foil-navy"
-            >
-              Service areas
-            </Link>
-            <Link
-              href="/blog"
-              className="transition hover:text-foil-navy"
-            >
-              Blog
-            </Link>
-            <Link
-              href="/faq"
-              className="transition hover:text-foil-navy"
-            >
-              FAQ
             </Link>
             <Link
               href="/legal/privacy"

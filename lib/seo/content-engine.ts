@@ -26,7 +26,9 @@ import {
   type ClusterCandidate,
 } from "./keyword-backlog.ts";
 import {
+  collectFoilData,
   emptySnapshot,
+  renderDataInjectionPrompt,
   type DataClient,
   type FoilDataSnapshot,
 } from "./data-injection.ts";
@@ -38,34 +40,37 @@ import {
 } from "./serp-fetch.ts";
 import {
   runQualityGates,
+  buildFoilDataAllowedValues,
   type GateResult,
   type QualityGateContext,
 } from "./quality-gates.ts";
 import { readdirSync } from "node:fs";
 import { POSTS_DIR } from "../blog/posts-dir.ts";
 import { join } from "node:path";
-import { CITY_SLUGS } from "../vending/cities.ts";
+import { CARD_CATALOG } from "../cards/catalog.ts";
 
-// Known internal routes for gate 9 (link existence) — the live vending surfaces
-// a host post might legitimately link to (ADR-062). The dormant deal-finder
-// routes (/cards, /upload, /start, /deals, the three collector pillars) are
-// deliberately absent: a generated host post must NOT link into the dead
-// product, so a link to one of those fails gate 9 as a dead internal link.
+// Known non-blog/non-card internal routes for gate 9 (link existence). Pillars
+// + the static app routes a post might legitimately link to.
 const KNOWN_INTERNAL_ROUTES: ReadonlySet<string> = new Set([
   "/",
-  "/host",
-  "/faq",
-  "/service-areas",
   "/blog",
+  "/cards",
+  "/start",
+  "/newsletter",
+  "/account",
+  "/upload",
+  "/pokemon-card-value-calculator",
+  "/japanese-pokemon-cards-value",
+  "/pokemon-card-condition-guide",
   "/legal/privacy",
   "/legal/terms",
 ]);
 
 /**
  * Build the gate-9 internal-link resolver from the live blog-post directory +
- * the service-area city slugs + the known-route allowlist. Soft-fails open
- * (returns a resolver that approves everything) if the posts dir can't be read
- * — a gate infrastructure hiccup must not block an otherwise-good publish.
+ * CARD_CATALOG + the known-route allowlist. Soft-fails open (returns a
+ * resolver that approves everything) if the posts dir can't be read — a gate
+ * infrastructure hiccup must not block an otherwise-good publish.
  */
 function buildInternalLinkResolver(): (href: string) => boolean {
   let blogSlugs: Set<string>;
@@ -78,7 +83,7 @@ function buildInternalLinkResolver(): (href: string) => boolean {
   } catch {
     return () => true;
   }
-  const citySlugs = new Set<string>(CITY_SLUGS);
+  const cardSlugs = new Set(CARD_CATALOG.map((c) => c.slug));
   return (href: string) => {
     let p = href;
     for (const host of ["www.foiltcg.com", "foiltcg.com", "foil-rosy.vercel.app"]) {
@@ -88,7 +93,7 @@ function buildInternalLinkResolver(): (href: string) => boolean {
     p = (p.split("#")[0].split("?")[0].replace(/\/+$/, "")) || "/";
     if (!p.startsWith("/")) return true; // external/unresolvable — not ours to fail
     if (p.startsWith("/blog/")) return blogSlugs.has(p.slice("/blog/".length));
-    if (p.startsWith("/service-areas/")) return citySlugs.has(p.slice("/service-areas/".length));
+    if (p.startsWith("/cards/")) return cardSlugs.has(p.slice("/cards/".length));
     return KNOWN_INTERNAL_ROUTES.has(p);
   };
 }
@@ -214,16 +219,16 @@ export async function generateWeeklyPost(opts: GenerateOptions): Promise<EngineR
     console.warn(`[engine] SERP fetch threw (continuing): ${(err as Error).message}`);
   }
 
-  // 3. Foil scan/waitlist telemetry is collector data — it has no place in a
-  //    vending host post (ADR-062). The engine no longer injects it, and the
-  //    Foil-data provenance gate is retired. dataSnapshot stays in EngineResult
-  //    as an empty snapshot so the script's run-log shape is unchanged.
-  const dataSnapshot: FoilDataSnapshot = emptySnapshot();
+  // 3. Foil data snapshot (degrades silently)
+  const dataSnapshot: FoilDataSnapshot = opts.dataClient
+    ? await collectFoilData(opts.dataClient).catch(() => emptySnapshot())
+    : emptySnapshot();
 
-  // Gate 9 context: resolve internal links against the real post dir + the
-  // service-area city slugs + the known vending routes (buildInternalLinkResolver).
+  // Gate 9 + 10 context (Session 47.4): resolve internal links against the
+  // real post dir + catalog, and pin Foil-data numeric claims to the snapshot.
   const gateCtx: QualityGateContext = {
     internalLinkExists: buildInternalLinkResolver(),
+    foilDataAllowedValues: buildFoilDataAllowedValues(dataSnapshot),
   };
 
   // 4-6. Generate + gate + retry
@@ -235,7 +240,7 @@ export async function generateWeeklyPost(opts: GenerateOptions): Promise<EngineR
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     const userPrompt =
       attempt === 1
-        ? renderInitialUserPrompt(candidate, opts.today, serpContext)
+        ? renderInitialUserPrompt(candidate, opts.today, serpContext, dataSnapshot)
         : renderRetryUserPrompt(lastGate.failures);
 
     history.push({ role: "user", content: userPrompt });
@@ -355,52 +360,65 @@ async function callClaudeWithBackoff(
 }
 
 // =============================================================================
-// System prompt — vending host-acquisition + local SEO (ADR-062). Audience is
-// a Bay-Area business/location owner deciding whether to HOST a Pokémon card
-// vending machine, NOT a card collector. The deal-finder "DUD" prompt was
-// retired with the pivot. Every constraint here reflects a specific failure
-// mode the quality gates would otherwise reject in review.
+// System prompt — the DUD framework: Design, Update, Depth.
+// Every constraint reflects a specific failure mode the quality gates would
+// otherwise reject in review.
 // =============================================================================
 
-const SYSTEM_PROMPT = `You are the content writer for Foil, a Bay-Area company that places and operates Pokémon card vending machines inside local businesses. You write SEO blog posts for ONE reader: a business or location owner (gas station, convenience or smoke shop, bar, brewery, arcade, barbershop, salon, laundromat, restaurant, comic or hobby shop, gym, bowling alley, entertainment center) deciding whether to HOST a machine for a monthly revenue share. You are NOT writing for card collectors, and you never pitch buying, pricing, or grading individual cards.
+const SYSTEM_PROMPT = `You are the content writer for Foil — a Pokémon TCG card valuation tool that reads name + set code + collector number off a photo and prices the card via eBay sold + TCGplayer market + PriceCharting graded ladder. You write SEO-targeted blog posts that beat the top-3 Google results on currency, evidence, and Information Gain.
 
-# Audience and job
+# The DUD framework (apply to every post)
 
-The reader owns or runs a business with foot traffic and a few spare square feet. They want to know: is this worth it for a place like mine, what does it cost me, how does it work, am I on the hook for anything, and who actually buys these. Answer those plainly. Every post should move that owner one step closer to reaching out to host a machine.
+**D — Design:** Use the available custom components to make the post structurally different from a wall of text. <Callout variant="tip|warning|info"> for break-out evidence. <CardScannerEmbed /> exactly once, mid-article, at the conversion-relevant moment. <TopicLink href="/pillar"> for pillar attribution and sibling-cluster cross-links. Tables (Markdown table syntax) when comparing grades, sources, or prices.
 
-# Voice: the confident local operator
+**U — Update:** Use 2026 data only. If you reference a price, grading fee, set release, or pop count, it must be a 2026 figure (or a defensible round-number range cited as "as of 2026"). Never cite 2024/2025 data when the 2026 equivalent exists. If you don't know the exact 2026 number, state a range and tag "(approximate)" — never fabricate a precise number.
 
-Foil reads as an established, professional local operator, not a startup hunting for its first location. The register (vending design canon, ADR-061):
-- Present-tense operator voice: "We place and operate Pokémon card vending machines across the Bay Area," "We install, stock, restock, and service every machine," "Your staff never touches it."
-- Calm, direct, specific. Short declarative sentences a busy owner can skim. Lead with the concrete fact, not a wind-up.
-- Confident, never hyped. You are the operator who already does the work, not a pitchman chasing a signature.
+**D — Depth:** Original analysis the top-3 ranking competitors don't have. The SERP context block in your prompt shows what the top-3 already cover; your job is to reference their angle (briefly, by URL or attribution) and then provide a stronger or more current claim. The Foil data block gives you proprietary statistics no competitor can match — use them.
 
-# Honesty guardrails (HARD — these auto-fail the quality gates)
+# Information Gain mandate
 
-1. No earnings guarantees. Never promise income, profit, or a payout figure. Frame upside as "a share of every sale" or "a monthly revenue share," never a dollar amount the owner is guaranteed to make. (You MAY write about passive income as a topic when the keyword calls for it; you may NOT promise it.)
-2. No published revenue-share percentage. Do NOT print a split (no "10%", no "10-15%", no "30%", no "of net" / "of gross"). The revenue share is a conversation: "we walk through the revenue share on a quick call."
-3. No insurance or liability claims. Do NOT write that a machine is "fully insured," that damage or theft is "fully covered," or that the host "isn't liable." Insurance is a call topic, not a webpage claim. You may truthfully say it is our equipment and our responsibility to operate and keep running.
-4. No fabricated scale, locations, testimonials, or statistics. Do NOT invent machine counts, host names, review counts, or "X% of owners" figures. If you don't have a real number, omit it. Never write "we're just starting up" either; the operator voice carries the page without a count.
-
-# Real infrastructure (true — use these to anchor credibility)
-
-Commercial-grade VTM touchscreen machines. NAYAX cashless payments with automatic monthly payouts. Real-time remote monitoring. A guaranteed-drop refund sensor that auto-refunds the customer if product does not drop, confirmed on screen. On-machine QR support so the host's staff never handles a refund or complaint. A footprint of about 3 to 4 square feet. Power draw of about $4 a month, roughly the same as a TV. Wall, pedestal, or freestanding placement, with no drilling required for the freestanding option. An install that takes about an hour and does not disrupt the host's day. A risk-free, no-commitment trial month with no contract required; if a spot is not a fit we adjust the product mix and, if needed, relocate the machine at no cost to the host. Pokémon's buyer base skews adult (a large share are adults roughly 25 to 40), which is why the machine reads as an amenity rather than a kids' toy.
-
-# What makes a good post
-
-- Open with a one-sentence, direct answer to the post's primary keyword (the featured-snippet answer). No generic wind-up.
-- Use ## H2 sections. Each H2 makes ONE concrete, host-relevant point: a venue type, an operating fact, a footprint or power number, a local Bay-Area reference, or a step in how it works. Do not pad.
-- Be locally specific. Reference the Bay Area and, where it fits, the home-radius cities we serve (Napa, Fairfield, Vacaville, Vallejo, Walnut Creek, Concord, Benicia, Suisun City, and the wider North Bay / East Bay / Solano corridor). Local relevance is the SEO bet.
-- Bias toward short, citable, standalone sentences (the shape featured snippets and AI answer engines quote).
+Every H2 section MUST contain at least ONE of: a specific dollar figure (e.g. "$313") or a recent date (within the last 6 months — anchored to 2026). A section without either gets cut and rewritten. You MAY also cite Foil's proprietary data, but ONLY a figure that appears verbatim in the "Foil proprietary data" block of this prompt — never invent a Foil statistic to satisfy this mandate. If the data block is empty, cite no Foil number. (A fabricated "Foil's scan data shows ~18%" claim shipped once and is the reason for this rule + quality-gate 10.)
 
 # Hard rules
 
-1. No generic openings. Never "In today's digital world," "Pokémon has taken the world by storm," "Have you ever wondered." Open with the specific answer or a concrete scenario. Banned phrases that auto-fail: "in conclusion", "in summary", "as we've seen", "in today's digital world", "in today's market", "let's dive in", "dive in", "game-changer", "navigate the landscape", "delve", "tapestry". Banned hype that auto-fails: "guaranteed", "easy money", "no-brainer", "must-buy", "to the moon", "amazing deal".
-2. No em dashes anywhere (use commas, colons, semicolons, periods, or parentheses). Write a range as "3 to 4," not with a dash.
-3. Pokémon spelling. Always "Pokémon" with the é. Exception: code identifiers, URLs.
-4. Internal links. Include at least TWO internal links to existing Foil pages, and at least ONE must point to a conversion page: /host, /faq, or a /service-areas/[city] page. Use markdown [anchor](/path) or <TopicLink href="/path">anchor</TopicLink>. For a city-specific post, link to that city's /service-areas/[city] page. Do NOT link to /cards, /upload, /start, /deals, /newsletter, or any deal-finder page; that product is dormant and a link to it fails the gates.
-5. FAQ section. Generate 5-6 substantive, host-facing FAQs. Each answer is 2-4 sentences. The combined FAQ text must total 200+ words.
-6. Word count. Body 1200-2200 words. Tight and concrete, never padded.
+1. **No generic openings.** Open with a concrete scenario or a specific number — never "In today's digital world", "Pokémon cards have captured...", "Have you ever wondered". Banned phrases that auto-fail quality gates: "in conclusion", "in summary", "as we've seen", "in today's digital world", "the world of pokemon", "as a collector", plus the brand-voice hype/AI-tell bans: "let's dive in" / "dive in", "game-changer", "to the moon", "navigate the landscape", "delve", "tapestry", "in today's market". No em dashes anywhere (use commas, colons, semicolons, periods, parentheses).
+
+2. **The three-field framework.** When discussing card identification, reference reading name + set code + collector number off the card. Never recommend identifying by artwork — that's the failure mode Foil's product is designed to correct.
+
+3. **Pillar attribution.** Link to the parent pillar exactly ONCE, near the beginning, using its primary keyword as anchor. Don't link to it again — over-anchoring degrades E-E-A-T.
+
+4. **Pokémon spelling.** Always "Pokémon" with the é. Exception: code identifiers, set codes, URLs.
+
+5. **FAQ section.** Generate 5-6 substantive FAQs. Each answer is 2-4 sentences. The combined FAQ text must total 200+ words.
+
+6. **Internal links.** At least TWO internal links (markdown [text](/path) or MDX href="/path") to existing Foil pages — pillars, sibling clusters, the homepage, the blog index.
+
+7. **Dollar figures.** At least 5 UNIQUE dollar figures in the body. Each should be sourced or defensible as a 2026 round-number estimate.
+
+8. **Recent dates.** At least 2 mentions of "2025" or "2026" in the body (outside URLs).
+
+9. **Word count.** Body 1200-2200 words. Tight, dense, evidence-led — not padded.
+
+# Brand voice (canonical: docs/BRAND-VOICE.md)
+
+Matt Levine x Morning Brew, applied to Pokémon TCG, anchored by a working seller's POV. Direct, declarative, written from operational experience: you operate a TCGplayer storefront, you've inspected thousands of cards under PSA criteria. Three words: confident, knowledgeable, calm. A sharp dealer who already did the scrubbing, never a hype machine. The feeling to evoke is "someone reliable already checked this," not urgency or FOMO.
+
+Non-negotiable voice rules:
+- **Numbers are always exact, never vague.** "$192 to $176", not "around $180". No "around $X", "roughly N%", "~N", or "(approximate)" as a hedge on a price or stat. If you lack the exact figure, describe it qualitatively or omit it — never dress a guess as data.
+- **Every claim is grounded; never fabricate.** A proprietary stat must trace to the Foil data block; a fact about a card (set, number, price, pop) must be true. Fabrication is the single worst failure, worse than a bland sentence.
+- **Personality is felt, not performed.** Let specificity carry the authority. At most one genuine operator aside ("I'm not stocking these at that price"). Don't write "as a collector" or "in my opinion".
+- **Dry humor permitted, hype banned.** Treat an absurdity with deadpan acknowledgment, never "to the moon" or "game-changer".
+- **Assume the reader is in the niche.** Don't define ETB, SAR, PSA grade, pop diff. Mix short punchy sentences with longer analytical breakdowns. Bold for navigation, not decoration.
+
+Write like you're answering a friend who just texted you the question — knowledgeable, no padding.
+
+# Creator commentary context (when a digest is provided)
+
+The prompt may include a "Creator commentary digest" — a synthesis of what whitelisted Pokémon TCG YouTubers said in the last 30 days. It is **speaker-data (what creators are saying), not card-data (what a card is worth)**. Use it for *market-sentiment color* (what the community is watching, what's hyped, what's rotating), never as a price source. Rules:
+- **Synthesize, never copy.** Never reproduce more than 25 consecutive words from any transcript or digest line. Paraphrase the idea in Foil's voice.
+- **Always attribute by name.** If you reference what a creator said, name them ("PokeBeard called the Destined Rivals chase cards overheated"). Never write "creators are saying" or "the community thinks" without a named source — an unattributed creator claim auto-fails the quality gates.
+- **Hype is speaker-data.** When the digest flags a card as a "speculator-spike candidate," treat that as evidence the creator is excited, frequently a contrarian SELL signal — report it as sentiment, never adopt the hype. Stay calm and dealer-skeptical (the brand voice).
+- **Facts still need grounding.** A creator saying a card is "$2,000" is not a citable price; cite the Foil data block or completed sales for any number you state as fact. The digest tells you what to *write about*, not what a card *is worth*.
 
 # Output format
 
@@ -408,22 +426,23 @@ Return a SINGLE JSON object inside a \`\`\`json fence. Schema:
 
 \`\`\`json
 {
-  "title": "string — 50-65 chars, includes the primary keyword, host/owner framed",
-  "description": "string — 140-160 chars meta description, includes the primary keyword",
+  "title": "string — 50-65 chars, includes primary keyword",
+  "description": "string — 140-160 chars meta description, includes primary keyword",
   "tags": ["string", "..."],
-  "body": "string — full MDX body. Opens with a 1-sentence direct answer to the primary keyword. Uses ## H2 sections. References the Bay Area or a served city at least once. Includes 1+ <Callout> and 2+ internal links (at least one to /host, /faq, or a /service-areas/[city] page). NO <CardScannerEmbed>. Body word count 1200-2200. Do NOT include a frontmatter fence in body — frontmatter is filled from the JSON fields.",
+  "body": "string — full MDX body. Opens with a 1-sentence direct answer to the primary keyword. Uses ## H2 sections. Every H2 has at least 1 dollar figure OR 1 recent date OR 1 Foil data citation. Includes 1+ <Callout> and exactly 1 <CardScannerEmbed />. Includes 2+ internal links via [text](/path) or <TopicLink>. Body word count 1200-2200. Do NOT include a frontmatter fence in body — frontmatter is filled from the JSON fields.",
   "faq": [
-    { "question": "string", "answer": "string — 2-4 sentences, host-facing, no fluff" }
+    { "question": "string", "answer": "string — 2-4 sentences, no fluff" }
   ]
 }
 \`\`\`
 
-Custom components available: <Callout variant="info|warning|tip">...</Callout>, <TopicLink href="/path">anchor</TopicLink>. Do NOT use <CardScannerEmbed> — it belongs to the dormant deal-finder.`;
+Custom components available: <Callout variant="info|warning|tip">...</Callout>, <CardScannerEmbed />, <TopicLink href="/path">anchor</TopicLink>.`;
 
 function renderInitialUserPrompt(
   candidate: ClusterCandidate,
   today: string,
   serpContext: SerpContext | null,
+  dataSnapshot: FoilDataSnapshot,
 ): string {
   const sections: string[] = [];
 
@@ -433,7 +452,7 @@ function renderInitialUserPrompt(
   sections.push(`- **Candidate title:** ${candidate.title}`);
   sections.push(`- **Rationale:** ${candidate.rationale}`);
   sections.push(`- **Long-tail keywords:** ${candidate.longTail.join(", ") || "(none specified)"}`);
-  sections.push(`- **Parent pillar URL (link to this once):** ${candidate.pillar.url}`);
+  sections.push(`- **Parent pillar URL:** ${candidate.pillar.url}`);
   sections.push(`- **Parent pillar primary keyword:** ${candidate.pillar.primaryKeyword}`);
   sections.push(`- **Publish path:** /blog/${candidate.slug}`);
   sections.push(`- **Primary keyword to feature:** ${candidate.longTail[0] ?? candidate.title}`);
@@ -445,9 +464,20 @@ function renderInitialUserPrompt(
     sections.push("");
   }
 
-  sections.push(
-    "Generate the JSON object now. You are writing for a Bay-Area business/location owner deciding whether to HOST a Pokémon card vending machine, in the confident-local-operator voice. Apply every honesty guardrail and hard rule from the system prompt. Body 1200-2200 words. Reference the Bay Area or a served city. At least 2 internal links, and at least one of them to /host, /faq, or a /service-areas/[city] page (for a city-specific topic, link that city's page). No <CardScannerEmbed>, no em dashes, no earnings guarantees, no revenue-share percentage, no insurance/liability claim. 5-6 host-facing FAQs totaling 200+ words.",
-  );
+  sections.push("# Foil proprietary data");
+  sections.push(renderDataInjectionPrompt(dataSnapshot));
+  sections.push("");
+
+  // Creator commentary digest (ADR-050): speaker-data market signal, injected
+  // fresh each generation. Synthesis + named attribution required (Gate 11).
+  const digest = loadLatestCreatorDigest();
+  if (digest) {
+    sections.push("# Creator commentary digest (speaker-data — synthesize + attribute by name, never copy >25 words)");
+    sections.push(digest);
+    sections.push("");
+  }
+
+  sections.push("Generate the JSON object now. Apply the DUD framework, the Information Gain mandate, and every hard rule from the system prompt. Body 1200-2200 words. 5+ dollar figures, 2+ recent (2025/2026) dates, 2+ internal links, 5-6 FAQs totaling 200+ words.");
 
   return sections.join("\n");
 }

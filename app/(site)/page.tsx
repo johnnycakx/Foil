@@ -1,218 +1,206 @@
-// Homepage — the vending host pitch (vending pivot, docs/vending Goal A/E).
-//
-// Section spine: hero -> value props -> how it works (dark navy) -> operating
-// proof -> lead form. The deal-finder is dormant (noindex + unlinked); this is
-// the public face of foiltcg.com.
-//
-// DESIGN (ADR-061 / DESIGN.md §7 — the "confident local operator" vending
-// register): cream↔navy alternation for contrast (the "How it works" band is
-// navy with gold step numbers), subtle resting elevation on the value-prop
-// cards, and gold as a structural accent (eyebrows, step numbers). Palette,
-// fonts, coral-hover-only, and no-pure-black/white are unchanged.
-//
-// HONESTY (docs/vending/02 §6 + the 2026-06-13 OFF-SITE decisions): no earnings
-// projections, no "passive income", no fabricated scale/testimonials, no
-// insurance/liability claim (a call topic), no revenue-share number (a call
-// topic: no percentage, no gross/net), no implied installs, no placeholder text.
-// Machine photos are neutral product/model imagery on a navy frame. This is a
-// vending surface: it never borrows the deal-finder's trust vocabulary.
-
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { HostLeadForm } from "@/components/vending/host-lead-form";
-import { SERVED_CITY_NAMES, SERVICE_CITIES } from "@/lib/vending/cities";
-import {
-  localBusinessSchema,
-  serviceSchema,
-  schemaGraph,
-  serializeJsonLd,
-} from "@/lib/seo/schema-helpers";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { EmailCapture } from "@/components/email-capture";
+import { CARD_CATALOG, setIdsInCatalog } from "@/lib/cards/catalog";
+import { FoilCornerMark } from "@/components/brand/logo";
 
-function siteUrl(): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? "https://foiltcg.com").replace(/\/$/, "");
-}
-
-const SITE_TITLE = "Host a free Pokémon card vending machine in your Bay Area business | Foil";
+const SITE_TITLE = "Foil — The best price on any Pokémon card";
 const SITE_DESCRIPTION =
-  "Foil places, stocks, and services a Pokémon card vending machine in your business across the North Bay and East Bay. Zero cost, zero work: you provide three square feet and earn a monthly revenue share.";
+  "Search any Pokémon card and instantly see the best live deal on eBay — curated by price, condition, and seller quality. Free wishlist alerts when your cards drop. Built by a Level-4 TCGplayer Verified Seller. TCGplayer coming soon.";
 
 export const metadata: Metadata = {
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
-  metadataBase: new URL(siteUrl()),
-  alternates: { canonical: "/" },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   openGraph: {
     type: "website",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     siteName: "Foil",
     url: "/",
+    // The homepage exports its own openGraph, which does NOT inherit the
+    // file-based app/opengraph-image.tsx — so reference the dynamic OG (the
+    // FoilTCG wordmark card, ADR-055) explicitly or the share card is blank.
     images: ["/opengraph-image"],
   },
   twitter: {
     card: "summary_large_image",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
+    creator: "@foilcards",
     images: ["/opengraph-image"],
   },
 };
 
-export default function Home() {
-  const base = siteUrl();
-  // LocalBusiness + Service only. The FAQPage JSON-LD lives on /faq, where the
-  // FAQ is actually visible (the homepage no longer renders an FAQ block, so
-  // emitting FAQPage here would mismatch the visible content).
-  const jsonLd = schemaGraph(
-    localBusinessSchema({
-      name: "Foil",
-      url: base,
-      description:
-        "Pokémon trading-card vending machine placement and operation for businesses across the San Francisco Bay Area. The host provides space and power; Foil owns, stocks, and services the machine and pays a monthly revenue share.",
-      areaServed: SERVED_CITY_NAMES,
-      addressRegion: "CA",
-      addressCountry: "US",
-    }),
-    serviceSchema({
-      name: "Pokémon card vending machine placement",
-      description:
-        "Foil places, stocks, and services Pokémon card vending machines in high-foot-traffic Bay Area businesses, hands-off for the host, with a monthly revenue share.",
-      providerName: "Foil",
-      url: base,
-      areaServed: SERVED_CITY_NAMES,
-    }),
-  );
+export default async function Home() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) redirect("/upload");
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
-      />
       <Hero />
-      <ValueProps />
       <HowItWorks />
-      <OperatingProof />
-      <LeadSection />
+      <ExampleResult />
+      <FinalCTA />
     </>
   );
 }
 
+// Session 43 (ADR-033) — modern grail seed list. Seven modern alt-art /
+// rainbow chase cards + one vintage anchor (Base Set Charizard). As of
+// Session 47 (ADR-037) these are a full-opacity foreground showcase
+// fanned across the top of the hero — no longer a ghosted backdrop. The
+// array order is the left-to-right fan order; tilts give each card
+// character. Images are SELF-HOSTED (ADR-056): downloaded once + resized to
+// small local webp under public/hero/ so the hero never depends on the flaky
+// images.pokemontcg.io CDN (which intermittently rendered the row as broken
+// images in prod). `id.replace("/","-")` maps "swsh7/215" → "/hero/swsh7-215.webp".
+const HERO_CARDS: { id: string; alt: string; tilt: string }[] = [
+  { id: "base1/4",    alt: "Charizard, Base Set (vintage anchor)",             tilt: "rotate-[2deg]"  },
+  { id: "swsh35/74",  alt: "Charizard VMAX Rainbow Rare, Champions Path",      tilt: "-rotate-[3deg]" },
+  { id: "swsh12/186", alt: "Lugia V Alt Art, Silver Tempest",                  tilt: "-rotate-[2deg]" },
+  { id: "swsh8/269",  alt: "Mew VMAX Alt Art, Fusion Strike",                  tilt: "rotate-[7deg]"  },
+  { id: "swsh4/188",  alt: "Pikachu VMAX Rainbow, Vivid Voltage",              tilt: "-rotate-[5deg]" },
+  { id: "swsh11/186", alt: "Giratina V Alt Art, Lost Origin",                  tilt: "rotate-[5deg]"  },
+  { id: "swsh7/218",  alt: "Rayquaza VMAX Alt Art, Evolving Skies",            tilt: "rotate-[4deg]"  },
+  { id: "swsh7/215",  alt: "Umbreon VMAX Alt Art (Moonbreon), Evolving Skies", tilt: "-rotate-[6deg]" },
+];
+
 function Hero() {
+  const cardCount = CARD_CATALOG.length;
+  const setCount = setIdsInCatalog().length;
   return (
     <section className="relative isolate overflow-hidden bg-foil-cream">
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 pt-14 pb-16 sm:px-8 sm:pt-20 sm:pb-24 lg:grid-cols-2 lg:gap-14">
-        <div className="text-center lg:text-left">
-          <p className="inline-flex items-center gap-2 rounded-full border border-foil-gold/40 bg-foil-gold/10 px-3 py-1 text-xs font-medium text-foil-navy">
-            <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
-            Pokémon card vending machines · North Bay &amp; East Bay
-          </p>
+      {/* ADR-038 (Session 47.1): the hero is solid cream. The decorative
+          bottom-right gradient glow was removed (it read as a stray amber
+          tint). No overlays, no glows. */}
 
-          <h1 className="font-display mt-6 text-4xl font-semibold leading-[1.05] tracking-[-0.01em] text-foil-navy sm:text-5xl md:text-6xl">
-            A Pokémon card vending machine in your business. It costs you nothing.
-          </h1>
-
-          <p className="mx-auto mt-5 max-w-xl text-lg text-foil-slate sm:text-xl lg:mx-0">
-            We place, stock, and service the machine. You give it three square feet and an
-            outlet, and earn a share of every sale, with zero work.
-          </p>
-
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
-            <Link
-              href="#host-form"
-              className="rounded-xl bg-foil-navy px-6 py-3.5 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40"
-            >
-              Host a machine →
-            </Link>
-            <Link
-              href="/service-areas"
-              className="text-sm text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
-            >
-              See the cities we serve →
-            </Link>
-          </div>
-
-          <p className="mt-5 text-xs text-foil-slate">
-            Risk-free trial, no contract, and we&apos;ll walk through the revenue share on a
-            quick call.
-          </p>
-        </div>
-
-        {/* Machine photo on a NAVY device frame (DESIGN.md §7 / ADR-061): product
-            model imagery, dark-on-dark so it reads intentional rather than
-            floating on cream. Neutral model-only caption; NOT a Foil install or
-            placed location (docs/vending/02 §6). Cropped slightly toward the lit
-            screen. */}
-        <figure className="mx-auto w-full max-w-sm lg:max-w-none">
-          <div className="rounded-3xl bg-foil-navy p-3 shadow-xl shadow-foil-navy/30 ring-1 ring-foil-gold/30">
-            <div className="overflow-hidden rounded-2xl">
+      {/* Hero showcase — Session 47 (ADR-037). The grail row moved ABOVE
+          the headline as a full-opacity fanned showcase: real cards, no
+          blur, no desaturation, no scrim, no Card3D. The modern-grail seed
+          list finally reads as the showcase it was meant to be. Static
+          (subtle hover lift only); the globals.css reduced-motion reset
+          collapses the lift for users who ask for it. Decorative → the
+          row is aria-hidden so screen readers go straight to the pitch. */}
+      <div
+        aria-hidden
+        className="mx-auto flex max-w-6xl items-center justify-center px-2 pt-8 sm:pt-12"
+      >
+        {HERO_CARDS.map((c, i) => (
+          <div
+            key={c.id}
+            className={`relative ${c.tilt} ${i > 0 ? "-ml-6 sm:-ml-7 md:-ml-8" : ""} transition duration-200 ease-out hover:z-10 hover:-translate-y-2`}
+          >
+            <div className="relative aspect-[5/7] w-24 overflow-hidden rounded-lg bg-foil-cream shadow-lg shadow-foil-navy/25 ring-1 ring-foil-navy/10 sm:w-28 md:w-32 lg:w-40">
               <Image
-                src="/vending/machine-tower-1.webp"
-                alt="The freestanding tower, a touchscreen Pokémon card vending machine"
-                width={1199}
-                height={1599}
-                className="aspect-[4/5] w-full object-cover object-[center_26%]"
-                priority
-                sizes="(min-width: 1024px) 36rem, (min-width: 640px) 24rem, 90vw"
+                src={`/hero/${c.id.replace("/", "-")}.webp`}
+                alt={c.alt}
+                width={400}
+                height={560}
+                className="h-full w-full object-cover"
+                priority={false}
               />
             </div>
           </div>
-          <figcaption className="mt-3 text-center text-xs text-foil-slate lg:text-left">
-            Our freestanding tower model.
-          </figcaption>
-        </figure>
+        ))}
+      </div>
+
+      {/* Pitch block — centered beneath the card fan. No scrim needed: the
+          cards no longer overlap the text. */}
+      <div className="relative mx-auto w-full max-w-3xl px-5 pt-10 pb-20 text-center sm:px-8 sm:pt-12 sm:pb-28">
+        <p className="inline-flex items-center gap-2 rounded-full border border-foil-gold/40 bg-foil-cream/80 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">
+          <FoilCornerMark px={13} />
+          Live · tracking {cardCount} cards across {setCount} sets
+        </p>
+
+        {/* Headline — single-color navy, Fraunces display (ADR-036). */}
+        <h1 className="font-display mx-auto mt-6 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-[-0.01em] text-foil-navy sm:text-5xl md:text-6xl">
+          Tell me a Pokémon card. I&apos;ll find you the best live deal.
+        </h1>
+
+        <p className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-foil-navy/10 bg-foil-cream/70 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">
+          <FoilCornerMark px={13} />
+          Built by a Level-4 TCGplayer Verified Seller
+        </p>
+
+        <p className="mx-auto mt-5 max-w-xl text-lg text-foil-slate sm:text-xl">
+          Foil scans eBay&apos;s live listings, filters out the keyword-stuffed
+          junk, and surfaces the single best-value listing for the card you want.
+          Want it cheaper? Set a target price and we&apos;ll email you the moment
+          a real listing drops to it.
+        </p>
+
+        <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <Link
+            href="/deals"
+            className="rounded-xl bg-foil-navy px-6 py-3.5 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40"
+          >
+            See today&apos;s best deals →
+          </Link>
+          <Link
+            href="/start"
+            className="text-sm text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
+          >
+            Start tracking cards →
+          </Link>
+          <Link
+            href="/cards"
+            className="text-sm text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
+          >
+            Browse the catalog →
+          </Link>
+        </div>
+
+        <p className="mt-5 text-xs text-foil-slate">
+          Free. No spam, ever. Prefer just the weekly best-deals digest?{" "}
+          <a
+            href="#waitlist"
+            className="text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
+          >
+            Grab the newsletter below.
+          </a>
+        </p>
       </div>
     </section>
   );
 }
 
-function ValueProps() {
-  const props = [
-    {
-      n: "01",
-      title: "Completely hands-off",
-      body: "We install, stock, restock, and service the machine, and handle every customer issue. Your staff never touches it.",
-    },
-    {
-      n: "02",
-      title: "Zero cost, nothing to buy",
-      body: "No purchase, no lease, no fees. It draws about as much power as a TV, roughly $4 a month.",
-    },
-    {
-      n: "03",
-      title: "A monthly revenue share",
-      body: "You earn a share of every sale, paid your way. We'll walk through the revenue share on a quick call, with sales analytics so you see what's selling.",
-    },
-    {
-      n: "04",
-      title: "New foot traffic",
-      body: "A Pokémon machine pulls in collectors, about 60% are adults 25 to 40, and gives your regulars a reason to come back.",
-    },
-  ];
-
+// ADR-055 — foil-corner card watermark marking the "How it works" band as the
+// one distinct textured section (replaces the retired Pokeball pixel pattern).
+// The brand's foil-corner glyph (navy card + folded gold corner) tiled in a
+// half-drop stagger, in-palette. Wrapper opacity keeps it a faint watermark so
+// text on top holds AA contrast.
+function FoilCornerPattern() {
   return (
-    <section className="bg-foil-cream">
-      <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
-        <p className="text-xs font-medium uppercase tracking-[0.18em] text-foil-gold">
-          Why owners say yes
-        </p>
-        <h2 className="font-display mt-2 max-w-2xl text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">
-          An amenity that runs itself and pays you.
-        </h2>
-        <ul className="mt-10 grid gap-6 sm:grid-cols-2">
-          {props.map((p) => (
-            <li
-              key={p.title}
-              className="rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-md shadow-foil-navy/10 transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:shadow-foil-navy/15"
-            >
-              <span className="font-display text-sm font-bold tracking-widest text-foil-gold">{p.n}</span>
-              <h3 className="font-display mt-1 text-lg font-semibold text-foil-navy">{p.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-foil-slate">{p.body}</p>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
+    <svg
+      aria-hidden
+      className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.06] sm:opacity-[0.08]"
+    >
+      <defs>
+        {/* One foil-corner card glyph on a 32-unit grid (matches FoilCornerMark). */}
+        <g id="foil-card">
+          <path
+            d="M 9.5 4 H 17 L 26 13 V 24.5 A 3.5 3.5 0 0 1 22.5 28 H 9.5 A 3.5 3.5 0 0 1 6 24.5 V 7.5 A 3.5 3.5 0 0 1 9.5 4 Z"
+            fill="#0f1e3a"
+          />
+          <path d="M 17 4 H 26 V 13 Z" fill="#a8842f" />
+          <path d="M 17 4 L 26 13 H 17 Z" fill="#c9a24b" />
+        </g>
+        {/* Half-drop stagger: card ~32 units on a 72px pitch so the marks breathe. */}
+        <pattern id="foil-card-pattern" patternUnits="userSpaceOnUse" width="72" height="144">
+          <use href="#foil-card" transform="translate(8 12) scale(1.4)" />
+          <use href="#foil-card" transform="translate(-28 84) scale(1.4)" />
+          <use href="#foil-card" transform="translate(44 84) scale(1.4)" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#foil-card-pattern)" />
+    </svg>
   );
 }
 
@@ -220,42 +208,41 @@ function HowItWorks() {
   const steps = [
     {
       num: "1",
-      title: "We talk",
-      body: "A quick chat about your space and foot traffic. No pressure, no commitment.",
+      title: "Search any Pokémon card",
+      body: "Type a name, a set, or just 'Charizard Base Set.' Foil handles set codes, Japanese printings, and graded slabs.",
     },
     {
       num: "2",
-      title: "We place it",
-      body: "We size, deliver, mount, stock, and test the machine. Install takes about an hour.",
+      title: "Foil finds the best live deal",
+      body: "We check eBay in real time and surface the most credible best-value listing. Price, shipping, condition, and seller rating, weighted into one pick, not a wall of 200 results.",
     },
     {
       num: "3",
-      title: "It runs itself",
-      body: "Cashless touchscreen, monitored in real time, auto-refunds on any misfire. Support is on us.",
-    },
-    {
-      num: "4",
-      title: "You get paid",
-      body: "A monthly revenue share by your preferred method, with sales analytics.",
+      title: "Buy now or set a price alert",
+      body: "Buy through to eBay and you support Foil at no extra cost. Or set a target price and we'll email you the second a matching listing appears.",
     },
   ];
 
-  // Dark navy contrast band (ADR-061): the energy moment, gold step numbers.
   return (
-    <section className="bg-foil-navy">
-      <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
-        <p className="text-xs font-medium uppercase tracking-[0.18em] text-foil-gold">
-          How it works
+    <section className="relative isolate overflow-hidden border-y border-foil-navy/10 bg-foil-cream">
+      <FoilCornerPattern />
+      <div className="relative mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
+        <h2 className="font-display text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">How it works</h2>
+        <p className="mt-3 max-w-2xl text-foil-slate">
+          Three steps. No comparing tabs, no scrolling endless listings, no
+          wondering whether a seller is legit.
         </p>
-        <h2 className="font-display mt-2 max-w-2xl text-3xl font-semibold tracking-[-0.01em] text-foil-cream sm:text-4xl">
-          Four steps. Only two are on you.
-        </h2>
-        <ol className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <ol className="mt-10 grid gap-6 sm:grid-cols-3">
           {steps.map((s) => (
-            <li key={s.num}>
-              <span className="font-display block text-5xl font-bold leading-none text-foil-gold">{s.num}</span>
-              <h3 className="font-display mt-4 text-lg font-semibold text-foil-cream">{s.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-foil-cream/75">{s.body}</p>
+            <li
+              key={s.num}
+              className="rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 transition hover:shadow-md hover:shadow-foil-navy/10"
+            >
+              <span className="font-display inline-flex h-9 w-9 items-center justify-center rounded-full border border-foil-gold/40 bg-foil-gold/10 text-sm font-bold text-foil-navy">
+                {s.num}
+              </span>
+              <h3 className="font-display mt-4 text-lg font-semibold text-foil-navy">{s.title}</h3>
+              <p className="mt-2 text-sm text-foil-slate">{s.body}</p>
             </li>
           ))}
         </ol>
@@ -264,67 +251,127 @@ function HowItWorks() {
   );
 }
 
-function OperatingProof() {
-  const points = [
-    "Commercial-grade touchscreen machines that describe each pack and do the selling.",
-    "Fully cashless, monitored in real time, with restock alerts before a machine runs empty.",
-    "A guaranteed-drop refund sensor: pay and get nothing, and you're refunded automatically.",
-    "A support code on every machine so customers reach us directly, never your staff.",
-  ];
-
+function ExampleResult() {
   return (
-    <section className="border-y border-foil-navy/10 bg-foil-cream">
-      <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
-        <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-foil-gold">
-              A real operation, not a metal box
-            </p>
-            <h2 className="font-display mt-2 text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">
-              Built to run itself, and to be trusted.
-            </h2>
-            <p className="mt-4 max-w-prose text-foil-slate">
-              Foil is run by John Craig, a Level-4 TCGplayer seller, with real, verifiable
-              Pokémon-product sourcing behind every machine. We own the machines, stock
-              them, and stand behind every transaction.
+    <section id="example" className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+      <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+        <div>
+          <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-foil-navy">
+            <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
+            What you actually see
+          </p>
+          <h2 className="font-display mt-3 text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">
+            That Charizard you want? Currently $313 on eBay.
+          </h2>
+          <p className="mt-4 text-foil-slate">
+            Foil doesn&apos;t dump you on a search page. It picks the single best
+            live listing, shows what each condition and grade is worth, and tells
+            you whether to buy now, lowball, or wait for a drop.
+          </p>
+          <ul className="mt-6 space-y-3 text-sm text-foil-slate">
+            <li className="flex items-start gap-3">
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
+              <span>
+                <span className="font-medium text-foil-navy">One best deal, not 200 listings.</span>{" "}
+                We score every active listing on price, shipping, condition, and
+                seller rating, then show you the winner.
+              </span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
+              <span>
+                <span className="font-medium text-foil-navy">Wishlist alerts that actually fire.</span>{" "}
+                Tell Foil your target price and we email you the moment a matching
+                listing appears.
+              </span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
+              <span>
+                <span className="font-medium text-foil-navy">Graded vs raw, side by side.</span>{" "}
+                The full grade ladder, raw NM through PSA 10, BGS, and CGC, so you
+                can tell whether the raw is a steal or the slab is.
+              </span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-foil-gold" />
+              <span>
+                <span className="font-medium text-foil-navy">Japanese and modern covered.</span>{" "}
+                Vintage WOTC, modern Mega ex, Japanese-exclusive sets; if there&apos;s
+                a listing, Foil finds it.
+              </span>
+            </li>
+          </ul>
+        </div>
+
+        <div className="rounded-2xl border border-foil-gold/40 bg-foil-cream p-1 shadow-xl shadow-foil-navy/10">
+          <div className="rounded-xl bg-foil-cream p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-foil-slate">
+                  Best current deal
+                </p>
+                <p className="mt-1 text-4xl font-bold tabular-nums text-foil-navy">$313.51</p>
+                <p className="mt-1 text-xs text-foil-slate">
+                  9% below 30-day avg · top-rated seller · free ship
+                </p>
+              </div>
+              <span className="rounded-full bg-foil-gold/15 px-2.5 py-1 text-xs font-medium text-foil-navy">
+                Good deal
+              </span>
+            </div>
+
+            <div className="mt-6 border-t border-foil-navy/10 pt-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-foil-navy">Charizard</p>
+                  <p className="truncate text-sm text-foil-slate">
+                    Base Set · #4/102 · Holo Rare (Unlimited)
+                  </p>
+                  <p className="mt-0.5 text-xs text-foil-slate">Lightly Played · NM verified by seller</p>
+                  <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <span className="text-lg font-semibold tabular-nums text-foil-navy">$313.51</span>
+                    <span className="text-xs text-foil-slate">+ free shipping</span>
+                    <span className="text-xs text-foil-slate">·</span>
+                    <span className="text-xs text-foil-slate">
+                      PSA 10 currently:{" "}
+                      <span className="font-semibold text-foil-navy">$30,100</span>
+                    </span>
+                  </div>
+                </div>
+                <span className="rounded-full bg-foil-navy px-2.5 py-1 text-xs font-medium text-foil-cream transition hover:bg-foil-coral">
+                  Buy →
+                </span>
+              </div>
+            </div>
+
+            <p className="mt-5 rounded-lg border border-foil-gold/30 bg-foil-gold/5 px-3 py-2 text-xs text-foil-navy">
+              Heads up: the raw is $313, but a PSA 10 of the same card recently sold
+              for <span className="font-semibold">$30,100</span>. If the
+              corners look mint, get it graded before reselling.
             </p>
           </div>
-          <ul className="space-y-3">
-            {points.map((point) => (
-              <li
-                key={point}
-                className="flex items-start gap-3 rounded-2xl border border-foil-navy/10 bg-foil-cream p-4 text-sm leading-relaxed text-foil-navy shadow-sm shadow-foil-navy/5 sm:text-base"
-              >
-                <span aria-hidden className="mt-1.5 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-foil-gold" />
-                {point}
-              </li>
-            ))}
-          </ul>
         </div>
       </div>
     </section>
   );
 }
 
-function LeadSection() {
+function FinalCTA() {
   return (
-    <section id="host-form" className="mx-auto w-full max-w-3xl px-5 py-16 sm:px-8 sm:py-24">
-      <div className="mb-8 text-center">
-        <h2 className="font-display text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">
-          Get a Foil machine in your space
+    <section id="waitlist" className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+      <div className="rounded-3xl border border-foil-gold/40 bg-foil-cream p-8 shadow-xl shadow-foil-navy/10 sm:p-12">
+        <h2 className="font-display max-w-3xl text-3xl font-semibold tracking-[-0.01em] text-foil-navy sm:text-4xl">
+          Never overpay for a Pokémon card again.
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-foil-slate">
-          We serve {SERVICE_CITIES.length}+ Bay Area cities, closest first. Tell us about
-          your space and we&apos;ll reach out. Questions first?{" "}
-          <Link
-            href="/faq"
-            className="text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
-          >
-            Read the host FAQ →
-          </Link>
+        <p className="mt-3 max-w-2xl text-foil-slate">
+          Get on the waitlist and we&apos;ll email you the moment early access
+          opens, plus the weekly best-deals digest in the meantime.
         </p>
+        <div className="mt-6 max-w-xl">
+          <EmailCapture source="homepage_final_cta" variant="inline" headline="Get the weekly best-deals newsletter." />
+        </div>
       </div>
-      <HostLeadForm compact />
     </section>
   );
 }

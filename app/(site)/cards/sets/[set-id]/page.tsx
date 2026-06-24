@@ -36,9 +36,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
-    // Dormant under the vending pivot (docs/vending Goal A §3): de-indexed +
-    // off the sitemap. Code preserved in-tree.
-    robots: { index: false, follow: false },
     alternates: { canonical: `/cards/sets/${setId}` },
     openGraph: {
       type: "website",

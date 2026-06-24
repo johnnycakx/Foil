@@ -19,18 +19,21 @@ const STRATEGY_DOC = fs.readFileSync(
 );
 
 test("parseStrategyDoc finds every pillar in the live strategy doc", () => {
-  // Vending reframe (ADR-062): the two vending pillars are /host (host-
-  // acquisition) and /service-areas (local SEO), funneling to the live surfaces.
   const candidates = parseStrategyDoc(STRATEGY_DOC);
   const pillarUrls = new Set(candidates.map((c) => c.pillar.url));
-  assert.ok(pillarUrls.has("/host"));
-  assert.ok(pillarUrls.has("/service-areas"));
+  assert.ok(pillarUrls.has("/japanese-pokemon-cards-value"));
+  assert.ok(pillarUrls.has("/pokemon-card-value-calculator"));
+  assert.ok(pillarUrls.has("/pokemon-card-condition-guide"));
 });
 
 test("parseStrategyDoc captures cluster bullets with title + long-tail keywords", () => {
   const candidates = parseStrategyDoc(STRATEGY_DOC);
-  // Every vending pillar in the live doc has >=6 cluster posts per the guideline
-  for (const pillarUrl of ["/host", "/service-areas"]) {
+  // Every pillar in the live doc has >=6 cluster posts per the cluster guideline
+  for (const pillarUrl of [
+    "/japanese-pokemon-cards-value",
+    "/pokemon-card-value-calculator",
+    "/pokemon-card-condition-guide",
+  ]) {
     const forPillar = candidates.filter((c) => c.pillar.url === pillarUrl);
     assert.ok(
       forPillar.length >= 6,
@@ -46,12 +49,12 @@ test("parseStrategyDoc captures cluster bullets with title + long-tail keywords"
 
 test("parseStrategyDoc extracts long-tail keywords from each bullet", () => {
   const candidates = parseStrategyDoc(STRATEGY_DOC);
-  // The first /host bullet is the gas-station ROI post with a "Long-tail:" line.
-  const bullet = candidates.find((c) =>
-    c.title.toLowerCase().includes("gas station"),
+  // The first bullet under Pillar 1 includes "Long-tail: how to read japanese..."
+  const psaBullet = candidates.find((c) =>
+    c.title.toLowerCase().includes("how to read"),
   );
-  assert.ok(bullet, "expected the 'gas station' host cluster bullet");
-  assert.ok(bullet!.longTail.length > 0);
+  assert.ok(psaBullet, "expected 'How to read a Japanese Pokémon card' bullet");
+  assert.ok(psaBullet!.longTail.length > 0);
 });
 
 test("pickNextCandidate respects shippedSlugs and prefers lowest rank", () => {

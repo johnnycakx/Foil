@@ -1,15 +1,17 @@
 import type { MetadataRoute } from "next";
 import { LANDING_PATHS } from "@/lib/seo/sitemap-landings";
 import { CITY_SLUGS } from "@/lib/vending/cities";
-import { getVendingPosts } from "@/app/(site)/blog/posts-meta";
+import { getAllPosts } from "@/app/(site)/blog/posts-meta";
+import { CARD_CATALOG } from "@/lib/cards/catalog";
 
-// VENDING PIVOT (docs/vending Goal A §3 + ADR-063): the sitemap contains the
-// vending host lead-gen surfaces — the fixed landing set (LANDING_PATHS), one
-// /service-areas/[city] entry per published city, and one /blog/[slug] entry
-// per LIVE VENDING post (getVendingPosts; pillar host / service-areas). The
-// dormant deal-finder blog posts and ~1,000 per-card pages (CARD_CATALOG) are
-// deliberately NOT layered on: those routes stay noindex + unlinked so their
-// already-indexed URLs drop out of Google. The code for them stays in-tree.
+// DUAL-TRACK sitemap (ADR-064). Layers, on top of the fixed LANDING_PATHS set:
+//   - every /cards/[slug] programmatic deal-finder page (CARD_CATALOG) — the
+//     primary SEO surface, restored from the vending pivot's dormancy;
+//   - every /blog/[slug] post (getAllPosts) — both the deal-finder collector
+//     posts AND the vending host posts are indexable now;
+//   - every /service-areas/[city] page (vending local SEO).
+// /machines is intentionally NOT layered on: it's indexable but shows no live
+// locations yet, so it carries no organic value and stays out of the crawl set.
 
 function siteUrl(): string {
   return (
@@ -35,14 +37,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  // Live vending blog posts only (ADR-063). Deal-finder posts are excluded by
-  // getVendingPosts (pillar gate), matching their noindex on the [slug] route.
-  const blogPosts: MetadataRoute.Sitemap = getVendingPosts().map((post) => ({
+  // All blog posts (dual-track, ADR-064): deal-finder collector posts + vending
+  // host posts. Both classes are indexable on the [slug] route, so both belong
+  // in the sitemap.
+  const blogPosts: MetadataRoute.Sitemap = getAllPosts().map((post) => ({
     url: `${base}/blog/${post.slug}`,
     lastModified: new Date(post.updated ?? post.date),
     changeFrequency: "monthly",
     priority: 0.6,
   }));
 
-  return [...landings, ...cities, ...blogPosts];
+  // V1 deal-finder per-card landing pages — the programmatic SEO surface
+  // (ADR-020 + ADR-021). One URL per catalog entry; changefreq daily because
+  // the EPN-driven "best listing" block updates on every page load, even
+  // though the catalog metadata itself is stable.
+  const cards: MetadataRoute.Sitemap = CARD_CATALOG.map((entry) => ({
+    url: `${base}/cards/${entry.slug}`,
+    lastModified: now,
+    changeFrequency: "daily",
+    priority: 0.8,
+  }));
+
+  return [...landings, ...cities, ...blogPosts, ...cards];
 }

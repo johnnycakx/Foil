@@ -41,11 +41,11 @@ const fredoka = Fredoka({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://foiltcg.com"),
   title: {
-    default: "Foil — Host a Pokémon card vending machine in your business",
+    default: "Foil — The best price on any Pokémon card",
     template: "%s · Foil",
   },
   description:
-    "Foil places, stocks, and services Pokémon card vending machines for Bay Area businesses. Zero cost, zero work, monthly revenue share.",
+    "Search any Pokémon card and instantly see the best live deal across eBay. Free wishlist alerts when prices drop.",
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
@@ -56,17 +56,17 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    title: "Foil — Host a Pokémon card vending machine in your business",
+    title: "Foil — The best price on any Pokémon card",
     description:
-      "Foil places, stocks, and services Pokémon card vending machines for Bay Area businesses. Zero cost, zero work, monthly revenue share.",
+      "Search any Pokémon card and instantly see the best live deal across eBay. Free wishlist alerts when prices drop.",
     siteName: "Foil",
     url: "/",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Foil — Host a Pokémon card vending machine in your business",
+    title: "Foil — The best price on any Pokémon card",
     description:
-      "Foil places, stocks, and services Pokémon card vending machines for Bay Area businesses. Zero cost, zero work, monthly revenue share.",
+      "Search any Pokémon card and instantly see the best live deal across eBay. Free wishlist alerts when prices drop.",
     creator: "@foilcards",
   },
 };

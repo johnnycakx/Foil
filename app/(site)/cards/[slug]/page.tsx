@@ -132,9 +132,10 @@ export async function generateMetadata({
   return {
     title: titleFor(card),
     description: descriptionFor(card),
-    // Dormant under the vending pivot (docs/vending Goal A §3): per-card
-    // deal-finder pages de-indexed + off the sitemap. Code preserved in-tree.
-    robots: { index: false, follow: false },
+    // Indexable (dual-track restore, ADR-064): the per-card deal-finder pages
+    // are the primary programmatic-SEO surface again. The page soft-fails to a
+    // no-pricing render (never a 500) if POKETRACE/eBay keys are missing or
+    // invalid, so a lapsed key never costs us the index entry.
     alternates: { canonical: `/cards/${slug}` },
     openGraph: {
       type: "website",

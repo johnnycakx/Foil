@@ -28,11 +28,12 @@ export const metadata: Metadata = {
   title: PAGE_TITLE,
   description: PAGE_DESCRIPTION,
   alternates: { canonical: "/machines" },
-  // Dormant under the vending pivot (docs/vending Goal A): the buyer-facing
-  // machine locator is premised on a live machine (none placed yet) + the
-  // finder-side price view (now dormant), so it is de-indexed + off the sitemap
-  // until Phase V-2 (machine #1). Code preserved in-tree.
-  robots: { index: false, follow: false },
+  // Indexable per ADR-064 (dual-track restore). NOTE: this buyer-facing locator
+  // still shows "no locations live yet" (machine #1 not placed), so it carries
+  // no organic history to recover and is intentionally NOT in the sitemap.
+  // Recommendation (SESSION-LOG 2026-06-23): consider re-noindexing until a
+  // machine is live to avoid thin-content crawling — left indexable per goal.
+  robots: { index: true, follow: true },
   openGraph: {
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,

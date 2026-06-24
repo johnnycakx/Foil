@@ -27,9 +27,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: "/start" },
-  // Dormant under the vending pivot (docs/vending Goal A §3): de-indexed +
-  // unlinked + off the sitemap. Code preserved in-tree.
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
   openGraph: {
     type: "website",
     title: TITLE,

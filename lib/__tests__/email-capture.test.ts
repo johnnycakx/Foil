@@ -127,23 +127,16 @@ test("footer email capture: wraps EmailCapture with source='footer'", () => {
   assert.match(src, /variant\s*=\s*["']footer["']/);
 });
 
-test("(site) layout: footer drops the deal-finder newsletter capture (vending pivot)", () => {
-  // The pivot removed FooterEmailCapture (a deal-finder newsletter signup) from
-  // the footer; the footer now points at the vending host funnel instead.
+test("(site) layout: renders the FooterEmailCapture component", () => {
   const src = readFile("app/(site)/layout.tsx");
-  assert.doesNotMatch(src, /FooterEmailCapture/, "FooterEmailCapture must be gone from the layout");
-  assert.match(src, /href="\/host"/, "footer surfaces the host CTA");
+  assert.match(src, /FooterEmailCapture/);
 });
 
-test("(site) layout: footer surfaces Privacy + Terms + host nav, no deal-finder links", () => {
+test("(site) layout: footer surfaces Privacy + Terms + Newsletter links", () => {
   const src = readFile("app/(site)/layout.tsx");
+  assert.match(src, /href=["']\/newsletter["']/);
   assert.match(src, /href=["']\/legal\/privacy["']/);
   assert.match(src, /href=["']\/legal\/terms["']/);
-  assert.match(src, /href=["']\/service-areas["']/);
-  assert.match(src, /href=["']\/faq["']/);
-  // Deal-finder footer links are gone under the pivot.
-  assert.doesNotMatch(src, /href=["']\/newsletter["']/, "the /newsletter link must be gone");
-  assert.doesNotMatch(src, /href=["']\/pricing-methodology["']/, "the /pricing-methodology link must be gone");
 });
 
 // ---------------------------------------------------------------------------

@@ -20,9 +20,20 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { HostLeadForm } from "@/components/vending/host-lead-form";
+import { SERVED_CITY_NAMES } from "@/lib/vending/cities";
+import {
+  localBusinessSchema,
+  serviceSchema,
+  schemaGraph,
+  serializeJsonLd,
+} from "@/lib/seo/schema-helpers";
 
 export const dynamic = "force-static";
 export const revalidate = 86400;
+
+function siteUrl(): string {
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? "https://foiltcg.com").replace(/\/$/, "");
+}
 
 const PAGE_TITLE = "Host a Foil Pokémon card vending machine: it costs you nothing";
 
@@ -56,8 +67,37 @@ const WE_DO: string[] = [
 const YOU_DO: string[] = ["Three square feet of floor space", "A standard outlet"];
 
 export default function HostPage() {
+  // LocalBusiness + Service JSON-LD (dual-track restore, ADR-064): /host is now
+  // the canonical vending lead-gen landing, so the local-SEO schema that used to
+  // live on the homepage (restored to the card finder again) lives here. The
+  // LocalBusiness is still @id-anchored to the site root, so identity is unchanged.
+  const base = siteUrl();
+  const jsonLd = schemaGraph(
+    localBusinessSchema({
+      name: "Foil",
+      url: base,
+      description:
+        "Pokémon trading-card vending machine placement and operation for businesses across the San Francisco Bay Area. The host provides space and power; Foil owns, stocks, and services the machine and pays a monthly revenue share.",
+      areaServed: SERVED_CITY_NAMES,
+      addressRegion: "CA",
+      addressCountry: "US",
+    }),
+    serviceSchema({
+      name: "Pokémon card vending machine placement",
+      description:
+        "Foil places, stocks, and services Pokémon card vending machines in high-foot-traffic Bay Area businesses, hands-off for the host, with a monthly revenue share.",
+      providerName: "Foil",
+      url: base,
+      areaServed: SERVED_CITY_NAMES,
+    }),
+  );
+
   return (
     <main className="mx-auto w-full max-w-3xl px-5 py-12 sm:px-8 sm:py-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
+      />
       {/* §5b headline register: specificity, zero-cost lead */}
       <header className="mb-14">
         <p className="inline-block rounded-full border border-foil-gold/40 bg-foil-gold/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-foil-navy">

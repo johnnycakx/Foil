@@ -1,16 +1,14 @@
-// Dynamically generated 1200x630 OG/social card (ADR-055; vending brand per
-// ADR-061). Renders the FoilTCG wordmark lockup on navy: foil-corner mark +
-// cream "Foil" + gold "TCG", in Fredoka where it loads (best-effort fetch;
-// falls back to Satori's default so the card never 500s). The headline is the
-// vending host pitch (a shared foiltcg.com link must preview as vending, not
-// the retired deal-finder "best price" card).
+// Dynamically generated 1200x630 OG/social card (ADR-055). Renders the FoilTCG
+// wordmark lockup on navy: foil-corner mark + cream "Foil" + gold "TCG", in
+// Fredoka where it loads (best-effort fetch; falls back to Satori's default so
+// the card never 500s). Replaces the retired Pokeball / coral scanner card.
 
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "Foil — host a Pokémon card vending machine in your business";
+export const alt = "Foil — the best price on any Pokémon card";
 
 const NAVY = "#0f1e3a";
 const CREAM = "#f8f5f0";
@@ -77,10 +75,10 @@ export default async function Image() {
               maxWidth: 1000,
             }}
           >
-            A Pokémon card vending machine in your business.
+            The best price on any Pokémon card.
           </div>
           <div style={{ display: "flex", fontSize: 30, color: "#C9D1E4", maxWidth: 940, lineHeight: 1.3 }}>
-            We place, stock, and service it. You earn a share of every sale, with zero work.
+            Live eBay listings, scrubbed for the best real deal. Free wishlist alerts when prices drop.
           </div>
         </div>
 

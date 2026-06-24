@@ -32,20 +32,30 @@ export type LandingPath = {
   changeFrequency: SitemapChangeFrequency;
 };
 
-// VENDING PIVOT (docs/vending Goal A §3): the sitemap contains the vending host
-// lead-gen surfaces, the general legal pages, and (ADR-063) the live vending
-// /blog index. The remaining deal-finder routes (/cards, /deals, /start,
-// /newsletter, /pricing-methodology, the three pillars, /machines,
-// /legal/ebay-api-compliance) are dormant — noindexed + unlinked — and
-// deliberately absent here so the already-indexed URLs drop out of Google.
-// app/sitemap.ts layers the /service-areas/[city] pages AND the per-post
-// /blog/[vending-slug] URLs on top of this list (deal-finder posts excluded).
+// DUAL-TRACK (ADR-064): the Pokémon-card deal-finder is the primary indexed SEO
+// surface again, and the vending lead-gen business lives at /host. The sitemap
+// carries BOTH tracks' fixed landing pages. app/sitemap.ts layers the dynamic
+// surfaces on top: every /cards/[slug] (the programmatic deal-finder pages),
+// every /blog/[slug] post (deal-finder collector + vending host posts — all
+// indexable), and every /service-areas/[city] page. /machines is intentionally
+// omitted (indexable but no live locations yet — no thin page in the crawl set).
 export const LANDING_PATHS: readonly LandingPath[] = [
+  // Deal-finder — the primary surface (ADR-020 positioning, restored).
   { path: "/", priority: 1.0, changeFrequency: "weekly" },
+  { path: "/japanese-pokemon-cards-value", priority: 0.9, changeFrequency: "monthly" },
+  { path: "/pokemon-card-value-calculator", priority: 0.9, changeFrequency: "monthly" },
+  { path: "/pokemon-card-condition-guide", priority: 0.9, changeFrequency: "monthly" },
+  { path: "/blog", priority: 0.7, changeFrequency: "weekly" },
+  { path: "/newsletter", priority: 0.8, changeFrequency: "monthly" },
+  { path: "/start", priority: 0.95, changeFrequency: "weekly" },
+  { path: "/deals", priority: 0.9, changeFrequency: "daily" },
+  { path: "/pricing-methodology", priority: 0.5, changeFrequency: "monthly" },
+  // Vending lead-gen — the secondary track at /host (kept live + indexed).
   { path: "/host", priority: 0.9, changeFrequency: "monthly" },
   { path: "/service-areas", priority: 0.8, changeFrequency: "monthly" },
   { path: "/faq", priority: 0.7, changeFrequency: "monthly" },
-  { path: "/blog", priority: 0.6, changeFrequency: "weekly" },
-  { path: "/legal/privacy", priority: 0.3, changeFrequency: "yearly" },
-  { path: "/legal/terms", priority: 0.3, changeFrequency: "yearly" },
+  // Legal / compliance.
+  { path: "/legal/ebay-api-compliance", priority: 0.5, changeFrequency: "monthly" },
+  { path: "/legal/privacy", priority: 0.4, changeFrequency: "yearly" },
+  { path: "/legal/terms", priority: 0.4, changeFrequency: "yearly" },
 ];

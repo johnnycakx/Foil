@@ -41,10 +41,10 @@ export async function generateMetadata({
   return {
     title: `${post.title} | Foil`,
     description: post.description,
-    // Selective indexing (ADR-063): live vending posts (pillar host /
-    // service-areas) are indexable; the dormant deal-finder posts stay
-    // noindexed (vending pivot, ADR-060) but still render in-tree.
-    ...(isVendingPost(post) ? {} : { robots: { index: false, follow: false } }),
+    // Dual-track (ADR-064): every blog post is indexable — the deal-finder
+    // collector posts (primary) AND the vending host posts (which support the
+    // /host local-SEO surface). The per-post CTA + related-posts still partition
+    // by pillar via isVendingPost in the component body below.
     alternates: { canonical: urlPath },
     openGraph: {
       type: "article",

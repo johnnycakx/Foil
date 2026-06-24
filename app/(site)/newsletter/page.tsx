@@ -23,9 +23,7 @@ export const metadata: Metadata = {
   title: PAGE_TITLE,
   description: PAGE_DESCRIPTION,
   alternates: { canonical: "/newsletter" },
-  // Dormant under the vending pivot (docs/vending Goal A §3): de-indexed +
-  // unlinked + off the sitemap. Code preserved in-tree.
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
   openGraph: {
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
