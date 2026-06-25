@@ -14,7 +14,10 @@ import {
   refreshMarketMovers,
   createRateLimiter,
   sortMovers,
+  isModernMoverCard,
+  setIdOf,
   MOVER_MIN_SALES,
+  MOVER_MIN_NM_VALUE,
   type MomentumEntry,
   type CardMomentum,
 } from "../deals/market-movers.ts";
@@ -90,6 +93,32 @@ test("classifyMomentum: thresholds → down / up / flat", () => {
 test("classifyMomentum: null stat / unusable windows → null", () => {
   assert.equal(classifyMomentum(null), null);
   assert.equal(classifyMomentum(nmStat(null, 100, 20)), null);
+});
+
+test("classifyMomentum: materiality gate excludes sub-$10 bulk (ADR-070)", () => {
+  // The "Shaymin V down 17% = $0.34 move" class: a real big % move on a cheap
+  // card. Sample is fine, momentum is fine, but the 30-day NM value is immaterial.
+  assert.equal(MOVER_MIN_NM_VALUE, 10);
+  assert.equal(classifyMomentum(nmStat(2.5, 3, 40)), null, "$3 card excluded");
+  assert.equal(classifyMomentum(nmStat(8, 9.99, 40)), null, "just under $10 excluded");
+  // At/above the floor, a material card still classifies.
+  const ok = classifyMomentum(nmStat(82, 100, 40));
+  assert.ok(ok);
+  assert.equal(ok!.direction, "down");
+  assert.equal(ok!.avg30d, 100);
+  // The boundary ($10 exactly) is material.
+  const boundary = classifyMomentum(nmStat(8.5, 10, 40));
+  assert.ok(boundary, "$10 exactly is material");
+});
+
+test("isModernMoverCard / setIdOf: the modern mover sets widen the universe", () => {
+  assert.equal(setIdOf("sv8pt5-161-umbreon-ex"), "sv8pt5");
+  assert.equal(setIdOf("base1-4-charizard"), "base1");
+  for (const id of ["sv8pt5-1", "sv8-238", "me1-50", "sv9-1", "sv10-1", "sv7-1"]) {
+    assert.ok(isModernMoverCard(id), `${id} should be in the movers universe`);
+  }
+  assert.ok(!isModernMoverCard("base1-4-charizard"), "vintage base1 is not a modern mover set");
+  assert.ok(!isModernMoverCard("swsh7-215"), "swsh7 is curated, not a modern mover set");
 });
 
 // --- rate limiter ---
@@ -274,6 +303,27 @@ test("rankMovers: freshness filter drops stale rows", () => {
   const stale = toMoverRow(moverRowRaw({ card_slug: "stale", computed_at: "2026-06-22T08:00:00Z" }) as never);
   const { down } = rankMovers([fresh, stale], 12, nowMs);
   assert.deepEqual(down.map((m) => m.cardSlug), ["fresh"]);
+});
+
+// --- catalog expansion (ADR-070) ---
+
+test("catalog: the modern chase expansion landed in the movers universe", async () => {
+  const { CARD_CATALOG, cardTier } = await import("../cards/catalog.ts");
+  const modern = CARD_CATALOG.filter((e) => isModernMoverCard(e.pokemonTcgId));
+  // The expansion appended the ≥$5 modern chase (Prismatic / Surging Sparks /
+  // Mega Evolution / Journey Together / Destined Rivals / Stellar Crown).
+  assert.ok(modern.length >= 100, `expected >=100 modern mover cards, got ${modern.length}`);
+  // Each priced modern set is represented.
+  for (const setId of ["sv8pt5", "sv8", "me1", "sv9", "sv10", "sv7"]) {
+    assert.ok(modern.some((e) => setIdOf(e.pokemonTcgId) === setId), `no cards from ${setId}`);
+  }
+  // The movers universe (curated + modern) must fit one run (<= MAX_MOMENTUM_CARDS).
+  const { MAX_MOMENTUM_CARDS } = await import("../deals/market-movers.ts");
+  const universe = CARD_CATALOG.filter((e) => cardTier(e.slug) === "curated" || isModernMoverCard(e.pokemonTcgId));
+  assert.ok(
+    universe.length <= MAX_MOMENTUM_CARDS,
+    `movers universe ${universe.length} exceeds the one-run cap ${MAX_MOMENTUM_CARDS} — paginate or raise the cap`,
+  );
 });
 
 test("rankMovers: splits + ranks down/up, honors limit", () => {

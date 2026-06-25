@@ -83,6 +83,16 @@ One insight set per day, stored, consumed by all three surfaces. The [subscriber
 
 ---
 
+## Catalog coverage — modern-set expansion (unblocked by the insight reframe)
+
+**The old expansion blocker is gone for the insight product.** ROADMAP #29's catalog expansion (Wave 2 ~5K, Wave 3 ~18K) was paused, gated on the **eBay Browse quota** (R-012) — because the single-listing deal-finder hit eBay once per card. The market-movers signal is **PokeTrace-only** (zero eBay calls), so that gate does not apply to it. Per-card pages are demand-driven (resolve eBay at visit, not pre-scan), so catalog size doesn't pre-blow the eBay quota either. **The new bound is PokeTrace's rate cap (10K/day) + the cron's ~300s runtime**, not eBay.
+
+**Prioritize modern high-demand sets.** The catalog skews vintage WOTC + 2021–23. Current search + sales volume concentrate in modern SV-era sets — **Prismatic Evolutions** (Jan 2025, still the most-hyped), the **Mega Evolution era incl. Chaos Rising** (released 2026-05-22, the newest), **Surging Sparks**, plus upcoming **Pitch Black** (2026-07-17) / 30th Celebration (Sep). Catalog source is the Pokémon TCG SDK (has every set); the ranked expansion pipeline (ADR-046) adds the *valuable* cards per set (TCGplayer-price-ranked), so it targets chase cards, not bulk commons. Confirm exact SDK set IDs before adding.
+
+**Sales-volume ranking is feasible now.** ADR-046's "can't sort PokeTrace's list by volume" was about *discovery* (asking PokeTrace for top-volume cards blind), not ranking cards already tracked. The movers cron already pulls `saleCount` per card — so volume ranking/filtering is a local operation. The "good buys" board should filter on **min saleCount + min NM dollar value** so it surfaces liquid, material modern cards, not sub-$3 vintage bulk (the "Shaymin V down 17% = $0.34" noise).
+
+**Movers universe scoping.** The cron covers the curated + newly-added modern chase cards; if that exceeds one ~300s run at the safe PokeTrace rate, paginate across daily runs (rolling window). The accumulating `market_snapshots` table makes week-over-week computable as coverage grows.
+
 ## Open questions to resolve before committing spend
 
 - Cardmarket affiliate program? (the EU monetization path — verify)

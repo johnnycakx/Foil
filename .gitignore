@@ -46,6 +46,11 @@ next-env.d.ts
 supabase/.temp/
 .claude/scheduled_tasks.lock
 
+# Resumable-bake checkpoint state (ADR-046/047) — transient run artifacts the
+# bake scripts write for --resume; never source.
+.bake-cards-state.json
+.bake-poketrace-state.json
+
 # Creator-content ingestion: raw transcripts are gitignored (synthesized
 # digests in docs/transcript-digests/ are committed). Goal C.1 / ADR-050.
 docs/transcripts/

@@ -88,17 +88,19 @@ test("relatedCardsForSlug returns [] for an unknown slug — defensive", () => {
   assert.deepEqual(relatedCardsForSlug("not-real-slug"), []);
 });
 
-test("setIdsInCatalog returns 23 distinct ids in catalog source order (Base first, grail seeds last)", () => {
+test("setIdsInCatalog returns 29 distinct ids: 23 vintage (Base first) + 6 modern (ADR-070)", () => {
   const ids = setIdsInCatalog();
-  // 18 pre-Session-43 sets + 5 new sets the Session 43 grail seeds
-  // introduced (swsh4, swsh8, swsh11, swsh12, swsh35). swsh7 was
-  // already present — the two new swsh7 entries don't change set count.
-  assert.equal(ids.length, 23);
-  // First and last positions are deterministic per the curated CARD_CATALOG
-  // ordering: vintage WotC opens; the Session 43 grail-seed block closes
-  // with swsh35 (Champions Path — Charizard VMAX Rainbow Rare).
+  // 23 curated/vintage sets, then the 6 modern mover sets the ADR-070 expansion
+  // appended via the long-tail (sv8pt5/sv8/me1/sv9/sv10/sv7).
+  assert.equal(ids.length, 29);
+  // The curated block is unchanged: vintage WotC opens (base1); the Session 43
+  // grail-seed block closes the curated sets with swsh35 at index 22.
   assert.equal(ids[0], "base1");
-  assert.equal(ids[ids.length - 1], "swsh35");
+  assert.equal(ids[22], "swsh35");
+  // The 6 modern mover sets are present (appended after the curated block).
+  for (const m of ["sv8pt5", "sv8", "me1", "sv9", "sv10", "sv7"]) {
+    assert.ok(ids.includes(m), `missing modern set ${m}`);
+  }
   // No duplicates.
   assert.equal(new Set(ids).size, ids.length);
 });

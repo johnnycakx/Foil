@@ -27,6 +27,7 @@ import { CARD_CATALOG, cardTier } from "@/lib/cards/catalog";
 import {
   refreshMarketMovers,
   createRateLimiter,
+  isModernMoverCard,
   type MomentumEntry,
 } from "@/lib/deals/market-movers";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -53,11 +54,14 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   const startedAt = Date.now();
 
-  // Curated tier only — the cards with the richest PokeTrace sold data. The
-  // long-tail expands later off the accumulated market_snapshots (cheaper than
-  // re-querying live history). Mirrors the deals-refresh cron's tier filter.
+  // Movers universe (ADR-070): the curated tier PLUS the modern high-demand
+  // chase cards (long-tail entries from MODERN_MOVER_SET_IDS). The signal is
+  // PokeTrace-only, so the eBay-Browse-quota gate that limited the deals-refresh
+  // cron to curated-only does NOT apply here. Bounded by MAX_MOMENTUM_CARDS so it
+  // fits one ~300s run at the safe PokeTrace rate; the materiality filter then
+  // keeps sub-$10 bulk from surfacing.
   const entries: MomentumEntry[] = CARD_CATALOG
-    .filter((e) => cardTier(e.slug) === "curated")
+    .filter((e) => cardTier(e.slug) === "curated" || isModernMoverCard(e.pokemonTcgId))
     .map((e) => ({ slug: e.slug, pokemonTcgId: e.pokemonTcgId }));
 
   const limiter = createRateLimiter({

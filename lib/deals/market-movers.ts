@@ -104,10 +104,44 @@ export const MOVER_DOWN_THRESHOLD_PCT = -8;
 export const MOVER_UP_THRESHOLD_PCT = 8;
 /** Minimum NEAR_MINT sale count in the window — thin/noisy cards are excluded. */
 export const MOVER_MIN_SALES = 5;
-/** Curated tier fits comfortably; this caps a pathological catalog growth.
- *  At <= 3 req/s (the 30/10s burst ceiling) ~900 calls fit the 300s function. */
-export const MAX_MOMENTUM_CARDS = 260;
+/** Minimum NEAR_MINT 30-day average ($) for materiality (ADR-070). A "good buy"
+ *  on a sub-$10 card is a sub-dollar move ("Shaymin V down 17%" = a $0.34 move) —
+ *  not material to a deal-hunter, and it makes the board feel like bulk. The
+ *  30-day average (not the volatile 7-day) is the value baseline. */
+export const MOVER_MIN_NM_VALUE = 10;
+/** Movers-universe cap (ADR-070). Curated (~210) + the modern mover sets
+ *  (~183 material chase cards) ≈ 390. At <= 2.8 req/s (the 28/10s safe ceiling)
+ *  ~500-600 PokeTrace calls fit the 300s function with margin. Raised from 260
+ *  (curated-only) to cover the modern additions in one run. */
+export const MAX_MOMENTUM_CARDS = 460;
 export const MOMENTUM_CONCURRENCY = 4;
+
+/** The modern, high-demand SV/Mega-era sets whose chase cards join the movers
+ *  universe alongside the curated tier (ADR-070). Verified SDK set IDs
+ *  (pokemontcg.io, 2026-06-25): Prismatic Evolutions (sv8pt5), Surging Sparks
+ *  (sv8), Mega Evolution (me1), Chaos Rising (me4 — in the SDK but unpriced as of
+ *  expansion, so no cards yet; listed for when prices populate), Journey Together
+ *  (sv9), Destined Rivals (sv10), Stellar Crown (sv7). The movers signal is
+ *  PokeTrace-only, so the old eBay-Browse-quota gate on expansion is moot. */
+export const MODERN_MOVER_SET_IDS: ReadonlySet<string> = new Set([
+  "sv8pt5",
+  "sv8",
+  "me1",
+  "me4",
+  "sv9",
+  "sv10",
+  "sv7",
+]);
+
+/** SDK set id prefix of a pokemonTcgId ("sv8pt5-161" → "sv8pt5"). Pure. */
+export function setIdOf(pokemonTcgId: string): string {
+  return pokemonTcgId.split("-")[0];
+}
+
+/** Is this card in a modern mover set? (Used to widen the cron's universe.) */
+export function isModernMoverCard(pokemonTcgId: string): boolean {
+  return MODERN_MOVER_SET_IDS.has(setIdOf(pokemonTcgId));
+}
 
 // ebay/tcgplayer carry per-condition US tiers; cardmarket is the EU AGGREGATED
 // roll-up (no per-condition NM). Mirror the reference resolver's source order.
@@ -158,6 +192,10 @@ export function classifyMomentum(stat: SoldStat | null): {
   if (momentumPct === null) return null;
   const avg7d = stat.avg7d as number;
   const avg30d = stat.avg30d as number;
+  // Materiality gate (ADR-070): exclude sub-threshold bulk so the board surfaces
+  // liquid, material cards instead of sub-dollar moves. avg30d is finite > 0 here
+  // (guaranteed by computeMomentumPct).
+  if (avg30d < MOVER_MIN_NM_VALUE) return null;
   let direction: MoverDirection = "flat";
   if (momentumPct <= MOVER_DOWN_THRESHOLD_PCT) direction = "down";
   else if (momentumPct >= MOVER_UP_THRESHOLD_PCT) direction = "up";

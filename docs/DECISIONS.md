@@ -2162,6 +2162,28 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 
 **Cross-refs.** [STRATEGY-DATA-INSIGHT-ENGINE.md](STRATEGY-DATA-INSIGHT-ENGINE.md), [ADR-054](#adr-054--todays-best-deals-public-leaderboard), [ADR-053](#adr-053--buy-signal-mvp--gate-13-anti-hype), [ADR-057](#adr-057--buy-signal-like-for-like-via-ebay-item-specifics-condition-coverage--languagemarket-gate), [ADR-068](#adr-068--foils-first-lead-magnet-the-evergreen-pricing-cheat-sheet-gated-on-page-data-availability-driven-choice), [R-008](RISKS.md), [R-012](RISKS.md).
 
+## ADR-070 — Modern-set catalog expansion (unblocked by the PokeTrace-only movers signal) + the volume/materiality filter
+
+**Date:** 2026-06-25
+**Status:** Accepted. Implements the "Catalog coverage" section of [STRATEGY-DATA-INSIGHT-ENGINE.md](STRATEGY-DATA-INSIGHT-ENGINE.md). Builds on [ADR-069](#adr-069--insight-led-market-movers--good-buys-signal-aggregate-momentum-over-fragile-single-listings--the-like-for-like-currency-gate) (the movers signal) + [ADR-046](#adr-046--tiered-per-card-rendering--catalog-expansion-to-1000-cards) (the rank/expand pipeline).
+
+**Context.** The catalog skewed vintage WOTC + 2021–23; the only SV-era set was `sv3pt5` (151). Modern SV/Mega-era sets are where search + sales volume actually are. The old expansion was gated on the **eBay Browse quota** — but the new movers signal is **PokeTrace-only**, so that gate is **moot for the insight product** (per-card pages are demand-driven; movers spends no eBay quota). Separately, the board surfaced sub-$3 bulk ("Shaymin V down 17%" = a $0.34 move), which made "good buys" feel weak.
+
+**Decision.**
+1. **Expand into modern high-demand sets, materiality-floored.** Verified the **exact SDK set IDs** against pokemontcg.io before adding (per AGENTS.md — no guessing): Prismatic Evolutions `sv8pt5`, Surging Sparks `sv8`, Mega Evolution `me1`, Journey Together `sv9`, Destined Rivals `sv10`, Stellar Crown `sv7`. Ranked by SDK TCGplayer price and appended the **183 cards ≥ $5** (the chase: Prismatic eeveelution ex SIRs, Surging Sparks Pikachu ex, etc.) to the long-tail. **Chaos Rising `me4` is in the SDK but has 0 priced cards yet** (released 2026-05-22; TCGplayer prices haven't populated) — deferred, listed in the mover-set allowlist for when prices land. Extended `scripts/expand-catalog.ts` with **`--append`** (preserves the existing 800 long-tail entries — no live `/cards/[slug]` URL is dropped, an SEO regression) + **`--min-score`**. Re-baked SDK metadata (1189/1190) + PokeTrace UUIDs for the new cards.
+2. **Volume/materiality filter on the movers signal.** `classifyMomentum` keeps the `saleCount ≥ 5` gate AND adds `MOVER_MIN_NM_VALUE = $10`: a card whose NM 30-day average is under $10 never surfaces (a "good buy" there is a sub-dollar move — not material, and it makes the board read as bulk). The 30-day average (not the volatile 7-day) is the value baseline.
+3. **Movers universe = curated + modern chase.** The cron's universe widened from curated-only to `curated ∪ {cards in MODERN_MOVER_SET_IDS}` (~210 + 183 ≈ 393), bounded by `MAX_MOMENTUM_CARDS = 460` so it fits one ~300s run at the safe PokeTrace rate (~500–600 calls / 2.8 req/s ≈ 180–210s). No pagination needed at this size.
+4. **Affiliate-tagged browse links (verified, folds in the earlier finding).** The board + digest "Browse on eBay" search URLs already route through `affiliateSearchUrl → buildAffiliateUrl`, which stamps the EPN `campid` (`EBAY_CAMPAIGN_ID`, configured in Vercel prod+dev) + a per-card `customid`. A new test pins that the digest's links carry `campid`/`customid`/EPN params when the env var is set — so the "affiliate" disclosure is accurate (clicks actually earn). No false disclosure.
+
+**Consequences.**
+- **Catalog: 1,007 → ~1,190 cards** (210 curated + ~983 long-tail), now spanning the modern chase. More SEO surface + a movers universe with liquid modern cards.
+- **The eBay-quota gate on expansion is retired for the insight product** (movers = PokeTrace-only). ROADMAP #29 updated.
+- **Runtime is now PokeTrace-bound** (~180–210s/run); a much larger future expansion would need pagination (rolling window) + a wider freshness window — a tracked follow-up.
+- **`me4` (Chaos Rising) auto-joins** once TCGplayer prices populate and a re-rank/expand picks it up (it's already in the allowlist).
+- **PokeTrace remains load-bearing** (key valid ~until July 15); the signal soft-fails to empty without it.
+
+**Cross-refs.** [ADR-069](#adr-069--insight-led-market-movers--good-buys-signal-aggregate-momentum-over-fragile-single-listings--the-like-for-like-currency-gate), [ADR-046](#adr-046--tiered-per-card-rendering--catalog-expansion-to-1000-cards), [ADR-047](#adr-047--ssgisr-hybrid-rendering--metadata-only-tier-for-the-18k-long-tail), [STRATEGY-DATA-INSIGHT-ENGINE.md](STRATEGY-DATA-INSIGHT-ENGINE.md).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

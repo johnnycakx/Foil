@@ -1,6 +1,6 @@
 # PokeTrace UUID bake — unmatched / ambiguous cards
 
-_Last bake: 2026-05-30T20:31:41.436Z_
+_Last bake: 2026-06-25T21:02:08.092Z_
 
 - `base1-1` (Alakazam / Base) — AMBIGUOUS: 2 duplicate variantKey(s) collapsed by saleCount; kept [holofoil, shadowless-holofoil]
 - `base1-4` (Charizard / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil, shadowless-holofoil]
@@ -17,11 +17,7 @@ _Last bake: 2026-05-30T20:31:41.436Z_
 - `gym1-28` (Lt. Surge's Raichu / Gym Heroes) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
 - `gym2-51` (Lt. Surge's Eevee / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
 - `gym1-54` (Misty's Psyduck / Gym Heroes) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo, non-holo]
-- `gym1-22` (Brock's Rhyhorn / Gym Heroes) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
 - `gym1-61` (Blaine's Charmander / Gym Heroes) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
-- `gym1-93` (Sabrina's Gastly / Gym Heroes) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
-- `gym2-62` (Blaine's Growlithe / Gym Challenge) — AMBIGUOUS: 2 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
-- `base1-74` (Item Finder / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [non-holo, shadowless-non-holo]
 - `base1-78` (Scoop Up / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [non-holo, shadowless-non-holo]
 - `gym1-62` (Blaine's Growlithe / Gym Heroes) — AMBIGUOUS: 2 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
 - `gym2-54` (Misty's Dewgong / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
@@ -29,10 +25,5 @@ _Last bake: 2026-05-30T20:31:41.436Z_
 - `base1-70` (Clefairy Doll / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [non-holo, shadowless-non-holo]
 - `base1-76` (Pokémon Breeder / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [non-holo, shadowless-non-holo]
 - `base1-77` (Pokémon Trader / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [shadowless-non-holo, non-holo]
-- `base1-73` (Impostor Professor Oak / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [shadowless-non-holo, non-holo, holofoil]
 - `gym2-93` (Sabrina's Abra / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
-- `gym1-95` (Sabrina's Slowpoke / Gym Heroes) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
-- `swsh4-131` (Snorlax / Vivid Voltage) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil, non-holo]
-- `base1-72` (Devolution Spray / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [non-holo, shadowless-non-holo]
-- `gym2-38` (Erika's Bellsprout / Gym Challenge) — search error: fetch failed
-- `gym1-51` (Lt. Surge's Raticate / Gym Heroes) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
+- `sv8-252` (sv8-252-jet-energy) — no baked card metadata; run `bake:cards` first.

@@ -97,3 +97,23 @@ test("formatUsd: exact, thousands-separated, trailing .00 dropped", () => {
   assert.equal(formatUsd(95.5), "$95.50");
   assert.equal(formatUsd(2161.43), "$2,161.43");
 });
+
+test("digest browse links are AFFILIATE-TAGGED when EBAY_CAMPAIGN_ID is set (ADR-070)", () => {
+  // The "affiliate" disclosure must be accurate: clicks have to carry the EPN
+  // campid + a customid. buildAffiliateUrl reads EBAY_CAMPAIGN_ID from env.
+  const prev = process.env.EBAY_CAMPAIGN_ID;
+  process.env.EBAY_CAMPAIGN_ID = "5339154326";
+  try {
+    const md = serializeMoversDigest({ movers: MOVERS, generatedAt: "2026-06-25T09:00:00Z" });
+    const links = md.match(/https:\/\/www\.ebay\.com\/sch\/[^)\s]+/g) ?? [];
+    assert.ok(links.length > 0, "digest should contain eBay search links");
+    for (const url of links) {
+      assert.match(url, /[?&]campid=5339154326/, `browse link not affiliate-tagged: ${url}`);
+      assert.match(url, /[?&]customid=/, `browse link missing customid: ${url}`);
+      assert.match(url, /[?&]mkcid=1/, `browse link missing EPN tracking params: ${url}`);
+    }
+  } finally {
+    if (prev === undefined) delete process.env.EBAY_CAMPAIGN_ID;
+    else process.env.EBAY_CAMPAIGN_ID = prev;
+  }
+});
