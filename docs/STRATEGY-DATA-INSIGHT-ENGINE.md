@@ -9,6 +9,23 @@ One **data → insight → distribution flywheel**: a reliable daily-refreshed p
 
 ---
 
+## The insight-led reframe (2026-06-25) — market movers over single listings
+
+**Motivating bug (John, 2026-06-25).** The live `/deals` board flagged "Umbreon VMAX 215/203 · Near Mint · $2,161 · 31% below sold," but the listing it pointed to was a **£1,000 (~$1,316), Lightly Played, UK** card via the Global Shipping Program. The signal matched an LP/UK/GBP listing against an NM/USD comp — most of the "31% below" is just the LP-vs-NM discount + currency, not a real deal. This is the inherent fragility of a **single-listing** signal: one mismatched condition/region/currency publishes a *false* deal, which on a trust-first brand is the worst failure mode.
+
+**The reframe: lead with market-level movement, not single listings.** "NM Umbreon VMAX 215/203 is down 12% vs its 30-day average → good-buy candidate" is an **aggregate** — it cannot be broken by one mispriced listing. This:
+- **Fixes the fragility by construction** — aggregates don't depend on per-listing matching.
+- **Upgrades the value prop** from "coupon finder" (commodity, fragile) to **"the Pokémon-card market analyst"** (owned insight). This is the playbook's "sell insight, not commodity," a stronger email-list moat + a cleaner Pro path, and a better fit for the research-intent audience.
+- **Keeps affiliate, repositioned.** The click moves from "buy this exact listing" to a card-level "browse NM [card] on eBay" affiliate *search* link. Affiliate becomes the monetization *of* the insight, not the product. Net-aligned with the moat strategy.
+
+**Feasibility — buildable now, no snapshot store required for v1.** PokeTrace's by-uuid endpoint already returns **avg1d / avg7d / avg30d** per card per condition. A v1 momentum signal = `avg7d below avg30d by ≥ threshold, with adequate saleCount → trending down / good-buy candidate`. The daily-snapshot store (below) still adds value later (week-over-week, longer trends, fewer API calls) but is NOT a blocker for the first market-movers signal.
+
+**Implication: PokeTrace is now CORE, not optional.** The entire insight layer runs on PokeTrace's aggregate windows. This turns the re-subscribe decision from "maybe, for /deals freshness" into "yes, this is the engine," and elevates the ~July-15 key lapse from a minor deadline to a **load-bearing** one. (Only the secondary single-listing board + live eBay survive a PokeTrace lapse; the insight product does not.)
+
+**Single-listing deals are demoted, not deleted.** Keep the per-listing "below sold" board as a *secondary* surface — but tighten its like-for-like gate (condition + region/currency) so the Moonbreon class of false deal stops shipping. The **lead** product across newsletter, the headline `/deals` view, and X becomes **market movers / good buys**.
+
+---
+
 ## Current data layer — inventory (2026-06-24, code-grounded)
 
 **External sources actually called:**

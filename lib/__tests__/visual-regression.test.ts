@@ -64,6 +64,12 @@ const PUBLIC_SURFACES: readonly string[] = [
   // Session 47.5 / ADR-047: metadata-only listing block (3rd tier) — SDK
   // metadata + two search CTAs, no eBay/PokeTrace.
   "components/cards/metadata-only-listing.tsx",
+  // ADR-069: the insight-led /deals surface — the market-movers board (lead),
+  // the demoted single-listing board, and the page itself. Same cream/navy/gold
+  // register; coral-hover-only + no-raw-hex invariants cover them.
+  "app/(site)/deals/page.tsx",
+  "components/deals/movers-board.tsx",
+  "components/deals/deals-board.tsx",
   // Dual-track (ADR-064): the vending lead-gen surfaces at /host stay live and
   // use the same cream/navy/gold register, so the coral-hover-only + no-raw-hex
   // invariants cover them too. (Their copy firewall lives in

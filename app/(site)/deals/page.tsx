@@ -12,16 +12,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getLeaderboard, latestComputedAt } from "@/lib/deals/leaderboard";
+import { getMarketMovers } from "@/lib/deals/market-movers-read";
 import { DealsBoard } from "@/components/deals/deals-board";
+import { MoversBoard } from "@/components/deals/movers-board";
 import { EmailCapture } from "@/components/email-capture";
 import { CARD_CATALOG } from "@/lib/cards/catalog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const TITLE = "Today's best Pokémon card deals | Foil";
+const TITLE = "Pokémon card good buys this week | Foil";
 const DESCRIPTION =
-  "Live eBay listings priced below their recent condition-matched sold price, ranked daily. Free to use.";
+  "Pokémon cards trading below their 30-day sold average, computed from recent market data and ranked weekly. Plus live below-sold listings. Free to use.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -57,7 +59,9 @@ function formatBoardDate(iso: string | null): string {
 }
 
 export default async function DealsPage() {
-  const deals = await getLeaderboard(12);
+  // Insight-led LEAD: market movers (PokeTrace aggregates — can't break on one
+  // mispriced listing). Demoted secondary: the single-listing below-sold board.
+  const [movers, deals] = await Promise.all([getMarketMovers(12), getLeaderboard(12)]);
   const boardDate = formatBoardDate(latestComputedAt(deals));
   const trackedCount = CARD_CATALOG.length;
 
@@ -74,26 +78,38 @@ export default async function DealsPage() {
           foiltcg.com · {boardDate}
         </p>
         <h1 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl">
-          Today&apos;s best Pokémon deals
+          Good buys this week
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-foil-slate">
-          Ranked by how far below recent sold price each live listing is. We scan{" "}
-          {trackedCount} cards against their condition-matched sold data and surface
-          the real below-market listings. Updated daily.
+          Cards whose Near Mint copies are trading below their own 30-day sold average. Each is a
+          candidate worth a look, not a guarantee. Every figure is a real recent average, sample-size
+          gated so thin or noisy cards never make the list.
         </p>
       </header>
 
       <div className="mt-8">
-        <DealsBoard deals={deals} />
+        <MoversBoard movers={movers} />
       </div>
 
-      {/* Honest "curated, not exhaustive" note (copy doc). */}
+      {/* Honest framing of the aggregate signal. */}
       <p className="mt-5 text-center text-xs leading-relaxed text-foil-slate">
-        We only list a card when we are confident the listing matches the sold data.
-        We would rather show you fewer deals we trust than a long list we do not.
-        That is why the board is curated, not exhaustive. eBay today, more
-        marketplaces coming.
+        Down versus a card&apos;s 30-day average means it has cooled off lately, which can be a buying
+        window or a sign demand is softening. We surface the move and the numbers behind it. The call is
+        yours. Built from recent sold data, refreshed daily.
       </p>
+
+      {/* Demoted secondary: the single-listing below-sold board. */}
+      <section className="mt-14">
+        <h2 className="font-display text-xl font-bold text-foil-navy">Below sold right now</h2>
+        <p className="mt-1 text-sm text-foil-slate">
+          Individual live listings priced under their condition-matched recent sold price. We scan{" "}
+          {trackedCount} cards and only list one when we are confident the listing matches the sold data,
+          on the same condition and currency. Fewer deals we trust beats a long list we do not.
+        </p>
+        <div className="mt-5">
+          <DealsBoard deals={deals} />
+        </div>
+      </section>
 
       {/* Affiliate disclosure (copy doc; FTC + EPN requirement). */}
       <p className="mx-auto mt-4 max-w-xl rounded-xl border border-foil-navy/10 bg-foil-cream px-4 py-3 text-center text-xs text-foil-slate">

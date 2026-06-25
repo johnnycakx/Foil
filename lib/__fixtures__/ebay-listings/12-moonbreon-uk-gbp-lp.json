@@ -1,0 +1,20 @@
+{
+  "_observed": "The Moonbreon false deal (John, 2026-06-25). The /deals board flagged 'Umbreon VMAX 215/203 · Near Mint · 31% below sold' but the listing it pointed to was a GBP-denominated, Lightly Played, UK card via the Global Shipping Program. The signal compared an LP/UK/GBP listing against the US/NM/USD sold reference. Two like-for-like failures: (1) CURRENCY — a £1,000 GBP ask compared numerically against a USD average (ADR-069 currency gate); (2) CONDITION — Lightly Played compared against the Near Mint reference (the ADR-057 aspect gate matches LP, not NM). Either gate alone must yield UNKNOWN (no deal).",
+  "title": "Pokemon Umbreon VMAX Alt Art 215/203 Evolving Skies",
+  "itemUrl": "https://www.ebay.com/itm/moonbreon-uk-001",
+  "itemId": "v1|moonbreon-uk-001|0",
+  "image": "https://img.example/moonbreon-uk-001.jpg",
+  "price": 1000.0,
+  "currency": "GBP",
+  "localizedAspects": [
+    { "type": "STRING", "name": "Game", "value": "Pokémon TCG" },
+    { "type": "STRING", "name": "Card Name", "value": "Umbreon VMAX" },
+    { "type": "STRING", "name": "Set", "value": "Evolving Skies" },
+    { "type": "STRING", "name": "Card Number", "value": "215/203" },
+    { "type": "STRING", "name": "Finish", "value": "Holo" },
+    { "type": "STRING", "name": "Card Condition", "value": "Lightly Played (Excellent)" },
+    { "type": "STRING", "name": "Language", "value": "English" },
+    { "type": "STRING", "name": "Graded", "value": "No" },
+    { "type": "STRING", "name": "Country/Region of Manufacture", "value": "United Kingdom" }
+  ]
+}

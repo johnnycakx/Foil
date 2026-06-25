@@ -272,6 +272,9 @@ export default async function CardPage({
       listingTitle: verified.title,
       listingAspects: verified.aspects,
       askPrice: verified.price,
+      // Like-for-like currency gate (ADR-069): never classify a non-USD ask
+      // against the USD sold reference (the Moonbreon GBP false-deal class).
+      listingCurrency: verified.currency,
       selectedVariant,
     });
     buySignal = cardSignal.signal;

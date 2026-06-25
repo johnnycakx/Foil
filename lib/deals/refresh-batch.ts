@@ -48,6 +48,9 @@ export type ComputeSignalFn = (input: {
   listingTitle: string | undefined | null;
   listingAspects?: Record<string, string> | null;
   askPrice: number;
+  /** Listing currency — the like-for-like currency gate (ADR-069). A non-USD
+   *  ask is not comparable to the USD sold reference (the Moonbreon GBP bug). */
+  listingCurrency?: string | null;
   selectedVariant?: string;
 }) => Promise<CardBuySignal>;
 export type UpsertRowsFn = (rows: DealUpsertRow[]) => Promise<{ error: string | null }>;
@@ -184,6 +187,9 @@ export async function refreshDeals(input: RefreshDealsInput): Promise<RefreshDea
         listingTitle: listing.title,
         listingAspects,
         askPrice: listing.price,
+        // Like-for-like currency gate (ADR-069): a non-USD ask (the £1,000 GBP
+        // Moonbreon listing) is not comparable to the USD sold reference.
+        listingCurrency: listing.currency,
       });
     } catch (err) {
       errors.push({ cardSlug: entry.slug, stage: "signal", error: (err as Error).message });

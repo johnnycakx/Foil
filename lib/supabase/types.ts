@@ -380,6 +380,84 @@ export type Database = {
         }>;
         Relationships: [];
       };
+      market_movers: {
+        Row: {
+          card_slug: string;
+          card_name: string;
+          set_name: string;
+          image_url: string;
+          direction: "down" | "up" | "flat";
+          momentum_pct: number;
+          avg7d: number | null;
+          avg30d: number | null;
+          sale_count: number;
+          matched_tier: string;
+          computed_at: string;
+        };
+        Insert: {
+          card_slug: string;
+          card_name?: string;
+          set_name?: string;
+          image_url?: string;
+          direction: "down" | "up" | "flat";
+          momentum_pct: number;
+          avg7d?: number | null;
+          avg30d?: number | null;
+          sale_count?: number;
+          matched_tier?: string;
+          computed_at?: string;
+        };
+        Update: Partial<{
+          card_slug: string;
+          card_name: string;
+          set_name: string;
+          image_url: string;
+          direction: "down" | "up" | "flat";
+          momentum_pct: number;
+          avg7d: number | null;
+          avg30d: number | null;
+          sale_count: number;
+          matched_tier: string;
+          computed_at: string;
+        }>;
+        Relationships: [];
+      };
+      market_snapshots: {
+        Row: {
+          id: number;
+          card_slug: string;
+          snapshot_date: string;
+          avg7d: number | null;
+          avg30d: number | null;
+          sale_count: number;
+          matched_tier: string;
+          source: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: number;
+          card_slug: string;
+          snapshot_date: string;
+          avg7d?: number | null;
+          avg30d?: number | null;
+          sale_count?: number;
+          matched_tier?: string;
+          source?: string;
+          created_at?: string;
+        };
+        Update: Partial<{
+          id: number;
+          card_slug: string;
+          snapshot_date: string;
+          avg7d: number | null;
+          avg30d: number | null;
+          sale_count: number;
+          matched_tier: string;
+          source: string;
+          created_at: string;
+        }>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

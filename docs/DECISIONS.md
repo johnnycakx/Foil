@@ -2137,6 +2137,31 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 
 **Cross-refs.** [ADR-065](#adr-065--homepage-reorient-email-capture-is-the-primary-conversion-goal-inline-capture-on-the-ranking-content-surfaces), [ADR-066](#adr-066--one-email-ask-per-page-the-global-footer-is-navlegaltrust-only-finish-the-level-4-removal-site-wide), [ADR-054](#adr-054--todays-best-deals-public-leaderboard), [ADR-027](#adr-027--unified-email-capture-across-three-surfaces-default-checked-newsletter-opt-in-on-the-watchlist-form), `docs/knowledge/newsletter-business-playbook.md`, [STRATEGY-AUDIENCE-MOAT.md](STRATEGY-AUDIENCE-MOAT.md).
 
+## ADR-069 — Insight-led market-movers / "good buys" signal (aggregate momentum over fragile single listings) + the like-for-like currency gate
+
+**Date:** 2026-06-25
+**Status:** Accepted. Implements the insight-led reframe in [STRATEGY-DATA-INSIGHT-ENGINE.md](STRATEGY-DATA-INSIGHT-ENGINE.md). Extends [ADR-054](#adr-054--todays-best-deals-public-leaderboard) (the /deals board) and the ADR-053/ADR-057 like-for-like buy-signal gates.
+
+**Context — the motivating bug.** The live `/deals` board flagged "Umbreon VMAX 215/203 · Near Mint · $2,161 · 31% below sold," but the listing it pointed to was a **£1,000, Lightly Played, UK** card via the Global Shipping Program — an LP/UK/GBP listing scored against an NM/USD comp. A **single-listing** signal is fragile by construction: one mismatched condition/region/currency publishes a *false* deal, which on a trust-first brand is the worst failure mode. The deals batch (`refresh-batch` → cheapest `getBestListing` → `computeCardBuySignal`) had no currency gate, and `marketFromAspects` only checks `Language==="english"` (a UK listing IS English), so a GBP ask flowed straight into a numeric comparison against a USD reference.
+
+**Decision.**
+1. **Lead with market-level movement, not single listings.** New PokeTrace-only momentum signal: for each curated card, read the deepest-NM printing's windowed sold averages and compute `momentum = (avg7d - avg30d) / avg30d` at the `NEAR_MINT` tier. Classify **"good buy (down)"** when avg7d is ≥ 8% below avg30d AND `saleCount ≥ 5` (thin/noisy cards excluded); a secondary **"heating up (up)"** list surfaces the inverse. An aggregate cannot break the way one mispriced listing can. `lib/deals/market-movers.ts` is pure + injectable (mirrors `refresh-batch.ts`); momentum spends **no eBay quota** (R-012 N/A).
+2. **Persist + cron.** New `market_movers` current-state cache (UPSERT per slug; read filtered to down/up + a 36h freshness window) and an **append-only `market_snapshots`** table (one row per card per day) that seeds the time-series for week-over-week movers later at near-zero cost. New daily cron `/api/cron/market-movers` (09:00 UTC; same bearer-secret contract; a 28-req/10s sliding-window limiter respects the PokeTrace burst ceiling; **curated tier only** — the full catalog exceeds the 300s function budget at a safe rate and expands later off the snapshots).
+3. **`/deals` becomes insight-led.** The page leads with "Good buys this week" (the movers board, **card-level eBay BROWSE affiliate-search links**, never single listings) and **demotes** the single-listing "below sold right now" board to a secondary section.
+4. **Like-for-like currency gate (the Moonbreon fix).** `computeCardBuySignal` gains a `listingCurrency` pre-gate: a non-USD ask → UNKNOWN (the sold reference is USD; a cross-currency comparison is apples-to-oranges). Threaded from `refresh-batch` (`listing.currency`) and the per-card page (`verified.currency`) — the I-008 shared-classifier location, so both surfaces are covered. R-010 fixture `12-moonbreon-uk-gbp-lp.json` + a test pin that the LP/UK/GBP listing is never flagged.
+5. **Newsletter digest.** `lib/newsletter/movers-digest.ts` is a **deterministic** (no-LLM) serializer of the movers signal into a paste-ready `docs/newsletter-drafts/` file — every figure is a real PokeTrace aggregate, so fabrication is structurally impossible (the strongest form of the R-001 honesty discipline). `scripts/generate-movers-digest.ts` is the entry point John runs post-deploy. Card-level browse links + the cheat-sheet lead-magnet CTA; dealer voice; no em dashes.
+
+**Honesty discipline (enforced in code, not by an LLM).** Every number is a real PokeTrace aggregate; sample-size gated; "good buy" is framed as a *candidate trading below its own recent average*, never a guarantee. The digest test asserts every `$`-figure traces to an input aggregate.
+
+**Consequences.**
+- **PokeTrace is now CORE, not optional** — the entire insight layer runs on its windowed aggregates. The key (cancelled 2026-06-16, valid ~until July 15) is load-bearing; the signal soft-fails to an empty board/digest without it, and **degrades to empty after ~July 15 unless re-subscribed.**
+- **Two surfaces now share the currency gate**; a GBP (or any non-USD) listing can never again be classified as a deal on either the board or a card page.
+- **The append-only snapshot store** is the unlock for the deferred week-over-week / longtail-expansion work (compute movers from stored history, far fewer live calls) — gated on accumulation.
+- **A 5th Vercel cron** (the project already runs 4, so the plan supports it). The movers cron is independent of `deals-refresh` (different data source + failure mode).
+- **Follow-ups:** longtail momentum expansion off the snapshots; week-over-week "cards on the move"; feeding the X bot the movers board; the recurring auto-digest (full auto-send stays manual — free-tier Beehiiv send API is blocked).
+
+**Cross-refs.** [STRATEGY-DATA-INSIGHT-ENGINE.md](STRATEGY-DATA-INSIGHT-ENGINE.md), [ADR-054](#adr-054--todays-best-deals-public-leaderboard), [ADR-053](#adr-053--buy-signal-mvp--gate-13-anti-hype), [ADR-057](#adr-057--buy-signal-like-for-like-via-ebay-item-specifics-condition-coverage--languagemarket-gate), [ADR-068](#adr-068--foils-first-lead-magnet-the-evergreen-pricing-cheat-sheet-gated-on-page-data-availability-driven-choice), [R-008](RISKS.md), [R-012](RISKS.md).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

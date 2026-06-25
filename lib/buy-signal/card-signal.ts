@@ -34,10 +34,37 @@ export async function computeCardBuySignal(input: {
    *  (→ UNKNOWN); omitted → title-only inference (back-compat). */
   listingAspects?: ListingAspects | null;
   askPrice: number;
+  /** ISO 4217 currency of the listing's ask price (e.g. "USD", "GBP"). The
+   *  like-for-like CURRENCY gate (ADR-069 / the Moonbreon fix): the PokeTrace
+   *  sold reference is USD, so a non-USD ask is NOT numerically comparable and
+   *  must NOT be classified — a £1,000 (GBP) UK ask compared against a USD
+   *  average was the false-deal class. Omitted/null → no currency gate (legacy
+   *  callers + tests that pre-date the currency thread). */
+  listingCurrency?: string | null;
   /** Pin a specific variant (the page's ?v= state). Cron leaves undefined →
    *  the reference resolver picks the most-traded variant. */
   selectedVariant?: string;
 }): Promise<CardBuySignal> {
+  // CURRENCY GATE (ADR-069). Refuse to classify a non-USD ask: the sold
+  // reference is USD and a cross-currency comparison is apples-to-oranges (the
+  // £1,000 LP/UK Moonbreon false deal). A missing/empty currency is treated as
+  // "unknown, not non-USD" → fall through (back-compat); only an explicit
+  // non-USD currency hard-stops to UNKNOWN.
+  const currency = input.listingCurrency?.trim().toUpperCase();
+  if (currency && currency !== "USD") {
+    return {
+      signal: {
+        tier: "UNKNOWN",
+        median: null,
+        deltaPercent: null,
+        sampleSize: 0,
+        windowDays: 30,
+        reason: `non-USD listing currency (${currency}) — not comparable to the USD sold reference`,
+      },
+      matchedTier: null,
+    };
+  }
+
   const inferred = inferListingCondition({ title: input.listingTitle, aspects: input.listingAspects });
   const matched = await resolveConditionMatchedReference(
     input.variants,

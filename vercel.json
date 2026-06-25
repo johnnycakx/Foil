@@ -14,6 +14,10 @@
       "schedule": "0 8 * * *"
     },
     {
+      "path": "/api/cron/market-movers",
+      "schedule": "0 9 * * *"
+    },
+    {
       "path": "/api/cron/x-post",
       "schedule": "0 14 * * *"
     }
