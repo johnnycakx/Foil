@@ -1,43 +1,39 @@
-# Next-Session Brief — prepared evening 2026-06-25, for the morning of 2026-06-26
+# Next-Session Brief — prepared 2026-06-26 (Beehiiv foundation rebuild session)
 
-> Read this first. Where things stand + tomorrow's plan. (Written by Cowork; the commit-side tidy-ups below have to run on John's machine — the Cowork sandbox can't commit cleanly: wrong git identity + line-ending churn + no push auth.)
+> Read this first. Where things stand + the next plan. (Written by Cowork; commits run on John's machine — the sandbox can't commit cleanly.)
 
-## Where we are — the insight engine is LIVE
+## The big correction this session: the newsletter "list" was a mirage
 
-Two-day arc complete: dormant deal-finder → dual-track restore → email-first homepage → lead magnet (`/free/pokemon-card-pricing-cheat-sheet`) → **market-movers insight engine** → **modern catalog expansion**. All deployed to foiltcg.com.
+The Beehiiv account was a **repurposed "Rise & Close" SDR newsletter** — renamed to Foil, but everything underneath was still the old tech-sales product. Pulled the real numbers: the "18 subscribers" were **0 real Pokémon subscribers** — 13 legacy SDR humans (+ friends/family) and 5 of John's own test/bot accounts. The earlier plan ("send issue #1 first — the finish line") was built on a false premise: **there was no audience to send to, and sending to the SDR crowd would have risked spam complaints on a virgin sending reputation.**
 
-- **`/deals` "Good buys this week" is live and clean** — material, modern-heavy movers (6 of 10 modern: Ethan's Ho-Oh ex / Jamming Tower / Team Rocket's Giovanni from Destined Rivals, Iono's Bellibolt ex from Journey Together, Night Stretcher / Hydreigon ex from Surging Sparks, plus Base Blastoise/Alakazam). Sub-$3 bulk filtered out.
-- **Market-movers cron healthy:** 390 cards, 293 movers (10 down / 12 up), 533 PokeTrace calls, ~191s, 0 errors. Runs daily 09:00 UTC. Reads baked metadata (ADR-070) so it's PokeTrace-rate-bound, not SDK-fetch-bound.
-- Catalog expanded into modern SV-era sets; the deal-finder finally surfaces liquid modern cards.
-- The catalog-expansion goal pushed to prod **3×, unreviewed** (af8b8fc, 8d66b4e + expansion commits) — gated (976 tests) + verified live, but the "commit don't push" gate got overridden because each cron fix had to deploy to be testable. Board confirmed clean live.
+**Corrected sequence (this overrides the old brief): clean the account → brand the emails → GROW the list → THEN issue #1.** Sending issue #1 to ~0 people was never the finish line; the finish line is the first cohort of real, engaged Pokémon subscribers from a repeatable channel.
 
-## TOP open item for tomorrow: SEND newsletter issue #1
+## What shipped this session (Beehiiv, via the MCP API + Chrome)
 
-Issue #1 was drafted but **never actually sent** — and the board is much better now (modern + clean). Tomorrow:
-1. Re-generate the digest from the clean modern board: `node --experimental-strip-types scripts/generate-movers-digest.ts` → `docs/newsletter-drafts/good-buys-this-week-*.md`.
-2. Shape it into issue #1 with Cowork (lead with the material modern movers — Ethan's Ho-Oh ex, Iono's Bellibolt ex, Blastoise, etc.).
-3. Publish in Beehiiv (manual — free-tier send API blocked) + post on X promoting it + the cheat sheet.
-This is the whole point of the last two days. Do it first.
+- **Upgraded Beehiiv to Scale** (John's call; ~$43/mo annual). Unlocked MCP **write** access + automations + surveys + webhooks. Caveat learned: destructive ops (delete subscriber/post/custom-field) are NOT in the MCP toolset and the sandbox can't reach Beehiiv's REST API, so those were done by driving the dashboard over Chrome.
+- **Subscriber list cleaned to 1:** deleted 17 (5 test/bots + 12 legacy SDR/family), **kept only `john.c.craig24@gmail.com`** as a seed. Verified via API + dashboard.
+- **8 Rise & Close posts deleted** — `newsletter.foiltcg.com` no longer serves tech-sales content.
+- **3 Pokémon onboarding custom fields created:** Collector type, Monthly budget, Collecting focus (kept First Name). The 4 old sales fields wouldn't delete (Beehiiv backend hold) — harmless clutter, left in place.
+- **Onboarding survey BUILT + PUBLISHED (live):** "Tell us what you collect" — subscribe-slot, shows right after signup, 3 optional multiple-choice Qs feeding the 3 new fields. `newsletter.foiltcg.com/forms/1b5faea0-44c3-427e-be43-3a4a62ae0af1`.
+- **Welcome automation BUILT (draft):** trigger = signup → immediate welcome email (founder voice, cheat-sheet CTA, reply prompt). `aut_ffd18eec-6e64-4af3-bf43-42f241f52207`.
+- **Publication logo swapped to FoilTCG** (John did it). Sending domain `mail.foiltcg.com` is **verified/Live** (SPF/DKIM already done); branded-link subdomain still auto-verifying (cosmetic).
 
-## Loose ends to commit (run on John's machine — see the tidy one-liner Cowork provided)
-- **AUTO_PUBLISH doc consistency:** CLAUDE.md + ROADMAP still say "AUTO_PUBLISH_WEEKLY_POSTS stays false," but John decided **autonomous-ON is intentional**. Update so a future session doesn't "fix" it back to false.
-- Verify the `STRATEGY-DATA-INSIGHT-ENGINE.md` catalog-coverage edit is committed.
-- Confirm `git status` clean + `origin/main` synced.
+## TOP open items for next session (in order)
 
-## Queued goal (file on disk, gitignored)
-- `docs/goals/harden-bake-metadata-preserve-variants.md` — make `bake-card-metadata` variant-preserving so a future set-add doesn't wipe baked PokeTrace variants (it cost ~30 min + ~470 wasted calls this time). Small, run anytime.
+1. **Publish the welcome automation** — one click in the editor: `app.beehiiv.com/automations/ffd18eec-6e64-4af3-bf43-42f241f52207/workflow` → Publish. (Built and drafted; Beehiiv gates go-live to a human click.)
+2. **Fix the email HEADER logo — still Rise & Close.** The publication logo is Foil now, but the *email* header is a separate image baked into the email **template** (and snapshotted into the welcome email). Fix in two places: (a) the welcome email — editor → click the R&C header image → replace with the FoilTCG logo from Media → Save; (b) Posts → Template library → default template → same swap, so the weekly newsletter isn't R&C. **Alternative: a Claude Code goal to script the template header swap via the Beehiiv API** (it reaches Beehiiv where the Cowork sandbox can't). This is the last visible R&C residue.
+3. **Then GROW (the actual unlock):** stand up the publish→distribute loop. John's X founder voice (the named biggest unfair advantage, currently idle) + the live SEO pillars/card pages + the `/free` cheat-sheet lead magnet, all pointing at `/newsletter`. Issue #1 becomes a *launch event* (published web post + X thread), not an email blast to nobody.
 
-## Open infra / ops
-- ⏰ **PokeTrace re-subscribe before ~July 15 — now LOAD-BEARING.** The entire insight engine (movers, /deals, the newsletter) runs on PokeTrace. If the key lapses, the product goes empty. This is the most important infra deadline. (Reminder scheduled for July 13.)
-- **Dead Supabase PAT (401):** regenerate at supabase.com/dashboard/account/tokens → update `.env.local` + `gh secret set SUPABASE_ACCESS_TOKEN`. Breaks headless migrations until fixed.
-- **CDTFA seller's permit:** paused; CA entity # **B20260280279** in hand, CDTFA draft saved. Resume (Cowork can drive over Chrome). Top vending operational unlock.
-- **AUTO_PUBLISH is ON (autonomous):** gated card content publishes twice weekly unreviewed. Keep the content-marker verification + an occasional spot-check (the gates have missed before — May fabrication incident).
+## Lower-priority / cosmetic leftovers
+- Unused `riseandclose.com` signup flow (non-default, new subs never hit it) — harmless, ignore.
+- 4 old sales custom fields (Beehiiv won't delete them) — invisible clutter.
+- Old default thumbnail (B&W R&C) in General Info + R&C-era publication tags (News/Popular Culture) — swap when convenient.
 
-## Tomorrow's priority order
-1. **Send issue #1** (regenerate digest → shape → Beehiiv → X). The finish line.
-2. Tidy/commit the loose docs (AUTO_PUBLISH fix) — quick CC pass.
-3. The bake-metadata footgun fix (queued goal) — quick.
-4. CDTFA seller's permit — the paused operational unlock.
-5. Regenerate the Supabase PAT.
+## Standing infra / ops (unchanged)
+- ⏰ **PokeTrace re-subscribe before ~July 15 — LOAD-BEARING.** The whole insight engine (movers, /deals, the digest) runs on it. Reminder July 13.
+- Dead Supabase PAT (401) — regenerate at supabase.com/dashboard/account/tokens → `.env.local` + `gh secret set`.
+- CDTFA seller's permit — paused; CA entity # B20260280279 in hand.
+- `AUTO_PUBLISH_WEEKLY_POSTS` is intentionally ON — don't "fix" to false.
 
-## Tonight: nothing else needed. Let Claude Code's shell wind down; don't trigger more.
+## Strategic note (for the upgrade decision record)
+Beehiiv **Scale** is justified *because John committed to actively running the newsletter* (automations + survey + segmentation are the ongoing value). It was NOT worth it purely for the one-time cleanup. The fully-automated "send the newsletter via API" dream is **Enterprise-only** (Send API), so manual draft-in-UI → send stays the path for a long time. If recurring cost ever feels unjustified, Scale is downgradable.

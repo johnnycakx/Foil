@@ -8,6 +8,25 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-26 (later) — Beehiiv residual cleanup executed (1 of 4 custom fields deleted) + Cowork docs committed
+
+**Goal: execute `docs/goals/beehiiv-residual-cleanup.md` — delete the 4 Rise & Close sales custom fields via the Beehiiv API, then commit the Cowork doc updates.** (Claude Code; external ops + docs only, no app code.)
+
+- **P0 premise check (live-verified).** A read-only `GET /v2/publications/{pub}/custom_fields` returned 8 fields; the 4 SDR fields matched the goal's display names exactly and the 4 keepers (First Name + the 3 Pokémon onboarding fields) were left untouched. `BEEHIIV_API_KEY` + `BEEHIIV_PUBLICATION_ID` present in `.env.local`; the 3 Cowork-edited docs showed `M` in the tree as expected.
+- **Custom-field deletion (Task 1) — 1 deleted, 3 refused.** `DELETE …/custom_fields/{id}` per field. ✅ **"Which sales topics are you most interested in?" deleted (200).** ⛔ **"preferred_sales_topics", "preferred_sales_topics_Text", "Rise & Close"** each returned **400 "Cannot delete this custom field because it is being used in a live form."** Per the goal, not forced. They're still attached to a live subscribe/signup form (the riseandclose.com flow remnant the dashboard backend-hold also reflected). Cosmetic, invisible to subscribers, not load-bearing.
+- **Docs commit (Task 2).** Staged + committed the 3 Cowork docs (`NEXT-SESSION-BRIEF.md` rewritten, `COWORK-CONTEXT.md` +2 durable lessons, `SESSION-LOG.md` 2026-06-26 entry) plus this entry; pushed to `origin/main`. No script committed (used curl). Unrelated WIP (vending assets, `.claude/settings.local.json`, the movers newsletter draft) deliberately left untouched.
+- **Follow-up for John (1-min dashboard task):** in the Beehiiv signup/subscribe form editor, remove the 3 held fields from the live form, then delete them (dashboard or re-run the API). Separately, the weekly-newsletter template header is still R&C (manual swap when issue #1 is built — already tracked in the 2026-06-26 entry below).
+
+## 2026-06-26 — Beehiiv account rebuild: repurposed Rise & Close → Foil (cleanup + onboarding survey + welcome automation)
+
+**Cowork session (no app-code; Beehiiv MCP + Chrome ops + doc updates).** Started from "should we upgrade Beehiiv for API/automation access?" and in checking, discovered the Beehiiv publication was a **repurposed "Rise & Close" SDR newsletter**: its "18 subscribers" were **0 real Pokémon subscribers** (13 legacy SDR + friends/family, 5 test/bot accounts), and the account was still structurally R&C (logo, 8 published SDR posts live on the public archive, sales custom fields, a riseandclose.com signup flow). This invalidated the prior brief's "send issue #1 first" plan — there was no audience, and emailing the SDR crowd would have risked spam complaints on a fresh sending reputation.
+
+- **Upgraded to Scale** (John; ~$43/mo) for MCP write access + automations + surveys. Tooling reality learned: the Beehiiv **MCP lacks destructive ops** (delete subscriber/post/custom-field) and the **Cowork sandbox can't reach `api.beehiiv.com`**, so deletions were driven over **Chrome**; the **public REST API is read-only for posts-content/templates/publications/automation-emails** (only Custom Fields exposes DELETE).
+- **Cleaned:** deleted 17 subscribers (kept `john.c.craig24@gmail.com` as seed), deleted 8 SDR posts, created 3 Pokémon onboarding custom fields, swapped the publication logo + the email header logo to FoilTCG (John, in the template Style editor). The 4 old sales custom fields wouldn't delete via dashboard (backend hold) → deferred to the API.
+- **Built:** onboarding **survey published live** (subscribe-slot, 3 Qs → the 3 fields; `1b5faea0-...`) and a **welcome automation** (signup → welcome email in founder voice, cheat-sheet CTA, reply prompt; `aut_ffd18eec-...`) — built via API as a draft; John Saves the header + Publishes from the editor.
+- **Sending domain** `mail.foiltcg.com` confirmed verified/Live (SPF/DKIM already in place).
+- **Docs:** rewrote `NEXT-SESSION-BRIEF.md` (corrected sequence: clean → brand → grow → THEN issue #1); captured 2 durable lessons in `COWORK-CONTEXT.md` (Beehiiv tooling reality; verify-the-audience-is-real-before-optimizing-the-send). Strategic note: Scale is justified by the commitment to actively run the newsletter; full API send-automation is Enterprise-only. **Residual** (goal `docs/goals/beehiiv-residual-cleanup.md`): delete the 4 sales custom fields via API; the weekly-newsletter template header is still R&C (manual swap when the first issue is built). Next real work is growth (X voice + SEO/cheat-sheet → `/newsletter`), not more Beehiiv config.
+
 ## 2026-06-25 (later 4) — docs: commit the Cowork auto-context + self-learning-loop setup
 
 **Goal: commit the Cowork session-bootstrap setup, docs only — the new `docs/COWORK-CONTEXT.md`, the Cowork-bootstrap + close-the-loop block at the top of `CLAUDE.md`, and `docs/NEXT-SESSION-BRIEF.md`. Conventional `docs:` commit, push, confirm git clean + origin synced.**
