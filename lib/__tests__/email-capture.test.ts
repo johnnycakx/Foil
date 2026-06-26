@@ -34,6 +34,14 @@ function readFile(rel: string): string {
   return readFileSync(join(ROOT, rel), "utf8");
 }
 
+/** Strip JS/JSX block + line comments so a literal in an explanatory comment
+ *  (e.g. documenting a number we REMOVED) can't trip a "no hardcoded X" guard. */
+function stripComments(src: string): string {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:])\/\/.*$/gm, "$1");
+}
+
 // ---------------------------------------------------------------------------
 // /api/watchlist route — opt-in gate + source string
 // ---------------------------------------------------------------------------
@@ -119,6 +127,63 @@ test("newsletter page: declares force-static + 24h revalidate (per goal)", () =>
 test("newsletter page: links to /legal/privacy (transparency footer)", () => {
   const src = readFile("app/(site)/newsletter/page.tsx");
   assert.match(src, /href=["']\/legal\/privacy["']/);
+});
+
+// ---------------------------------------------------------------------------
+// newsletter-conversion-fixes — cadence consistency, no-fabrication, social card
+// ---------------------------------------------------------------------------
+
+test("Task 1: EmailCapture carries NO 'twice a week' email-cadence copy (one email a week)", () => {
+  const src = readFile("components/email-capture.tsx");
+  // The newsletter promise is ONE email a week (the blog auto-publishes twice
+  // weekly — a separate thing that must not leak into email-cadence copy).
+  assert.doesNotMatch(src, /twice a week/i, "email-capture must not promise a twice-a-week cadence");
+  assert.match(src, /once a week/i, "email-capture must state the one-a-week cadence");
+});
+
+test("Task 2: newsletter page has NO hardcoded fabricated excerpts / dollar comps (R-001)", () => {
+  const src = readFile("app/(site)/newsletter/page.tsx");
+  // The old SAMPLE_EXCERPTS invented three dated newsletter issues with
+  // fabricated specific market figures presented as real past issues. They
+  // violated the no-fabrication discipline. The page must carry neither the
+  // const nor any of its invented comps.
+  assert.doesNotMatch(src, /SAMPLE_EXCERPTS/, "the fabricated SAMPLE_EXCERPTS const must be gone");
+  assert.doesNotMatch(src, /cleared at \$32/, "the invented '$32' Charizard comp must be gone");
+  assert.doesNotMatch(src, /151\/165/, "the invented 151/165 comp must be gone");
+  assert.doesNotMatch(src, /32% premium/, "the invented reverse-holo premium figure must be gone");
+  assert.doesNotMatch(src, /Week of 2026-05/, "the stale dated-issue labels must be gone");
+  // No hardcoded dollar literal may survive on the page — every figure now
+  // traces to live market_movers data through the snippet component.
+  assert.doesNotMatch(src, /\$\d/, "no hardcoded dollar figure may appear on the newsletter page");
+});
+
+test("Task 2: newsletter page renders the real-data RecentReadSnippet (not invented issues)", () => {
+  const src = readFile("app/(site)/newsletter/page.tsx");
+  assert.match(src, /import\s+\{[^}]*\bRecentReadSnippet\b[^}]*\}\s+from\s+["']@\/components\/newsletter\/recent-read-snippet["']/);
+  assert.match(src, /import\s+\{[^}]*\bgetMarketMovers\b[^}]*\}\s+from\s+["']@\/lib\/deals\/market-movers-read["']/);
+  assert.match(src, /<RecentReadSnippet\s+movers=\{movers\}/);
+  // The page must actually await the live read, so the proof is real.
+  assert.match(src, /await\s+getMarketMovers\(/);
+});
+
+test("Task 2: RecentReadSnippet sources every figure from MoverRow data, no hardcoded comps", () => {
+  const src = readFile("components/newsletter/recent-read-snippet.tsx");
+  // The component formats real avg7d/avg30d/momentumPct fields — outside its own
+  // explanatory comments it must carry no hardcoded dollar literal (which would
+  // be a fabricated number).
+  assert.doesNotMatch(stripComments(src), /\$\d/, "no hardcoded dollar figure in the snippet component");
+  assert.match(src, /m\.avg7d/, "figures must come from the live avg7d field");
+  assert.match(src, /m\.avg30d/, "figures must come from the live avg30d field");
+});
+
+test("Task 3: /newsletter exposes a page-specific twitter card matching the subscribe value-prop", () => {
+  const src = readFile("app/(site)/newsletter/page.tsx");
+  // Without its own block the page inherits the generic site twitter card. The
+  // block must exist, use a large image, and reuse the subscribe-ask copy.
+  assert.match(src, /twitter:\s*\{/, "page must declare a twitter metadata block");
+  assert.match(src, /twitter:\s*\{[\s\S]*?card:\s*["']summary_large_image["']/);
+  assert.match(src, /twitter:\s*\{[\s\S]*?title:\s*PAGE_TITLE/, "twitter title must reuse the subscribe-ask PAGE_TITLE");
+  assert.match(src, /twitter:\s*\{[\s\S]*?description:\s*PAGE_DESCRIPTION/, "twitter description must reuse the one-a-week PAGE_DESCRIPTION");
 });
 
 // ---------------------------------------------------------------------------

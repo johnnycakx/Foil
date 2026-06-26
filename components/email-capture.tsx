@@ -6,7 +6,7 @@ import { subscribeAction, type SubscribeActionResult } from "@/app/actions/subsc
 type Variant = "inline" | "footer";
 
 const DEFAULT_HEADLINES: Record<Variant, string> = {
-  inline: "Get Pokémon TCG market reads twice a week.",
+  inline: "Get a Pokémon TCG market read once a week.",
   footer: "Subscribe to the Foil newsletter.",
 };
 
@@ -53,7 +53,7 @@ export function EmailCapture({
       >
         <p className="font-medium text-foil-navy">You&apos;re in.</p>
         <p className="mt-1 text-foil-slate">
-          We&apos;ll send Pokémon TCG market reads twice a week. Watch your inbox.
+          We&apos;ll send a Pokémon TCG market read once a week. Watch your inbox.
         </p>
       </div>
     );

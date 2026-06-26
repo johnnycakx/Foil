@@ -1,16 +1,21 @@
 // Newsletter landing — Twitter-CTA target. Server Component, force-static
-// + 24h revalidate. Single email field via the existing EmailCapture
-// component with source='newsletter-landing'.
+// + 24h revalidate (the movers proof is baked at build/revalidate from the
+// daily-refreshed market_movers cache). Single email field via the existing
+// EmailCapture component with source='newsletter-landing'.
 //
 // Per docs/STRATEGY-AUDIENCE-MOAT.md the value-prop framing is:
 //   "Tell me a card → I email you when it drops; weekly market notes from
 //    John Craig, who runs a Pokémon card store."
-// Twitter bio compresses this; the page expands it with three concrete
-// sample-newsletter excerpts so a Twitter visitor sees what they'll get.
+// Twitter bio compresses this; the page expands it with a REAL "recent read"
+// snippet (RecentReadSnippet) drawn from the same market_movers data that powers
+// /deals, so a visitor sees actual numbers, never fabricated sample issues.
 
 import type { Metadata } from "next";
 import { EmailCapture } from "@/components/email-capture";
+import { RecentReadSnippet } from "@/components/newsletter/recent-read-snippet";
+import { getMarketMovers } from "@/lib/deals/market-movers-read";
 
+export const runtime = "nodejs";
 export const dynamic = "force-static";
 export const revalidate = 86400;
 
@@ -28,32 +33,29 @@ export const metadata: Metadata = {
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: "/newsletter",
+    siteName: "Foil",
     type: "website",
+    // A page that exports its own openGraph does NOT inherit the file-based
+    // app/opengraph-image.tsx, so reference the dynamic OG (the FoilTCG
+    // wordmark card, ADR-055) explicitly or the share card is blank.
+    images: ["/opengraph-image"],
+  },
+  // /newsletter is the X-link target. Without this block it inherits the generic
+  // site twitter card ("Search any Pokémon card…"), which undersells the
+  // subscribe ask. Match the card to the subscribe value-prop instead.
+  twitter: {
+    card: "summary_large_image",
+    title: PAGE_TITLE,
+    description: PAGE_DESCRIPTION,
+    images: ["/opengraph-image"],
   },
 };
 
-const SAMPLE_EXCERPTS: { week: string; title: string; body: string }[] = [
-  {
-    week: "Week of 2026-05-25",
-    title: "Charizard ex 151 just dropped — what the market is telling us",
-    body:
-      "A near-mint Charizard ex 151/165 cleared at $32 this week — first time it's broken below $40 since the set's release. Three signals worth watching: (1) Pokémon Center restocks are catching up faster than they did with Obsidian Flames; (2) graded comps are holding steady, so this is supply-side, not demand-side; (3) reverse-holo variants are tracking 12% above non-holo, which is the widest spread we've seen on a modern ex card.",
-  },
-  {
-    week: "Week of 2026-05-18",
-    title: "Reverse-holo Scarlet & Violet — the quiet 30% gap",
-    body:
-      "Across the four base SV sets, reverse-holo variants are trading at an average 32% premium over their non-holo siblings. That's wider than reverse-holo premiums in Sword & Shield (typical 12-18%) and wider than the historic 10-15% you'd see in vintage. Two hypotheses worth testing: (a) collector demand is shifting toward aesthetic-rare variants now that ungraded vintage is so spendy, (b) print runs on reverse-holo were cut tighter this generation than the official disclosures suggest.",
-  },
-  {
-    week: "Week of 2026-05-11",
-    title: "Why eBay's 'lowest price' is a trap (and what we do instead)",
-    body:
-      "If you've ever clicked the cheapest 'Charizard NEAR MINT' on eBay and gotten a sleeve, you've met the keyword-stuffing problem. Sellers list accessories with the card's name in the title to ride the search. Foil's curation rejects price outliers (anything below 30% of the credible median), keyword-stuffed titles (lot, bulk, proxy, etc.), and damaged-condition signals — and then takes the cheapest credible survivor. Same logic runs on every per-card page; alerts use the same filter.",
-  },
-];
-
-export default function NewsletterPage() {
+export default async function NewsletterPage() {
+  // Real "recent read" proof — baked at build/revalidate from the daily
+  // market_movers cache (zero PokeTrace calls at view time). Soft-fails to empty,
+  // in which case RecentReadSnippet renders the honest format-description block.
+  const movers = await getMarketMovers(12);
   return (
     <main className="mx-auto w-full max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
       <header className="mb-12 text-center sm:text-left">
@@ -87,33 +89,7 @@ export default function NewsletterPage() {
         .
       </p>
 
-      <section className="mt-14">
-        <h2 className="font-display text-xl font-bold tracking-[-0.02em] text-foil-navy sm:text-2xl">
-          Recent issues
-        </h2>
-        <p className="mt-2 text-sm text-foil-slate">
-          Three excerpts so you can see what lands in your inbox before you commit.
-        </p>
-
-        <div className="mt-6 space-y-6">
-          {SAMPLE_EXCERPTS.map((excerpt) => (
-            <article
-              key={excerpt.title}
-              className="rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-7"
-            >
-              <p className="text-xs font-medium uppercase tracking-widest text-foil-gold">
-                {excerpt.week}
-              </p>
-              <h3 className="font-display mt-2 text-lg font-bold tracking-[-0.02em] text-foil-navy sm:text-xl">
-                {excerpt.title}
-              </h3>
-              <p className="mt-3 text-sm leading-relaxed text-foil-slate sm:text-base">
-                {excerpt.body}
-              </p>
-            </article>
-          ))}
-        </div>
-      </section>
+      <RecentReadSnippet movers={movers} />
 
       <p className="mt-12 text-center text-xs text-foil-slate sm:text-sm">
         Privacy is in the{" "}

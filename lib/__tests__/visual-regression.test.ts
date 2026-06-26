@@ -41,6 +41,10 @@ const PUBLIC_SURFACES: readonly string[] = [
   "app/(site)/legal/terms/page.tsx",
   "app/(site)/legal/ebay-api-compliance/page.tsx",
   "app/(site)/newsletter/page.tsx",
+  // /newsletter "recent read" proof (newsletter-conversion-fixes): real
+  // market_movers snippet that replaced the fabricated SAMPLE_EXCERPTS. Same
+  // cream/navy/gold register; coral-hover-only + no-raw-hex invariants cover it.
+  "components/newsletter/recent-read-snippet.tsx",
   "components/email-capture.tsx",
   // ADR-068: lead-magnet surfaces (landing page + gate + CTA). Same cream/navy/
   // gold register; the palette + coral-hover-only invariants cover them.
