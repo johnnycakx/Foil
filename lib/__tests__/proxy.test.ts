@@ -11,7 +11,11 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { isPublicRoute, PUBLIC_ROUTES } from "../supabase/public-routes.ts";
+
+const ROOT = new URL("../..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
 
 test("marketing pillar pages are public", () => {
   assert.equal(isPublicRoute("/pokemon-card-value-calculator"), true);
@@ -39,9 +43,26 @@ test("lead-magnet pages under /free/* are public + crawlable (ADR-068)", () => {
   assert.equal(isPublicRoute("/free"), true);
   assert.equal(isPublicRoute("/free/pokemon-card-pricing-cheat-sheet"), true);
   assert.equal(isPublicRoute("/free/some-future-magnet"), true);
+  // The keepable PDF asset (cheat-sheet-flow-fix). Static /public file under
+  // /free/* — the welcome email links straight to it, so it must resolve
+  // unauthenticated. Covered by the prefix (belt-and-suspenders: PDF requests
+  // also bypass middleware via the proxy.ts matcher's static-extension exclude).
+  assert.equal(isPublicRoute("/free/foil-pokemon-card-pricing-cheat-sheet.pdf"), true);
   // Bleed guard: an adjacent stem must stay gated.
   assert.equal(isPublicRoute("/freebies"), false);
   assert.equal(isPublicRoute("/free-stuff"), false);
+});
+
+test("auth-proxy matcher excludes static .pdf requests (they bypass middleware)", () => {
+  // The keepable cheat-sheet PDF is served straight from /public. The proxy
+  // matcher in proxy.ts excludes static extensions (incl. pdf), so the request
+  // never hits updateSession — there is no auth gate to re-prompt an already-
+  // subscribed visitor. Pin the exclude so a future matcher change can't
+  // silently route PDFs (and other static assets) through the auth redirect.
+  const proxySrc = readFileSync(join(ROOT, "proxy.ts"), "utf8");
+  const matcher = proxySrc.match(/matcher:\s*\[([\s\S]*?)\]/);
+  assert.ok(matcher, "proxy.ts must declare a matcher");
+  assert.match(matcher![1], /pdf/, "matcher must exclude .pdf static requests");
 });
 
 test("/go/deal/[slug] click-time redirect is public (ADR-056)", () => {

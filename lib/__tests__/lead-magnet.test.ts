@@ -7,7 +7,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { LANDING_PATHS } from "../seo/sitemap-landings.ts";
 
@@ -20,6 +20,7 @@ const PAGE = "app/(site)/free/pokemon-card-pricing-cheat-sheet/page.tsx";
 const GATE = "components/lead-magnet-gate.tsx";
 const CTA = "components/lead-magnet-cta.tsx";
 const MAGNET_HREF = "/free/pokemon-card-pricing-cheat-sheet";
+const PDF_PATH = "/free/foil-pokemon-card-pricing-cheat-sheet.pdf";
 
 test("magnet page: wires LeadMagnetGate with source='lead_magnet_cheatsheet'", () => {
   const src = readFile(PAGE);
@@ -60,6 +61,51 @@ test("gate: reveals the asset in place — no redirect (no open-redirect surface
 test("CTA: links to the magnet landing page", () => {
   const src = readFile(CTA);
   assert.match(src, new RegExp(`["']${MAGNET_HREF}["']`), "CTA must link to the magnet page");
+});
+
+// ---------------------------------------------------------------------------
+// cheat-sheet-flow-fix — real PDF asset + no re-gate for already-subscribed
+// ---------------------------------------------------------------------------
+
+test("asset: the branded cheat-sheet PDF exists in /public", () => {
+  // The keepable file the welcome email + the on-page reveal both link to.
+  assert.ok(
+    existsSync(join(ROOT, "public", PDF_PATH.replace(/^\//, ""))),
+    `the PDF must exist at public${PDF_PATH}`,
+  );
+});
+
+test("gate: success reveal offers a direct PDF download (download attr, new tab)", () => {
+  const src = readFile(GATE);
+  // The gate takes a downloadHref and, when set, renders a download anchor in
+  // the success block so a cold subscriber who unlocks on-page keeps the file.
+  assert.match(src, /downloadHref\?:\s*string/, "gate must accept an optional downloadHref prop");
+  assert.match(src, /href=\{downloadHref\}/, "success reveal must link to the download href");
+  assert.match(src, /<a[^>]*\bdownload\b/, "the download link must carry the download attribute");
+  assert.match(src, /target="_blank"/, "the download link opens in a new tab");
+});
+
+test("page: wires the gate with the PDF downloadHref so on-page unlockers get the file", () => {
+  const src = readFile(PAGE);
+  assert.match(src, new RegExp(`["']${PDF_PATH.replace(/[/.]/g, "\\$&")}["']`), "page must reference the PDF path");
+  assert.match(src, /<LeadMagnetGate[^>]*downloadHref=\{PDF_PATH\}/, "gate must receive the PDF downloadHref");
+});
+
+test("page: exposes an UNGATED 'Already subscribed? Download' link to the PDF (no re-gate)", () => {
+  const src = readFile(PAGE);
+  // The contradiction John caught: a subscriber clicking the welcome-email link
+  // landed on the gate and was asked to subscribe AGAIN. This honest escape
+  // hatch routes already-subscribed visitors straight to the asset.
+  assert.match(src, /Already subscribed\?/i, "page must offer an honest already-subscribed path");
+  // The ungated link must point at the PDF and carry the download attr. It must
+  // sit OUTSIDE the gated CheatSheetBody (which starts at `function CheatSheetBody`).
+  const gateBodyIdx = src.indexOf("function CheatSheetBody");
+  const ungatedLinkIdx = src.search(/href=\{PDF_PATH\}\s+download/);
+  assert.ok(ungatedLinkIdx >= 0, "an ungated <a href={PDF_PATH} download> link must exist");
+  assert.ok(
+    gateBodyIdx === -1 || ungatedLinkIdx < gateBodyIdx,
+    "the ungated download link must appear before/outside the gated CheatSheetBody",
+  );
 });
 
 test("honesty: no fake scarcity / urgency / fabricated social-proof counts on any magnet surface", () => {

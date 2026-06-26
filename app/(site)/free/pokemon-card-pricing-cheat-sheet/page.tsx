@@ -17,6 +17,10 @@ const TITLE = "The Pokémon Card Pricing Cheat Sheet (free) | Foil";
 const DESCRIPTION =
   "A free one-page reference for pricing any Pokémon card: the three fields to read off the card, eBay sold vs TCGplayer market, the condition multipliers (NM through DMG), raw vs graded, and when grading is worth it.";
 const URL_PATH = "/free/pokemon-card-pricing-cheat-sheet";
+// The keepable asset (Cowork-built, branded). A static /public file, so the
+// request bypasses middleware (proxy.ts matcher excludes .pdf) and is also
+// covered by the /free/* PUBLIC_ROUTES prefix — public either way, no re-gate.
+const PDF_PATH = "/free/foil-pokemon-card-pricing-cheat-sheet.pdf";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -76,6 +80,17 @@ export default function PricingCheatSheetPage() {
           one-page reference for pricing any Pokémon card the way a dealer does: read
           three printed fields, check the right source, adjust for condition, and know
           when the graded comp is the only one that matters. Built by Foil, free.
+        </p>
+
+        {/* Honest escape hatch for already-subscribed visitors (the path the
+            welcome email links to). The gate below stays for cold SEO traffic;
+            nobody who already subscribed should be asked for their email again. */}
+        <p className="mt-4 text-sm text-foil-slate">
+          Already subscribed?{" "}
+          <a href={PDF_PATH} download target="_blank" rel="noopener noreferrer" className={LINK}>
+            Download the PDF
+          </a>
+          .
         </p>
 
         <section className="mt-10">
@@ -138,7 +153,7 @@ export default function PricingCheatSheetPage() {
 
         {/* The gate: unlock the rest of the cheat sheet by subscribing. */}
         <div className="mt-14">
-          <LeadMagnetGate source="lead_magnet_cheatsheet">
+          <LeadMagnetGate source="lead_magnet_cheatsheet" downloadHref={PDF_PATH}>
             <CheatSheetBody />
           </LeadMagnetGate>
         </div>

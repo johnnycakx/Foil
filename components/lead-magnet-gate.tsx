@@ -13,11 +13,19 @@ import { subscribeAction, type SubscribeActionResult } from "@/app/actions/subsc
 export function LeadMagnetGate({
   source,
   children,
+  downloadHref,
+  downloadLabel = "Download the cheat sheet (PDF)",
 }: {
   /** Beehiiv segmentation tag, e.g. "lead_magnet_cheatsheet". */
   source: string;
   /** The gated asset, revealed in place on a successful subscribe. */
   children: React.ReactNode;
+  /** Optional keepable file. When set, the success reveal also offers a direct
+   *  download (a same-origin /public path) so a cold subscriber who unlocks
+   *  on-page still walks away with the asset. No new backend — a static link. */
+  downloadHref?: string;
+  /** Button label for the download. Defaults to the cheat-sheet wording. */
+  downloadLabel?: string;
 }) {
   const [state, setState] = useState<SubscribeActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -43,6 +51,21 @@ export function LeadMagnetGate({
             best live card deals, the cards on the move, and one sharp valuation note.
             No spam, unsubscribe anytime.
           </p>
+          {downloadHref && (
+            <a
+              href={downloadHref}
+              download
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-foil-navy px-5 py-3 text-sm font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40"
+            >
+              <svg aria-hidden viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 shrink-0">
+                <path d="M10 2a.75.75 0 0 1 .75.75v8.69l2.97-2.97a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.53a.75.75 0 0 1 1.06-1.06l2.97 2.97V2.75A.75.75 0 0 1 10 2Z" />
+                <path d="M3.5 13.25a.75.75 0 0 1 .75.75v1.5c0 .14.11.25.25.25h11a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 15.5 17.25h-11A1.75 1.75 0 0 1 2.75 15.5v-1.5a.75.75 0 0 1 .75-.75Z" />
+              </svg>
+              {downloadLabel}
+            </a>
+          )}
         </div>
         <div className="mt-8">{children}</div>
       </div>
