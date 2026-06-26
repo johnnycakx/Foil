@@ -234,7 +234,7 @@ supabase db push — Apply pending migrations (after linking project)
 
 Autonomous content engine
 
-The content engine generates a new blog post TWICE A WEEK (Mondays + Thursdays 14:03 UTC), runs 8 quality gates against the draft, and publishes directly to main with NO human review step. Vercel auto-deploys. The gates are the safety net — quality is enforced structurally, not editorially. Kill-switch: set repo variable AUTO_PUBLISH_WEEKLY_POSTS=false to fall back to _pending/ drafts.
+The content engine generates a new blog post TWICE A WEEK (Mondays + Thursdays 14:03 UTC), runs 8 quality gates against the draft, and publishes directly to main with NO human review step. Vercel auto-deploys. The gates are the safety net — quality is enforced structurally, not editorially. **Current state: autonomy is intentionally ON** (`AUTO_PUBLISH_WEEKLY_POSTS` is `true`/unset + the Mon/Thu cron is live — John's decision, 2026-06-25; posts publish to main unreviewed). Kill-switch: set repo variable AUTO_PUBLISH_WEEKLY_POSTS=false to fall back to _pending/ drafts. **That `=false` is the OFF switch, not the current state — do not flip it as a "fix"; autonomous publishing is intended.**
 
 Pipeline (lib/seo/):
 - content-engine.ts → generateWeeklyPost(): picks next unshipped cluster topic from docs/seo-strategy.md → pulls SERP context (Brave Search + cheerio scrape) → pulls Foil data snapshot (Supabase) → calls Claude Sonnet 4.6 with the DUD prompt → runs quality-gates → re-prompts with failures up to 3 times → returns passing draft or throws GenerationFailedAfterRetries.
