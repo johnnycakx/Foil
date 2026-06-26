@@ -82,10 +82,14 @@ export async function GET(request: Request): Promise<NextResponse> {
     now: new Date(),
   });
 
-  // Upsert one market_movers row per card with usable momentum (down/up/flat) so
-  // a card that stops moving updates to "flat" (the read filters to down/up +
-  // a 36h freshness window, so a flat or stale row never surfaces).
+  // Upsert one market_movers row per card with usable momentum (down/up/flat),
+  // then clear any row from a prior run (see the delete below). The read filters
+  // to down/up; the stale-clear guarantees no prior-run row (e.g. a pre-filter
+  // sub-$10 "down") can linger inside the 36h freshness window.
+  // ONE timestamp for the whole run so we can clear prior-run rows cleanly.
+  const runComputedAt = new Date().toISOString();
   let moversWritten = 0;
+  let staleCleared = 0;
   let moversError: string | null = null;
   if (result.results.length > 0) {
     const rows = result.results.map((m) => ({
@@ -99,12 +103,25 @@ export async function GET(request: Request): Promise<NextResponse> {
       avg30d: m.avg30d,
       sale_count: m.saleCount,
       matched_tier: "NEAR_MINT",
-      computed_at: new Date().toISOString(),
+      computed_at: runComputedAt,
     }));
     const admin = supabaseAdmin();
     const { error } = await admin.from("market_movers").upsert(rows, { onConflict: "card_slug" });
     if (error) moversError = error.message;
-    else moversWritten = rows.length;
+    else {
+      moversWritten = rows.length;
+      // Clear stale rows from PRIOR runs (ADR-070 fix). The upsert only touches
+      // cards this run still classifies as movers; a card it now reclassifies as
+      // immaterial (sub-$10) or thin keeps its OLD row otherwise — the bug where a
+      // pre-filter "$1.97 down 17%" row lingered after the filter shipped. Every
+      // row this run wrote shares runComputedAt, so anything older is a prior run.
+      const { error: delErr, count } = await admin
+        .from("market_movers")
+        .delete({ count: "exact" })
+        .lt("computed_at", runComputedAt);
+      if (delErr) moversError = delErr.message;
+      else staleCleared = count ?? 0;
+    }
   }
 
   // Append the daily snapshot time-series (idempotent per card per day).
@@ -137,6 +154,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     downCount: result.results.filter((m) => m.direction === "down").length,
     upCount: result.results.filter((m) => m.direction === "up").length,
     moversWritten,
+    staleCleared,
     snapshotsWritten,
     errorCount: result.errors.length,
     capHit: result.capHit,
