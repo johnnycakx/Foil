@@ -189,6 +189,30 @@ test("Site-wide: no 'Level-4 TCGplayer' / 'TCGplayer Verified Seller' jargon und
   assert.deepEqual(offenders, [], `seller-credential jargon found in: ${offenders.join(", ")}`);
 });
 
+test("lib/social: no 'Level 4' / 'Level-4' jargon anywhere — the X bot posts publicly (ADR-066)", () => {
+  // The daily X content bot (lib/social/*) generates posts that publish to X.
+  // The site-wide guard above only scans app/ + components/, so the bot's copy
+  // slipped through and shipped "Level-4 TCGplayer seller" (off the ADR-066
+  // standard — a bare "TCGplayer seller" is fine, the "Level-4" credential
+  // qualifier is not). This guard is STRICTER for lib/social: it fails on ANY
+  // "Level 4"/"Level-4" so a public post can never reintroduce the qualifier.
+  const exts = new Set([".ts", ".tsx"]);
+  const offenders: string[] = [];
+  function walk(dir: string) {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === "__tests__") continue;
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (exts.has(extname(entry.name))) {
+        if (/Level[\s-]?4\b/i.test(readFileSync(full, "utf8"))) offenders.push(full);
+      }
+    }
+  }
+  walk(join(ROOT, "lib", "social"));
+  assert.deepEqual(offenders, [], `'Level 4'/'Level-4' jargon found in: ${offenders.join(", ")}`);
+});
+
 test("Homepage: founder credit renders the headshot with descriptive alt text (homepage-v2, ADR-065)", () => {
   const src = readFile("app/(site)/page.tsx");
   // The founder presence is the trust signal that replaced the jargon badge —

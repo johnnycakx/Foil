@@ -52,7 +52,7 @@ export type GeneratedPost = {
 export type GenerateFn = (system: string, user: string) => Promise<string>;
 
 const SYSTEM = [
-  "You write a single X (Twitter) post for Foil, a Pokemon TCG deal-finder built by a Level-4 TCGplayer seller.",
+  "You write a single X (Twitter) post for Foil, a Pokemon TCG deal-finder built by a TCGplayer seller.",
   "Brand voice: calm, confident, concrete. Exact numbers only, never vague (no 'around', 'about', '~', 'roughly').",
   "HARD RULES: no em dash (use commas, colons, or periods). No hype words (no 'steal', 'must-buy', 'guaranteed', 'to the moon', 'insane', 'amazing deal'). No emoji. No exclamation marks.",
   "Any price or percentage you state must be followed by 'as of today' (prices move).",
@@ -105,7 +105,7 @@ export function buildUserPrompt(input: PostInput): string {
   }
   return [
     "ANGLE: educational / trust. No specific prices. Explain ONE differentiator in plain terms:",
-    "Foil matches like-for-like before calling anything a deal: same condition, and English-vs-Japanese matched via the listing's item specifics (a Japanese card is never compared to English sold prices). Built by a Level-4 TCGplayer seller.",
+    "Foil matches like-for-like before calling anything a deal: same condition, and English-vs-Japanese matched via the listing's item specifics (a Japanese card is never compared to English sold prices). Built by a TCGplayer seller.",
     `Link (end the post with this): ${link}`,
   ].join("\n");
 }
