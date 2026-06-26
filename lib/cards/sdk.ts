@@ -284,6 +284,20 @@ export async function getCardMetadata(input: GetCardMetadataInput): Promise<Card
   return parsed;
 }
 
+/**
+ * Baked-ONLY card metadata — the committed snapshot entry, no network call
+ * (ADR-070). The market-movers cron walks ~390 cards; doing a live
+ * pokemontcg.io fetch per card (with retry-on-5xx backoff when the SDK is flaky
+ * under load) blew the 300s function budget. The cron needs only display fields
+ * + the baked PokeTrace `variants`, all present in the snapshot, so it reads
+ * them here instead. Returns null when the id isn't baked (the caller falls back
+ * to the live `getCardMetadata` for that rare case). Synchronous, never throws.
+ */
+export function getBakedCardMetadata(id: string): CardMetadata | null {
+  if (!id) return null;
+  return BAKED.cards[id] ?? null;
+}
+
 type RawCard = {
   id?: string;
   name?: string;

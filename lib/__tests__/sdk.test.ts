@@ -6,7 +6,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { getAllSets, getCardMetadata, getSetMetadata } from "../cards/sdk.ts";
+import { getAllSets, getCardMetadata, getSetMetadata, getBakedCardMetadata } from "../cards/sdk.ts";
 
 type CapturedRequest = { url: string; init: RequestInit };
 
@@ -189,4 +189,19 @@ test("getAllSets soft-fails to [] when fetch throws", async () => {
   }) as unknown as typeof fetch;
   const out = await getAllSets({ fetchImpl });
   assert.deepEqual(out, []);
+});
+
+// getBakedCardMetadata (ADR-070): the market-movers cron's network-free metadata
+// path. A baked card carries display fields + PokeTrace variants; an unknown id
+// is null (caller falls back to the live fetch). Reads the committed snapshot.
+test("getBakedCardMetadata returns a baked card with variants, null for unknown", () => {
+  const charizard = getBakedCardMetadata("base1-4");
+  assert.ok(charizard, "base1-4 should be in the baked snapshot");
+  assert.equal(charizard!.name, "Charizard");
+  assert.ok((charizard!.variants?.length ?? 0) > 0, "baked card should carry PokeTrace variants");
+  // A modern card from the ADR-070 expansion is baked too.
+  const modern = getBakedCardMetadata("sv8pt5-161");
+  assert.ok(modern, "a modern mover-set card should be baked");
+  assert.equal(getBakedCardMetadata("totally-not-a-real-id-999"), null);
+  assert.equal(getBakedCardMetadata(""), null);
 });

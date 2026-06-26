@@ -8,6 +8,14 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-25 (later 3) — Fix: movers cron timed out on the expanded universe (live SDK calls) → baked-only metadata
+
+**Context: triggered the prod movers cron after deploying the modern-set expansion (ADR-070); it timed out (~300s) and did NOT populate** — `market_movers` stayed on the 19:46 curated-only run (192 rows, 0 modern). **Root cause:** the cron called `getCardMetadata` (a LIVE pokemontcg.io fetch per card, with retry-on-5xx backoff) for all ~390 universe cards; under load the SDK flakes + the retries blew the 300s Vercel function budget. My ADR-070 runtime estimate (~190s) was measured by `preview-movers.ts`, which reads baked variants directly and so never paid the SDK latency — a measurement gap.
+
+- **Fix:** added `getBakedCardMetadata(id)` to `lib/cards/sdk.ts` (synchronous read of the committed snapshot — display fields + PokeTrace variants, no network) and switched the movers cron to `getBakedCardMetadata(id) ?? (await getCardMetadata({id}))` (live fetch only for the rare id absent from the snapshot). The run is now PokeTrace-rate-bound (~190s for ~533 calls at 28/10s), comfortably under 300s. The cron's data needs (name/setName/image/variants) are all baked, so nothing is lost.
+- **Tests:** `sdk.test.ts` pins `getBakedCardMetadata` returns a baked card with variants (vintage + a modern mover-set card) and null for unknown/empty ids.
+- **Gates:** tsc clean; `npm test` (see closure); build. **This is a follow-up fix to be committed + pushed so the deploy can run the cron.** After deploy, re-trigger `/api/cron/market-movers` and confirm `market_movers` shows modern rows + a fresh `computed_at`.
+
 ## 2026-06-25 (later 2) — Modern-set catalog expansion + the movers volume/materiality filter (built, pending John deploy)
 
 **Goal: grow the catalog into modern high-demand SV/Mega-era sets (the eBay-quota gate is moot for the PokeTrace-only movers signal) and make "good buys" surface liquid, material cards instead of vintage bulk. Verify exact SDK set IDs, add a volume/materiality filter, scope the movers universe, confirm affiliate tagging, report a before/after. Commit, don't push.** ([ADR-070](DECISIONS.md#adr-070--modern-set-catalog-expansion-unblocked-by-the-poketrace-only-movers-signal--the-volumematerality-filter); implements STRATEGY-DATA-INSIGHT-ENGINE.md catalog coverage.)

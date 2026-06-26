@@ -21,7 +21,7 @@
 // public via the /api/cron prefix and does its own bearer gate.
 
 import { NextResponse } from "next/server";
-import { getCardMetadata } from "@/lib/cards/sdk";
+import { getCardMetadata, getBakedCardMetadata } from "@/lib/cards/sdk";
 import { getSoldHistory } from "@/lib/poketrace/by-uuid";
 import { CARD_CATALOG, cardTier } from "@/lib/cards/catalog";
 import {
@@ -70,8 +70,13 @@ export async function GET(request: Request): Promise<NextResponse> {
   });
 
   const result = await refreshMarketMovers({
+    // Baked-only metadata (ADR-070): no live pokemontcg.io fetch per card — the
+    // snapshot carries the display fields + PokeTrace variants the momentum needs.
+    // ~390 live SDK calls (with retry backoff under load) blew the 300s budget;
+    // baked reads are synchronous, leaving the run PokeTrace-rate-bound (~190s).
+    // Fall back to the live fetch only for the rare id absent from the snapshot.
+    getCardMetadata: async ({ id }) => getBakedCardMetadata(id) ?? (await getCardMetadata({ id })),
     entries,
-    getCardMetadata,
     getSoldHistory: (uuid) => getSoldHistory(uuid),
     acquire: limiter.acquire,
     now: new Date(),
