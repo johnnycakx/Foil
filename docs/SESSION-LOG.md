@@ -8,6 +8,14 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-25 (later 4) — docs: commit the Cowork auto-context + self-learning-loop setup
+
+**Goal: commit the Cowork session-bootstrap setup, docs only — the new `docs/COWORK-CONTEXT.md`, the Cowork-bootstrap + close-the-loop block at the top of `CLAUDE.md`, and `docs/NEXT-SESSION-BRIEF.md`. Conventional `docs:` commit, push, confirm git clean + origin synced.**
+
+- **P0 premise check.** Of the three named items, only two carried pending changes: `CLAUDE.md` was modified (the new `▶ Cowork session bootstrap` block wiring the read-at-start / close-the-loop-at-session-end contract) and `docs/COWORK-CONTEXT.md` was untracked. `docs/NEXT-SESSION-BRIEF.md` is already tracked and unchanged in the working tree — committed in a prior session, so it's a no-op here (the file is already in the repo as the goal intends, nothing to re-stage).
+- **Scope discipline (docs only).** Staged exactly the docs work; left untouched the unrelated pre-existing WIP in the tree (`.claude/settings.local.json`, the `public/vending/*.webp` re-compressed tower images + new wall/gbp assets, `docs/newsletter-drafts/good-buys-this-week-2026-06-25.md`). Those belong to other in-flight work, not this goal — so after this commit the tree is clean of the Cowork docs but those unrelated WIP files remain by design.
+- **Result:** `docs:` commit pushed to `origin/main` (branch synced). The Cowork bootstrap + close-the-loop contract is now durable in the repo, so any future Cowork session reads `COWORK-CONTEXT.md` + `NEXT-SESSION-BRIEF.md` at start and rewrites the brief at session end.
+
 ## 2026-06-25 (later 3) — Fix: movers cron timed out on the expanded universe (live SDK calls) → baked-only metadata
 
 **Context: triggered the prod movers cron after deploying the modern-set expansion (ADR-070); it timed out (~300s) and did NOT populate** — `market_movers` stayed on the 19:46 curated-only run (192 rows, 0 modern). **Root cause:** the cron called `getCardMetadata` (a LIVE pokemontcg.io fetch per card, with retry-on-5xx backoff) for all ~390 universe cards; under load the SDK flakes + the retries blew the 300s Vercel function budget. My ADR-070 runtime estimate (~190s) was measured by `preview-movers.ts`, which reads baked variants directly and so never paid the SDK latency — a measurement gap.
