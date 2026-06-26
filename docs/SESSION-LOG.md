@@ -8,6 +8,16 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-26 (later 5) — Welcome-email PDF repoint + X content-bot credential setup + approval-gate plan
+
+**Cowork session (Beehiiv API + planning + docs; the code landed via Claude Code goals/prompts).**
+
+- **Welcome email repointed to the live PDF.** After the cheat-sheet-flow-fix goal deployed (PDF live in prod, verified HTTP 200), changed the welcome automation's button to "Download the cheat sheet (PDF)" → `https://foiltcg.com/free/foil-pokemon-card-pricing-cheat-sheet.pdf` (ungated) and copy to "yours to keep." John published. The re-gate contradiction is closed end-to-end.
+- **X bot credentials wired (still dry-run).** John created the X app under **@Johnnycakx** (pay-per-use; $25 credits, $100/cycle spend cap, auto-recharge on), set User-auth Read+Write, generated OAuth 1.0a keys. Claude Code put `X_API_KEY/SECRET/ACCESS_TOKEN/ACCESS_SECRET` in Vercel prod + `.env.local`; dry-run smoke test green (educational angle rendered). **Decision:** launch from @Johnnycakx now, rename to @FoilTCG later (rename keeps tokens). Research confirmed (June 2026): X is pay-per-use ($0.015/post, $0.20 with link), threads are cheap (~$0.28), and the X Activity API can pipe mentions/replies to Discord (auto-engagement still ToS-barred) — captured for a future radar goal.
+- **"Level-4 TCGplayer seller" dropped from the bot copy** (`lib/social/post-text.ts` ×2), keeping "TCGplayer seller" — the unexplained tier number was the jargon, not the credential. Jargon guard extended to scan `lib/social` (commit `3ff6d53`). This was the one ADR-066 instance that escaped the original sweep (guard only scanned `app/`+`components/`).
+- **Approval-gate planned (`docs/goals/x-approval-gate.md`, gitignored scratch).** John wants auto-draft → he approves in Discord → it posts (verify without writing/posting himself); current bot is binary (dry-run vs auto-post). Goal adds `X_BOT_MODE` approval mode hosted by the Foil HQ Discord bot. Launch thread ready at `docs/social/x-launch-2026-06-26.md`.
+- **Docs:** rewrote `NEXT-SESSION-BRIEF.md` (current state), added a deliverability durable lesson to `COWORK-CONTEXT.md` (reputation-not-settings; Beehiiv address/sender are dashboard-only; send-test is cached). Committed with this entry.
+
 ## 2026-06-26 (later 4) — Cheat-sheet lead-magnet flow fix: ship the real PDF + stop re-gating subscribers
 
 **Goal: execute `docs/goals/cheat-sheet-flow-fix.md` — wire in the already-built PDF asset and make sure already-subscribed people are never asked to subscribe again (the contradiction John caught: the welcome email links to the gate, which re-asks for their email). Commit, do not push.** (Claude Code; the PDF was pre-built by Cowork — wired in, not rebuilt.)

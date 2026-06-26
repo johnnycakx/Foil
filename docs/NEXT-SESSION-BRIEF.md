@@ -1,40 +1,36 @@
-# Next-Session Brief — prepared 2026-06-26 (Beehiiv foundation rebuild session)
+# Next-Session Brief — prepared 2026-06-26 (deliverability + cheat-sheet done; X bot mid-setup)
 
-> Read this first. Where things stand + the next plan. (Written by Cowork; commits run on John's machine — the sandbox can't commit cleanly.)
+> Read this first. Where things stand + the next plan. (Written by Cowork; commits run on John's machine — the sandbox can't commit cleanly: it shows whole-repo line-ending churn.)
 
-## The big correction this session: the newsletter "list" was a mirage
+## State: foundation + delivery are done. We are mid-way through standing up autonomous X.
 
-The Beehiiv account was a **repurposed "Rise & Close" SDR newsletter** — renamed to Foil, but everything underneath was still the old tech-sales product. Pulled the real numbers: the "18 subscribers" were **0 real Pokémon subscribers** — 13 legacy SDR humans (+ friends/family) and 5 of John's own test/bot accounts. The earlier plan ("send issue #1 first — the finish line") was built on a false premise: **there was no audience to send to, and sending to the SDR crowd would have risked spam complaints on a virgin sending reputation.**
+The newsletter machine is built, branded, compliant, conversion-ready, and the lead magnet now actually delivers. The list is still ~1 (John's seed). Everything left is distribution, and the active workstream is the X content bot.
 
-**Corrected sequence (this overrides the old brief): clean the account → brand the emails → GROW the list → THEN issue #1.** Sending issue #1 to ~0 people was never the finish line; the finish line is the first cohort of real, engaged Pokémon subscribers from a repeatable channel.
+### Shipped this session (2026-06-26)
+- **Email deliverability hardened.** Diagnosed spam-foldering as virgin-domain reputation (DMARC `p=none` present, SPF/DKIM Live), not auth. Set the CAN-SPAM footer address (`2710 Southern Hills Ct, Fairfield, CA 94534`), sender now shows "John at Foil", reply-to is John's Gmail, gold email frame lightened.
+- **Cheat-sheet lead-magnet loop fixed end-to-end.** Built a branded 2-page PDF (`public/free/foil-pokemon-card-pricing-cheat-sheet.pdf`, live in prod). The `/free` gate stays for cold SEO traffic; subscribers get an ungated "Download the PDF" path + a download button on unlock. The **welcome email button now links straight to the PDF** (repointed via Beehiiv + published) — no more "subscribe again" contradiction.
+- **`/newsletter` conversion-ready** (earlier today): cadence copy fixed, fabricated "Recent issues" replaced with the real `market_movers` snippet, Twitter card added. Live.
+- **X bot credentials wired.** OAuth 1.0a keys for **@Johnnycakx** (John will rename to @FoilTCG later) in Vercel prod + `.env.local`, encrypted. Dry-run smoke test passed; voice is good (deadpan, teaches). **"Level-4 TCGplayer seller" jargon dropped** from the bot's `post-text.ts` (kept "TCGplayer seller") + the jargon guard extended to scan `lib/social` (commit `3ff6d53`).
 
-## What shipped this session (Beehiiv, via the MCP API + Chrome)
+## The next build: X "approval gate" (then launch)
+The X bot today is binary: dry-run (drafts to Discord, never posts) or `X_BOT_LIVE=true` (auto-posts, no review). John wants **auto-draft → he approves in Discord → it posts** (verify without writing/posting himself). That's a new mode.
 
-- **Upgraded Beehiiv to Scale** (John's call; ~$43/mo annual). Unlocked MCP **write** access + automations + surveys + webhooks. Caveat learned: destructive ops (delete subscriber/post/custom-field) are NOT in the MCP toolset and the sandbox can't reach Beehiiv's REST API, so those were done by driving the dashboard over Chrome.
-- **Subscriber list cleaned to 1:** deleted 17 (5 test/bots + 12 legacy SDR/family), **kept only `john.c.craig24@gmail.com`** as a seed. Verified via API + dashboard.
-- **8 Rise & Close posts deleted** — `newsletter.foiltcg.com` no longer serves tech-sales content.
-- **3 Pokémon onboarding custom fields created:** Collector type, Monthly budget, Collecting focus (kept First Name). The 4 old sales fields wouldn't delete (Beehiiv backend hold) — harmless clutter, left in place.
-- **Onboarding survey BUILT + PUBLISHED (live):** "Tell us what you collect" — subscribe-slot, shows right after signup, 3 optional multiple-choice Qs feeding the 3 new fields. `newsletter.foiltcg.com/forms/1b5faea0-44c3-427e-be43-3a4a62ae0af1`.
-- **Welcome automation BUILT + PUBLISHED (LIVE):** trigger = signup → immediate welcome email (founder voice, cheat-sheet CTA, reply prompt). `aut_ffd18eec-6e64-4af3-bf43-42f241f52207`. Fires on every new signup now.
-- **Branding done:** publication logo + **email header logo** both swapped to FoilTCG (John, in the template Style editor); email outside-background set to gold (`#E6CA09`), button navy. Sending domain `mail.foiltcg.com` **verified/Live** (SPF/DKIM in place).
+1. **NEXT GOAL: `docs/goals/x-approval-gate.md`** — adds `X_BOT_MODE` (dry_run/approval/live); in approval mode the daily cron drafts to `#content-engine` with a one-tap approve → posts via the existing `lib/social/x-client.ts`; owner-only, expiry auto-skip, idempotent. One-liner: `/goal Read docs/goals/x-approval-gate.md and execute it. Commit, do not push.`
+2. **Before/while building:** the daily cron (14:00 UTC) drops a dry-run draft into `#content-engine` — review a few to confirm the voice before approval/live.
+3. **Launch thread** (one-time, manual founder post) is ready in `docs/social/x-launch-2026-06-26.md` (real movers, deadpan voice, link-last). The bot carries the daily cadence after.
+4. **Verify creds against the X API** (read-only `GET /2/users/me`) before any live post — not yet done.
 
-## Beehiiv foundation is COMPLETE. The job now is GROWTH.
-
-Clean Foil-branded account, onboarding survey live, welcome email firing — and an audience of **one (John's seed)**. Nothing left to configure; do NOT keep polishing Beehiiv. The next session's work is filling the empty list:
-
-1. **Stand up the publish→distribute loop.** John's **X founder voice** (the named biggest unfair advantage, currently idle) + the live SEO pillars/card pages + the `/free` cheat-sheet lead magnet, all funneling to `/newsletter`. Issue #1 = a *launch event* (published web post + X thread driving signups), not an email blast to a list of one.
-2. **First concrete moves to choose from:** (a) activate John's X cadence now — post 2-3 real movers from `/deals` with a subscribe + cheat-sheet CTA; (b) regenerate the movers digest and publish issue #1 as a web post to anchor the launch; (c) a small Meta test to `/newsletter` once the organic loop is proven. Recommended order: a → b → c (organic + free first; pay only once it converts).
-3. **Confirm `/newsletter` is conversion-ready** (live sample/value, clear ask) before driving traffic to it — every gram of signup friction is disproportionately costly (STRATEGY-AUDIENCE-MOAT funnel).
+## John's job once live
+Following relevant Pokémon accounts + replying to people (manual, ToS-safe, the real growth lever). The bot handles daily posting; auto-replies/likes/follows are X-ToS-prohibited.
 
 ## Lower-priority / cosmetic leftovers
-- Old `riseandclose.com` subscribe/signup form still exists and **pins 3 of the 4 sales custom fields** (API delete returned 400 "being used in a live form"; 1 field — "Which sales topics…" — was deleted via API). All invisible to subscribers. To clear: detach the 3 from that form (or delete the old form) in the dashboard, then delete. Cosmetic, ignore unless tidying.
-- Old default thumbnail (B&W R&C) in General Info + R&C-era publication tags (News/Popular Culture) — swap when convenient.
+- Beehiiv **Website SEO title** still reads "Rise & Close | Expert SDR Training…" (separate from General Info, which is correctly "Foil"). Cosmetic. Also R&C-era publication tags (News/Popular Culture) + the B&W default thumbnail in General Info.
+- The Beehiiv **Preset Welcome Email** still holds R&C content but is OFF (doesn't send) — leave off.
+- Old `riseandclose.com` form still pins 3 sales custom fields (API delete 400s). Invisible to subscribers.
+- X handle rename @Johnnycakx → @FoilTCG when ready (keeps tokens).
 
-## Standing infra / ops (unchanged)
-- ⏰ **PokeTrace re-subscribe before ~July 15 — LOAD-BEARING.** The whole insight engine (movers, /deals, the digest) runs on it. Reminder July 13.
-- Dead Supabase PAT (401) — regenerate at supabase.com/dashboard/account/tokens → `.env.local` + `gh secret set`.
-- CDTFA seller's permit — paused; CA entity # B20260280279 in hand.
-- `AUTO_PUBLISH_WEEKLY_POSTS` is intentionally ON — don't "fix" to false.
-
-## Strategic note (for the upgrade decision record)
-Beehiiv **Scale** is justified *because John committed to actively running the newsletter* (automations + survey + segmentation are the ongoing value). It was NOT worth it purely for the one-time cleanup. The fully-automated "send the newsletter via API" dream is **Enterprise-only** (Send API), so manual draft-in-UI → send stays the path for a long time. If recurring cost ever feels unjustified, Scale is downgradable.
+## Standing infra / ops
+- ⏰ **PokeTrace re-subscribe before ~July 15 — LOAD-BEARING.** Movers, `/deals`, the digest, and the `/newsletter` real-data snippet all run on it. Reminder July 13.
+- X spend cap set ($100/cycle) + auto-recharge on; ~$8/mo realistic at one thread/day.
+- Dead Supabase PAT (401) — regenerate at supabase.com/dashboard/account/tokens.
+- `AUTO_PUBLISH_WEEKLY_POSTS` intentionally ON — don't "fix" to false.
