@@ -8,6 +8,14 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-27 (later 5) — Goal-runner maiden run: two bugs found + fixed (env-isolation + decision false-positive)
+
+**The supervised first run (`npm run goals:watch -- --once --halt-on-block` on the `00-runner-smoke-test.md` spec) did its job — the plumbing + safety all worked (queue pickup → nested headless agent → gates → BLOCKED → discarded the agent's work → result file → halt, NEVER committed or pushed) — but the BLOCK was a false negative from two runner bugs, now fixed.** (Claude Code; fixes ADR-075.)
+
+- **Bug A (the cause — environment leak):** the runner loaded `.env.local` into `process.env`, and the spawned `npm test` gate **inherited** it — `BEEHIIV_PUBLICATION_ID` became the real `pub_8bc42240…`, so the hermetic `beehiiv.test.ts:96` (asserts the `pub_test` default) failed and 8 creds-gated tests that normally skip ran (skips 18→10). Canonical `npm test` from a clean shell is green (1069/0/18). **Fix:** parse `.env.local` into a LOCAL map (`loadDotEnv` + `cfg()`) used only for the runner's own config (webhook + `GOAL_RUNNER_*`); never mutate `process.env`, so gates/agent/git inherit the canonical environment. The runner's gate suite now reproduces the clean-shell result.
+- **Bug B (false-positive decision):** `extractDecisionNeeded` matched the phrase anywhere, so the agent's negated/echoed mention ("…`DECISION NEEDED:`…nothing irreversible was required") produced a spurious DECISION block in the result. **Fix:** anchor to line-start (after markdown bullets), reject backtick/quote-echo remainders + too-short captures. New test cases pin the maiden-run false positives → null and a genuine bullet-prefixed block → detected.
+- **Verification:** tsc clean; goal-runner core tests 16/16 (incl. the new Bug B cases); full `npm test` 1087/1069/0/18 from a clean shell — the canonical result the runner's gate must now reproduce. The fix commit lands FIRST because the runner requires a clean tree to run; the maiden smoke spec is then re-run through the fixed runner to confirm the test gate passes end-to-end (result captured in `_results/runner-smoke-test.md`; the throwaway smoke commit is dropped so `main` keeps only the fix). Conventional `fix:` commit, **not pushed**. Pre-existing WIP left untouched.
+
 ## 2026-06-27 (later 4) — Autonomous goal-runner: headless Claude Code, queue-fed, commit-never-push
 
 **Goal: execute `docs/goals/autonomous-goal-runner.md` — let Cowork feed work to Claude Code while John is away. One process drains a queue of pre-scoped specs, runs each headlessly, enforces gates, COMMITS but NEVER PUSHES, writes a result, pings Discord. Commit, do not push.** (Claude Code; new ADR-075, extends ADR-009.)

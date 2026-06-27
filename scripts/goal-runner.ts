@@ -45,30 +45,42 @@ const DONE = path.join(QUEUE, "_done");
 const RESULTS = path.join(REPO, "docs", "goals", "_results");
 const WIN = process.platform === "win32";
 
-// Load .env.local FIRST so a bare `npm run goals:watch` picks up the Discord
-// webhook + any GOAL_RUNNER_* config from it (existing env wins).
-(() => {
-  const envPath = path.join(REPO, ".env.local");
-  if (!fs.existsSync(envPath)) return;
-  for (const line of fs.readFileSync(envPath, "utf8").split(/\r?\n/)) {
+// Parse .env.local into a LOCAL map for the runner's OWN config only (Discord
+// webhook + GOAL_RUNNER_*). CRITICAL: we do NOT mutate process.env — if we did,
+// the spawned gate subprocesses (npm test/build) would inherit .env.local and
+// run in a DIFFERENT environment than a clean `npm test` shell, changing which
+// env-coupled tests run and falsely BLOCKing healthy goals (the maiden run hit
+// exactly this: BEEHIIV_PUBLICATION_ID leaked → a hermetic test failed). Gates,
+// the agent, and git all inherit the canonical process.env, nothing more.
+function loadDotEnv(file: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!fs.existsSync(file)) return out;
+  for (const line of fs.readFileSync(file, "utf8").split(/\r?\n/)) {
     const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+    if (m) out[m[1]] = m[2].replace(/^["']|["']$/g, "");
   }
-})();
+  return out;
+}
+const FILE_ENV = loadDotEnv(path.join(REPO, ".env.local"));
+/** Runner config: a live env var wins, else the .env.local value (never injected
+ *  into process.env, so it can't reach gate/agent subprocesses). */
+function cfg(name: string): string | undefined {
+  return process.env[name] ?? FILE_ENV[name];
+}
 
 const FLAGS = new Set(process.argv.slice(2));
 const ONCE = FLAGS.has("--once");
 const HALT_ON_BLOCK = FLAGS.has("--halt-on-block");
 
-const MAX = Number(process.env.GOAL_RUNNER_MAX ?? "0") || 0; // 0 = unlimited
-const POLL_MS = Number(process.env.GOAL_RUNNER_POLL_MS ?? "10000") || 10000;
-const GATE_TIMEOUT_MS = Number(process.env.GOAL_RUNNER_GATE_TIMEOUT_MS ?? "900000") || 900000;
-const AGENT_TIMEOUT_MS = Number(process.env.GOAL_RUNNER_AGENT_TIMEOUT_MS ?? "2400000") || 2400000;
-const CLAUDE_BIN = process.env.GOAL_RUNNER_CLAUDE_BIN ?? "claude";
-const CLAUDE_MODEL = process.env.GOAL_RUNNER_MODEL ?? "";
-const PERMISSION = (process.env.GOAL_RUNNER_PERMISSION_MODE ?? "skip").toLowerCase();
-const GATES = (process.env.GOAL_RUNNER_GATES ?? "tsc,test,build,design:lint").split(",").map((g) => g.trim()).filter(Boolean);
-const webhook = process.env.GOAL_RUNNER_WEBHOOK_URL ?? process.env.DISCORD_WEBHOOK_CONTENT_ENGINE ?? "";
+const MAX = Number(cfg("GOAL_RUNNER_MAX") ?? "0") || 0; // 0 = unlimited
+const POLL_MS = Number(cfg("GOAL_RUNNER_POLL_MS") ?? "10000") || 10000;
+const GATE_TIMEOUT_MS = Number(cfg("GOAL_RUNNER_GATE_TIMEOUT_MS") ?? "900000") || 900000;
+const AGENT_TIMEOUT_MS = Number(cfg("GOAL_RUNNER_AGENT_TIMEOUT_MS") ?? "2400000") || 2400000;
+const CLAUDE_BIN = cfg("GOAL_RUNNER_CLAUDE_BIN") ?? "claude";
+const CLAUDE_MODEL = cfg("GOAL_RUNNER_MODEL") ?? "";
+const PERMISSION = (cfg("GOAL_RUNNER_PERMISSION_MODE") ?? "skip").toLowerCase();
+const GATES = (cfg("GOAL_RUNNER_GATES") ?? "tsc,test,build,design:lint").split(",").map((g) => g.trim()).filter(Boolean);
+const webhook = cfg("GOAL_RUNNER_WEBHOOK_URL") ?? cfg("DISCORD_WEBHOOK_CONTENT_ENGINE") ?? "";
 
 // The preamble prepended to every goal spec — the autonomy contract for the
 // headless agent. Kept in the prompt (not --append-system-prompt) so the runner

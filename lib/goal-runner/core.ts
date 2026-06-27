@@ -144,15 +144,29 @@ export function buildCommitMessage(name: string, type: CommitType): string {
 
 // --- decision / output extraction ------------------------------------------
 
-/** Pull a `DECISION NEEDED` block out of the agent's final output, if present.
- *  The agent is instructed to emit this verbatim when it hits a push/deploy/
- *  migration/irreversible fork it must not take. Returns the block text or null. */
+/**
+ * Pull a real `DECISION NEEDED` block out of the agent's final output. The agent
+ * is instructed to print a LINE that BEGINS with `DECISION NEEDED:` when it hits
+ * a push/deploy/migration/irreversible fork. Anchored to line-start (after
+ * markdown bullets/quotes) so a mid-line MENTION of the phrase — e.g. echoing the
+ * instruction ("…begins with `DECISION NEEDED:`") or negating it ("no DECISION
+ * NEEDED — nothing irreversible was required") — does NOT false-positive (the
+ * maiden run hit exactly that). The captured remainder must be real prose, not a
+ * quote/backtick fragment.
+ */
 export function extractDecisionNeeded(agentOutput: string): string | null {
   if (!agentOutput) return null;
-  const m = agentOutput.match(/DECISION NEEDED[:\s-]*([\s\S]{0,800})/i);
-  if (!m) return null;
-  const block = m[1].trim().split(/\n\s*\n/)[0].trim();
-  return block ? `DECISION NEEDED: ${block}` : "DECISION NEEDED (see goal output)";
+  for (const raw of agentOutput.split(/\r?\n/)) {
+    const line = raw.trim().replace(/^[>*\-\s]+/, ""); // strip leading bullets/quote markers
+    const m = line.match(/^DECISION NEEDED[:\-\s]+(.+)$/i);
+    if (!m) continue; // not at line start (a mid-line mention/echo) → ignore
+    const rest = m[1].trim();
+    // Reject an echo of the literal instruction token (`DECISION NEEDED:` in
+    // backticks/quotes) and any too-short / empty remainder.
+    if (/^[`'"]/.test(rest) || rest.length < 4) continue;
+    return `DECISION NEEDED: ${rest}`.slice(0, 820);
+  }
+  return null;
 }
 
 export function truncate(s: string, max = 1500): string {

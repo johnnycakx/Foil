@@ -114,13 +114,20 @@ test("buildCommitMessage is conventional, co-authored, and never mentions push",
 
 // --- decision extraction ---
 
-test("extractDecisionNeeded pulls the block, returns null when absent", () => {
+test("extractDecisionNeeded pulls a real block but ignores mid-line mentions / negations", () => {
   const out = "Did the safe parts.\n\nDECISION NEEDED: this requires `supabase db push` to prod, which I must not run.\n\nDone.";
   const d = extractDecisionNeeded(out);
   assert.ok(d && d.startsWith("DECISION NEEDED:"));
   assert.match(d!, /supabase db push/);
+  // a leading markdown bullet is fine.
+  assert.match(extractDecisionNeeded("- DECISION NEEDED: needs a prod migration applied")!, /prod migration/);
+  // none / empty.
   assert.equal(extractDecisionNeeded("all clean, gates green"), null);
   assert.equal(extractDecisionNeeded(""), null);
+  // the maiden-run FALSE POSITIVES that must now return null:
+  assert.equal(extractDecisionNeeded("I checked whether a `DECISION NEEDED:` line was warranted; nothing was."), null, "mid-line echo of the instruction");
+  assert.equal(extractDecisionNeeded("No DECISION NEEDED — the task was docs-only."), null, "line-start negation");
+  assert.equal(extractDecisionNeeded("DECISION NEEDED: ` — nothing irreversible or outward-facing was required"), null, "a backtick-quote remainder is an echo, not a real block");
 });
 
 // --- result-file + Discord shaping ---
