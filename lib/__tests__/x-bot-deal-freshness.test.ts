@@ -21,7 +21,7 @@ function mover(over: Partial<MoverRow> = {}): MoverRow {
     cardSlug: "base1-4-charizard",
     cardName: "Charizard",
     setName: "Base Set",
-    imageUrl: "",
+    imageUrl: "https://img.example/charizard.png",
     direction: "down",
     momentumPct: -12.3,
     avg7d: 61.4,
@@ -48,6 +48,7 @@ test("freshDeals: a fresh down-mover maps to DealData with the movers fields", (
     matchedTier: "NEAR_MINT",
     saleCount: 88,
     computedAt: new Date(NOW - 60 * 60 * 1000).toISOString(),
+    imageUrl: "https://img.example/charizard.png",
   });
 });
 

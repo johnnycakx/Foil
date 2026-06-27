@@ -8,8 +8,8 @@ import { buildUserPrompt, generatePostText, type DealData, type SpotlightData, t
 import { runXBot, type XBotDeps } from "../social/bot.ts";
 import { postToX } from "../social/x-client.ts";
 
-const DEAL: DealData = { cardName: "Jolteon VMAX", setName: "Evolving Skies", slug: "swsh7-51-jolteon-vmax", deltaPct: -29.8, soldReference: 11.4, matchedTier: "NEAR_MINT", saleCount: 42, computedAt: "2026-06-08T13:00:00Z" };
-const SPOT: SpotlightData = { cardName: "Charizard", setName: "Base Set", slug: "base1-4-charizard", soldReference: 350, sampleSize: 168 };
+const DEAL: DealData = { cardName: "Jolteon VMAX", setName: "Evolving Skies", slug: "swsh7-51-jolteon-vmax", deltaPct: -29.8, soldReference: 11.4, matchedTier: "NEAR_MINT", saleCount: 42, computedAt: "2026-06-08T13:00:00Z", imageUrl: "https://img.example/jolteon.png" };
+const SPOT: SpotlightData = { cardName: "Charizard", setName: "Base Set", slug: "base1-4-charizard", soldReference: 350, sampleSize: 168, imageUrl: "https://img.example/charizard.png" };
 
 function baseDeps(over: Partial<XBotDeps> = {}): XBotDeps {
   return {
@@ -87,6 +87,30 @@ test("a render failure does not block the post (image is best-effort)", async ()
   let posted = false;
   await runXBot(baseDeps({ mode: "live", renderImage: async () => { throw new Error("satori boom"); }, post: async ({ imagePng }) => { posted = imagePng === null; return { ok: true, postId: "1" }; } }));
   assert.equal(posted, true, "post still goes out with null image");
+});
+
+// --- forceAngle (dev/preview override) ---
+
+test("forceAngle overrides the rotation when the forced angle has data", async () => {
+  let seen = "";
+  await runXBot(baseDeps({
+    mode: "live",
+    forceAngle: "deal_of_day",
+    generateText: async (input) => { seen = input.angle; return { text: "x https://foiltcg.com/deals", angle: input.angle, link: "https://foiltcg.com/deals", attempts: 1 }; },
+  }));
+  assert.equal(seen, "deal_of_day");
+});
+
+test("forceAngle is IGNORED when its data is absent (never a contentless post)", async () => {
+  let seen = "";
+  await runXBot(baseDeps({
+    mode: "live",
+    forceAngle: "deal_of_day",
+    getDeals: async () => [],
+    getSpotlight: async () => null,
+    generateText: async (input) => { seen = input.angle; return { text: "x https://foiltcg.com/deals", angle: input.angle, link: "https://foiltcg.com/deals", attempts: 1 }; },
+  }));
+  assert.notEqual(seen, "deal_of_day", "no deals → the deal force is dropped, not rendered empty");
 });
 
 // --- voice gate (Gates 12/13) ---

@@ -34,6 +34,10 @@ export type DealData = {
   /** ISO computed-at of the source mover row — drives the freshness guard so a
    *  stale board can never produce a deal post. */
   computedAt: string;
+  /** The card's hi-res art URL (for the card-hero image + the board thumbnail).
+   *  Empty when no art is on file — the renderer then falls back, never an
+   *  artless hero. */
+  imageUrl: string;
 };
 export type SpotlightData = {
   cardName: string;
@@ -42,12 +46,15 @@ export type SpotlightData = {
   /** PokeTrace recent sold average (non-eBay, R-008-safe to show). */
   soldReference: number;
   sampleSize: number;
+  /** The card's hi-res art URL for the card-hero image (empty → fall back). */
+  imageUrl: string;
 };
 
 export type PostInput =
   | { angle: "deal_of_day"; date: string; deal: DealData }
   | { angle: "price_spotlight"; date: string; spotlight: SpotlightData }
-  | { angle: "educational"; date: string };
+  | { angle: "educational"; date: string }
+  | { angle: "weekly_board"; date: string; deals: DealData[] };
 
 export type GeneratedPost = {
   text: string;
@@ -84,7 +91,7 @@ function humanTier(t: string | null): string {
 export function linkFor(input: PostInput): string {
   if (input.angle === "deal_of_day") return `${SITE}/cards/${input.deal.slug}`;
   if (input.angle === "price_spotlight") return `${SITE}/cards/${input.spotlight.slug}`;
-  return `${SITE}/deals`;
+  return `${SITE}/deals`; // educational + weekly_board point at the board
 }
 
 /** Pure: the per-angle instruction + the real figures the model must use verbatim. */
@@ -109,6 +116,15 @@ export function buildUserPrompt(input: PostInput): string {
       `- Card: ${s.cardName} (${s.setName})`,
       `- recent sold around ${usd(s.soldReference)} across ${s.sampleSize} sales (as of today)`,
       "Position Foil as the fast way to see any card's real price. No deal claim, just the number + the utility.",
+      `Link (end the post with this): ${link}`,
+    ].join("\n");
+  }
+  if (input.angle === "weekly_board") {
+    const top = input.deals.slice(0, 3);
+    return [
+      "ANGLE: weekly good-buys digest. A short roundup of cards trading below their OWN 30-day sold average this week (aggregates, not single listings), with these EXACT cards + figures:",
+      ...top.map((d) => `- ${d.cardName} (${d.setName}): Near Mint ${below(d)}% below its 30-day average`),
+      "One tight line naming a couple of them, framed as candidates worth a look not guarantees, then point readers to the full board. Do not invent any card or number not listed above.",
       `Link (end the post with this): ${link}`,
     ].join("\n");
   }

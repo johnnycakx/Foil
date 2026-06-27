@@ -15,9 +15,16 @@
 // BELOW deals, the caller falls back to the next angle (see bot.ts) — the
 // rotation picks the *intended* angle; availability is resolved downstream.
 
-export type PostAngle = "deal_of_day" | "price_spotlight" | "educational";
+export type PostAngle = "deal_of_day" | "price_spotlight" | "educational" | "weekly_board";
 
+// The DAILY rotation. `weekly_board` is NOT in the rotation — it's a weekly
+// day-of-week override (see resolveAngle + WEEKLY_BOARD_UTC_DAY).
 export const POST_ANGLES: readonly PostAngle[] = ["deal_of_day", "price_spotlight", "educational"];
+
+// The weekly "best deals" board posts on this UTC weekday (1 = Monday) when
+// there are enough fresh movers to fill it.
+export const WEEKLY_BOARD_UTC_DAY = 1;
+export const WEEKLY_BOARD_MIN_DEALS = 3;
 
 /** UTC day number since the epoch (date-only, tz-stable). */
 export function utcDayNumber(date: Date): number {
@@ -35,7 +42,15 @@ export function angleForDate(date: Date): PostAngle {
  * we fall back to price_spotlight, then educational (which always works). This
  * keeps a thin board from producing a contentless "deal of the day" post.
  */
-export function resolveAngle(date: Date, opts: { hasDeal: boolean; hasSpotlight: boolean }): PostAngle {
+export function resolveAngle(
+  date: Date,
+  opts: { hasDeal: boolean; hasSpotlight: boolean; hasBoard?: boolean },
+): PostAngle {
+  // Weekly digest override: on the board day, the board wins when we have enough
+  // fresh movers to fill it. Otherwise fall through to the daily rotation.
+  if (date.getUTCDay() === WEEKLY_BOARD_UTC_DAY && opts.hasBoard) {
+    return "weekly_board";
+  }
   const intended = angleForDate(date);
   if (intended === "deal_of_day" && !opts.hasDeal) {
     return opts.hasSpotlight ? "price_spotlight" : "educational";

@@ -9,7 +9,7 @@
 // AND approval mode the orchestrator NEVER calls it — in approval mode the post
 // happens later, out-of-band, only after an explicit owner approval. Proven by test.
 
-import { resolveAngle, type PostAngle } from "./angles.ts";
+import { resolveAngle, WEEKLY_BOARD_MIN_DEALS, type PostAngle } from "./angles.ts";
 import { buildUserPrompt, linkFor, type DealData, type GeneratedPost, type PostInput, type SpotlightData } from "./post-text.ts";
 import type { XBotMode } from "./mode.ts";
 import type { PostToXResult } from "./x-client.ts";
@@ -32,6 +32,10 @@ export type XBotDeps = {
    *  Called in `approval` mode. Returns the persisted draft id (or null on a
    *  soft-fail). NEVER posts to X — the post happens on later approval. */
   requestApproval?: (draft: XBotDraft) => Promise<{ id: string } | null>;
+  /** Dev/preview override: force a specific angle (e.g. to preview the card-hero
+   *  on a day the rotation lands elsewhere). Applied ONLY when that angle's data
+   *  is available, so it can never produce a contentless post. */
+  forceAngle?: PostAngle;
 };
 
 export type XBotResult = {
@@ -53,9 +57,18 @@ function dateLabel(d: Date): string {
 }
 
 /** Build the angle's PostInput from the gathered data. */
+/** Whether a (possibly forced) angle has the data it needs to render. */
+function angleHasData(angle: PostAngle, deals: DealData[], hasSpotlight: boolean): boolean {
+  if (angle === "deal_of_day") return deals.length > 0;
+  if (angle === "price_spotlight") return hasSpotlight;
+  if (angle === "weekly_board") return deals.length >= WEEKLY_BOARD_MIN_DEALS;
+  return true; // educational always renders
+}
+
 function toPostInput(angle: PostAngle, date: string, deals: DealData[], spotlight: SpotlightData | null): PostInput {
   if (angle === "deal_of_day") return { angle, date, deal: deals[0] };
   if (angle === "price_spotlight") return { angle, date, spotlight: spotlight as SpotlightData };
+  if (angle === "weekly_board") return { angle, date, deals };
   return { angle, date };
 }
 
@@ -72,7 +85,16 @@ export async function runXBot(deps: XBotDeps): Promise<XBotResult> {
     return { ok: false, mode, angle: "educational", posted: false, error: `data: ${(err as Error).message}` };
   }
 
-  const angle = resolveAngle(now, { hasDeal: deals.length > 0, hasSpotlight: !!spotlight });
+  let angle = resolveAngle(now, {
+    hasDeal: deals.length > 0,
+    hasSpotlight: !!spotlight,
+    hasBoard: deals.length >= WEEKLY_BOARD_MIN_DEALS,
+  });
+  // Dev/preview override — honored only when the forced angle has data to render,
+  // so a force can never produce a contentless post.
+  if (deps.forceAngle && angleHasData(deps.forceAngle, deals, !!spotlight)) {
+    angle = deps.forceAngle;
+  }
   const input = toPostInput(angle, date, deals, spotlight);
 
   let generated: GeneratedPost;

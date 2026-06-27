@@ -41,6 +41,7 @@ export function freshDeals(movers: MarketMovers, nowMs: number, maxAgeHours: num
       matchedTier: m.matchedTier, // movers are NEAR_MINT by construction (no LP mislabel)
       saleCount: m.saleCount,
       computedAt: m.computedAt,
+      imageUrl: m.imageUrl ?? "",
     }));
 }
 
@@ -76,7 +77,7 @@ export async function getSpotlightForPost(now: Date = new Date()): Promise<Spotl
     const admin = supabaseAdmin();
     const { data, error } = await admin
       .from("buy_signals")
-      .select("card_slug, card_name, set_name, sold_reference, sold_sample_size, computed_at")
+      .select("card_slug, card_name, set_name, sold_reference, sold_sample_size, computed_at, image_url")
       .in("card_slug", POPULAR_SLUGS)
       .not("sold_reference", "is", null)
       .gte("sold_sample_size", 5);
@@ -99,6 +100,7 @@ export async function getSpotlightForPost(now: Date = new Date()): Promise<Spotl
       slug: pick.card_slug as string,
       soldReference,
       sampleSize: (pick.sold_sample_size as number) ?? 0,
+      imageUrl: (pick.image_url as string) ?? "",
     };
   } catch {
     return null;

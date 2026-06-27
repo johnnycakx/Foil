@@ -2228,6 +2228,26 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 
 **Cross-refs.** [ADR-058](#adr-058--daily-x-content-bot-dry-run-first-own-posts-only-satori-image-not-playwright), [ADR-069](#adr-069--insight-led-market-movers--good-buys-signal-aggregate-momentum-over-fragile-single-listings--the-like-for-like-currency-gate), [ADR-071](#adr-071--x-content-bot-approval-mode-auto-draft--owner-approves-in-discord--auto-post), `docs/goals/x-bot-followups.md`, `docs/IDEAS.md`.
 
+## ADR-073 — Card-hero X image: real card art over a sharp-derived "world" (Satori can't blur) + the weekly board
+
+**Date:** 2026-06-27
+**Status:** Accepted. Extends [ADR-058](#adr-058--daily-x-content-bot-dry-run-first-own-posts-only-satori-image-not-playwright) (the Satori image path) and [ADR-072](#adr-072--x-deal-angle-sources-from-the-fresh-movers-signal-no-phantom-deals--post-metrics-capture) (the fresh-movers data source). Implements Phase 1 of `docs/goals/x-flywheel-card-hero-and-homepage.md`; design validated over 8 prototype rounds + a virality scoring pass vs @getcollectr (card-hero 8.35 > board 7.75). References committed under `docs/social/ref/`.
+
+**Context.** The X bot's image was a generic deals "board." The validated upgrade is a **card-hero**: the REAL card art, large and lifted, over a background derived from the card's OWN art — so a blue card yields a blue world, a Charizard a warm one, always carrying Foil's navy/gold identity (the answer to "match Collectr's card-themed backgrounds while staying on-brand"). The technical blocker: **Satori (next/og) cannot Gaussian-blur**, and the design needs a heavy-blurred card-derived background.
+
+**Decision.**
+1. **Two-step render (the blur constraint).** The card's "world" background is pre-rendered with **sharp** (`lib/social/card-bg.ts`, a direct port of `docs/social/ref/card-hero-prototype.py::derived_bg`): cover-fill the art → heavy blur → darken → blend a 28% navy undertone → a dominant-color glow halo → vignette, all via sharp composite + SVG radial gradients. Satori then composes the **sharp card art + text over** the finished background. The card's drop-shadow + dominant-color glow halo use Satori's native **box-shadow** (supported), and the giant number uses **text-shadow** — only `filter: blur()` is unavailable, and that's exactly what sharp handles.
+2. **Real card art, soft-fail.** Art is the `market_movers`/`buy_signals` `image_url` (threaded onto `DealData`/`SpotlightData`), fetched by `lib/social/card-art.ts` (soft-fails to null). A missing/broken URL drops the card-hero to the board, then text-only — **never an artless hero**.
+3. **Brand font correction.** The goal named Bricolage Grotesque, but ADR-036 replaced it with Fraunces and the wordmark is **Fredoka** (ADR-055). The card-hero uses **Fredoka** for the lockup + the giant number (matching the existing renderer + the FoilTCG identity), slate sans for support text. The red ▼ is a CSS-border triangle (no font-glyph dependency), **stacked above** the number (the prototype's centering fix). White number default; `goldNumber` toggle. Slogan `FIND. TRACK. SAVE.` is from the ref (John-editable).
+4. **Angle wiring.** `deal_of_day` / `price_spotlight` → the **card-hero** (single card). A new **`weekly_board`** angle (a UTC-Monday day-of-week override when ≥3 fresh movers exist) → the **board**, rebuilt to `board-ref.png` (real thumbnails, DARK navy names on light rows, red ▼ + gold %, long-name clamp). Data stays the ADR-072 fresh-`market_movers` + freshness-guard source.
+
+**Consequences.**
+- **Verification boundary:** the sharp background is unit-tested + was rendered for a real card (Blastoise → correct teal-blue world). The Satori composition compiles (build) + is structurally pinned (anchors), but Satori can't run under `node --strip-types`, so the **final pixel match to the refs is reviewed at deploy** via the `#content-engine` draft (the established X-bot image-review path) — consistent with how every prior bot image was reviewed.
+- **Per-image cost:** one art fetch + a sharp pipeline + Satori, well within the cron's 120s budget for one image.
+- **Phase 2 (homepage "Latest from X" flywheel) is deferred** — its own follow-on, kept below the email capture so it never dilutes the email moat.
+
+**Cross-refs.** [ADR-058](#adr-058--daily-x-content-bot-dry-run-first-own-posts-only-satori-image-not-playwright), [ADR-072](#adr-072--x-deal-angle-sources-from-the-fresh-movers-signal-no-phantom-deals--post-metrics-capture), [ADR-036](#adr-036--home-page-warmth-pass-fraunces--floral), [ADR-055](#adr-055--brand-refresh-foiltcg-wordmark--foil-corner-card-mark-pokeball-retired), `docs/goals/x-flywheel-card-hero-and-homepage.md`, `docs/social/ref/`.
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

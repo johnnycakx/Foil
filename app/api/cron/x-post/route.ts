@@ -13,10 +13,13 @@
 
 import { NextResponse } from "next/server";
 import { runXBot } from "@/lib/social/bot";
+import { POST_ANGLES, type PostAngle } from "@/lib/social/angles";
 import { resolveXBotMode } from "@/lib/social/mode";
 import { getDealsForPost, getSpotlightForPost } from "@/lib/social/data";
 import { generatePostText } from "@/lib/social/post-text";
-import { renderDealsImage, renderSpotlightImage } from "@/lib/social/post-image";
+import { renderDealsImage, renderCardHeroImage } from "@/lib/social/post-image";
+import { heroFieldsForDeal, heroFieldsForSpotlight } from "@/lib/social/hero-fields";
+import { fetchCardArtBuffer } from "@/lib/social/card-art";
 import { postToX } from "@/lib/social/x-client";
 import {
   supabaseDraftStore,
@@ -40,20 +43,39 @@ export async function GET(request: Request): Promise<NextResponse> {
   const now = new Date();
   const contentWebhook = process.env.DISCORD_WEBHOOK_CONTENT_ENGINE;
 
+  // Dev/preview override: ?angle=deal_of_day forces an angle (bearer-gated, so
+  // only the trusted caller can use it). Ignored unless it's a valid angle.
+  const forceParam = new URL(request.url).searchParams.get("angle");
+  const validAngles = [...POST_ANGLES, "weekly_board"];
+  const forceAngle = forceParam && validAngles.includes(forceParam) ? (forceParam as PostAngle) : undefined;
+
   const result = await runXBot({
     mode,
+    forceAngle,
     now,
     getDeals: () => getDealsForPost(now),
     getSpotlight: () => getSpotlightForPost(now),
     generateText: (input) => generatePostText(input),
     renderImage: async (input, deals) => {
-      // Satori/next-og composed card is the SOLE image source (ADR-058): a
-      // tight on-brand 1080x1350 card from the buy_signals data, not a page
-      // screenshot. (The Playwright path was dropped — a ~50MB chromium dep +
-      // function-size/deploy risk wasn't worth it for a dry-run feature.)
-      if (input.angle === "price_spotlight") return renderSpotlightImage({ spotlight: input.spotlight, date: input.date });
-      // deal_of_day + educational → the deals card (text-only when no deals).
-      return deals.length > 0 ? renderDealsImage({ deals, date: input.date }) : null;
+      // Validated image system (ADR-072 follow-up): the daily deal/spotlight is a
+      // CARD-HERO (real card art over its own sharp-derived "world"); the weekly
+      // digest is the board. Real art is fetched here; a missing/broken art URL
+      // falls back to the board (then text-only) so we never ship an artless hero.
+      if (input.angle === "weekly_board") {
+        return deals.length > 0 ? renderDealsImage({ deals, date: input.date }) : null;
+      }
+      if (input.angle === "deal_of_day" && deals[0]) {
+        const art = await fetchCardArtBuffer(deals[0].imageUrl);
+        if (art) return renderCardHeroImage({ artBuffer: art, ...heroFieldsForDeal(deals[0]), date: input.date });
+        return deals.length > 0 ? renderDealsImage({ deals, date: input.date }) : null;
+      }
+      if (input.angle === "price_spotlight" && input.spotlight) {
+        const art = await fetchCardArtBuffer(input.spotlight.imageUrl);
+        if (art) return renderCardHeroImage({ artBuffer: art, ...heroFieldsForSpotlight(input.spotlight), date: input.date });
+        return null;
+      }
+      // educational → text-only.
+      return null;
     },
     post: (x) => postToX({ text: x.text, imagePng: x.imagePng }),
     review: async (draft) => {
