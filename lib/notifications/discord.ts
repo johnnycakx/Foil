@@ -329,13 +329,15 @@ export async function postSocialApprovalRequest(
 }
 
 /**
- * Attach a rendered PNG to a Discord channel via multipart (webhooks accept a
- * file part + payload_json). Used by the X-bot dry-run so John SEES the portrait
- * image before enabling live posting. Soft-fail; never throws.
+ * Attach an arbitrary rendered file (PNG or MP4) to a Discord channel via
+ * multipart (webhooks accept a file part + payload_json). Discord inline-renders
+ * both an image and a (muted, looping) MP4, so this is what lets John SEE the
+ * card-hero still OR its motion clip in the review/approval card before anything
+ * reaches X. Soft-fail; never throws.
  */
-export async function postDiscordImage(
+export async function postDiscordMedia(
   webhookUrl: string,
-  input: { filename: string; png: Uint8Array; content?: string; fetchImpl?: typeof fetch },
+  input: { filename: string; bytes: Uint8Array; contentType: string; content?: string; fetchImpl?: typeof fetch },
 ): Promise<PostWebhookResult> {
   if (!webhookUrl) return { ok: false, error: "missing_webhook_url" };
   try {
@@ -343,7 +345,7 @@ export async function postDiscordImage(
     form.append("payload_json", JSON.stringify({ username: DISCORD_USERNAME, content: input.content ?? "" }));
     form.append(
       "files[0]",
-      new Blob([input.png as unknown as BlobPart], { type: "image/png" }),
+      new Blob([input.bytes as unknown as BlobPart], { type: input.contentType }),
       input.filename,
     );
     const fetchFn = input.fetchImpl ?? fetch;
@@ -352,6 +354,20 @@ export async function postDiscordImage(
   } catch (err) {
     return { ok: false, error: (err as Error).message };
   }
+}
+
+/** Back-compat PNG helper — delegates to postDiscordMedia. */
+export async function postDiscordImage(
+  webhookUrl: string,
+  input: { filename: string; png: Uint8Array; content?: string; fetchImpl?: typeof fetch },
+): Promise<PostWebhookResult> {
+  return postDiscordMedia(webhookUrl, {
+    filename: input.filename,
+    bytes: input.png,
+    contentType: "image/png",
+    content: input.content,
+    fetchImpl: input.fetchImpl,
+  });
 }
 
 export type ErrorEventInput = {

@@ -20,6 +20,18 @@
 import { createHmac, randomBytes } from "node:crypto";
 
 const MEDIA_UPLOAD_URL = "https://upload.twitter.com/1.1/media/upload.json";
+// Chunked async upload for VIDEO (ADR-074 Phase 1, the card-hero motion path).
+// Per docs.x.com/x-api/media/quickstart/media-upload-chunked (fetched 2026-06-27):
+// POST multipart/form-data to api.x.com/2/media/upload with command=INIT/APPEND/
+// FINALIZE, then GET command=STATUS until processing_info.state=succeeded. The
+// created post then references the returned media id, same as the image path.
+const MEDIA_UPLOAD_V2_URL = "https://api.x.com/2/media/upload";
+// 1MB segments (the doc's recommended chunk size). Our clips are ~1-3MB → 1-3 APPENDs.
+const VIDEO_CHUNK_BYTES = 1_000_000;
+// Bound the FINALIZE→STATUS processing poll so a stuck transcode can't hang the
+// cron/approve route. A silent ~2.5s loop transcodes near-instantly in practice.
+const VIDEO_STATUS_MAX_POLLS = 12;
+const VIDEO_STATUS_MAX_WAIT_MS = 90_000;
 const CREATE_POST_URL = "https://api.x.com/2/tweets";
 const TWEETS_LOOKUP_URL = "https://api.x.com/2/tweets";
 
@@ -32,11 +44,16 @@ export type XCredentials = {
 
 export type PostToXInput = {
   text: string;
-  /** Optional portrait PNG to attach. */
+  /** Optional portrait PNG to attach (the Phase 0 still / fallback). */
   imagePng?: Uint8Array | null;
+  /** Optional MP4 motion clip (ADR-074). Preferred when present; on an upload
+   *  reject we fall back to `imagePng` so a post never goes out empty. */
+  videoMp4?: Uint8Array | null;
   fetchImpl?: typeof fetch;
   /** Test/explicit creds; defaults to reading the X_* env vars. */
   credentials?: XCredentials;
+  /** Injectable sleep for the video STATUS poll (tests pass a no-op). */
+  sleepImpl?: (ms: number) => Promise<void>;
 };
 
 export type PostToXResult =
@@ -112,6 +129,100 @@ async function uploadMedia(png: Uint8Array, creds: XCredentials, fetchFn: typeof
     return { ok: false, error: `media_upload_failed: ${(err as Error).message}` };
   }
 }
+
+// --- chunked async VIDEO upload (ADR-074 Phase 1) ---------------------------
+//
+// VERIFY-ON-ENABLE (like the image path): OAuth 1.0a + the v2 multipart media
+// endpoint is the documented path, but X has been migrating media auth — John
+// must confirm one real upload before relying on motion in live mode. Until
+// then it SOFT-FAILS and the caller posts the Phase 0 still (the guaranteed
+// fallback), so a misconfigured video path can never produce a contentless post.
+
+const realSleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+type VideoUploadResult = { ok: true; mediaId: string } | { ok: false; error: string };
+
+/** POST a multipart command to the v2 media endpoint. OAuth 1.0a signs only the
+ *  oauth_* params (multipart bodies are not folded into the signature base). */
+async function postMediaCommand(
+  creds: XCredentials,
+  fetchFn: typeof fetch,
+  form: FormData,
+): Promise<Response> {
+  const auth = oauthHeader("POST", MEDIA_UPLOAD_V2_URL, creds); // multipart → no body params signed
+  return fetchFn(MEDIA_UPLOAD_V2_URL, { method: "POST", headers: { Authorization: auth }, body: form });
+}
+
+/**
+ * Upload an MP4 via INIT → APPEND(s) → FINALIZE → STATUS-poll, returning the
+ * media id once processing succeeds. Soft-fails (never throws). `media_category=
+ * tweet_video` per the docs. Chunk = 1MB. Read the v2 `{ data: { id, ... } }`
+ * shape (not the v1.1 `media_id_string`).
+ */
+export async function uploadVideoMedia(
+  mp4: Uint8Array,
+  creds: XCredentials,
+  fetchFn: typeof fetch,
+  sleepFn: (ms: number) => Promise<void> = realSleep,
+): Promise<VideoUploadResult> {
+  try {
+    // INIT
+    const init = new FormData();
+    init.append("command", "INIT");
+    init.append("media_type", "video/mp4");
+    init.append("total_bytes", String(mp4.length));
+    init.append("media_category", "tweet_video");
+    const initRes = await postMediaCommand(creds, fetchFn, init);
+    if (!initRes.ok) return { ok: false, error: `video_init_http_${initRes.status}` };
+    const initJson = (await initRes.json()) as { data?: { id?: string }; media_id_string?: string };
+    const mediaId = initJson.data?.id ?? initJson.media_id_string;
+    if (!mediaId) return { ok: false, error: "video_init_no_id" };
+
+    // APPEND (1MB segments)
+    let segment = 0;
+    for (let offset = 0; offset < mp4.length; offset += VIDEO_CHUNK_BYTES) {
+      const chunk = mp4.subarray(offset, Math.min(offset + VIDEO_CHUNK_BYTES, mp4.length));
+      const ap = new FormData();
+      ap.append("command", "APPEND");
+      ap.append("media_id", mediaId);
+      ap.append("segment_index", String(segment));
+      ap.append("media", new Blob([chunk as unknown as BlobPart], { type: "application/octet-stream" }));
+      const apRes = await postMediaCommand(creds, fetchFn, ap);
+      if (!apRes.ok) return { ok: false, error: `video_append_http_${apRes.status}` };
+      segment++;
+    }
+
+    // FINALIZE
+    const fin = new FormData();
+    fin.append("command", "FINALIZE");
+    fin.append("media_id", mediaId);
+    const finRes = await postMediaCommand(creds, fetchFn, fin);
+    if (!finRes.ok) return { ok: false, error: `video_finalize_http_${finRes.status}` };
+    const finJson = (await finRes.json()) as { data?: { processing_info?: ProcessingInfo }; processing_info?: ProcessingInfo };
+    let info = finJson.data?.processing_info ?? finJson.processing_info;
+
+    // STATUS poll until succeeded/failed. No processing_info → already ready.
+    const startedAt = Date.now();
+    for (let poll = 0; info && info.state !== "succeeded" && poll < VIDEO_STATUS_MAX_POLLS; poll++) {
+      if (info.state === "failed") return { ok: false, error: `video_processing_failed${info.error?.message ? `: ${info.error.message}` : ""}` };
+      const waitMs = Math.min(Math.max((info.check_after_secs ?? 1) * 1000, 500), 15_000);
+      if (Date.now() - startedAt + waitMs > VIDEO_STATUS_MAX_WAIT_MS) return { ok: false, error: "video_processing_timeout" };
+      await sleepFn(waitMs);
+      const stUrl = `${MEDIA_UPLOAD_V2_URL}?command=STATUS&media_id=${encodeURIComponent(mediaId)}`;
+      const stAuth = oauthHeader("GET", MEDIA_UPLOAD_V2_URL, creds, { command: "STATUS", media_id: mediaId });
+      const stRes = await fetchFn(stUrl, { headers: { Authorization: stAuth } });
+      if (!stRes.ok) return { ok: false, error: `video_status_http_${stRes.status}` };
+      const stJson = (await stRes.json()) as { data?: { processing_info?: ProcessingInfo }; processing_info?: ProcessingInfo };
+      info = stJson.data?.processing_info ?? stJson.processing_info;
+    }
+    if (info && info.state !== "succeeded") return { ok: false, error: `video_not_ready_${info.state}` };
+    return { ok: true, mediaId };
+  } catch (err) {
+    return { ok: false, error: `video_upload_failed: ${(err as Error).message}` };
+  }
+}
+
+type ProcessingInfo = { state: string; check_after_secs?: number; error?: { message?: string } };
 
 // --- read: per-tweet public engagement metrics (ADR-071 follow-up, Part 2) ----
 
@@ -195,8 +306,23 @@ export async function postToX(input: PostToXInput): Promise<PostToXResult> {
   const fetchFn = input.fetchImpl ?? fetch;
 
   let mediaId: string | undefined;
-  if (input.imagePng && input.imagePng.length > 0) {
-    const up = await uploadMedia(input.imagePng, creds, fetchFn);
+  const hasVideo = !!input.videoMp4 && input.videoMp4.length > 0;
+  const hasImage = !!input.imagePng && input.imagePng.length > 0;
+  if (hasVideo) {
+    // Prefer the motion clip; on ANY video failure fall back to the still so the
+    // post still goes out (the Phase 0 still is the guaranteed fallback).
+    const vid = await uploadVideoMedia(input.videoMp4!, creds, fetchFn, input.sleepImpl ?? realSleep);
+    if (vid.ok) {
+      mediaId = vid.mediaId;
+    } else if (hasImage) {
+      const img = await uploadMedia(input.imagePng!, creds, fetchFn);
+      if (!img.ok) return { ok: false, error: `video_then_image_failed: ${vid.error}; ${img.error}` };
+      mediaId = img.mediaId;
+    } else {
+      return { ok: false, error: vid.error };
+    }
+  } else if (hasImage) {
+    const up = await uploadMedia(input.imagePng!, creds, fetchFn);
     if (!up.ok) return { ok: false, error: up.error };
     mediaId = up.mediaId;
   }

@@ -14,7 +14,15 @@ import { buildUserPrompt, linkFor, type DealData, type GeneratedPost, type PostI
 import type { XBotMode } from "./mode.ts";
 import type { PostToXResult } from "./x-client.ts";
 
-export type XBotDraft = { angle: PostAngle; text: string; link: string; imagePng: Uint8Array | null };
+export type XBotDraft = {
+  angle: PostAngle;
+  text: string;
+  link: string;
+  /** The Phase 0 still (the guaranteed fallback). */
+  imagePng: Uint8Array | null;
+  /** The MP4 motion clip when motion rendered (ADR-074 Phase 1). Null → still-only. */
+  videoMp4: Uint8Array | null;
+};
 
 export type XBotDeps = {
   mode: XBotMode;
@@ -22,10 +30,14 @@ export type XBotDeps = {
   getDeals: () => Promise<DealData[]>;
   getSpotlight: () => Promise<SpotlightData | null>;
   generateText: (input: PostInput) => Promise<GeneratedPost>;
-  /** Render the angle's portrait PNG. Soft-fails to null (text-only post). */
+  /** Render the angle's portrait PNG (the still / fallback). Soft-fails to null. */
   renderImage: (input: PostInput, deals: DealData[]) => Promise<Uint8Array | null>;
+  /** Optional: render the MOTION clip (ADR-074 Phase 1) from the rendered still.
+   *  Returns null for non-motion angles or on any encode failure → the still
+   *  posts. Strictly additive: when absent, behavior is the still-only path. */
+  renderVideo?: (input: PostInput, deals: DealData[], still: Uint8Array) => Promise<Uint8Array | null>;
   /** THE X API boundary. Called ONLY when mode === "live". */
-  post: (input: { text: string; imagePng: Uint8Array | null }) => Promise<PostToXResult>;
+  post: (input: { text: string; imagePng: Uint8Array | null; videoMp4: Uint8Array | null }) => Promise<PostToXResult>;
   /** Dry-run delivery (Discord review ping + optional disk). Called in dry_run. */
   review: (draft: XBotDraft) => Promise<void>;
   /** Approval delivery: persist the draft + ask the owner to approve in Discord.
@@ -111,7 +123,18 @@ export async function runXBot(deps: XBotDeps): Promise<XBotResult> {
     imagePng = null; // image is best-effort; post text still goes out.
   }
 
-  const draft: XBotDraft = { angle, text: generated.text, link: linkFor(input), imagePng };
+  // Motion is rendered FROM the still, and only when we have a still to animate.
+  // Any failure leaves videoMp4 null → the still is posted (the fallback).
+  let videoMp4: Uint8Array | null = null;
+  if (deps.renderVideo && imagePng) {
+    try {
+      videoMp4 = await deps.renderVideo(input, deals, imagePng);
+    } catch {
+      videoMp4 = null;
+    }
+  }
+
+  const draft: XBotDraft = { angle, text: generated.text, link: linkFor(input), imagePng, videoMp4 };
 
   // --- DRY-RUN: never touch the X API. Hand the draft to the reviewer. ---
   if (mode === "dry_run") {
@@ -142,7 +165,7 @@ export async function runXBot(deps: XBotDeps): Promise<XBotResult> {
   }
 
   // --- LIVE: the only path that calls the X API boundary. ---
-  const res = await deps.post({ text: generated.text, imagePng });
+  const res = await deps.post({ text: generated.text, imagePng, videoMp4 });
   if (!res.ok) {
     return { ok: false, mode, angle, posted: false, text: generated.text, error: res.error };
   }

@@ -21,8 +21,9 @@ export type ApprovalResult =
 
 export type ApprovalDeps = {
   store: DraftStore;
-  /** THE X API boundary (lib/social/x-client.ts::postToX). */
-  post: (input: { text: string; imagePng: Uint8Array | null }) => Promise<PostToXResult>;
+  /** THE X API boundary (lib/social/x-client.ts::postToX). Posts the persisted
+   *  clip when present (still as the upload-reject fallback), else the still. */
+  post: (input: { text: string; imagePng: Uint8Array | null; videoMp4: Uint8Array | null }) => Promise<PostToXResult>;
   id: string;
   action: ApprovalAction;
   /** Who approved (the owner's Discord id/handle), recorded for audit. */
@@ -52,7 +53,8 @@ export async function processApproval(deps: ApprovalDeps): Promise<ApprovalResul
   }
 
   const imagePng = claimed.image_base64 ? base64ToBytes(claimed.image_base64) : null;
-  const res = await deps.post({ text: claimed.text, imagePng });
+  const videoMp4 = claimed.video_base64 ? base64ToBytes(claimed.video_base64) : null;
+  const res = await deps.post({ text: claimed.text, imagePng, videoMp4 });
   if (!res.ok) {
     // Release back to pending so the owner can re-approve once the issue clears.
     await store.release(id, res.error);

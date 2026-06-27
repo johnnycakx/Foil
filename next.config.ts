@@ -16,6 +16,11 @@ function supabaseStorageHost(): string {
 const nextConfig: NextConfig = {
   // .mdx pages render directly via file-based routing alongside .tsx
   pageExtensions: ["ts", "tsx", "md", "mdx"],
+  // The card-hero MOTION path (ADR-074 Phase 1) encodes MP4 via the self-
+  // contained WASM encoder `h264-mp4-encoder`. Keep it a runtime require (loaded
+  // dynamically in lib/social/mp4-encoder.ts) instead of bundling its embedded
+  // WASM into the function — same treatment Next already gives `sharp`.
+  serverExternalPackages: ["h264-mp4-encoder"],
   // /cards + /cards/sets/[set-id] fan out N parallel pokemontcg.io fetches
   // (~50 cards per Base-era set). When pokemontcg.io is slow, the default
   // 60s per-page static-generation timeout fires before the parallel-fetch

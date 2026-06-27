@@ -40,7 +40,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const result = await processApproval({
     store: supabaseDraftStore(),
-    post: (x) => postToX({ text: x.text, imagePng: x.imagePng }),
+    post: (x) => postToX({ text: x.text, imagePng: x.imagePng, videoMp4: x.videoMp4 }),
     id,
     action,
     actor,

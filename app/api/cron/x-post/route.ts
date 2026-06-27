@@ -18,6 +18,7 @@ import { resolveXBotMode } from "@/lib/social/mode";
 import { getDealsForPost, getSpotlightForPost } from "@/lib/social/data";
 import { generatePostText } from "@/lib/social/post-text";
 import { renderDealsImage, renderCardHeroImage } from "@/lib/social/post-image";
+import { renderCardHeroMotion } from "@/lib/social/card-motion";
 import { heroFieldsForDeal, heroFieldsForSpotlight } from "@/lib/social/hero-fields";
 import { fetchCardArtBuffer } from "@/lib/social/card-art";
 import { postToX } from "@/lib/social/x-client";
@@ -27,7 +28,24 @@ import {
   expiryFrom,
   DEFAULT_APPROVAL_EXPIRY_HOURS,
 } from "@/lib/social/drafts";
-import { postSocialDraft, postSocialApprovalRequest, postDiscordImage } from "@/lib/notifications/discord";
+import { postSocialDraft, postSocialApprovalRequest, postDiscordImage, postDiscordMedia } from "@/lib/notifications/discord";
+import type { XBotDraft } from "@/lib/social/bot";
+
+// Attach the review artifact to #content-engine: the MOTION clip when it
+// rendered (Discord inline-previews MP4, muted/looping), else the still PNG.
+// Soft-fail — a Discord outage can't block the post.
+async function attachDraftMedia(webhook: string, draft: XBotDraft): Promise<void> {
+  if (draft.videoMp4) {
+    await postDiscordMedia(webhook, {
+      filename: `x-${draft.angle}.mp4`,
+      bytes: draft.videoMp4,
+      contentType: "video/mp4",
+      content: "▶ motion preview (autoplays muted; the still is the fallback)",
+    });
+  } else if (draft.imagePng) {
+    await postDiscordImage(webhook, { filename: `x-${draft.angle}.png`, png: draft.imagePng });
+  }
+}
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -77,20 +95,24 @@ export async function GET(request: Request): Promise<NextResponse> {
       // educational → text-only.
       return null;
     },
-    post: (x) => postToX({ text: x.text, imagePng: x.imagePng }),
+    renderVideo: async (input, _deals, still) => {
+      // Motion is the standard for the card-hero angles only (ADR-074). The
+      // board/educational stay still. Soft-fails to null → the still is posted.
+      if (input.angle !== "deal_of_day" && input.angle !== "price_spotlight") return null;
+      return renderCardHeroMotion({ stillPng: still });
+    },
+    post: (x) => postToX({ text: x.text, imagePng: x.imagePng, videoMp4: x.videoMp4 }),
     review: async (draft) => {
       if (!contentWebhook) return;
       await postSocialDraft(contentWebhook, {
         angle: draft.angle,
         text: draft.text,
         link: draft.link,
-        hasImage: !!draft.imagePng,
+        hasImage: !!draft.imagePng || !!draft.videoMp4,
         dryRun: true,
       });
-      // Attach the actual portrait so John reviews the image, not just a note.
-      if (draft.imagePng) {
-        await postDiscordImage(contentWebhook, { filename: `x-${draft.angle}.png`, png: draft.imagePng });
-      }
+      // Attach the actual clip/portrait so John reviews the media, not just a note.
+      await attachDraftMedia(contentWebhook, draft);
     },
     requestApproval: async (draft) => {
       // Persist the EXACT text + image so the approved row is the posted row,
@@ -104,6 +126,7 @@ export async function GET(request: Request): Promise<NextResponse> {
         text: draft.text,
         link: draft.link,
         imageBase64: draft.imagePng ? bytesToBase64(draft.imagePng) : null,
+        videoBase64: draft.videoMp4 ? bytesToBase64(draft.videoMp4) : null,
         expiresAt,
       });
       if (!created) return null; // soft-fail: bot.ts reports approval_persist_failed.
@@ -113,12 +136,11 @@ export async function GET(request: Request): Promise<NextResponse> {
           angle: draft.angle,
           text: draft.text,
           link: draft.link,
-          hasImage: !!draft.imagePng,
+          hasImage: !!draft.imagePng || !!draft.videoMp4,
           expiresLabel: `${DEFAULT_APPROVAL_EXPIRY_HOURS}h (then auto-skipped)`,
         });
-        if (draft.imagePng) {
-          await postDiscordImage(contentWebhook, { filename: `x-${draft.angle}.png`, png: draft.imagePng });
-        }
+        // Preview the EXACT reviewed media (clip if present, else still).
+        await attachDraftMedia(contentWebhook, draft);
       }
       return { id: created.id };
     },
