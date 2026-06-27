@@ -65,6 +65,12 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // docs/EBAY-COMPLIANCE.md). Future privacy/ToS lands here too.
   { kind: "prefix", path: "/legal" },
 
+  // X content-bot approval endpoint (ADR-071). The Foil HQ Discord bot POSTs here
+  // after the owner approves/skips a draft; the route does its OWN bearer gate
+  // (X_APPROVE_SECRET) + the bot does the Discord owner-gate. Auth-gating it via
+  // the proxy would 302 the bot's request to /login and break approval.
+  { kind: "exact", path: "/api/x/approve" },
+
   // Newsletter subscribe endpoint. Today the EmailCapture component invokes a
   // colocated Server Action so the POST piggy-backs on the host page (already
   // public). Listed here as the contract anchor: if we ever extract to a real

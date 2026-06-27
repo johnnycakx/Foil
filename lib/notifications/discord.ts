@@ -282,6 +282,52 @@ export async function postSocialDraft(
   });
 }
 
+export type SocialApprovalInput = {
+  /** The persisted pending-draft id the owner approves by. */
+  draftId: string;
+  angle: string;
+  text: string;
+  link: string;
+  hasImage: boolean;
+  /** When the pending draft auto-skips if not approved (human-readable). */
+  expiresLabel: string;
+};
+
+/**
+ * Post an X-bot APPROVAL REQUEST to Discord (#content-engine) — the approval-mode
+ * (ADR-071) draft the owner approves with `/approve <id>` or skips with
+ * `/skip <id>` (the Foil HQ bot's owner-gated slash commands). The draft id is
+ * the load-bearing field: it ties the Discord message to the persisted row that
+ * gets posted. Soft-fail per the lib contract.
+ */
+export async function postSocialApprovalRequest(
+  webhookUrl: string,
+  ev: SocialApprovalInput,
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<PostWebhookResult> {
+  return postWebhook({
+    webhookUrl,
+    embeds: [
+      {
+        title: "🕊️ X post awaiting approval",
+        description: `Approve with \`/approve ${ev.draftId}\` or skip with \`/skip ${ev.draftId}\` (Foil HQ bot, owner only).`,
+        color: COLOR_FOIL_ORANGE,
+        timestamp: new Date().toISOString(),
+        fields: [
+          { name: "Draft id", value: `\`${ev.draftId}\``, inline: false },
+          { name: "Angle", value: ev.angle, inline: true },
+          { name: "Chars", value: String(ev.text.length), inline: true },
+          { name: "Image", value: ev.hasImage ? "rendered" : "none", inline: true },
+          { name: "Text", value: ev.text.slice(0, 1000), inline: false },
+          { name: "Link", value: ev.link, inline: false },
+          { name: "Auto-skips", value: ev.expiresLabel, inline: false },
+        ],
+      },
+    ],
+    fetchImpl: opts.fetchImpl,
+  });
+}
+
 /**
  * Attach a rendered PNG to a Discord channel via multipart (webhooks accept a
  * file part + payload_json). Used by the X-bot dry-run so John SEES the portrait

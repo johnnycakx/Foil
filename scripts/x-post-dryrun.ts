@@ -26,7 +26,7 @@ const outDir = path.join("docs", "social-drafts", now.toISOString().slice(0, 10)
 fs.mkdirSync(outDir, { recursive: true });
 
 const result = await runXBot({
-  live: false,
+  mode: "dry_run",
   now,
   getDeals: getDealsForPost,
   getSpotlight: () => getSpotlightForPost(now),

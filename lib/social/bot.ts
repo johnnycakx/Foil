@@ -1,41 +1,50 @@
-// X content bot orchestrator (ADR-058). Picks the day's angle, gathers data,
-// renders the image, generates the gated post text, then EITHER posts to X
-// (live) OR delivers a draft for review (dry-run). All deps are injected so the
-// dry-run/live switch is unit-testable.
+// X content bot orchestrator (ADR-058 + ADR-071). Picks the day's angle, gathers
+// data, renders the image, generates the gated post text, then branches on the
+// run mode: post to X (live), persist + ask the owner to approve (approval), or
+// deliver a draft for review (dry_run). All deps are injected so the mode switch
+// is unit-testable.
 //
 // SAFETY INVARIANT (mirrors the newsletter never-auto-send, ADR-011 / R-001):
-// when `live` is false, `deps.post` (the X API boundary) is NEVER invoked. The
-// cron passes live = (X_BOT_LIVE === "true"); default false. Proven by test.
+// `deps.post` (the X API boundary) is invoked ONLY in `live` mode. In dry_run
+// AND approval mode the orchestrator NEVER calls it — in approval mode the post
+// happens later, out-of-band, only after an explicit owner approval. Proven by test.
 
 import { resolveAngle, type PostAngle } from "./angles.ts";
 import { buildUserPrompt, linkFor, type DealData, type GeneratedPost, type PostInput, type SpotlightData } from "./post-text.ts";
+import type { XBotMode } from "./mode.ts";
 import type { PostToXResult } from "./x-client.ts";
 
 export type XBotDraft = { angle: PostAngle; text: string; link: string; imagePng: Uint8Array | null };
 
 export type XBotDeps = {
-  live: boolean;
+  mode: XBotMode;
   now?: Date;
   getDeals: () => Promise<DealData[]>;
   getSpotlight: () => Promise<SpotlightData | null>;
   generateText: (input: PostInput) => Promise<GeneratedPost>;
   /** Render the angle's portrait PNG. Soft-fails to null (text-only post). */
   renderImage: (input: PostInput, deals: DealData[]) => Promise<Uint8Array | null>;
-  /** THE X API boundary. Called ONLY when live === true. */
+  /** THE X API boundary. Called ONLY when mode === "live". */
   post: (input: { text: string; imagePng: Uint8Array | null }) => Promise<PostToXResult>;
-  /** Dry-run delivery (Discord review ping + optional disk). Called when live === false. */
+  /** Dry-run delivery (Discord review ping + optional disk). Called in dry_run. */
   review: (draft: XBotDraft) => Promise<void>;
+  /** Approval delivery: persist the draft + ask the owner to approve in Discord.
+   *  Called in `approval` mode. Returns the persisted draft id (or null on a
+   *  soft-fail). NEVER posts to X — the post happens on later approval. */
+  requestApproval?: (draft: XBotDraft) => Promise<{ id: string } | null>;
 };
 
 export type XBotResult = {
   ok: boolean;
-  live: boolean;
+  mode: XBotMode;
   angle: PostAngle;
   posted: boolean;
   postId?: string;
   text?: string;
   error?: string;
-  /** Why nothing was posted (dry_run / no-op). */
+  /** The persisted pending-draft id (approval mode). */
+  draftId?: string;
+  /** Why nothing was posted (dry_run / awaiting_approval / no-op). */
   reason?: string;
 };
 
@@ -53,13 +62,14 @@ function toPostInput(angle: PostAngle, date: string, deals: DealData[], spotligh
 export async function runXBot(deps: XBotDeps): Promise<XBotResult> {
   const now = deps.now ?? new Date();
   const date = dateLabel(now);
+  const mode = deps.mode;
 
   let deals: DealData[] = [];
   let spotlight: SpotlightData | null = null;
   try {
     [deals, spotlight] = await Promise.all([deps.getDeals(), deps.getSpotlight()]);
   } catch (err) {
-    return { ok: false, live: deps.live, angle: "educational", posted: false, error: `data: ${(err as Error).message}` };
+    return { ok: false, mode, angle: "educational", posted: false, error: `data: ${(err as Error).message}` };
   }
 
   const angle = resolveAngle(now, { hasDeal: deals.length > 0, hasSpotlight: !!spotlight });
@@ -69,7 +79,7 @@ export async function runXBot(deps: XBotDeps): Promise<XBotResult> {
   try {
     generated = await deps.generateText(input);
   } catch (err) {
-    return { ok: false, live: deps.live, angle, posted: false, error: `text: ${(err as Error).message}` };
+    return { ok: false, mode, angle, posted: false, error: `text: ${(err as Error).message}` };
   }
 
   let imagePng: Uint8Array | null = null;
@@ -79,23 +89,42 @@ export async function runXBot(deps: XBotDeps): Promise<XBotResult> {
     imagePng = null; // image is best-effort; post text still goes out.
   }
 
-  // --- The dry-run / live boundary. ---
-  if (!deps.live) {
-    // DRY-RUN: never touch the X API. Hand the draft to the reviewer.
+  const draft: XBotDraft = { angle, text: generated.text, link: linkFor(input), imagePng };
+
+  // --- DRY-RUN: never touch the X API. Hand the draft to the reviewer. ---
+  if (mode === "dry_run") {
     try {
-      await deps.review({ angle, text: generated.text, link: linkFor(input), imagePng });
+      await deps.review(draft);
     } catch {
       /* review delivery is best-effort */
     }
-    return { ok: true, live: false, angle, posted: false, text: generated.text, reason: "dry_run" };
+    return { ok: true, mode, angle, posted: false, text: generated.text, reason: "dry_run" };
   }
 
-  // LIVE: the only path that calls the X API boundary.
+  // --- APPROVAL: persist + ask the owner to approve. NEVER posts here; the
+  //     post happens out-of-band only after an explicit owner approval. ---
+  if (mode === "approval") {
+    if (!deps.requestApproval) {
+      return { ok: false, mode, angle, posted: false, text: generated.text, error: "approval_mode_misconfigured: no requestApproval dep" };
+    }
+    let persisted: { id: string } | null = null;
+    try {
+      persisted = await deps.requestApproval(draft);
+    } catch (err) {
+      return { ok: false, mode, angle, posted: false, text: generated.text, error: `approval: ${(err as Error).message}` };
+    }
+    if (!persisted) {
+      return { ok: false, mode, angle, posted: false, text: generated.text, error: "approval_persist_failed" };
+    }
+    return { ok: true, mode, angle, posted: false, text: generated.text, draftId: persisted.id, reason: "awaiting_approval" };
+  }
+
+  // --- LIVE: the only path that calls the X API boundary. ---
   const res = await deps.post({ text: generated.text, imagePng });
   if (!res.ok) {
-    return { ok: false, live: true, angle, posted: false, text: generated.text, error: res.error };
+    return { ok: false, mode, angle, posted: false, text: generated.text, error: res.error };
   }
-  return { ok: true, live: true, angle, posted: true, postId: res.postId, text: generated.text };
+  return { ok: true, mode, angle, posted: true, postId: res.postId, text: generated.text };
 }
 
 /** Re-export so the cron/script wire one consistent prompt link. */

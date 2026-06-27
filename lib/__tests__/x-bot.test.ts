@@ -13,7 +13,7 @@ const SPOT: SpotlightData = { cardName: "Charizard", setName: "Base Set", slug: 
 
 function baseDeps(over: Partial<XBotDeps> = {}): XBotDeps {
   return {
-    live: false,
+    mode: "dry_run",
     now: new Date("2026-06-08T14:00:00Z"),
     getDeals: async () => [DEAL],
     getSpotlight: async () => SPOT,
@@ -53,31 +53,31 @@ test("resolveAngle falls back off deal_of_day when the board is empty", () => {
 
 // --- THE safety invariant ---
 
-test("DRY-RUN (live=false) NEVER calls the X poster; it routes to review", async () => {
+test("DRY-RUN (mode=dry_run) NEVER calls the X poster; it routes to review", async () => {
   let postCalls = 0;
   let reviewCalls = 0;
   const res = await runXBot(baseDeps({
-    live: false,
+    mode: "dry_run",
     post: async () => { postCalls++; return { ok: true, postId: "x" }; },
     review: async () => { reviewCalls++; },
   }));
-  assert.equal(postCalls, 0, "the X API boundary must NOT be called when live=false");
+  assert.equal(postCalls, 0, "the X API boundary must NOT be called in dry_run");
   assert.equal(reviewCalls, 1, "the draft must be routed to review");
   assert.equal(res.posted, false);
   assert.equal(res.reason, "dry_run");
   assert.equal(res.ok, true);
 });
 
-test("LIVE (live=true) calls the X poster exactly once and reports the post id", async () => {
+test("LIVE (mode=live) calls the X poster exactly once and reports the post id", async () => {
   let postCalls = 0;
-  const res = await runXBot(baseDeps({ live: true, post: async () => { postCalls++; return { ok: true, postId: "1234" }; } }));
+  const res = await runXBot(baseDeps({ mode: "live", post: async () => { postCalls++; return { ok: true, postId: "1234" }; } }));
   assert.equal(postCalls, 1);
   assert.equal(res.posted, true);
   assert.equal(res.postId, "1234");
 });
 
 test("LIVE post failure soft-fails (ok:false, posted:false), never throws", async () => {
-  const res = await runXBot(baseDeps({ live: true, post: async () => ({ ok: false, error: "create_post_http_403" }) }));
+  const res = await runXBot(baseDeps({ mode: "live", post: async () => ({ ok: false, error: "create_post_http_403" }) }));
   assert.equal(res.ok, false);
   assert.equal(res.posted, false);
   assert.equal(res.error, "create_post_http_403");
@@ -85,7 +85,7 @@ test("LIVE post failure soft-fails (ok:false, posted:false), never throws", asyn
 
 test("a render failure does not block the post (image is best-effort)", async () => {
   let posted = false;
-  await runXBot(baseDeps({ live: true, renderImage: async () => { throw new Error("satori boom"); }, post: async ({ imagePng }) => { posted = imagePng === null; return { ok: true, postId: "1" }; } }));
+  await runXBot(baseDeps({ mode: "live", renderImage: async () => { throw new Error("satori boom"); }, post: async ({ imagePng }) => { posted = imagePng === null; return { ok: true, postId: "1" }; } }));
   assert.equal(posted, true, "post still goes out with null image");
 });
 

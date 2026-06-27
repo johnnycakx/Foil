@@ -1,19 +1,30 @@
-// Daily X content-bot cron (ADR-058). Runs AFTER deals-refresh (08:00 UTC) at
-// 14:00 UTC. Picks the day's angle, renders a branded portrait image from the
-// buy_signals cache (R-008-safe), generates a voice-gated post, then:
-//   - X_BOT_LIVE=true  → posts to X via the lib/social/x-client boundary.
-//   - X_BOT_LIVE=false → (DEFAULT) posts a DRAFT to Discord #content-engine for
-//     review. NO code path reaches the X API while false (see lib/social/bot.ts).
+// Daily X content-bot cron (ADR-058 + ADR-071). Runs AFTER deals-refresh
+// (08:00 UTC) at 14:00 UTC. Picks the day's angle, renders a branded portrait
+// image from the buy_signals cache (R-008-safe), generates a voice-gated post,
+// then branches on X_BOT_MODE (resolveXBotMode; X_BOT_LIVE=true still maps to
+// live for back-compat):
+//   - dry_run  → (DEFAULT) posts a DRAFT to Discord #content-engine for review.
+//   - approval → persists a pending draft + posts an APPROVAL REQUEST (with the
+//     draft id) to #content-engine. Posts to X only on later owner approval via
+//     /api/x/approve. NO code path here reaches the X API in approval mode.
+//   - live     → posts to X immediately via the lib/social/x-client boundary.
 //
 // Auth: same bearer-CRON_SECRET contract as the other crons. Soft-fail.
 
 import { NextResponse } from "next/server";
 import { runXBot } from "@/lib/social/bot";
+import { resolveXBotMode } from "@/lib/social/mode";
 import { getDealsForPost, getSpotlightForPost } from "@/lib/social/data";
 import { generatePostText } from "@/lib/social/post-text";
 import { renderDealsImage, renderSpotlightImage } from "@/lib/social/post-image";
 import { postToX } from "@/lib/social/x-client";
-import { postSocialDraft, postDiscordImage } from "@/lib/notifications/discord";
+import {
+  supabaseDraftStore,
+  bytesToBase64,
+  expiryFrom,
+  DEFAULT_APPROVAL_EXPIRY_HOURS,
+} from "@/lib/social/drafts";
+import { postSocialDraft, postSocialApprovalRequest, postDiscordImage } from "@/lib/notifications/discord";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,11 +36,12 @@ export async function GET(request: Request): Promise<NextResponse> {
   const header = request.headers.get("authorization") ?? request.headers.get("Authorization");
   if (header !== `Bearer ${expected}`) return new NextResponse("unauthorized", { status: 401 });
 
-  const live = process.env.X_BOT_LIVE === "true"; // kill-switch; default false.
+  const mode = resolveXBotMode(process.env); // dry_run | approval | live
   const now = new Date();
+  const contentWebhook = process.env.DISCORD_WEBHOOK_CONTENT_ENGINE;
 
   const result = await runXBot({
-    live,
+    mode,
     now,
     getDeals: getDealsForPost,
     getSpotlight: () => getSpotlightForPost(now),
@@ -45,9 +57,8 @@ export async function GET(request: Request): Promise<NextResponse> {
     },
     post: (x) => postToX({ text: x.text, imagePng: x.imagePng }),
     review: async (draft) => {
-      const webhook = process.env.DISCORD_WEBHOOK_CONTENT_ENGINE;
-      if (!webhook) return;
-      await postSocialDraft(webhook, {
+      if (!contentWebhook) return;
+      await postSocialDraft(contentWebhook, {
         angle: draft.angle,
         text: draft.text,
         link: draft.link,
@@ -56,8 +67,38 @@ export async function GET(request: Request): Promise<NextResponse> {
       });
       // Attach the actual portrait so John reviews the image, not just a note.
       if (draft.imagePng) {
-        await postDiscordImage(webhook, { filename: `x-${draft.angle}.png`, png: draft.imagePng });
+        await postDiscordImage(contentWebhook, { filename: `x-${draft.angle}.png`, png: draft.imagePng });
       }
+    },
+    requestApproval: async (draft) => {
+      // Persist the EXACT text + image so the approved row is the posted row,
+      // then ask the owner to approve in Discord. Never posts to X here.
+      const store = supabaseDraftStore();
+      // Housekeeping: sweep any pending drafts that timed out (never auto-post).
+      await store.expireStale(now.getTime());
+      const expiresAt = expiryFrom(now.getTime(), DEFAULT_APPROVAL_EXPIRY_HOURS);
+      const created = await store.create({
+        angle: draft.angle,
+        text: draft.text,
+        link: draft.link,
+        imageBase64: draft.imagePng ? bytesToBase64(draft.imagePng) : null,
+        expiresAt,
+      });
+      if (!created) return null; // soft-fail: bot.ts reports approval_persist_failed.
+      if (contentWebhook) {
+        await postSocialApprovalRequest(contentWebhook, {
+          draftId: created.id,
+          angle: draft.angle,
+          text: draft.text,
+          link: draft.link,
+          hasImage: !!draft.imagePng,
+          expiresLabel: `${DEFAULT_APPROVAL_EXPIRY_HOURS}h (then auto-skipped)`,
+        });
+        if (draft.imagePng) {
+          await postDiscordImage(contentWebhook, { filename: `x-${draft.angle}.png`, png: draft.imagePng });
+        }
+      }
+      return { id: created.id };
     },
   });
 

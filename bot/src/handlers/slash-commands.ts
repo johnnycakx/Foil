@@ -42,6 +42,18 @@ export const COMMAND_DEFS = [
         .addChoices(...IDEA_CATEGORIES.map((c) => ({ name: c, value: c }))),
     ),
   new SlashCommandBuilder()
+    .setName("approve")
+    .setDescription("Approve the pending X post draft with this id — posts it to X. Owner only.")
+    .addStringOption((opt) =>
+      opt.setName("id").setDescription("The draft id from the #content-engine approval message").setRequired(true),
+    ),
+  new SlashCommandBuilder()
+    .setName("skip")
+    .setDescription("Skip the pending X post draft with this id — it is never posted. Owner only.")
+    .addStringOption((opt) =>
+      opt.setName("id").setDescription("The draft id from the #content-engine approval message").setRequired(true),
+    ),
+  new SlashCommandBuilder()
     .setName("help")
     .setDescription("List my tools and slash commands."),
 ].map((c) => c.toJSON());
@@ -81,6 +93,10 @@ export async function handleSlashCommand(interaction: ChatInputCommandInteractio
       return recallHandler(interaction);
     case "ideas":
       return ideasHandler(interaction);
+    case "approve":
+      return approvalHandler(interaction, "approve");
+    case "skip":
+      return approvalHandler(interaction, "skip");
     case "help":
       return helpHandler(interaction);
     default:
@@ -143,6 +159,72 @@ async function ideasHandler(interaction: ChatInputCommandInteraction): Promise<v
   await interaction.reply({ content: text, ephemeral: true });
 }
 
+/**
+ * Fail-closed owner check for the X approval commands. ONLY the configured owner
+ * may approve/skip. If X_BOT_OWNER_DISCORD_ID is unset, NO ONE qualifies (safe
+ * default — better a locked-out owner than an open approval surface).
+ */
+export function isApprovalOwner(userId: string, ownerId: string | undefined): boolean {
+  return !!ownerId && userId === ownerId;
+}
+
+export type ApprovalEndpointResult =
+  | { ok: true; action: string; postId?: string }
+  | { ok: false; error: string; status?: number };
+
+/**
+ * Relay the owner's decision to the Foil app's /api/x/approve endpoint — the
+ * single X boundary lives there (the bot never calls the X API itself). Bearer
+ * X_APPROVE_SECRET. Injectable appUrl/secret/fetch for tests.
+ */
+export async function callApprovalEndpoint(
+  action: "approve" | "skip",
+  id: string,
+  actor: string,
+  deps: { appUrl?: string; secret?: string; fetchImpl?: typeof fetch } = {},
+): Promise<ApprovalEndpointResult> {
+  const appUrl = (deps.appUrl ?? process.env.FOIL_APP_URL ?? "https://foiltcg.com").replace(/\/+$/, "");
+  const secret = deps.secret ?? process.env.X_APPROVE_SECRET;
+  if (!secret) return { ok: false, error: "X_APPROVE_SECRET not configured" };
+  const fetchFn = deps.fetchImpl ?? fetch;
+  try {
+    const res = await fetchFn(`${appUrl}/api/x/approve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${secret}` },
+      body: JSON.stringify({ id, action, actor }),
+    });
+    const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    if (res.ok && json.ok === true) {
+      return { ok: true, action: String(json.action ?? action), postId: json.postId as string | undefined };
+    }
+    return { ok: false, error: String(json.error ?? `http_${res.status}`), status: res.status };
+  } catch (err) {
+    return { ok: false, error: (err as Error).message };
+  }
+}
+
+async function approvalHandler(
+  interaction: ChatInputCommandInteraction,
+  action: "approve" | "skip",
+): Promise<void> {
+  if (!isApprovalOwner(interaction.user.id, process.env.X_BOT_OWNER_DISCORD_ID)) {
+    await interaction.reply({ content: "Only the configured owner can approve or skip X posts.", ephemeral: true });
+    return;
+  }
+  const id = interaction.options.getString("id", true).trim();
+  await interaction.deferReply({ ephemeral: true });
+  const result = await callApprovalEndpoint(action, id, interaction.user.tag);
+  if (result.ok) {
+    await interaction.editReply(
+      result.action === "posted"
+        ? `Posted to X.${result.postId ? ` Post id \`${result.postId}\`.` : ""}`
+        : `Draft \`${id}\` skipped — it will not be posted.`,
+    );
+    return;
+  }
+  await interaction.editReply(`Could not ${action} draft \`${id}\`: ${result.error}`);
+}
+
 async function helpHandler(interaction: ChatInputCommandInteraction): Promise<void> {
   const toolList = TOOL_DEFINITIONS.map(
     (t) => `• \`${t.name}\` — ${(t.description ?? "").split(". ")[0]}.`,
@@ -156,6 +238,8 @@ async function helpHandler(interaction: ChatInputCommandInteraction): Promise<vo
     `• \`/reset\` — wipe my memory for this channel.`,
     `• \`/recall <query>\` — top-5 semantic recall over my channel history.`,
     `• \`/ideas [category]\` — top-10 captured ideas from docs/IDEAS.md (optionally filtered).`,
+    `• \`/approve <id>\` — (owner) approve a pending X post draft → posts it to X.`,
+    `• \`/skip <id>\` — (owner) skip a pending X post draft → never posted.`,
     `• \`/help\` — this list.`,
     ``,
     `**Tools available to me**`,

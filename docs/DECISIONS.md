@@ -2186,6 +2186,28 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 
 **Cross-refs.** [ADR-069](#adr-069--insight-led-market-movers--good-buys-signal-aggregate-momentum-over-fragile-single-listings--the-like-for-like-currency-gate), [ADR-046](#adr-046--tiered-per-card-rendering--catalog-expansion-to-1000-cards), [ADR-047](#adr-047--ssgisr-hybrid-rendering--metadata-only-tier-for-the-18k-long-tail), [STRATEGY-DATA-INSIGHT-ENGINE.md](STRATEGY-DATA-INSIGHT-ENGINE.md).
 
+## ADR-071 — X content-bot APPROVAL mode (auto-draft → owner approves in Discord → auto-post)
+
+**Date:** 2026-06-26
+**Status:** Accepted. Extends [ADR-058](#adr-058--daily-x-content-bot-dry-run-first-own-posts-only-satori-image-not-playwright) (the daily X bot). Implements `docs/goals/x-approval-gate.md`.
+
+**Context.** ADR-058's bot was binary: `dry_run` (drafts to Discord, never posts) or `X_BOT_LIVE=true` (auto-posts, no review). John wants "I'll approve, but I won't write or post them myself" — a human-in-the-loop gate that's neither writing nor full-auto. Needed: a third mode where the bot drafts daily, the owner approves with one Discord action, and only then does the bot post.
+
+**Decision.**
+1. **Three modes via `X_BOT_MODE` = `dry_run | approval | live`** (`lib/social/mode.ts`). Precedence: `X_BOT_MODE` wins when valid (case-insensitive); else the legacy `X_BOT_LIVE=true` still maps to `live` (back-compat); else `dry_run` (safe default). `runXBot` (`lib/social/bot.ts`) switched from `live: boolean` to `mode`. The safety invariant holds and widened: `deps.post` (the X boundary) is called ONLY in `live`; in `approval` the cron NEVER posts — it persists + asks.
+2. **Mechanism = the Foil HQ Discord bot (`bot/` subtree), not a Next interaction-webhook.** The bot already has a live gateway + slash-command infra + the owner's Discord identity. Owner-gated `/approve <id>` and `/skip <id>` slash commands relay the decision to a bearer-secured Next endpoint. Rejected the interaction-webhook alternative: it needs Ed25519 signature verification AND a bot application to attach button components (plain webhooks can't), so it's strictly more complex; the slash command also can't be auto-triggered by URL prefetch the way an "approve link" could.
+3. **The X boundary stays on ONE runtime (Vercel).** The bot is a thin relay: it POSTs `{id, action, actor}` to `/api/x/approve` (Bearer `X_APPROVE_SECRET` — a DEDICATED secret, not `CRON_SECRET`, so the bot's blast radius is X-approvals only), which calls `postToX` (`lib/social/x-client.ts`, still the sole X caller). X creds never leave Vercel; Railway never touches the X API.
+4. **The persisted draft IS the posted draft.** New `x_post_drafts` table (service-role only, RLS-isolated like `bot_messages` per ADR-013) holds the exact text + the rendered portrait (base64). In approval mode the cron persists this, then sends an approval-request embed (with the draft id) to `#content-engine`. The approve path posts the persisted bytes verbatim — never re-generates — so the approved post can't drift from the shown one even if the deals data moves between draft and approval.
+5. **Safety rails, enforced in code + tested.** Owner-only (`isApprovalOwner` is fail-closed — unset `X_BOT_OWNER_DISCORD_ID` locks everyone out). Pending drafts expire after `DEFAULT_APPROVAL_EXPIRY_HOURS = 12` → auto-skip, NEVER auto-post on timeout (the cron sweeps stale drafts, and `claimForPosting` is expiry-guarded). Idempotent: `claimForPosting` is an ATOMIC conditional update (`pending` + not-expired → `posting`) returning the row, so a double-approve/retry claims at most once; a post that then fails RELEASEs back to `pending` for a clean re-approve.
+
+**Consequences.**
+- **Enablement is multi-surface** (John, at deploy): apply the migration (`supabase db push`); set `X_BOT_MODE=approval` + `X_APPROVE_SECRET` on Vercel; set `X_APPROVE_SECRET` + `X_BOT_OWNER_DISCORD_ID` (+ optional `FOIL_APP_URL`, defaults `https://foiltcg.com`) on the bot's Railway env; redeploy the bot (`git push` → Railway) so the new slash commands register. See `docs/runbooks/x-bot.md`.
+- **The approve path is testable end-to-end** without Discord/Supabase/X: `processApproval` + `InMemoryDraftStore` + an injected poster. `lib/__tests__/x-bot-approval.test.ts` pins mode precedence, never-post-without-approval, post-the-persisted-bytes, expiry auto-skip, double-approve-posts-once, skip, and post-failure-release. The bot owner-gate + relay are pinned in `bot/src/__tests__/approve-command.test.ts`.
+- **`live` (full auto) stays available** as the later graduation once John trusts the voice; flipping `X_BOT_MODE=live` (or the legacy `X_BOT_LIVE=true`) is the one-line change.
+- **Two posting runtimes are NOT introduced** — only Vercel posts. The bot can only *ask* Vercel to post, via the authenticated endpoint.
+
+**Cross-refs.** [ADR-058](#adr-058--daily-x-content-bot-dry-run-first-own-posts-only-satori-image-not-playwright), [ADR-013](#adr-013--foil-hq-discord-ops-bot-as-a-separate-railway-service), [ADR-014](#adr-014--all-outbound-discord-notifications-through-one-module), `docs/runbooks/x-bot.md`, `docs/goals/x-approval-gate.md`.
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

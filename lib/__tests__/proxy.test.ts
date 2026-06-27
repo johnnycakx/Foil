@@ -157,6 +157,16 @@ test("/newsletter landing page is public — Twitter-CTA target (Task #18 / Sess
   assert.equal(isPublicRoute("/newsletter"), true);
 });
 
+test("/api/x/approve is public — bot-triggered, self-gates on X_APPROVE_SECRET (ADR-071)", () => {
+  // The Foil HQ bot POSTs here after the owner approves a draft; the route does
+  // its own bearer check. It must be reachable without a Supabase session or the
+  // proxy would 302 the bot to /login and approval would silently break.
+  assert.equal(isPublicRoute("/api/x/approve"), true);
+  // Exact rule — must not bleed into an adjacent stem.
+  assert.equal(isPublicRoute("/api/x/approve-all"), false);
+  assert.equal(isPublicRoute("/api/x"), false);
+});
+
 test("/api/unsubscribe is public — RFC 8058 one-click + token IS the auth (Task #18)", () => {
   // The endpoint accepts GET (visible-link path) and POST (List-Unsubscribe-
   // Post). The HMAC token in the query string is the only auth — the route
