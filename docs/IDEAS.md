@@ -20,6 +20,50 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 
 ---
 date: 2026-06-27
+category: growth
+status: captured
+---
+## Close the content→metrics loop: let x_post_metrics steer what the X bot posts
+
+We built `x_post_metrics` (daily cron capturing likes/reposts/replies/impressions per post) but aren't feeding it back — post selection + copy structure are still informed guessing. After a few weeks of posts, read which hooks, formats, cards, and angles actually drove engagement and let that steer the generation prompt (or at minimum a monthly "what performed" review). Turns the X bot from "post and hope" into a system that learns on real engagement, not vibes. The plumbing exists; it just needs the feedback path. Pairs with the v2.1 copy rework — measure whether the new hook/format actually lifts engagement instead of assuming it.
+
+**Context:** 2026-06-27 — John invited expansion of the v2.1 copy work. The highest-leverage idea: stop guessing virality, measure it with the metrics we already capture.
+
+---
+date: 2026-06-27
+category: content
+status: captured
+---
+## "Scoreboard" series: call, then result (recurring credibility + virality play)
+
+Each daily deal post ends on a forward hook ("now we watch whether it bounces or keeps sliding"). Turn that into a recurring follow-up 1-2 weeks later: "Two weeks ago Base Set Blastoise was down 17%. Here's where it landed." An honest scoreboard — hits AND misses — builds the rarest currency on Pokémon X (credibility), is dead-on brand (real numbers, accountable, no hype), and doubles the content surface from one daily post into a call + a payoff. Needs the `market_movers`/post history to look up each original call's outcome.
+
+**Context:** 2026-06-27 — surfaced expanding the v2.1 copy work; pairs with the metrics-loop idea above.
+
+---
+date: 2026-06-27
+category: content
+status: captured
+---
+## Borrow Collectrics' data-story framings for X + newsletter (PSA 10 premium movers, graded-vs-raw gap, set heating/cooling)
+
+Turn three of Collectrics' best analytics framings into recurring Foil content, all computable from PokeTrace data we already hold (raw + full PSA ladder + `saleCount` + daily history — the gem-rate/population gap in `grading-leaderboard-data-sources.md` does NOT block these, since the premium story needs only PSA-10-vs-raw prices): (1) **"biggest PSA 10 premium movers this week"** (PSA-10-over-raw premium jumps), (2) a **"graded vs raw gap" leaderboard** (largest PSA-10-over-raw multiple), (3) **"sets heating up / cooling off"** by rolling the existing card-level `market_movers` up to set level. All thumb-stopping, on-brand (calm/numbers, anti-hype), feeding the X bot + newsletter. Plus two low-lift engagement levers he uses: **community polls on X** (reach, amplified by Premium reply-boost) and a **"fair price for this card" mini-calculator** as a newsletter lead-magnet analog to his pack-EV calculator.
+
+**Context:** 2026-06-27 — John flagged mycollectrics.com (built by data-analyst YouTuber @PokeDataDadGuy). Full competitive reassessment in `docs/competitive-collectric.md` (2026-06-27 update). These are the borrowable CONTENT framings (not product); stay in lane (buyer-side live-deal + email moat), steal the framings.
+
+---
+date: 2026-06-27
+category: growth
+status: captured
+---
+## Collectrics is now a fast-shipping, monetized competitor with a YouTube funnel — watch + out-distribute
+
+Collectrics (PokeDataDadGuy / `@TheDayFamilyProject`) grew from a valuation-slider tool (observed 2026-06-01) into a full analytics platform in ~3 weeks: market-trends dashboard, card/sealed leaderboards, set EV, pack-rip calculator, ripping simulator (coming), PSA 10 premium leaderboard, community polls, and a LIVE freemium store. Solo data-analyst dad shipping fast with a YouTube distribution engine (≥1 viral video) — same builder profile as John, so differentiation must stay sharp. His structural gap: no live eBay listings (can't do per-card "is this a good buy right now" = Foil's moat). The freemium store is a proof point that a data-tool freemium can monetize in this niche (reference for Foil's later Pro tier). Action: don't chase his EV/rip-sim lane; out-distribute on buyer-side live-deal + the email moat; revisit next Sunday review.
+
+**Context:** 2026-06-27 — John: "a youtuber is behind it." Confirmed + reassessed; see `docs/competitive-collectric.md` 2026-06-27 update.
+
+---
+date: 2026-06-27
 category: content
 status: captured
 ---
