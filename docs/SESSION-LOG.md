@@ -8,6 +8,15 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-27 (later 2) — Card-hero v2: lock the static frame (Phase 0) + motion spike (Phase 0.5)
+
+**Goal: execute `docs/goals/x-card-hero-v2-motion.md` — Phase 0 (three static fixes, committed on its own + the motion fallback), then the Phase 0.5 motion spike → report findings + go/no-go and STOP before Phase 1 (John signs off). Commit, do not push.** (Claude Code; new ADR-074, extends ADR-058/072/073.)
+
+- **P0 premise check — confirmed, fix-#3 root cause pinned by geometry.** The three edits map exactly to `renderCardHeroImage`; the slogan lived ONLY as a hardcoded string in `post-image.tsx` (no `hero-fields.ts` field), so removal is clean. `x-client.ts` is still the sole X caller (v1.1 base64 `uploadMedia`); the approval/draft path persists base64 PNG bytes + attaches the PNG to `#content-engine`. The red-▼ artifact reproduced numerically: `cardW=636 / top=168` → real 734×1024 art → card-bottom ≈1055, while the bottom-anchored number column put the ▼ at ≈982 → ~73px inside the card's flavor-text region.
+- **Phase 0 (committed on its own).** (1) **Number:** white fill + an 8-direction black `text-shadow` outline (`NUM_OUTLINE`, ±3px) + the soft drop-shadow for depth — the Satori-reliable stroke (WebkitTextStroke is flaky; the spike re-checks it). Lighter outline on the subline (`SUBLINE_OUTLINE`). Default stays white; `goldNumber` toggle retained, unused. (2) **Slogan removed** (`FIND. TRACK. SAVE.` was lifted from a competitor) + lockup re-centered (`top:60`); a `doesNotMatch` drift guard stops it returning. (3) **Overlap fixed by layout:** `CARD_W 636→588`, `CARD_TOP 168→146` (card-bottom ≈966) + the number band **TOP-anchored** at `NUMBER_BAND_TOP=1000` (~34px gap). New structural test computes worst-case card-bottom (734×1024) and asserts it sits above the band.
+- **Gates (Phase 0):** `npx tsc --noEmit` clean; `npm test` **1046 tests, 1028 pass, 0 fail, 18 pre-existing skips**; `npm run build` exit 0 (Satori templates compile, 73/73 static pages); `npm run design:lint` — `lib/social/*` isn't scanned (design:lint covers `app/`+`components/`; only the pre-existing `upload-form.tsx:747 bg-black` warning, untouched). `/security-review` (see below). New **ADR-074**. Conventional `feat:` commit, **not pushed**.
+- **Phase 0.5 motion spike — findings + go/no-go:** _appended below after the measurement (separate docs commit); Phase 1 held for John's sign-off._
+
 ## 2026-06-27 (later) — Card-hero X images (validated design) + the weekly board (Phase 1)
 
 **Goal: execute `docs/goals/x-flywheel-card-hero-and-homepage.md` Phase 1 — the card-hero daily image + the weekly board, matching `docs/social/ref/` with REAL card art. Commit, do not push.** (Claude Code; new ADR-073, extends ADR-058/072. Phase 2 homepage widget deferred.)

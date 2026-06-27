@@ -99,17 +99,36 @@ test("card-hero template: derived bg + real card + dominant-glow box-shadow + st
   assert.match(POST_IMAGE, /src=\{cardUri\}/, "the REAL card art is composed");
   // card lift = drop shadow + dominant-color glow halo (Satori box-shadow).
   assert.match(POST_IMAGE, /boxShadow:.*rgba\(\$\{dominant\.r\}/, "card glow uses the dominant color");
-  // the giant number has a real drop shadow.
-  assert.match(POST_IMAGE, /textShadow: "0 12px 26px rgba\(0,0,0,0\.82\)"/);
+  // the giant number has a bold layered black outline (Satori-reliable stroke)
+  // PLUS the soft drop-shadow for depth (v2 number-legibility fix).
+  assert.match(POST_IMAGE, /NUM_OUTLINE =/);
+  assert.match(POST_IMAGE, /textShadow: NUM_OUTLINE/);
+  assert.match(POST_IMAGE, /-3px -3px 0 #000/, "8-direction black outline offsets");
+  assert.match(POST_IMAGE, /0 12px 26px rgba\(0,0,0,0\.82\)/, "soft drop-shadow retained for depth");
   // the red ▼ is drawn as a CSS triangle and STACKED ABOVE the number.
   const arrowIdx = POST_IMAGE.indexOf("borderTop: `38px solid ${RED}`");
   const numberIdx = POST_IMAGE.indexOf("{input.bigNumber}");
   assert.ok(arrowIdx > 0 && numberIdx > 0 && arrowIdx < numberIdx, "the ▼ must render before (above) the number");
-  // brand restraint: lockup + slogan once, single foiltcg.com CTA.
-  assert.match(POST_IMAGE, /FIND\.  TRACK\.  SAVE\./);
+  // brand restraint: lockup ONCE (no slogan — v2 removed the lifted competitor
+  // line), single foiltcg.com CTA.
+  assert.doesNotMatch(POST_IMAGE, /FIND\.|TRACK\.|SAVE\./, "the competitor slogan must not ship");
   assert.match(POST_IMAGE, /foiltcg\.com/);
   // white number default + gold toggle.
   assert.match(POST_IMAGE, /goldNumber \? GOLD_L : WHITE/);
+});
+
+test("card-hero template (v2): the number band clears the card — no red ▼ overlaps the card art", () => {
+  // The v2 fix: card shrunk + raised, number band TOP-anchored below it. Pin the
+  // chosen offsets and assert the no-overlap invariant on the worst-case (tallest)
+  // pokemontcg.io large image (734×1024).
+  const cardW = Number(POST_IMAGE.match(/const CARD_W = (\d+)/)?.[1]);
+  const cardTop = Number(POST_IMAGE.match(/const CARD_TOP = (\d+)/)?.[1]);
+  const bandTop = Number(POST_IMAGE.match(/const NUMBER_BAND_TOP = (\d+)/)?.[1]);
+  assert.ok(cardW && cardTop && bandTop, "v2 layout constants are present");
+  const cardBottom = cardTop + Math.round(cardW * (1024 / 734));
+  assert.ok(cardBottom < bandTop, `card bottom ${cardBottom} must sit above the number band ${bandTop}`);
+  // the band is TOP-anchored (not the old bottom-anchored column that pushed the ▼ up into the card).
+  assert.match(POST_IMAGE, /position: "absolute", top: NUMBER_BAND_TOP/);
 });
 
 test("board template: DARK name on the light row + long-name clamp + red ▼ + real thumbnail", () => {

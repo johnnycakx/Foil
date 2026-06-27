@@ -2248,6 +2248,26 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 
 **Cross-refs.** [ADR-058](#adr-058--daily-x-content-bot-dry-run-first-own-posts-only-satori-image-not-playwright), [ADR-072](#adr-072--x-deal-angle-sources-from-the-fresh-movers-signal-no-phantom-deals--post-metrics-capture), [ADR-036](#adr-036--home-page-warmth-pass-fraunces--floral), [ADR-055](#adr-055--brand-refresh-foiltcg-wordmark--foil-corner-card-mark-pokeball-retired), `docs/goals/x-flywheel-card-hero-and-homepage.md`, `docs/social/ref/`.
 
+## ADR-074 — Card-hero v2: lock the static frame (number outline, slogan removal, no-overlap layout); motion spiked before building
+
+**Date:** 2026-06-27
+**Status:** Phase 0 (static finalization) **Accepted**. Phase 0.5 (motion spike) + Phase 1 (motion as the standard) **pending John's go/no-go** — the spike findings are amended below after the measurement. Extends [ADR-073](#adr-073--card-hero-x-image-real-card-art-over-a-sharp-derived-world-satori-cant-blur--the-weekly-board) (the card-hero render), [ADR-058](#adr-058--daily-x-content-bot-dry-run-first-own-posts-only-satori-image-not-playwright) (the X image path), [ADR-072](#adr-072--x-deal-angle-sources-from-the-fresh-movers-signal-no-phantom-deals--post-metrics-capture) (the data source). Implements `docs/goals/x-card-hero-v2-motion.md`.
+
+**Context.** ADR-073's card-hero shipped as a strong first pass. John's deploy review surfaced three finalization fixes; the static frame must be locked first because it is both the permanent **fallback** (motion soft-fails to the still) and the **base frame** any motion layer animates.
+
+**Decision (Phase 0 — `lib/social/post-image.tsx::renderCardHeroImage`).**
+1. **Number legibility — white fill + bold layered black outline.** The giant number kept only a soft drop-shadow, which washed out on light card-derived worlds. It now carries an 8-direction black `text-shadow` outline (`±3px` offsets) **plus** the existing soft drop-shadow (`NUM_OUTLINE`). A layered `text-shadow` is the **Satori-reliable** way to fake a stroke — `WebkitTextStroke` support in Satori is partial/historically flaky, so it is *not* relied on (the spike re-checks it as a possible future simplification). Default stays **white** (John's pick); the `goldNumber` toggle is retained, unused. The subline got a lighter (`±1.5px`) outline for legibility (`SUBLINE_OUTLINE`); support line + CTA unchanged.
+2. **Slogan removed.** `FIND. TRACK. SAVE.` was lifted from a competitor and must not ship — deleted from the template (it lived only as a hardcoded string in `post-image.tsx`, no `hero-fields.ts` field). The lockup was re-centered (`top: 60`) so the top doesn't read orphaned. A drift guard (`assert.doesNotMatch(/FIND\.|TRACK\.|SAVE\./)`) ensures it can't return.
+3. **Red ▼ overlap fixed by layout.** Root cause (geometry, reproduced): with `cardW=636 / top=168`, real 734×1024 art gave card-bottom ≈1055, while the bottom-anchored number column pushed the red ▼ to ≈982 — ~73px *inside* the card's flavor-text region. Fix: shrink the card (`CARD_W 636→588`) + raise it (`CARD_TOP 168→146`) → card-bottom ≈966, and **TOP-anchor** the number band (`NUMBER_BAND_TOP=1000`) so it sits in a clear lower band (~34px gap). Pinned by a structural test that computes worst-case card-bottom (734×1024 ratio) and asserts it is above the band.
+
+**Consequences.**
+- Same verification boundary as ADR-073: build-validated + structurally pinned; the final pixel match is John's deploy-time `#content-engine` review. The static frame is committed on its own (independently shippable + the motion fallback).
+- The motion build (Phase 1) is **not** bundled here — it is gated on the Phase 0.5 spike below + John's sign-off, because in-cron video encode has real infra risk (function time/memory/output-size limits, a new X upload path, Discord clip preview).
+
+**Phase 0.5 motion spike (findings + go/no-go).** _Amended after the measurement — see the SESSION-LOG `2026-06-27` card-hero-v2 entry._
+
+**Cross-refs.** [ADR-073](#adr-073--card-hero-x-image-real-card-art-over-a-sharp-derived-world-satori-cant-blur--the-weekly-board), [ADR-058](#adr-058--daily-x-content-bot-dry-run-first-own-posts-only-satori-image-not-playwright), [ADR-072](#adr-072--x-deal-angle-sources-from-the-fresh-movers-signal-no-phantom-deals--post-metrics-capture), `docs/goals/x-card-hero-v2-motion.md`.
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

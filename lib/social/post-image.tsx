@@ -24,6 +24,25 @@ const SLATE = "#8B97B5";
 const RED = "#ee5054"; // the down ▼ + board percentages
 const WHITE = "#fdfdfb"; // the giant number default (highest scroll-stop)
 
+// --- Card-hero v2 layout + number-outline constants (pinned by card-hero-image.test.ts) ---
+// The number band is TOP-anchored BELOW the card so the red ▼ can never overlap
+// the card art (the v2 fix). Card shrunk 636→588 + raised 168→146 to open the
+// lower band; card bottom (real 734×1024 art) ≈ 146 + 820 = 966 < NUMBER_BAND_TOP.
+const CARD_W = 588; // ~54% of the 1080 frame (was 636; shrunk to clear the number band)
+const CARD_TOP = 146; // card top (raised from 168)
+const NUMBER_BAND_TOP = 1000; // number block top; card bottom ≈966 → ~34px guaranteed gap
+// White fill + a bold layered black outline (8 directional offsets) so the giant
+// number reads on ANY card-derived world, PLUS the soft drop-shadow for depth. A
+// layered text-shadow is the Satori-reliable stroke (WebkitTextStroke is flaky).
+const NUM_OUTLINE =
+  "-3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, " +
+  "0 -3px 0 #000, 0 3px 0 #000, -3px 0 0 #000, 3px 0 0 #000, " +
+  "0 12px 26px rgba(0,0,0,0.82)";
+// Lighter outline for the subline (legibility over the blurred world).
+const SUBLINE_OUTLINE =
+  "-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000, " +
+  "0 4px 10px rgba(0,0,0,0.6)";
+
 async function loadFredoka(): Promise<ArrayBuffer | null> {
   try {
     const css = await fetch("https://fonts.googleapis.com/css2?family=Fredoka:wght@700", {
@@ -72,9 +91,10 @@ function Frame({ date, children }: { date: string; children: React.ReactNode }) 
 
 /**
  * Card-hero X image (ADR-072 follow-up) — the validated daily deal/spotlight
- * design (scored 8.35 vs the board's 7.75). Brand lockup + slogan once at top,
- * the REAL card art lifted over its OWN derived "world" background, a stacked red
- * ▼ above a giant drop-shadowed number, a support line, and one foiltcg.com CTA.
+ * design (scored 8.35 vs the board's 7.75). Brand lockup once at top (no slogan —
+ * v2 removed the lifted competitor line), the REAL card art lifted over its OWN
+ * derived "world" background, a stacked red ▼ above a giant white outlined number
+ * (layered black stroke + drop-shadow), a support line, and one foiltcg.com CTA.
  * The background is pre-blurred by sharp (card-bg.ts) because Satori cannot blur;
  * the card's drop-shadow + dominant-color glow halo use Satori box-shadow. White
  * number by default; `goldNumber` toggles the gold alternate.
@@ -92,7 +112,7 @@ export async function renderCardHeroImage(input: {
   // Normalize the card to PNG (Satori reads the data URI) + read its real aspect.
   const cardPng = await sharp(input.artBuffer).png().toBuffer();
   const meta = await sharp(cardPng).metadata();
-  const cardW = 636; // ~59% of the 1080 frame (validated design)
+  const cardW = CARD_W; // see the layout constants above (v2: shrunk to clear the number band)
   const cardH = Math.round(cardW * ((meta.height ?? 1024) / (meta.width ?? 734)));
   const { background, dominant } = await buildCardWorld(input.artBuffer);
   const bgUri = `data:image/png;base64,${background.toString("base64")}`;
@@ -104,8 +124,8 @@ export async function renderCardHeroImage(input: {
     <div style={{ position: "relative", width: HERO_W, height: HERO_H, display: "flex" }}>
       <img src={bgUri} width={HERO_W} height={HERO_H} style={{ position: "absolute", top: 0, left: 0 }} />
 
-      {/* brand lockup + slogan, ONCE, top centered */}
-      <div style={{ position: "absolute", top: 46, left: 0, width: HERO_W, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      {/* brand lockup, ONCE, top centered (no slogan — v2) */}
+      <div style={{ position: "absolute", top: 60, left: 0, width: HERO_W, display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center" }}>
           <div style={{ position: "relative", width: 54, height: 54, borderRadius: 13, backgroundColor: GOLD, display: "flex", overflow: "hidden" }}>
             <div style={{ position: "absolute", top: 14, left: -6, width: 66, height: 6, backgroundColor: "#fff6dc", opacity: 0.85, transform: "rotate(-38deg)" }} />
@@ -115,7 +135,6 @@ export async function renderCardHeroImage(input: {
             <span style={{ color: GOLD_L }}>&nbsp;TCG</span>
           </div>
         </div>
-        <div style={{ display: "flex", marginTop: 12, fontFamily: "Fredoka", fontWeight: 600, fontSize: 20, letterSpacing: 7, color: GOLD_L }}>FIND.  TRACK.  SAVE.</div>
       </div>
 
       {/* the REAL card, lifted over its own world (drop-shadow + dominant glow) */}
@@ -125,20 +144,21 @@ export async function renderCardHeroImage(input: {
         height={cardH}
         style={{
           position: "absolute",
-          top: 168,
+          top: CARD_TOP,
           left: cardLeft,
           borderRadius: 20,
           boxShadow: `0 28px 64px rgba(0,0,0,0.55), 0 0 110px 12px rgba(${dominant.r}, ${dominant.g}, ${dominant.b}, 0.5)`,
         }}
       />
 
-      {/* number block, bottom — ▼ stacked ABOVE the number (centering fix) */}
-      <div style={{ position: "absolute", bottom: 40, left: 0, width: HERO_W, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      {/* number block — TOP-anchored BELOW the card so the red ▼ never overlaps
+          the card art (v2 fix). ▼ stacked ABOVE the number (centering fix). */}
+      <div style={{ position: "absolute", top: NUMBER_BAND_TOP, left: 0, width: HERO_W, display: "flex", flexDirection: "column", alignItems: "center" }}>
         {input.showArrow ? (
           <div style={{ width: 0, height: 0, marginBottom: 16, borderLeft: "27px solid transparent", borderRight: "27px solid transparent", borderTop: `38px solid ${RED}` }} />
         ) : null}
-        <div style={{ display: "flex", fontFamily: "Fredoka", fontWeight: 700, fontSize: 140, lineHeight: 1, color: numCol, textShadow: "0 12px 26px rgba(0,0,0,0.82)" }}>{input.bigNumber}</div>
-        <div style={{ display: "flex", marginTop: 14, fontFamily: "Fredoka", fontWeight: 500, fontSize: 34, color: CREAM, textShadow: "0 4px 10px rgba(0,0,0,0.6)" }}>{input.subline}</div>
+        <div style={{ display: "flex", fontFamily: "Fredoka", fontWeight: 700, fontSize: 140, lineHeight: 1, color: numCol, textShadow: NUM_OUTLINE }}>{input.bigNumber}</div>
+        <div style={{ display: "flex", marginTop: 14, fontFamily: "Fredoka", fontWeight: 500, fontSize: 34, color: CREAM, textShadow: SUBLINE_OUTLINE }}>{input.subline}</div>
         <div style={{ display: "flex", marginTop: 18, fontSize: 23, color: SLATE }}>{input.supportLine}</div>
         <div style={{ display: "flex", marginTop: 20, fontFamily: "Fredoka", fontWeight: 600, fontSize: 25, color: GOLD_L }}>foiltcg.com</div>
       </div>
