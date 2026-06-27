@@ -101,6 +101,20 @@ export async function postWebhook(input: PostWebhookInput): Promise<PostWebhookR
   return { ok: false, status: lastStatus, error: lastError };
 }
 
+/**
+ * Send an arbitrary one-off text message to a channel webhook. The sanctioned
+ * path for ad-hoc ops pings (e.g. the autonomous goal-runner status, ADR-075)
+ * that don't warrant a shaped embed helper. Soft-fail; Discord content caps at
+ * 2000 chars. Keeps the single-import-boundary rule intact.
+ */
+export async function notifyChannel(
+  webhookUrl: string,
+  text: string,
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<PostWebhookResult> {
+  return postWebhook({ webhookUrl, content: (text ?? "").slice(0, 2000), fetchImpl: opts.fetchImpl });
+}
+
 // ---------------------------------------------------------------------------
 // Shape helpers — encode each channel's "look" so callers stay terse.
 // ---------------------------------------------------------------------------

@@ -2277,6 +2277,27 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 
 **Cross-refs.** [ADR-073](#adr-073--card-hero-x-image-real-card-art-over-a-sharp-derived-world-satori-cant-blur--the-weekly-board), [ADR-058](#adr-058--daily-x-content-bot-dry-run-first-own-posts-only-satori-image-not-playwright), [ADR-072](#adr-072--x-deal-angle-sources-from-the-fresh-movers-signal-no-phantom-deals--post-metrics-capture), `docs/goals/x-card-hero-v2-motion.md`.
 
+## ADR-075 — Autonomous goal-runner: headless Claude Code, queue-fed, commit-never-push
+
+**Date:** 2026-06-27
+**Status:** Accepted + Built. Extends [ADR-009](#adr-009--local-cli-tooling-for-autonomous-infra-changes) (the local-CLI-autonomy line). Implements `docs/goals/autonomous-goal-runner.md`.
+
+**Context.** Cowork (the co-CEO/COO advisor) can write goal specs from its sandbox but cannot puppet an interactive terminal, and John wants work to continue while he's away ("go to the gym and have work continue"). No agent can drive an interactive Claude Code session. The durable fix is to route around the terminal: a queue Cowork writes to + a long-running watcher John starts once.
+
+**Decision.** A two-layer runner:
+- **`lib/goal-runner/core.ts` (pure):** the decision logic with no fs/git/network/clock side effects, so it is fully unit-testable — queue ordering (FIFO by `NN-` prefix), the commit/no-commit + status derivation, conventional-commit-type inference, result-file + Discord shaping, `DECISION NEEDED` extraction, and the **`gitArgsAreSafe` never-push guard** (the single chokepoint).
+- **`scripts/goal-runner.ts` (`npm run goals:watch`):** the I/O loop. Polls `docs/goals/_queue/` (all gitignored, like `docs/goals/`), runs each spec via `claude -p` (spec piped on stdin + a preamble forbidding push/deploy/migration and instructing `DECISION NEEDED:` on a fork), then **independently** runs the closure gates (`tsc/test/build/design:lint`), and:
+  - all green → `git add -A` + conventional commit, **never `git push`**;
+  - any gate fails / agent errored → discard (`git reset --hard` + `git clean -fd`, restoring the clean tree), mark **BLOCKED**;
+  - a fork needs John → commit the safe work (never pushed) + flag **DECISION_NEEDED**.
+  Then move the spec to `_done/`, write `_results/<name>.md`, and soft-fail a Discord ping.
+
+**Safety model (stated plainly).** The containment is NOT the permission prompt — the agent runs `--dangerously-skip-permissions` because that is the only mode that runs a gate-running goal end-to-end without hanging on a Bash prompt. The containment is: (1) **commits, never pushes** — `gitArgsAreSafe` refuses `push`/`pull`/`fetch`/`remote`/`clone`/`--force` and the script asserts it before every git spawn, so nothing reaches prod unattended (John reviews then pushes); (2) every commit passed the full gate suite; (3) goals are pre-scoped specs, not freeform; (4) **sole committer** — the runner refuses a dirty tree at startup and runs one goal at a time, so it can't race another committer or clobber WIP; (5) kill switch = Ctrl-C. Pushes, deploys, prod migrations, and financial/irreversible actions stay manual — the runner refuses them and writes DECISION NEEDED.
+
+**Consequences.** `/security-review` is a Claude Code skill, not a CLI, so the runner can't run it — the **agent** runs it as part of the goal contract; the runner enforces the 4 mechanical CLI gates. Running `build` per goal is slow but acceptable for an away-from-keyboard tool (configurable via `GOAL_RUNNER_GATES`). The new env are all optional operational config (`GOAL_RUNNER_*`), documented in ENV-VARS; the Discord ping reuses `DISCORD_WEBHOOK_CONTENT_ENGINE`. The runbook (`docs/runbooks/goal-runner.md`) documents the start command, the one operating rule (sole committer), the safety model, and a supervised first-run. The pure core is unit-tested (16 cases incl. the never-push guard); the I/O loop is smoke-verified (loads, creates the gitignored dirs, the dirty-tree guard fires) — John does the first supervised real run before trusting it unattended.
+
+**Cross-refs.** [ADR-009](#adr-009--local-cli-tooling-for-autonomous-infra-changes), [ADR-014](#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary) (the Discord boundary `notifyChannel` reuses), `docs/runbooks/goal-runner.md`, `docs/goals/autonomous-goal-runner.md`.
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).
