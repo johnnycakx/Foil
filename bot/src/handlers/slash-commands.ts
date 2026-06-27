@@ -59,10 +59,30 @@ export const COMMAND_DEFS = [
 ].map((c) => c.toJSON());
 
 /**
- * Register the slash commands. If a guild id is provided, registers
- * guild-scoped (instant); otherwise registers globally (1-hour propagation).
- *
- * Pass DISCORD_GUILD_ID via env to scope commands to your dev server.
+ * Which guilds to register commands to. Guild-scoped registration is INSTANT,
+ * whereas global registration takes ~1h to propagate AND the stale set lingers
+ * until it does (which is why a new `/approve` looked "not registered"). So
+ * prefer guild-scoped: an explicit `DISCORD_GUILD_ID` wins; otherwise register
+ * to every guild the bot is currently in (the ops bot lives in one private
+ * server, so this needs no extra config). An empty result tells the caller to
+ * fall back to global registration. Pure + unit-tested.
+ */
+export function resolveRegistrationGuildIds(
+  explicitGuildId: string | undefined,
+  joinedGuildIds: string[],
+): string[] {
+  const explicit = explicitGuildId?.trim();
+  if (explicit) return [explicit];
+  return joinedGuildIds;
+}
+
+/**
+ * Register the slash commands on startup. Registers GUILD-SCOPED (instant) to the
+ * bot's joined guild(s) by default — `client.guilds.cache` is populated by the
+ * time ClientReady fires — so newly-added commands (e.g. `/approve` + `/skip`)
+ * appear immediately on deploy, with no ~1h global-propagation lag. Set
+ * `DISCORD_GUILD_ID` to pin a single guild; if no guild is known it falls back
+ * to global registration. Soft-fails (logs, never throws).
  */
 export async function registerSlashCommands(client: Client): Promise<void> {
   const token = process.env.DISCORD_BOT_TOKEN;
@@ -72,17 +92,21 @@ export async function registerSlashCommands(client: Client): Promise<void> {
     return;
   }
   const rest = new REST({ version: "10" }).setToken(token);
-  const guildId = process.env.DISCORD_GUILD_ID;
-  const route = guildId ? Routes.applicationGuildCommands(appId, guildId) : Routes.applicationCommands(appId);
+  const guildIds = resolveRegistrationGuildIds(process.env.DISCORD_GUILD_ID, [...client.guilds.cache.keys()]);
   try {
-    await rest.put(route, { body: COMMAND_DEFS });
-    console.log(`[slash] registered ${COMMAND_DEFS.length} command(s) ${guildId ? `to guild ${guildId}` : "globally"}`);
+    if (guildIds.length > 0) {
+      for (const gid of guildIds) {
+        await rest.put(Routes.applicationGuildCommands(appId, gid), { body: COMMAND_DEFS });
+      }
+      console.log(`[slash] registered ${COMMAND_DEFS.length} command(s) to ${guildIds.length} guild(s): ${guildIds.join(", ")}`);
+    } else {
+      // No guild in cache (shouldn't happen post-ClientReady) → global (~1h).
+      await rest.put(Routes.applicationCommands(appId), { body: COMMAND_DEFS });
+      console.log(`[slash] registered ${COMMAND_DEFS.length} command(s) globally (no guilds in cache)`);
+    }
   } catch (err) {
     console.warn("[slash] command registration failed:", (err as Error).message);
   }
-  // Reference `client` so eslint doesn't complain — discord.js doesn't require
-  // it for REST registration but accepting it keeps the API parallel to handlers.
-  void client;
 }
 
 export async function handleSlashCommand(interaction: ChatInputCommandInteraction): Promise<void> {

@@ -4,7 +4,24 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { isApprovalOwner, callApprovalEndpoint } from "../handlers/slash-commands.ts";
+import { isApprovalOwner, callApprovalEndpoint, resolveRegistrationGuildIds } from "../handlers/slash-commands.ts";
+
+// --- command registration scope (guild-scoped = instant; the enablement fix) ---
+
+test("resolveRegistrationGuildIds: an explicit DISCORD_GUILD_ID wins", () => {
+  assert.deepEqual(resolveRegistrationGuildIds("555", ["111", "222"]), ["555"]);
+  assert.deepEqual(resolveRegistrationGuildIds("  555  ", []), ["555"], "trimmed");
+});
+
+test("resolveRegistrationGuildIds: with no explicit id, register to the bot's joined guild(s) (instant)", () => {
+  assert.deepEqual(resolveRegistrationGuildIds(undefined, ["111", "222"]), ["111", "222"]);
+  assert.deepEqual(resolveRegistrationGuildIds("", ["111"]), ["111"]);
+});
+
+test("resolveRegistrationGuildIds: empty result (no guilds known) signals the global fallback", () => {
+  assert.deepEqual(resolveRegistrationGuildIds(undefined, []), []);
+  assert.deepEqual(resolveRegistrationGuildIds("   ", []), []);
+});
 
 // --- owner gate (fail-closed) ---
 
