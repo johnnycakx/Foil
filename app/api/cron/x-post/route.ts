@@ -101,7 +101,7 @@ export async function GET(request: Request): Promise<NextResponse> {
       if (input.angle !== "deal_of_day" && input.angle !== "price_spotlight") return null;
       return renderCardHeroMotion({ stillPng: still });
     },
-    post: (x) => postToX({ text: x.text, imagePng: x.imagePng, videoMp4: x.videoMp4 }),
+    post: (x) => postToX({ text: x.text, imagePng: x.imagePng, videoMp4: x.videoMp4, linkReply: x.linkReply }),
     review: async (draft) => {
       if (!contentWebhook) return;
       await postSocialDraft(contentWebhook, {

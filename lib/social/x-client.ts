@@ -9,8 +9,14 @@
 //   - media upload: POST https://upload.twitter.com/1.1/media/upload.json
 //     (multipart `media`; OAuth 1.0a; returns { media_id_string }).
 //   - create post: POST https://api.x.com/2/tweets  { text, media:{ media_ids } }.
-// COST: a post containing a URL is $0.20 per request (pay-per-use); set a
-// spending cap in the X developer console. See docs/runbooks/x-bot.md.
+//   - reply (Fix 3b): same endpoint with reply:{ in_reply_to_tweet_id } (per
+//     docs.x.com/x-api/posts/creation-of-a-post, fetched 2026-06-27). The main
+//     tweet stays LINK-FREE for reach (X throttles posts with a link); the card
+//     link is posted as the first reply.
+// COST: a post containing a URL is $0.20 per request, a link-free post ~$0.015
+// (pay-per-use). A link-in-reply thread is therefore ~$0.015 (main) + $0.20
+// (reply) ~= $0.215, vs $0.20 for a single post-with-link. Set a spending cap in
+// the X developer console. See docs/runbooks/x-bot.md.
 //
 // VERIFY-ON-ENABLE: X's media-upload auth has been migrating (v1.1 vs /2/media/
 // upload, OAuth 1.0a vs 2.0). This client targets the documented v1.1 + OAuth1
@@ -49,6 +55,10 @@ export type PostToXInput = {
   /** Optional MP4 motion clip (ADR-074). Preferred when present; on an upload
    *  reject we fall back to `imagePng` so a post never goes out empty. */
   videoMp4?: Uint8Array | null;
+  /** Fix 3b: the card/board link to post as the FIRST REPLY (the body stays
+   *  link-free for reach). Best-effort: a reply failure never fails the post —
+   *  the main tweet is already out. Null/empty → no reply. */
+  linkReply?: string | null;
   fetchImpl?: typeof fetch;
   /** Test/explicit creds; defaults to reading the X_* env vars. */
   credentials?: XCredentials;
@@ -57,7 +67,7 @@ export type PostToXInput = {
 };
 
 export type PostToXResult =
-  | { ok: true; postId: string; mediaId?: string }
+  | { ok: true; postId: string; mediaId?: string; replyId?: string }
   | { ok: false; error: string };
 
 /** Read OAuth 1.0a user-context creds from env. Null if any are missing. */
@@ -224,6 +234,36 @@ export async function uploadVideoMedia(
 
 type ProcessingInfo = { state: string; check_after_secs?: number; error?: { message?: string } };
 
+// --- create a post (optionally with media, optionally as a reply) ------------
+
+/** POST /2/tweets. `mediaId` attaches media; `inReplyToTweetId` threads it as a
+ *  reply (Fix 3b). JSON body → not folded into the OAuth signature. Soft-fails. */
+async function createPost(
+  text: string,
+  creds: XCredentials,
+  fetchFn: typeof fetch,
+  opts: { mediaId?: string; inReplyToTweetId?: string } = {},
+): Promise<{ ok: true; postId: string } | { ok: false; error: string }> {
+  try {
+    const payload: Record<string, unknown> = { text };
+    if (opts.mediaId) payload.media = { media_ids: [opts.mediaId] };
+    if (opts.inReplyToTweetId) payload.reply = { in_reply_to_tweet_id: opts.inReplyToTweetId };
+    const auth = oauthHeader("POST", CREATE_POST_URL, creds); // JSON body → not signed
+    const res = await fetchFn(CREATE_POST_URL, {
+      method: "POST",
+      headers: { Authorization: auth, "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) return { ok: false, error: `create_post_http_${res.status}` };
+    const json = (await res.json()) as { data?: { id?: string } };
+    const postId = json.data?.id;
+    if (!postId) return { ok: false, error: "create_post_no_id" };
+    return { ok: true, postId };
+  } catch (err) {
+    return { ok: false, error: `create_post_failed: ${(err as Error).message}` };
+  }
+}
+
 // --- read: per-tweet public engagement metrics (ADR-071 follow-up, Part 2) ----
 
 export type TweetMetrics = {
@@ -327,21 +367,19 @@ export async function postToX(input: PostToXInput): Promise<PostToXResult> {
     mediaId = up.mediaId;
   }
 
-  try {
-    const payload: Record<string, unknown> = { text: input.text };
-    if (mediaId) payload.media = { media_ids: [mediaId] };
-    const auth = oauthHeader("POST", CREATE_POST_URL, creds); // JSON body → not signed
-    const res = await fetchFn(CREATE_POST_URL, {
-      method: "POST",
-      headers: { Authorization: auth, "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) return { ok: false, error: `create_post_http_${res.status}` };
-    const json = (await res.json()) as { data?: { id?: string } };
-    const postId = json.data?.id;
-    if (!postId) return { ok: false, error: "create_post_no_id" };
-    return { ok: true, postId, mediaId };
-  } catch (err) {
-    return { ok: false, error: `create_post_failed: ${(err as Error).message}` };
+  const main = await createPost(input.text, creds, fetchFn, mediaId ? { mediaId } : {});
+  if (!main.ok) return { ok: false, error: main.error };
+
+  // Fix 3b: the body is link-free for reach; post the link as the first reply.
+  // Best-effort — the main tweet is already out, so a reply failure must NOT
+  // fail the post (we just don't get the threaded link). Reported via replyId.
+  let replyId: string | undefined;
+  const linkReply = input.linkReply?.trim();
+  if (linkReply) {
+    const reply = await createPost(linkReply, creds, fetchFn, { inReplyToTweetId: main.postId });
+    if (reply.ok) replyId = reply.postId;
+    else console.warn("[x-client] link reply failed (main post is live):", reply.error);
   }
+
+  return { ok: true, postId: main.postId, mediaId, ...(replyId ? { replyId } : {}) };
 }

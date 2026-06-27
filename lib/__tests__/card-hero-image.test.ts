@@ -23,20 +23,20 @@ const DEAL: DealData = {
 
 // --- hero fields (pure) ---
 
-test("heroFieldsForDeal: % below framing, red arrow, real support line", () => {
+test("heroFieldsForDeal: % below framing, real support line (no arrow field — v2.1)", () => {
   const f = heroFieldsForDeal(DEAL);
   assert.equal(f.bigNumber, "17%"); // 16.8 rounds to 17
   assert.equal(f.subline, "below its 30-day sold average");
-  assert.equal(f.showArrow, true);
   assert.equal(f.supportLine, "Blastoise · Base Set · Near Mint · $120 avg · 51 sales");
+  assert.equal("showArrow" in f, false, "the arrow flag was removed in v2.1");
 });
 
-test("heroFieldsForSpotlight: a price (no arrow — it's not a drop)", () => {
+test("heroFieldsForSpotlight: a price", () => {
   const s: SpotlightData = { cardName: "Charizard", setName: "Base Set", slug: "base1-4-charizard", soldReference: 350, sampleSize: 168, imageUrl: "x" };
   const f = heroFieldsForSpotlight(s);
   assert.equal(f.bigNumber, "$350");
-  assert.equal(f.showArrow, false, "a spotlight is a price, never a red down-arrow");
   assert.match(f.supportLine, /Charizard · Base Set · \$350 avg · 168 sales/);
+  assert.equal("showArrow" in f, false, "the arrow flag was removed in v2.1");
 });
 
 test("clampName: long names are truncated so they can't collide with the % column", () => {
@@ -92,7 +92,7 @@ test("buildUserPrompt(weekly_board): lists the real cards + aggregate framing, p
 
 // --- structural anchors: the card-hero template (post-image.tsx) ---
 
-test("card-hero template: derived bg + real card + dominant-glow box-shadow + stacked ▼ above the number", () => {
+test("card-hero template: derived bg + real card + dominant-glow box-shadow + NO red ▼ (v2.1)", () => {
   // background = the sharp-derived world (data URI) behind everything.
   assert.match(POST_IMAGE, /buildCardWorld/);
   assert.match(POST_IMAGE, /src=\{bgUri\}/);
@@ -105,12 +105,12 @@ test("card-hero template: derived bg + real card + dominant-glow box-shadow + st
   assert.match(POST_IMAGE, /textShadow: NUM_OUTLINE/);
   assert.match(POST_IMAGE, /-3px -3px 0 #000/, "8-direction black outline offsets");
   assert.match(POST_IMAGE, /0 12px 26px rgba\(0,0,0,0\.82\)/, "soft drop-shadow retained for depth");
-  // the red ▼ is drawn as a CSS triangle and STACKED ABOVE the number.
-  const arrowIdx = POST_IMAGE.indexOf("borderTop: `38px solid ${RED}`");
-  const numberIdx = POST_IMAGE.indexOf("{input.bigNumber}");
-  assert.ok(arrowIdx > 0 && numberIdx > 0 && arrowIdx < numberIdx, "the ▼ must render before (above) the number");
-  // brand restraint: lockup ONCE (no slogan — v2 removed the lifted competitor
-  // line), single foiltcg.com CTA.
+  // v2.1: the red ▼ is GONE from the card-hero (it encoded as a red rectangle in
+  // the MP4 frame). The number block must not draw the triangle or read showArrow.
+  assert.equal(POST_IMAGE.includes("38px solid ${RED}"), false, "the card-hero red ▼ is removed");
+  assert.doesNotMatch(POST_IMAGE, /input\.showArrow/, "no showArrow flag in the card-hero");
+  // brand restraint: lockup ONCE (no slogan — the lifted competitor line was
+  // removed), single foiltcg.com CTA.
   assert.doesNotMatch(POST_IMAGE, /FIND\.|TRACK\.|SAVE\./, "the competitor slogan must not ship");
   assert.match(POST_IMAGE, /foiltcg\.com/);
   // white number default + gold toggle.

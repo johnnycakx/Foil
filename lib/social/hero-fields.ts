@@ -9,9 +9,6 @@ export type HeroFields = {
   bigNumber: string;
   /** The line under the number, e.g. "below its 30-day sold average". */
   subline: string;
-  /** Whether to stack the red ▼ above the number (deals only — a spotlight is
-   *  a price, not a drop). */
-  showArrow: boolean;
   /** "Name · Set · Condition · $avg avg · N sales". */
   supportLine: string;
 };
@@ -32,23 +29,23 @@ function humanTier(t: string | null): string {
   return raw[t] ?? t.replace(/_/g, " ");
 }
 
-/** Deal hero: a card trading below its own 30-day average. Red ▼ + "% below". */
+/** Deal hero: a card trading below its own 30-day average. The big "% below" +
+ *  the subline carry the "down" meaning (the red ▼ was removed in v2.1 — it
+ *  encoded as a red rectangle in the MP4 frame and was redundant). */
 export function heroFieldsForDeal(d: DealData): HeroFields {
   const tier = humanTier(d.matchedTier) || "Near Mint";
   return {
     bigNumber: `${Math.round(Math.abs(d.deltaPct))}%`,
     subline: "below its 30-day sold average",
-    showArrow: true,
     supportLine: `${d.cardName} · ${d.setName} · ${tier} · ${usd(d.soldReference)} avg · ${d.saleCount} sales`,
   };
 }
 
-/** Spotlight hero: a popular card's recent price. No ▼ (it's a price, not a drop). */
+/** Spotlight hero: a popular card's recent price. */
 export function heroFieldsForSpotlight(s: SpotlightData): HeroFields {
   return {
     bigNumber: usd(s.soldReference),
     subline: "recent sold average",
-    showArrow: false,
     supportLine: `${s.cardName} · ${s.setName} · ${usd(s.soldReference)} avg · ${s.sampleSize} sales`,
   };
 }

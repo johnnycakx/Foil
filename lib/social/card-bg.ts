@@ -1,29 +1,34 @@
-// Card-derived background generator (ADR-072 follow-up — the card-hero X image).
+// Card-derived background generator (ADR-073; v2.1 simplification per the
+// ADR-074 amendment).
 //
-// Satori (next/og) CANNOT Gaussian-blur, so the card's "own world" background is
-// pre-rendered here with sharp (already a dependency, see lib/crop.ts), then
-// Satori composes the sharp card + text over it. This ports the validated
-// `derived_bg` algorithm from docs/social/ref/card-hero-prototype.py:
-//   cover-fill the card art -> heavy blur -> darken -> blend a navy undertone
-//   (brand cohesion) -> a dominant-color glow halo behind the card -> vignette.
-// So a blue card yields a blue world, a Charizard a warm one, always carrying
-// Foil's navy/gold identity. Server-only (sharp is native).
+// v2.0 derived a "world" by cover-filling the card art, heavy-blurring it,
+// darkening, tinting navy, then vignetting. To the human eye that read as a
+// muddy blurred screenshot of the card behind itself. v2.1 replaces the blurred
+// CARD-IMAGE background with a CLEAN two-stop gradient: brand navy easing into a
+// navy *tinted* by the card's dominant color (so a blue card still gives a
+// bluish world, brand-cohesive without the mess). The one part that read as
+// premium is KEPT: the soft dominant-color glow halo behind the card. No blurred
+// cover, no heavy vignette.
+//
+// Still built with sharp (not Satori): Satori can't render a radial-gradient
+// glow reliably, and keeping background generation in one place lets the same
+// dominant color drive both the field tint and the card's box-shadow glow in the
+// template. Server-only (sharp is native).
 
 import sharp from "sharp";
 
 export const HERO_W = 1080;
 export const HERO_H = 1350;
 
-/** Brand navy undertone blended into every derived background (DESIGN.md). */
+/** Brand navy — the base of the field (DESIGN.md). */
 const NAVY = { r: 15, g: 30, b: 58 };
-/** Heavy blur so no card detail survives (the prototype used PIL GaussianBlur(85)). */
-export const BG_BLUR_SIGMA = 50;
-/** Navy undertone strength (prototype: 28%). */
-const NAVY_OPACITY = 0.28;
-/** Dominant-color glow strength behind the card (prototype halo ~0.32-0.42). */
-const HALO_OPACITY = 0.42;
-/** Edge darkening (prototype vignette dropped edges to ~0.42 brightness). */
-const VIGNETTE_OPACITY = 0.58;
+/** How much the card's dominant color tints the navy at the gradient's far stop.
+ *  Low enough that the world stays unmistakably navy/brand, high enough that a
+ *  blue card reads bluish and a red card reads warm. */
+const TINT_WEIGHT = 0.4;
+/** Dominant-color glow strength behind the card (kept from v2.0 — the one part
+ *  that read as premium). */
+const HALO_OPACITY = 0.45;
 
 export type Rgb = { r: number; g: number; b: number };
 
@@ -38,43 +43,47 @@ export async function dominantColor(art: Buffer): Promise<Rgb> {
   return { r: clampByte(r.mean), g: clampByte(g.mean), b: clampByte(b.mean) };
 }
 
-/**
- * Render the card's world as a finished 1080x1350 PNG background. Pre-blurred +
- * composited entirely with sharp (Satori can't blur). Returns the PNG buffer.
- */
-export async function deriveCardBackground(art: Buffer, dom: Rgb): Promise<Buffer> {
-  // 1. cover-fill the frame, heavy blur, darken to ~0.5.
-  const base = await sharp(art)
-    .resize(HERO_W, HERO_H, { fit: "cover" })
-    .removeAlpha()
-    .blur(BG_BLUR_SIGMA)
-    .linear(0.5, 0) // darken: out = 0.5*in
-    .png()
-    .toBuffer();
-
-  // 2. overlays: navy undertone (over), dominant-color glow (screen = additive
-  //    lightening, the glow), vignette (over = edge darkening).
-  const navy = `<svg width="${HERO_W}" height="${HERO_H}"><rect width="100%" height="100%" fill="rgb(${NAVY.r},${NAVY.g},${NAVY.b})" opacity="${NAVY_OPACITY}"/></svg>`;
-  const halo = `<svg width="${HERO_W}" height="${HERO_H}"><defs><radialGradient id="h" cx="50%" cy="34%" r="55%"><stop offset="0%" stop-color="rgb(${dom.r},${dom.g},${dom.b})" stop-opacity="${HALO_OPACITY}"/><stop offset="100%" stop-color="rgb(${dom.r},${dom.g},${dom.b})" stop-opacity="0"/></radialGradient></defs><rect width="100%" height="100%" fill="url(#h)"/></svg>`;
-  const vignette = `<svg width="${HERO_W}" height="${HERO_H}"><defs><radialGradient id="v" cx="50%" cy="42%" r="78%"><stop offset="38%" stop-color="rgb(0,0,0)" stop-opacity="0"/><stop offset="100%" stop-color="rgb(0,0,0)" stop-opacity="${VIGNETTE_OPACITY}"/></radialGradient></defs><rect width="100%" height="100%" fill="url(#v)"/></svg>`;
-
-  return sharp(base)
-    .composite([
-      { input: Buffer.from(navy), blend: "over" },
-      { input: Buffer.from(halo), blend: "screen" },
-      { input: Buffer.from(vignette), blend: "over" },
-    ])
-    .png()
-    .toBuffer();
+/** Blend the dominant color into navy by `w` (0 = pure navy, 1 = pure dominant). */
+function tintNavy(dom: Rgb, w: number): Rgb {
+  return {
+    r: clampByte(NAVY.r * (1 - w) + dom.r * w),
+    g: clampByte(NAVY.g * (1 - w) + dom.g * w),
+    b: clampByte(NAVY.b * (1 - w) + dom.b * w),
+  };
 }
 
 /**
- * Full pipeline for a card: derive its world background AND its dominant color
- * (the Satori template uses the dominant for the card's glow halo). Returns null
- * inputs untouched — callers handle a null art buffer by falling back.
+ * Render the card's world as a finished 1080x1350 PNG background (v2.1). A clean
+ * vertical gradient (navy -> navy tinted by `dom`) with the soft dominant-color
+ * glow halo behind where the card sits. Composited as a single SVG so sharp
+ * rasterizes the gradient + halo in one pass.
+ */
+export async function deriveCardBackground(dom: Rgb): Promise<Buffer> {
+  const tinted = tintNavy(dom, TINT_WEIGHT);
+  const svg =
+    `<svg width="${HERO_W}" height="${HERO_H}" xmlns="http://www.w3.org/2000/svg">` +
+    `<defs>` +
+    `<linearGradient id="field" x1="0" y1="0" x2="0" y2="1">` +
+    `<stop offset="0%" stop-color="rgb(${NAVY.r},${NAVY.g},${NAVY.b})"/>` +
+    `<stop offset="100%" stop-color="rgb(${tinted.r},${tinted.g},${tinted.b})"/>` +
+    `</linearGradient>` +
+    `<radialGradient id="halo" cx="50%" cy="34%" r="52%">` +
+    `<stop offset="0%" stop-color="rgb(${dom.r},${dom.g},${dom.b})" stop-opacity="${HALO_OPACITY}"/>` +
+    `<stop offset="100%" stop-color="rgb(${dom.r},${dom.g},${dom.b})" stop-opacity="0"/>` +
+    `</radialGradient>` +
+    `</defs>` +
+    `<rect width="100%" height="100%" fill="url(#field)"/>` +
+    `<rect width="100%" height="100%" fill="url(#halo)"/>` +
+    `</svg>`;
+  return sharp(Buffer.from(svg)).png().toBuffer();
+}
+
+/**
+ * Full pipeline for a card: the dominant color (the template uses it for the
+ * card's glow halo box-shadow) + the clean gradient world it drives.
  */
 export async function buildCardWorld(art: Buffer): Promise<{ background: Buffer; dominant: Rgb }> {
   const dominant = await dominantColor(art);
-  const background = await deriveCardBackground(art, dominant);
+  const background = await deriveCardBackground(dominant);
   return { background, dominant };
 }

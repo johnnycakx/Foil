@@ -90,21 +90,23 @@ function Frame({ date, children }: { date: string; children: React.ReactNode }) 
 }
 
 /**
- * Card-hero X image (ADR-072 follow-up) — the validated daily deal/spotlight
- * design (scored 8.35 vs the board's 7.75). Brand lockup once at top (no slogan —
- * v2 removed the lifted competitor line), the REAL card art lifted over its OWN
- * derived "world" background, a stacked red ▼ above a giant white outlined number
- * (layered black stroke + drop-shadow), a support line, and one foiltcg.com CTA.
- * The background is pre-blurred by sharp (card-bg.ts) because Satori cannot blur;
- * the card's drop-shadow + dominant-color glow halo use Satori box-shadow. White
- * number by default; `goldNumber` toggles the gold alternate.
+ * Card-hero X image (ADR-072 follow-up; v2.1 per the ADR-074 amendment) — the
+ * validated daily deal/spotlight design. Brand lockup once at top (no slogan —
+ * the lifted competitor line was removed), the REAL card art lifted over its OWN
+ * "world" background, a giant white outlined number (layered black stroke +
+ * drop-shadow), a support line, and one foiltcg.com CTA. The red ▼ was REMOVED
+ * in v2.1 (it encoded as a red rectangle in the MP4 frame and was redundant —
+ * the big number + subline already carry the "down" read). The background is a
+ * clean navy -> dominant-tinted-navy gradient with a soft dominant-color glow
+ * halo, built by sharp (card-bg.ts) since Satori can't render it reliably; the
+ * card's drop-shadow + dominant glow use Satori box-shadow. White number by
+ * default; `goldNumber` toggles the gold alternate.
  */
 export async function renderCardHeroImage(input: {
   /** The real card art (already fetched + validated by the caller — never null). */
   artBuffer: Buffer;
   bigNumber: string;
   subline: string;
-  showArrow: boolean;
   supportLine: string;
   date: string;
   goldNumber?: boolean;
@@ -151,12 +153,10 @@ export async function renderCardHeroImage(input: {
         }}
       />
 
-      {/* number block — TOP-anchored BELOW the card so the red ▼ never overlaps
-          the card art (v2 fix). ▼ stacked ABOVE the number (centering fix). */}
+      {/* number block — TOP-anchored BELOW the card (v2 layout). The red ▼ was
+          removed in v2.1 (it encoded as a red rectangle in the MP4 frame); the
+          giant number + subline carry the "down" read. */}
       <div style={{ position: "absolute", top: NUMBER_BAND_TOP, left: 0, width: HERO_W, display: "flex", flexDirection: "column", alignItems: "center" }}>
-        {input.showArrow ? (
-          <div style={{ width: 0, height: 0, marginBottom: 16, borderLeft: "27px solid transparent", borderRight: "27px solid transparent", borderTop: `38px solid ${RED}` }} />
-        ) : null}
         <div style={{ display: "flex", fontFamily: "Fredoka", fontWeight: 700, fontSize: 140, lineHeight: 1, color: numCol, textShadow: NUM_OUTLINE }}>{input.bigNumber}</div>
         <div style={{ display: "flex", marginTop: 14, fontFamily: "Fredoka", fontWeight: 500, fontSize: 34, color: CREAM, textShadow: SUBLINE_OUTLINE }}>{input.subline}</div>
         <div style={{ display: "flex", marginTop: 18, fontSize: 23, color: SLATE }}>{input.supportLine}</div>

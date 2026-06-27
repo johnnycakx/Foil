@@ -36,8 +36,9 @@ export type XBotDeps = {
    *  Returns null for non-motion angles or on any encode failure → the still
    *  posts. Strictly additive: when absent, behavior is the still-only path. */
   renderVideo?: (input: PostInput, deals: DealData[], still: Uint8Array) => Promise<Uint8Array | null>;
-  /** THE X API boundary. Called ONLY when mode === "live". */
-  post: (input: { text: string; imagePng: Uint8Array | null; videoMp4: Uint8Array | null }) => Promise<PostToXResult>;
+  /** THE X API boundary. Called ONLY when mode === "live". `linkReply` is the
+   *  card/board link posted as the first reply (Fix 3b); the body is link-free. */
+  post: (input: { text: string; imagePng: Uint8Array | null; videoMp4: Uint8Array | null; linkReply: string | null }) => Promise<PostToXResult>;
   /** Dry-run delivery (Discord review ping + optional disk). Called in dry_run. */
   review: (draft: XBotDraft) => Promise<void>;
   /** Approval delivery: persist the draft + ask the owner to approve in Discord.
@@ -164,8 +165,9 @@ export async function runXBot(deps: XBotDeps): Promise<XBotResult> {
     return { ok: true, mode, angle, posted: false, text: generated.text, draftId: persisted.id, reason: "awaiting_approval" };
   }
 
-  // --- LIVE: the only path that calls the X API boundary. ---
-  const res = await deps.post({ text: generated.text, imagePng, videoMp4 });
+  // --- LIVE: the only path that calls the X API boundary. The body is link-free;
+  //     the link is posted as the first reply (Fix 3b). ---
+  const res = await deps.post({ text: generated.text, imagePng, videoMp4, linkReply: draft.link });
   if (!res.ok) {
     return { ok: false, mode, angle, posted: false, text: generated.text, error: res.error };
   }

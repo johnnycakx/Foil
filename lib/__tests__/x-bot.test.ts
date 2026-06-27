@@ -115,25 +115,26 @@ test("forceAngle is IGNORED when its data is absent (never a contentless post)",
 
 // --- voice gate (Gates 12/13) ---
 
-test("generatePostText retries past an em-dash/banned draft, returns a clean one", async () => {
+test("generatePostText retries past an em-dash/banned/link draft, returns a clean link-free one", async () => {
   const input: PostInput = { angle: "educational", date: "June 8, 2026" };
   let call = 0;
   const generate = async () => {
     call++;
     return call === 1
-      ? "This is an amazing deal — guaranteed https://foiltcg.com/deals" // em dash + hype
-      : "Foil matches condition and language before calling anything a deal. https://foiltcg.com/deals";
+      ? "This is an amazing deal — guaranteed https://foiltcg.com/deals" // em dash + hype + link in body
+      : "Foil matches condition and language before calling anything a deal."; // clean + link-free (Fix 3b)
   };
   const out = await generatePostText(input, { generate });
   assert.equal(out.attempts, 2);
   assert.doesNotMatch(out.text, /—/);
-  assert.match(out.text, /foiltcg\.com/);
+  assert.doesNotMatch(out.text, /foiltcg\.com/, "the body is link-free; the link rides in the reply (Fix 3b)");
+  assert.equal(out.link, "https://foiltcg.com/deals", "the link is still carried for the reply");
 });
 
 test("generatePostText throws when it can't pass the gates", async () => {
   const input: PostInput = { angle: "educational", date: "June 8, 2026" };
   const generate = async () => "guaranteed amazing deal — to the moon https://foiltcg.com/deals";
-  await assert.rejects(generatePostText(input, { generate, maxAttempts: 2 }), /failed voice\/format gates/);
+  await assert.rejects(generatePostText(input, { generate, maxAttempts: 2 }), /failed quality gate/);
 });
 
 test("buildUserPrompt embeds the real deal numbers", () => {

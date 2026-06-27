@@ -4,9 +4,10 @@
 //
 // The cost insight from the Phase 0.5 spike: motion is NOT N Satori re-renders.
 // It is 1 static base (the Phase 0 PNG) + N cheap sharp shimmer composites
-// (~25ms/frame) + 1 encode. The number/arrow stay STATIC (the data is the
-// message; animating the % reads as gimmicky). This file owns the sharp side;
-// the encode goes through the injected `Mp4Encoder` (mp4-encoder.ts).
+// (~25ms/frame) + 1 encode. The number stays STATIC (the data is the message;
+// animating the % reads as gimmicky; the red arrow was removed in v2.1). This
+// file owns the sharp side; the encode goes through the injected `Mp4Encoder`
+// (mp4-encoder.ts).
 //
 // FORMAT (spike decision, ADR-074): MP4 (H.264), portrait, `media_category=
 // tweet_video`. Dimensions keep the Phase 0 4:5 aspect (no distortion) at

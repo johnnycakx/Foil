@@ -30,6 +30,10 @@ function xMock(plan: {
   statusBodies?: unknown[];
   imageStatus?: number;
   tweetId?: string;
+  /** Fix 3b: the id returned for the threaded link REPLY (distinct from the main). */
+  replyTweetId?: string;
+  /** Fix 3b: force the reply create-post to fail with this http status. */
+  tweetReplyStatus?: number;
 } = {}) {
   const calls: Rec[] = [];
   let statusIdx = 0;
@@ -65,7 +69,12 @@ function xMock(plan: {
       return new Response(JSON.stringify({ media_id_string: "img-1" }), { status: plan.imageStatus ?? 200 });
     }
     if (u.startsWith(TWEETS) && method === "POST") {
-      return new Response(JSON.stringify({ data: { id: plan.tweetId ?? "tweet-1" } }), { status: 200 });
+      const isReply = !!(rec.jsonBody as { reply?: unknown } | undefined)?.reply;
+      if (isReply && plan.tweetReplyStatus && plan.tweetReplyStatus >= 400) {
+        return new Response("", { status: plan.tweetReplyStatus });
+      }
+      const id = isReply ? (plan.replyTweetId ?? "reply-1") : (plan.tweetId ?? "tweet-1");
+      return new Response(JSON.stringify({ data: { id } }), { status: 200 });
     }
     return new Response("{}", { status: 404 });
   }) as unknown as typeof fetch;
@@ -199,4 +208,41 @@ test("postDiscordMedia attaches an MP4 (Discord inline-previews the clip)", asyn
   });
   assert.equal(res.ok, true);
   assert.deepEqual(attached, { filename: "x-deal_of_day.mp4", type: "video/mp4" });
+});
+
+// --- Fix 3b: link-free main tweet + the link in a threaded first reply ---
+
+const CARD_LINK = "https://foiltcg.com/cards/base1-2-blastoise";
+
+test("postToX posts a link-free main tweet, then replies with the link threaded to it", async () => {
+  const { fetchImpl, calls } = xMock({ tweetId: "main-77", replyTweetId: "reply-88" });
+  const res = await postToX({ text: "Blastoise slipped 17% right now. We watch it.", linkReply: CARD_LINK, credentials: CREDS, fetchImpl, sleepImpl: noSleep });
+  assert.deepEqual(res, { ok: true, postId: "main-77", mediaId: undefined, replyId: "reply-88" });
+
+  const posts = calls.filter((c) => c.url.startsWith(TWEETS) && c.method === "POST");
+  assert.equal(posts.length, 2, "one main tweet + one reply");
+  const mainBody = posts[0].jsonBody as { text: string; reply?: unknown };
+  const replyBody = posts[1].jsonBody as { text: string; reply?: { in_reply_to_tweet_id: string } };
+  assert.equal(mainBody.reply, undefined, "the main tweet is NOT a reply");
+  assert.doesNotMatch(mainBody.text, /foiltcg\.com/, "the main tweet body is link-free");
+  assert.equal(replyBody.text, CARD_LINK, "the reply carries the link");
+  assert.equal(replyBody.reply?.in_reply_to_tweet_id, "main-77", "the reply is threaded to the main tweet");
+});
+
+test("postToX: a reply failure does NOT fail the post (main tweet is already live)", async () => {
+  const { fetchImpl, calls } = xMock({ tweetId: "main-99", tweetReplyStatus: 500 });
+  const res = await postToX({ text: "Charizard sold average $350 right now.", linkReply: CARD_LINK, credentials: CREDS, fetchImpl, sleepImpl: noSleep });
+  assert.equal(res.ok, true);
+  if (res.ok) {
+    assert.equal(res.postId, "main-99");
+    assert.equal(res.replyId, undefined, "no replyId when the reply failed (soft-fail)");
+  }
+  assert.equal(calls.filter((c) => c.url.startsWith(TWEETS) && c.method === "POST").length, 2, "it still attempted the reply");
+});
+
+test("postToX with no linkReply posts a single tweet (no reply)", async () => {
+  const { fetchImpl, calls } = xMock({ tweetId: "solo-1" });
+  const res = await postToX({ text: "Educational note, link-free.", credentials: CREDS, fetchImpl, sleepImpl: noSleep });
+  assert.deepEqual(res, { ok: true, postId: "solo-1", mediaId: undefined });
+  assert.equal(calls.filter((c) => c.url.startsWith(TWEETS) && c.method === "POST").length, 1, "no reply when linkReply is absent");
 });

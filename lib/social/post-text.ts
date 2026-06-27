@@ -11,7 +11,7 @@
 // is required — the destination page is the disclosure surface.
 
 import { anthropic } from "../anthropic.ts";
-import { voiceCheck, type VoiceViolation } from "../seo/voice-check.ts";
+import { checkPostStructure } from "./post-structure.ts";
 import type { PostAngle } from "./angles.ts";
 
 export const X_CHAR_LIMIT = 280;
@@ -68,10 +68,11 @@ export type GenerateFn = (system: string, user: string) => Promise<string>;
 
 const SYSTEM = [
   "You write a single X (Twitter) post for Foil, a Pokemon TCG deal-finder built by a TCGplayer seller.",
-  "Brand voice: calm, confident, concrete. Exact numbers only, never vague (no 'around', 'about', '~', 'roughly').",
+  "Brand voice: calm, confident, deadpan, concrete. Exact numbers only, never vague (no 'around', 'about', '~', 'roughly').",
   "HARD RULES: no em dash (use commas, colons, or periods). No hype words (no 'steal', 'must-buy', 'guaranteed', 'to the moon', 'insane', 'amazing deal'). No emoji. No exclamation marks.",
-  "Any price or percentage you state must be followed by 'as of today' (prices move).",
-  `The post MUST be at most ${X_CHAR_LIMIT} characters INCLUDING the link, and MUST end with the provided link on its own line.`,
+  "Prices move, so anchor the post in the present at least once (e.g. 'right now', 'this week', or 'as of today'); you do not need to repeat it after every figure.",
+  `The post MUST be at most ${X_CHAR_LIMIT} characters. Do NOT put any link or URL in the post body: the link is posted separately as the first reply, so the body stays link-free for reach.`,
+  "When the angle calls for multiple beats, put each beat on its own line with a BLANK LINE between beats so the post breathes on mobile; keep tightly-coupled sentences together on one line.",
   "Output ONLY the post text. No preamble, no quotes, no hashtags unless they read naturally (at most one).",
 ].join("\n");
 
@@ -101,22 +102,34 @@ export function buildUserPrompt(input: PostInput): string {
     const d = input.deal;
     const tier = humanTier(d.matchedTier) || "Near Mint";
     return [
-      "ANGLE: good buy of the day. State the card and that it is trading below its OWN 30-day sold average right now (an aggregate, not a single listing), with these EXACT figures:",
-      `- Card: ${d.cardName} (${d.setName})`,
-      `- ${tier} copies are ${below(d)}% below their 30-day sold average (as of today)`,
-      `- 30-day average around ${usd(d.soldReference)} across ${d.saleCount} recent sales`,
-      "Frame it as a card cooling off vs its own recent average, a candidate worth a look, NOT a guaranteed deal and NOT hype. Do not claim a single listing is below sold.",
-      `Link (end the post with this): ${link}`,
+      "ANGLE: good buy of the day. Write a SHORT multi-beat post about this card cooling below its OWN 30-day sold average (an aggregate, not a single listing). The branded image already shows the % drop, the dollar average, and the sale count, so do NOT just restate those three numbers: your job is the interpretation the image cannot give.",
+      "Card facts (use these EXACT figures, never hedge with around/about/~):",
+      `- ${d.cardName} (${d.setName}), ${tier}`,
+      `- ${below(d)}% below its 30-day sold average right now`,
+      `- 30-day sold average ${usd(d.soldReference)} across ${d.saleCount} recent sales`,
+      "Write it as FOUR beats, each on its own line with a BLANK LINE between beats:",
+      "1. HOOK: lead with the single most scroll-stopping concrete fact (the move itself). Not a card-name-plus-stat readout. The first line is most of the battle.",
+      `2. THE VOLUME READ (the insight the image cannot show): the number that matters is the ${d.saleCount} sales behind the move, not the %. A large sale count means a real trend across many sellers, not one lowball listing.`,
+      "3. TEACH ONE MECHANIC in one plain line: why the sale count matters, or what 'below its own 30-day average' actually means. One, not a lecture.",
+      "4. A light, honest, forward-looking close that invites a reply (for example: now we watch whether it bounces or keeps sliding). Never a prediction stated as fact, never hype.",
+      "Stay calm and deadpan. Frame it as a candidate worth a look, not a guaranteed deal. Do not claim a single listing is below sold.",
+      `Do NOT include a link in the body; the link (${link}) is posted as the first reply.`,
     ].join("\n");
   }
   if (input.angle === "price_spotlight") {
     const s = input.spotlight;
     return [
-      "ANGLE: price spotlight (utility framing: 'here is what this card is actually worth right now').",
-      `- Card: ${s.cardName} (${s.setName})`,
-      `- recent sold around ${usd(s.soldReference)} across ${s.sampleSize} sales (as of today)`,
-      "Position Foil as the fast way to see any card's real price. No deal claim, just the number + the utility.",
-      `Link (end the post with this): ${link}`,
+      "ANGLE: price spotlight. Write a SHORT multi-beat post answering 'what is this card actually worth right now'. The branded image already shows the headline price and the sale count, so do NOT just restate them: add the interpretation.",
+      "Card facts (use these EXACT figures, no hedging):",
+      `- ${s.cardName} (${s.setName})`,
+      `- recent sold average ${usd(s.soldReference)} across ${s.sampleSize} sales`,
+      "Write it as THREE or FOUR beats, each on its own line with a BLANK LINE between beats:",
+      "1. HOOK: lead with what it is actually worth right now, the concrete number that stops the scroll.",
+      `2. THE READ the image cannot give: what ${s.sampleSize} sales means. A price backed by many recent sales is a real market read, not one outlier ask.`,
+      "3. TEACH ONE MECHANIC in a plain line: for example, why a sold-price average beats a listing's asking price.",
+      "4. A light, honest close that invites a reply (for example: higher or lower than you would have guessed). No prediction stated as fact, no hype.",
+      "Position Foil as the fast way to see any card's real price.",
+      `Do NOT include a link in the body; the link (${link}) is posted as the first reply.`,
     ].join("\n");
   }
   if (input.angle === "weekly_board") {
@@ -125,13 +138,13 @@ export function buildUserPrompt(input: PostInput): string {
       "ANGLE: weekly good-buys digest. A short roundup of cards trading below their OWN 30-day sold average this week (aggregates, not single listings), with these EXACT cards + figures:",
       ...top.map((d) => `- ${d.cardName} (${d.setName}): Near Mint ${below(d)}% below its 30-day average`),
       "One tight line naming a couple of them, framed as candidates worth a look not guarantees, then point readers to the full board. Do not invent any card or number not listed above.",
-      `Link (end the post with this): ${link}`,
+      `Do NOT include a link in the body; the link (${link}) is posted as the first reply.`,
     ].join("\n");
   }
   return [
     "ANGLE: educational / trust. No specific prices. Explain ONE differentiator in plain terms:",
     "Foil matches like-for-like before calling anything a deal: same condition, and English-vs-Japanese matched via the listing's item specifics (a Japanese card is never compared to English sold prices). Built by a TCGplayer seller.",
-    `Link (end the post with this): ${link}`,
+    `Do NOT include a link in the body; the link (${link}) is posted as the first reply.`,
   ].join("\n");
 }
 
@@ -154,6 +167,9 @@ export async function generatePostText(
   const link = linkFor(input);
   const baseUser = buildUserPrompt(input);
 
+  // Card-hero angles get the full beat structure (Fix 3); the others stay tight.
+  const requireBeats = input.angle === "deal_of_day" || input.angle === "price_spotlight";
+
   let lastIssues: string[] = [];
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const user = lastIssues.length
@@ -161,22 +177,17 @@ export async function generatePostText(
       : baseUser;
     const raw = (await generate(SYSTEM, user)).trim();
 
-    const issues: string[] = [];
-    const vc = voiceCheck(raw);
-    if (!vc.passed) issues.push(...vc.violations.map(describe));
+    // The single post-text quality gate: brand voice + a link-free body, plus
+    // the beat-structure + interpretation requirement on the card-hero angles.
+    const issues = [...checkPostStructure(raw, { requireBeats }).issues];
     if (!withinLimit(raw)) issues.push(`over ${X_CHAR_LIMIT} chars (${raw.length})`);
-    if (!raw.includes(link)) issues.push("missing the required link");
 
     if (issues.length === 0) {
       return { text: raw, angle: input.angle, link, attempts: attempt };
     }
     lastIssues = issues;
   }
-  throw new Error(`post-text failed voice/format gates after ${maxAttempts} attempts: ${lastIssues.join("; ")}`);
-}
-
-function describe(v: VoiceViolation): string {
-  return `${v.kind} (${v.detail})`;
+  throw new Error(`post-text failed quality gate after ${maxAttempts} attempts: ${lastIssues.join("; ")}`);
 }
 
 const defaultGenerate: GenerateFn = async (system, user) => {
