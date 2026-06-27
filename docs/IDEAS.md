@@ -19,6 +19,39 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-06-27
+category: content
+status: captured
+---
+## Animated/motion card-hero for X (the highest-virality version of the deal post)
+
+Upgrade the static card-hero X image to **motion**: the real card art with an animating holographic shimmer/light-sweep (and/or a subtle 3D tilt), exported as MP4/GIF. X autoplays video in-feed and weights it for reach, and motion is core to how @getcollectr's content performs — a shimmering foil card is far more thumb-stopping than a static one. Ship the static card-hero first (validated this session: scored 8.35 vs the 7.75 movers-board on the virality rubric, see `docs/goals/x-flywheel-card-hero-and-homepage.md` + `f_hero.png`/`f_board.png`), prove it, then animate. Bigger build than the static render (video encode in the pipeline, larger asset, the approval card must preview the clip). **John wants to attempt this 2026-06-28.**
+
+**Context:** 2026-06-27 — after prototyping the static card-hero (10+ renders, 3 rounds, virality-scored against the Collectr benchmark), motion surfaced as the clear next lever. Deferred one day by John.
+
+---
+date: 2026-06-26
+category: content
+status: captured
+---
+## Demand-weighted content selection — sales volume + search + Pokémon popularity across X, newsletter, blog
+
+Pick what the bot tweets and what we write newsletters/blogs about by DEMAND, not just price movement. Weight toward cards with high gross sales volume over the last 7/30 days (`saleCount`, already in the PokeTrace pipeline + `market_movers`) as a proxy for "people are actively hunting this," blended with actual search demand from Google Search Console queries (more direct for SEO than sales), plus a popularity layer for perennially-hot Pokémon and their chase cards (Charizard, eeveelutions/Moonbreon, Pikachu, etc.). Keep the $10 materiality floor so cheap high-volume bulk doesn't win. Derive "popularity" from sustained volume where possible (self-updating, less subjective) over a hand-maintained list. The simple "rank deal/spotlight candidates by `saleCount`" piece is folded into `docs/goals/x-bot-followups.md`; the cross-surface blog/newsletter + GSC + popularity layer is the bigger follow-on (ties into restoring PokeTrace + mining GSC queries).
+
+**Context:** 2026-06-26 — John: high 7d/30d sales volume signals people are searching for that card specifically; also factor in general Pokémon popularity + their popular cards. Strong, on-strategy (demand-driven content); spans all three content surfaces.
+
+---
+date: 2026-06-26
+category: growth
+status: captured
+---
+## X bot self-learning loop — learn from high-performing posts and adjust future generation
+
+Make the daily X bot closed-loop: capture per-post engagement (likes/reposts/replies/impressions), identify outperformers vs the account's own rolling baseline, and feed their characteristics (angle, hook style, card type, length, time-of-day) back into the post-generation prompt so future posts skew toward what resonates. The X Activity API (XAA) can deliver engagement events in real time as the data source. NOT to build yet — premature with ~0 followers and no post history; there is no signal to learn from until there's a base of posts + traffic, and a feedback loop on noise overfits. Revisit after the approval bot has run several weeks. Cheap precursor worth considering sooner: start logging each post's ~48h metrics into a table now so the dataset exists when we're ready to act on it.
+
+**Context:** 2026-06-26 — John asked whether the bot is self-learning. It isn't: the current ADR-058/071 bot is open-loop (deterministic angle rotation + prompt, no engagement feedback). Right direction, deferred until there's data to learn from.
+
+---
 date: 2026-06-24
 category: infra
 status: captured
