@@ -22,10 +22,18 @@ export type DealData = {
   cardName: string;
   setName: string;
   slug: string;
-  /** Negative (ask below sold). The post shows the absolute "% below". */
+  /** Negative: % below the card's own 30-day sold average (movers momentum, ADR-071
+   *  follow-up). The post shows the absolute "% below its 30-day average". */
   deltaPct: number;
+  /** The 30-day sold average the % is measured against (an aggregate, not a
+   *  single listing — so it can't be a phantom one-listing deal). */
   soldReference: number;
   matchedTier: string | null;
+  /** Recent sales behind the average (the movers sample). */
+  saleCount: number;
+  /** ISO computed-at of the source mover row — drives the freshness guard so a
+   *  stale board can never produce a deal post. */
+  computedAt: string;
 };
 export type SpotlightData = {
   cardName: string;
@@ -84,12 +92,13 @@ export function buildUserPrompt(input: PostInput): string {
   const link = linkFor(input);
   if (input.angle === "deal_of_day") {
     const d = input.deal;
+    const tier = humanTier(d.matchedTier) || "Near Mint";
     return [
-      "ANGLE: deal of the day. State the card, that it is currently listed below its recent condition-matched sold price, with these EXACT figures:",
+      "ANGLE: good buy of the day. State the card and that it is trading below its OWN 30-day sold average right now (an aggregate, not a single listing), with these EXACT figures:",
       `- Card: ${d.cardName} (${d.setName})`,
-      `- ${below(d)}% below recent sold (as of today)`,
-      `- recent ${humanTier(d.matchedTier)} sold around ${usd(d.soldReference)} (you may state this as the sold reference, with 'as of today')`,
-      "Frame it as a found deal a buyer can verify, not hype.",
+      `- ${tier} copies are ${below(d)}% below their 30-day sold average (as of today)`,
+      `- 30-day average around ${usd(d.soldReference)} across ${d.saleCount} recent sales`,
+      "Frame it as a card cooling off vs its own recent average, a candidate worth a look, NOT a guaranteed deal and NOT hype. Do not claim a single listing is below sold.",
       `Link (end the post with this): ${link}`,
     ].join("\n");
   }

@@ -77,16 +77,16 @@ export async function renderDealsImage(input: { deals: DealData[]; date: string 
           <div key={d.slug} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, borderBottom: `1px solid ${SLATE}33`, paddingBottom: 18 }}>
             <div style={{ display: "flex", flexDirection: "column", maxWidth: 620 }}>
               <span style={{ fontSize: 38, fontWeight: 700 }}>{d.cardName}</span>
-              <span style={{ fontSize: 26, color: SLATE }}>{d.setName} · {humanTier(d.matchedTier)} sold {usd(d.soldReference)}</span>
+              <span style={{ fontSize: 26, color: SLATE }}>{d.setName} · {humanTier(d.matchedTier)} 30-day avg {usd(d.soldReference)}</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
               <span style={{ fontFamily: "Fredoka", fontWeight: 700, fontSize: 64, color: GOLD, lineHeight: 1 }}>{Math.round(Math.abs(d.deltaPct))}%</span>
-              <span style={{ fontSize: 22, color: SLATE, textTransform: "uppercase", letterSpacing: 2 }}>below sold</span>
+              <span style={{ fontSize: 22, color: SLATE, textTransform: "uppercase", letterSpacing: 2 }}>below 30-day avg</span>
             </div>
           </div>
         ))}
       </div>
-      <div style={{ display: "flex", fontSize: 26, color: SLATE, marginTop: 36 }}>Condition + language matched. As of today.</div>
+      <div style={{ display: "flex", fontSize: 26, color: SLATE, marginTop: 36 }}>Below each card&apos;s own 30-day sold average. As of today.</div>
     </Frame>,
   );
 }

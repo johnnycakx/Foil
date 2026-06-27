@@ -28,7 +28,7 @@ fs.mkdirSync(outDir, { recursive: true });
 const result = await runXBot({
   mode: "dry_run",
   now,
-  getDeals: getDealsForPost,
+  getDeals: () => getDealsForPost(now),
   getSpotlight: () => getSpotlightForPost(now),
   generateText: (input) => generatePostText(input),
   // The Satori card (next-og JSX) can't render under `node --strip-types`, so the

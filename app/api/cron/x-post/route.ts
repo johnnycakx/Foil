@@ -43,7 +43,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   const result = await runXBot({
     mode,
     now,
-    getDeals: getDealsForPost,
+    getDeals: () => getDealsForPost(now),
     getSpotlight: () => getSpotlightForPost(now),
     generateText: (input) => generatePostText(input),
     renderImage: async (input, deals) => {

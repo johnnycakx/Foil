@@ -21,6 +21,7 @@ import { createHmac, randomBytes } from "node:crypto";
 
 const MEDIA_UPLOAD_URL = "https://upload.twitter.com/1.1/media/upload.json";
 const CREATE_POST_URL = "https://api.x.com/2/tweets";
+const TWEETS_LOOKUP_URL = "https://api.x.com/2/tweets";
 
 export type XCredentials = {
   apiKey: string;
@@ -109,6 +110,75 @@ async function uploadMedia(png: Uint8Array, creds: XCredentials, fetchFn: typeof
     return { ok: true, mediaId: json.media_id_string };
   } catch (err) {
     return { ok: false, error: `media_upload_failed: ${(err as Error).message}` };
+  }
+}
+
+// --- read: per-tweet public engagement metrics (ADR-071 follow-up, Part 2) ----
+
+export type TweetMetrics = {
+  tweetId: string;
+  likes: number;
+  reposts: number;
+  replies: number;
+  quotes: number;
+  /** Null when the API omits impression_count for this auth context. */
+  impressions: number | null;
+};
+
+export type FetchTweetMetricsResult =
+  | { ok: true; metrics: Map<string, TweetMetrics>; missing: string[] }
+  | { ok: false; error: string };
+
+/**
+ * Read public_metrics for up to 100 tweets in one call:
+ *   GET https://api.x.com/2/tweets?ids=...&tweet.fields=public_metrics
+ * (shape per docs.x.com v2: data[].public_metrics.{like_count, retweet_count,
+ * reply_count, quote_count, impression_count}). OAuth 1.0a user-context — the
+ * GET query params are folded into the signature base. Soft-fails (never
+ * throws). `missing` = requested ids the API did NOT return (deleted/inaccessible).
+ * Read-only; ~$0.005/request. Reuses the single X boundary's signing.
+ */
+export async function fetchTweetPublicMetrics(
+  tweetIds: string[],
+  input: { credentials?: XCredentials; fetchImpl?: typeof fetch } = {},
+): Promise<FetchTweetMetricsResult> {
+  const creds = input.credentials ?? xCredentialsFromEnv();
+  if (!creds) return { ok: false, error: "missing_x_credentials" };
+  const ids = tweetIds.filter(Boolean).slice(0, 100);
+  if (ids.length === 0) return { ok: true, metrics: new Map(), missing: [] };
+  const fetchFn = input.fetchImpl ?? fetch;
+
+  // Build the query string with rfc3986 so it is byte-identical to the signature
+  // base (the params must match what the server re-derives for OAuth 1.0a).
+  const queryParams: Record<string, string> = { ids: ids.join(","), "tweet.fields": "public_metrics" };
+  const qs = Object.keys(queryParams)
+    .map((k) => `${rfc3986(k)}=${rfc3986(queryParams[k])}`)
+    .join("&");
+  const auth = oauthHeader("GET", TWEETS_LOOKUP_URL, creds, queryParams);
+
+  try {
+    const res = await fetchFn(`${TWEETS_LOOKUP_URL}?${qs}`, { headers: { Authorization: auth } });
+    if (!res.ok) return { ok: false, error: `tweets_lookup_http_${res.status}` };
+    const json = (await res.json()) as {
+      data?: Array<{ id: string; public_metrics?: Record<string, number> }>;
+      errors?: Array<{ resource_id?: string }>;
+    };
+    const metrics = new Map<string, TweetMetrics>();
+    for (const t of json.data ?? []) {
+      const pm = t.public_metrics ?? {};
+      metrics.set(t.id, {
+        tweetId: t.id,
+        likes: pm.like_count ?? 0,
+        reposts: pm.retweet_count ?? 0,
+        replies: pm.reply_count ?? 0,
+        quotes: pm.quote_count ?? 0,
+        impressions: typeof pm.impression_count === "number" ? pm.impression_count : null,
+      });
+    }
+    const missing = ids.filter((id) => !metrics.has(id));
+    return { ok: true, metrics, missing };
+  } catch (err) {
+    return { ok: false, error: `tweets_lookup_failed: ${(err as Error).message}` };
   }
 }
 

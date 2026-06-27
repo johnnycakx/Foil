@@ -2208,6 +2208,26 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 
 **Cross-refs.** [ADR-058](#adr-058--daily-x-content-bot-dry-run-first-own-posts-only-satori-image-not-playwright), [ADR-013](#adr-013--foil-hq-discord-ops-bot-as-a-separate-railway-service), [ADR-014](#adr-014--all-outbound-discord-notifications-through-one-module), `docs/runbooks/x-bot.md`, `docs/goals/x-approval-gate.md`.
 
+## ADR-072 — X deal-angle sources from the fresh movers signal (no phantom deals) + post-metrics capture
+
+**Date:** 2026-06-27
+**Status:** Accepted. Extends [ADR-058](#adr-058--daily-x-content-bot-dry-run-first-own-posts-only-satori-image-not-playwright) (the X bot), [ADR-069](#adr-069--insight-led-market-movers--good-buys-signal-aggregate-momentum-over-fragile-single-listings--the-like-for-like-currency-gate) (movers signal), [ADR-071](#adr-071--x-content-bot-approval-mode-auto-draft--owner-approves-in-discord--auto-post) (approval mode). Implements `docs/goals/x-bot-followups.md`.
+
+**Context — the live failure.** The first approval draft (ADR-071) claimed *"Alakazam ex (151) LP is listed 43% below its sold price of $70.29."* The live card page showed the best listing at $69.17 NM, only ~11% below the NM sold avg — **there was no 43%-below deal**. It was a phantom from the **stale `buy_signals` table** (last computed 2026-06-13; PokeTrace cancelled 2026-06-16). The `deal_of_day` angle read `buy_signals` (single-listing "below sold"); the *fresh* signal (`market_movers`, daily 09:00 cron) that powers `/deals` + the newsletter wasn't used. It also mislabeled an NM card as LP (the stale row's `matched_tier`).
+
+**Decision.**
+1. **Repoint the deal angle to `market_movers`** (Part 1). `getDealsForPost` now reads the fresh down-movers (cards trading below their OWN 30-day sold average) instead of the stale `buy_signals` leaderboard. The post reframes to the honest aggregate framing — *"Near Mint copies are ~12% below their 30-day sold average across N recent sales"* — not a single-listing "X% below sold" claim. A market aggregate can't break the way one mispriced listing can (the ADR-069 thesis), and movers are NEAR_MINT by construction, so the LP-style condition mislabel is structurally impossible. The deal image labels match ("below 30-day avg").
+2. **Freshness guard.** `freshDeals(movers, nowMs, MAX_DEAL_AGE_HOURS=48)` (pure, tested) excludes any source row older than 48h, so a stale board can never produce a deal — it falls through `resolveAngle` → spotlight → educational. The spotlight's `buy_signals` read gets the same guard (a stale price is as misleading as a stale deal). Defense-in-depth over getMarketMovers' own 36h window.
+3. **Post-metrics capture** (Part 2, capture-only precursor to the deferred self-learning loop). New `x_post_metrics` table (RLS-isolated, service-role only) holds one row per posted draft. New `/api/cron/x-metrics` (16:00 UTC) finds posts ≥48h old lacking metrics, fetches `public_metrics` once via `fetchTweetPublicMetrics` (the single x-client boundary; `GET /2/tweets?ids=&tweet.fields=public_metrics`, OAuth 1.0a, ~$0.005/call), stores likes/reposts/replies/quotes/impressions, and marks deleted tweets. The tweet id was already persisted (`x_post_drafts.post_id` from approve time) — no new column there. **No generation change.**
+
+**Consequences.**
+- **The bot degrades safely while PokeTrace is down/stale** — the deal angle uses the still-fresh movers signal (the movers cron is PokeTrace-fed but runs daily), and the freshness guards stop any stale source from posting. But **fresh deal data still depends on restoring PokeTrace** (the ~July 15 key cliff); if movers also goes stale, the deal angle falls through to educational rather than posting a phantom.
+- **No new env var** — reuses the X creds, `CRON_SECRET`, and Supabase service role. A 6th Vercel cron (`x-metrics`) joins the existing five.
+- **The metrics dataset accrues from day one**; the actual outperformers→traits→prompt feedback loop stays deferred (out of scope) until there are weeks of posts + real traffic.
+- **Tests:** `lib/__tests__/x-bot-deal-freshness.test.ts` (freshness exclusion, fall-through, honesty/no-mislabel) + `lib/__tests__/x-metrics.test.ts` (fetch parse + deleted detection, run records/marks/idempotent/soft-fail).
+
+**Cross-refs.** [ADR-058](#adr-058--daily-x-content-bot-dry-run-first-own-posts-only-satori-image-not-playwright), [ADR-069](#adr-069--insight-led-market-movers--good-buys-signal-aggregate-momentum-over-fragile-single-listings--the-like-for-like-currency-gate), [ADR-071](#adr-071--x-content-bot-approval-mode-auto-draft--owner-approves-in-discord--auto-post), `docs/goals/x-bot-followups.md`, `docs/IDEAS.md`.
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

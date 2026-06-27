@@ -8,7 +8,7 @@ import { buildUserPrompt, generatePostText, type DealData, type SpotlightData, t
 import { runXBot, type XBotDeps } from "../social/bot.ts";
 import { postToX } from "../social/x-client.ts";
 
-const DEAL: DealData = { cardName: "Jolteon VMAX", setName: "Evolving Skies", slug: "swsh7-51-jolteon-vmax", deltaPct: -29.8, soldReference: 11.4, matchedTier: "NEAR_MINT" };
+const DEAL: DealData = { cardName: "Jolteon VMAX", setName: "Evolving Skies", slug: "swsh7-51-jolteon-vmax", deltaPct: -29.8, soldReference: 11.4, matchedTier: "NEAR_MINT", saleCount: 42, computedAt: "2026-06-08T13:00:00Z" };
 const SPOT: SpotlightData = { cardName: "Charizard", setName: "Base Set", slug: "base1-4-charizard", soldReference: 350, sampleSize: 168 };
 
 function baseDeps(over: Partial<XBotDeps> = {}): XBotDeps {
