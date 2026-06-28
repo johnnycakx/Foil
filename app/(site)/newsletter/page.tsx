@@ -19,10 +19,10 @@ export const runtime = "nodejs";
 export const dynamic = "force-static";
 export const revalidate = 86400;
 
-const PAGE_TITLE = "Subscribe to Foil — Pokémon TCG deal alerts + weekly market notes";
+const PAGE_TITLE = "Pokémon card deal alerts + weekly market notes | Foil";
 
 const PAGE_DESCRIPTION =
-  "Tell us a card and we email you when it drops to your target price. Weekly market notes from John Craig, who runs a Pokémon card store. One email a week, unsubscribe anytime.";
+  "Tell us a card; we email you when it drops to your target price. Weekly market notes from John Craig, who runs a Pokémon card store. One email a week.";
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,

@@ -41,7 +41,7 @@ const fredoka = Fredoka({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://foiltcg.com"),
   title: {
-    default: "Foil — The best price on any Pokémon card",
+    default: "Foil: the best price on any Pokémon card",
     template: "%s · Foil",
   },
   description:
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    title: "Foil — The best price on any Pokémon card",
+    title: "Foil: the best price on any Pokémon card",
     description:
       "Search any Pokémon card and instantly see the best live deal across eBay. Free wishlist alerts when prices drop.",
     siteName: "Foil",
@@ -64,10 +64,12 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Foil — The best price on any Pokémon card",
+    title: "Foil: the best price on any Pokémon card",
     description:
       "Search any Pokémon card and instantly see the best live deal across eBay. Free wishlist alerts when prices drop.",
-    creator: "@foilcards",
+    // TODO: swap to @FoilTCG once the X rename clears review (live account is
+    // @Johnnycakx today). One-line change here + the per-page twitter.creator.
+    creator: "@Johnnycakx",
   },
 };
 

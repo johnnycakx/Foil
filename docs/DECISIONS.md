@@ -2330,6 +2330,20 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 
 **Cross-refs.** [ADR-009](#adr-009--local-cli-tooling-for-autonomous-infra-changes), [ADR-014](#adr-014--outbound-discord-notifications-per-channel-webhooks-soft-fail-single-import-boundary) (the Discord boundary `notifyChannel` reuses), `docs/runbooks/goal-runner.md`, `docs/goals/autonomous-goal-runner.md`.
 
+## ADR-076 — SEO metadata targets search-volume buyer keywords, not internal positioning jargon
+
+**Date:** 2026-06-28
+**Status:** Accepted. Implements `docs/goals/seo-metadata-destale-and-sharpen.md`. Relates to [ADR-020](#adr-020--pivot-to-buyer-side-deal-finder-positioning) (the deal-finder positioning) + `docs/BRAND-VOICE.md`.
+
+**Context.** Foil's brand line is "market-insight + deal-finder / trusted collector concierge." There is a standing temptation to put that *positioning* language ("market insights") into title tags. But title/meta-description tags are SEO surfaces — they should target the SEARCH-VOLUME keywords buyers actually type (value, price, worth, deals, movers, `[card name]`), not internal brand framing that has ~no search volume. Separately, an audit found pre-pivot **scanner** product framing ("Foil's scanner returns…", "Japanese card scanning is supported at launch") still on indexed pages, and a wrong Twitter handle (`@foilcards`).
+
+**Decision.**
+1. **Metadata leads with the page's high-search buyer keyword**, not positioning jargon. Titles ≤ ~60 chars, descriptions ≤ ~155, no em dashes (brand voice). Positioning language ("market insights", "concierge") lives in hero/positioning copy, never in `<title>`/meta-description. `/deals` → "deals / good buys / this week"; pillars → "value / price / condition guide"; `/cards/[slug]` → `<Card> (<Set>) price & deals` (the query shape); never "market insights".
+2. **De-stale the product framing:** the deal-finder surface describes how Foil *matches cards by printed metadata (set code + collector number + rarity) to surface real price/sold data* — never "scanner"/"scanning"/pre-launch "waitlist/early access" (the product is live). Educational "valuation" (a real keyword) stays; only the scanner *product* claims were removed. Vending track (`/host`, `/faq`, `/machines`, `/service-areas`) is intentionally vending-framed and untouched.
+3. **X handle:** `@Johnnycakx` (live account) until the `@FoilTCG` rename clears review — a one-line swap, TODO pinned in `app/layout.tsx`.
+
+**Consequences.** Search snippets target buyer intent + read consistently with the deal-finder positioning; a copy/metadata-only change (no render change). A structural guard for "no scanner framing on the deal-finder surface" or "no em dash in metadata" was considered but not built (low recurrence risk; the grep in the goal's verification + this ADR are the guardrail). Content-marker live verification (ADR-049) confirms the corrected copy renders post-deploy.
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

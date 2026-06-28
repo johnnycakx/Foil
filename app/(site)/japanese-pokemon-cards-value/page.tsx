@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
-    creator: "@foilcards",
+    creator: "@Johnnycakx",
   },
 };
 
@@ -46,8 +46,8 @@ const FAQ: { q: string; a: string }[] = [
     a: "They are the same rarity tier, but the Japanese SAR (Special Art Rare) was the original print and usually came out first. English Special Illustration Rares are reprinted from the Japanese set when the equivalent English set drops three to six months later. Because Japanese SARs hit the market earlier and in smaller quantities, they often retain a price premium even after the English version exists.",
   },
   {
-    q: "Can a card scanner identify Japanese Pokémon cards?",
-    a: "Foil's scanner reads Japanese cards by treating the set code, collector number, and rarity symbol as the source of truth — not the Pokémon's name. That means it identifies sv3a 071/062 Charizard ex SAR just as reliably as the English equivalent, because the printed metadata is universal. Japanese card scanning is supported at launch.",
+    q: "How does Foil identify and price Japanese Pokémon cards?",
+    a: "Foil matches Japanese cards by their set code, collector number, and rarity symbol (the printed metadata, not the Pokémon's name), so it surfaces the real USD price and sold data for sv3a 071/062 Charizard ex SAR just as reliably as for the English print. The printed metadata is universal, so Japanese cards are priced the same way as English ones.",
   },
   {
     q: "Should I buy Japanese Pokémon cards to flip in the US market?",
@@ -212,7 +212,7 @@ export default function JapanesePokemonCardsValuePage() {
             </li>
           </ul>
 
-          <h2>Where Japanese Pokémon cards are actually priced (and how a scanner reads them)</h2>
+          <h2>Where Japanese Pokémon cards are actually priced (and how Foil reads them)</h2>
           <p>
             Skip the temptation to use the Mercari Japan or Yuyu-tei listing price as your number.
             That&apos;s the Japan-domestic price before shipping, exchange-rate spread, and US
@@ -245,9 +245,9 @@ export default function JapanesePokemonCardsValuePage() {
             and the number reads <code>071/062</code>, the card is the Charizard ex SAR from
             Raging Surf regardless of which language the name is printed in.{" "}
             <Link href="#waitlist" className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral">
-              Join the waitlist
+              Join the newsletter
             </Link>{" "}
-            to be notified when Japanese card scanning ships.
+            for weekly Japanese card price moves.
           </p>
 
           <h2>FAQ</h2>

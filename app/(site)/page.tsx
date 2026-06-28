@@ -9,7 +9,7 @@ import { FoilCornerMark } from "@/components/brand/logo";
 
 const SITE_TITLE = "Foil: the best price on any Pokémon card";
 const SITE_DESCRIPTION =
-  "Stop guessing what your Pokémon cards are worth and overpaying on eBay. Foil watches the market and emails you the best card deals and price moves every week. Free, no spam.";
+  "See what your Pokémon cards are really worth and stop overpaying on eBay. Foil emails you the best card deals and price moves every week. Free, no spam.";
 
 export const metadata: Metadata = {
   title: SITE_TITLE,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    creator: "@foilcards",
+    creator: "@Johnnycakx",
     images: ["/opengraph-image"],
   },
 };

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LeadMagnetCTA } from "@/components/lead-magnet-cta";
 
-const TITLE = "Pokémon Card Condition Guide: NM, LP, MP, HP & Graded Tiers Explained | Foil";
+const TITLE = "Pokémon Card Condition Guide: NM, LP, MP, HP & Graded | Foil";
 const DESCRIPTION =
-  "How TCGplayer condition tiers actually work, the defects that drop a card's value, and when a card is a grading candidate vs a raw sell — calibrated against thousands of comparable sales.";
+  "How TCGplayer condition tiers work, the defects that drop a card's value, and when a card is a grading candidate vs a raw sell.";
 const URL_PATH = "/pokemon-card-condition-guide";
 const PUBLISHED_AT = "2026-05-20";
 const MODIFIED_AT = "2026-05-20";
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
-    creator: "@foilcards",
+    creator: "@Johnnycakx",
   },
 };
 
@@ -289,18 +289,17 @@ export default function PokemonCardConditionGuidePage() {
 
           <h2>How Foil surfaces condition in pricing</h2>
           <p>
-            Foil&apos;s scanner returns the best raw NM price from eBay sold and the highest
-            graded comp from PriceCharting on every card, and flags the gap on screen. That way you
-            see immediately when a $30 raw card has a $1,500 PSA 10 comp behind it — which is the
-            moment to slow down, inspect for grading defects, and decide whether to keep it raw or
-            submit.{" "}
+            Foil shows the best raw NM price from eBay sold and the highest graded comp from
+            PriceCharting on every card, and flags the gap on screen. That way you see immediately
+            when a $30 raw card has a $1,500 PSA 10 comp behind it, the moment to slow down, inspect
+            for grading defects, and decide whether to keep it raw or submit.{" "}
             <Link
               href="#waitlist"
               className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral"
             >
-              Join the waitlist
+              Join the newsletter
             </Link>{" "}
-            to be notified when early access opens.
+            for the weekly Pokémon card price moves.
           </p>
 
           <h2>Related guides</h2>
@@ -321,7 +320,7 @@ export default function PokemonCardConditionGuidePage() {
               <Link href="/blog" className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral">
                 Foil blog
               </Link>{" "}
-              — field notes on Pokémon card valuation, scanning, and grading.
+              — field notes on Pokémon card prices, deals, and grading.
             </li>
           </ul>
 

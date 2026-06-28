@@ -31,8 +31,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { "set-id": setId } = await params;
   if (!setIdsInCatalog().includes(setId)) return {};
   const set = await getSetMetadata({ id: setId });
-  const title = `${set.name} — Best Pokémon TCG card deals | Foil`;
-  const description = `Browse every ${set.name} card Foil tracks. Live eBay listings, watchlist alerts when prices drop to your target.`;
+  const title = `${set.name} card prices & deals | Foil`;
+  const description = `Browse every ${set.name} card Foil tracks: the best live eBay deal on each, plus watchlist alerts when a price drops to your target.`;
   return {
     title,
     description,

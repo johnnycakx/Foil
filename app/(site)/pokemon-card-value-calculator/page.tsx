@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LeadMagnetCTA } from "@/components/lead-magnet-cta";
 
-const TITLE = "Pokémon Card Value Calculator: How to Price Any Card in 2026 | Foil";
+const TITLE = "Pokémon Card Value Calculator: Price Any Card (2026) | Foil";
 const DESCRIPTION =
-  "How to find what a Pokémon card is actually worth — eBay sold averages vs TCGplayer market, condition adjustments, graded comps, and the fields you have to read off the card to look it up correctly.";
+  "How to find what a Pokémon card is really worth: eBay sold averages vs TCGplayer market, condition adjustments, and graded comps.";
 const URL_PATH = "/pokemon-card-value-calculator";
 const PUBLISHED_AT = "2026-05-20";
 const MODIFIED_AT = "2026-05-20";
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
-    creator: "@foilcards",
+    creator: "@Johnnycakx",
   },
 };
 
@@ -230,9 +230,9 @@ export default function PokemonCardValueCalculatorPage() {
             </li>
           </ul>
           <p>
-            Foil&apos;s scanner returns both numbers on every card — the raw NM price from eBay
-            sold and the highest graded comp from PriceCharting — and flags the gap on screen so
-            you can make the grading call instantly instead of opening two tabs.
+            Foil shows both numbers on every card, the raw NM price from eBay sold and the highest
+            graded comp from PriceCharting, and flags the gap on screen so you can make the grading
+            call instantly instead of opening two tabs.
           </p>
 
           <h2>Common Pokémon card valuation mistakes</h2>
@@ -295,7 +295,7 @@ export default function PokemonCardValueCalculatorPage() {
               <Link href="/blog" className="font-medium text-foil-navy underline decoration-foil-gold underline-offset-4 hover:text-foil-coral">
                 Foil blog
               </Link>{" "}
-              — field notes on Pokémon card valuation, scanning, and grading.
+              — field notes on Pokémon card prices, deals, and grading.
             </li>
           </ul>
 

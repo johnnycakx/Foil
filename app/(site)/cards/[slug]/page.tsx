@@ -79,7 +79,9 @@ function aggregateOfferFromTcgplayer(
 }
 
 function titleFor(card: CardMetadata): string {
-  return `${card.name} (${card.setName}) — Best deals on eBay | Foil`;
+  // Lead with the card name + set (the actual query), then the two highest-volume
+  // per-card buyer terms (price, deals). No em dash (brand voice).
+  return `${card.name} (${card.setName}) price & deals | Foil`;
 }
 
 function descriptionFor(card: CardMetadata): string {

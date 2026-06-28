@@ -15,7 +15,7 @@ import { serializeJsonLd } from "@/lib/seo/schema-helpers";
 
 const TITLE = "The Pokémon Card Pricing Cheat Sheet (free) | Foil";
 const DESCRIPTION =
-  "A free one-page reference for pricing any Pokémon card: the three fields to read off the card, eBay sold vs TCGplayer market, the condition multipliers (NM through DMG), raw vs graded, and when grading is worth it.";
+  "A free one-page reference for pricing any Pokémon card: the three fields to read, eBay sold vs TCGplayer market, condition multipliers, and when to grade.";
 const URL_PATH = "/free/pokemon-card-pricing-cheat-sheet";
 // The keepable asset (Cowork-built, branded). A static /public file, so the
 // request bypasses middleware (proxy.ts matcher excludes .pdf) and is also
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
-    creator: "@foilcards",
+    creator: "@Johnnycakx",
     images: ["/opengraph-image"],
   },
 };

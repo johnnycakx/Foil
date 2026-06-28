@@ -33,8 +33,8 @@ import { CardsSearch, type SearchEntry } from "./cards-search";
 export const dynamic = "force-static";
 export const revalidate = 86_400;
 
-const TITLE = "Browse Pokémon TCG cards by set — Foil";
-const DESCRIPTION = `Find the best live eBay deal on any of ${CARD_CATALOG.length} curated Pokémon TCG cards. Browse vintage WotC holos, Neo era chase, modern V/VSTAR/ex — grouped by era and set.`;
+const TITLE = "Browse Pokémon card prices & deals by set | Foil";
+const DESCRIPTION = `Find the best live eBay deal on any of ${CARD_CATALOG.length} curated Pokémon TCG cards. Browse vintage WotC holos, Neo era chase, and modern V/VSTAR/ex, grouped by era and set.`;
 
 export const metadata: Metadata = {
   title: TITLE,

@@ -21,7 +21,7 @@ import { CARD_CATALOG } from "@/lib/cards/catalog";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const TITLE = "Pokémon card good buys this week | Foil";
+const TITLE = "Pokémon card deals & good buys this week | Foil";
 const DESCRIPTION =
   "Pokémon cards trading below their 30-day sold average, computed from recent market data and ranked weekly. Plus live below-sold listings. Free to use.";
 
@@ -102,7 +102,7 @@ export default async function DealsPage() {
       <section className="mt-14">
         <h2 className="font-display text-xl font-bold text-foil-navy">Below sold right now</h2>
         <p className="mt-1 text-sm text-foil-slate">
-          Individual live listings priced under their condition-matched recent sold price. We scan{" "}
+          Individual live listings priced under their condition-matched recent sold price. We check{" "}
           {trackedCount} cards and only list one when we are confident the listing matches the sold data,
           on the same condition and currency. Fewer deals we trust beats a long list we do not.
         </p>
