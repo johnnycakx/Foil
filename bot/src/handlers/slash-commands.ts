@@ -286,7 +286,7 @@ async function approvalHandler(
         `Draft \`${id}\` skipped — it will not be ${surface === "newsletter" ? "sent" : "posted"}.`,
       );
     } else if (result.action === "delivered") {
-      await interaction.editReply("Newsletter issue approved — the paste-ready email is on its way to your inbox.");
+      await interaction.editReply("Newsletter approved and sent to the subscriber list via Resend Broadcasts.");
     } else {
       await interaction.editReply(`Posted to X.${result.postId ? ` Post id \`${result.postId}\`.` : ""}`);
     }

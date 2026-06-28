@@ -1,6 +1,7 @@
 "use server";
 
 import { subscribeEmail } from "@/lib/beehiiv";
+import { recordSubscriber } from "@/lib/newsletter/subscribers";
 import { postError, postSubscriberJoined } from "@/lib/notifications/discord";
 import { queueEvent } from "@/lib/notifications/digest";
 
@@ -15,6 +16,13 @@ export async function subscribeAction(formData: FormData): Promise<SubscribeActi
   const source = String(formData.get("source") ?? "unknown");
 
   const result = await subscribeEmail({ email: rawEmail, source });
+
+  // Dual-write to the owned list (Supabase) + the Resend marketing audience
+  // (ADR-078). Best-effort + non-blocking: the Beehiiv result above is what
+  // gates the user-facing success; this just keeps our owned send-list in sync.
+  if (result.ok) {
+    void recordSubscriber({ email: rawEmail, source });
+  }
 
   if (!result.ok) {
     // Fire-and-forget #errors notification. Soft-fail — Discord outage must

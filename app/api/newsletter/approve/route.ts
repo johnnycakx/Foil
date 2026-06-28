@@ -12,7 +12,7 @@
 import { NextResponse } from "next/server";
 import { processDigestApproval, type DigestApprovalAction } from "@/lib/newsletter/digest-approval";
 import { supabaseDigestDraftStore } from "@/lib/newsletter/digest-drafts";
-import { sendDigestApprovedEmail } from "@/lib/notifications/resend";
+import { sendResendBroadcast, wrapBroadcastFooter, sendDigestApprovedEmail } from "@/lib/notifications/resend";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -44,9 +44,23 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ ok: false, error: "missing_id_or_action" }, { status: 400 });
   }
 
+  // ADR-078: on approve, SEND the digest as a Resend Broadcast to the audience
+  // (we own the send; no Beehiiv paste). If RESEND_AUDIENCE_ID is unset, fall
+  // back to emailing the founder the paste-ready issue (the ADR-077 no-spend
+  // path) so a misconfig degrades to manual paste instead of a silent no-send.
+  const audienceId = process.env.RESEND_AUDIENCE_ID;
   const result = await processDigestApproval({
     store: supabaseDigestDraftStore(),
     deliver: async (draft) => {
+      if (audienceId) {
+        const r = await sendResendBroadcast({
+          audienceId,
+          subject: draft.subject,
+          html: wrapBroadcastFooter(draft.htmlBody),
+          name: `good-buys-${draft.issueWeek}`,
+        });
+        return r.ok ? { ok: true, deliveryId: r.broadcastId } : { ok: false, error: r.error };
+      }
       const r = await sendDigestApprovedEmail({ to: FOUNDER_EMAIL, ...draft });
       return r.ok ? { ok: true, deliveryId: r.messageId } : { ok: false, error: r.error ?? "email_failed" };
     },

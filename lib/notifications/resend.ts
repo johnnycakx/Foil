@@ -259,6 +259,138 @@ export async function sendDigestApprovedEmail(
   );
 }
 
+// ---------------------------------------------------------------------------
+// Resend Audiences + Broadcasts (ADR-078). We OWN the newsletter send: the
+// weekly digest goes out as a Resend Broadcast to our audience, instead of a
+// manual Beehiiv paste (Beehiiv RSS-to-Send is Max/Enterprise; ADR-077). This
+// is the SINGLE Resend boundary — no other module constructs api.resend.com
+// broadcast/contact calls. Verified live 2026-06-28: create-audience, add-
+// contact, create-broadcast, send-broadcast all work on our tier (a real test
+// broadcast landed in the founder's Primary inbox).
+//
+// Resend injects List-Unsubscribe + the one-click unsubscribe natively for
+// broadcasts via the {{{RESEND_UNSUBSCRIBE_URL}}} merge tag; that is the
+// unsubscribe source of truth for the marketing list (the HMAC-token path in
+// lib/unsubscribe-token.ts stays the transactional/wishlist unsubscribe).
+// ---------------------------------------------------------------------------
+
+const RESEND_AUDIENCES_ENDPOINT = "https://api.resend.com/audiences";
+const RESEND_BROADCASTS_ENDPOINT = "https://api.resend.com/broadcasts";
+
+/** Default broadcast sender. A dedicated marketing subdomain (news.foiltcg.com)
+ *  is the deliverability best practice (protects the transactional reputation);
+ *  until that DNS is set up, the verified transactional sender is used. */
+export const DEFAULT_NEWSLETTER_FROM = "Foil <alerts@foiltcg.com>";
+
+/** CAN-SPAM physical mailing address (Foil TCG, LLC). Appended to every
+ *  broadcast footer alongside the native unsubscribe link. */
+export const CAN_SPAM_ADDRESS = "Foil TCG, LLC, 2710 Southern Hills Ct, Fairfield, CA 94534";
+
+export type ResendContactResult = { ok: true; contactId: string | null } | { ok: false; error: string };
+
+/**
+ * Upsert a contact into a Resend audience (the marketing list). Best-effort:
+ * an "already exists" response is treated as success (the email is on the list,
+ * which is the only outcome callers need). Soft-fail; never throws.
+ */
+export async function upsertResendContact(
+  input: { email: string; audienceId: string; firstName?: string; unsubscribed?: boolean },
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<ResendContactResult> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return { ok: false, error: "missing_api_key" };
+  if (!input.email?.trim() || !input.audienceId?.trim()) return { ok: false, error: "missing_required_field" };
+  const fetchFn = opts.fetchImpl ?? fetch;
+
+  try {
+    const res = await fetchFn(`${RESEND_AUDIENCES_ENDPOINT}/${input.audienceId}/contacts`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: input.email.trim().toLowerCase(),
+        first_name: input.firstName,
+        unsubscribed: input.unsubscribed ?? false,
+      }),
+    });
+    if (res.ok) {
+      const json = (await res.json().catch(() => ({}))) as { id?: string };
+      return { ok: true, contactId: json.id ?? null };
+    }
+    // A duplicate email in the audience is fine (the contact is present).
+    if (res.status === 409 || res.status === 422) return { ok: true, contactId: null };
+    return { ok: false, error: `http_${res.status}` };
+  } catch (err) {
+    return { ok: false, error: (err as Error).message };
+  }
+}
+
+export type BroadcastResult = { ok: true; broadcastId: string } | { ok: false; error: string };
+
+/**
+ * Create a broadcast for an audience and SEND it (or schedule it). The two-step
+ * Resend flow (POST /broadcasts then POST /broadcasts/{id}/send) is encapsulated
+ * here so callers get one idempotent-friendly call. `html` should already carry
+ * the {{{RESEND_UNSUBSCRIBE_URL}}} merge tag + CAN-SPAM footer (use
+ * `wrapBroadcastFooter`). Soft-fail; never throws.
+ */
+export async function sendResendBroadcast(
+  input: { audienceId: string; subject: string; html: string; name: string; from?: string; replyTo?: string; scheduledAt?: string },
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<BroadcastResult> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return { ok: false, error: "missing_api_key" };
+  if (!input.audienceId?.trim() || !input.subject?.trim() || !input.html?.trim()) {
+    return { ok: false, error: "missing_required_field" };
+  }
+  const fetchFn = opts.fetchImpl ?? fetch;
+  const headers = { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" };
+
+  try {
+    const createRes = await fetchFn(RESEND_BROADCASTS_ENDPOINT, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        audience_id: input.audienceId,
+        from: input.from ?? process.env.NEWSLETTER_FROM ?? DEFAULT_NEWSLETTER_FROM,
+        reply_to: input.replyTo,
+        subject: input.subject,
+        name: input.name,
+        html: input.html,
+      }),
+    });
+    if (!createRes.ok) {
+      return { ok: false, error: `create_http_${createRes.status}: ${(await safeText(createRes)).slice(0, 200)}` };
+    }
+    const created = (await createRes.json().catch(() => ({}))) as { id?: string };
+    if (!created.id) return { ok: false, error: "no_broadcast_id" };
+
+    const sendRes = await fetchFn(`${RESEND_BROADCASTS_ENDPOINT}/${created.id}/send`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(input.scheduledAt ? { scheduled_at: input.scheduledAt } : {}),
+    });
+    if (!sendRes.ok) {
+      return { ok: false, error: `send_http_${sendRes.status}: ${(await safeText(sendRes)).slice(0, 200)}` };
+    }
+    return { ok: true, broadcastId: created.id };
+  } catch (err) {
+    return { ok: false, error: (err as Error).message };
+  }
+}
+
+/** Append the compliance footer (native one-click unsubscribe + CAN-SPAM
+ *  mailing address) to a digest body for a Resend broadcast. The
+ *  {{{RESEND_UNSUBSCRIBE_URL}}} merge tag is rendered per-recipient by Resend. */
+export function wrapBroadcastFooter(bodyHtml: string): string {
+  return (
+    bodyHtml +
+    `\n<hr style="border:none;border-top:1px solid #e0e0e0;margin:24px 0" />` +
+    `\n<p style="color:#888;font-size:12px;line-height:1.5">${CAN_SPAM_ADDRESS}.` +
+    ` You are receiving this because you subscribed at foiltcg.com.` +
+    ` <a href="{{{RESEND_UNSUBSCRIBE_URL}}}">Unsubscribe</a>.</p>`
+  );
+}
+
 /**
  * Build the email HTML. Four labeled sections per ADR-012:
  *   (a) WHY THIS TOPIC
