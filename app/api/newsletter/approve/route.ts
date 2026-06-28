@@ -12,7 +12,7 @@
 import { NextResponse } from "next/server";
 import { processDigestApproval, type DigestApprovalAction } from "@/lib/newsletter/digest-approval";
 import { supabaseDigestDraftStore } from "@/lib/newsletter/digest-drafts";
-import { sendResendBroadcast, wrapBroadcastFooter, sendDigestApprovedEmail } from "@/lib/notifications/resend";
+import { sendResendBroadcast, sendDigestApprovedEmail } from "@/lib/notifications/resend";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -53,10 +53,13 @@ export async function POST(request: Request): Promise<NextResponse> {
     store: supabaseDigestDraftStore(),
     deliver: async (draft) => {
       if (audienceId) {
+        // draft.htmlBody is the branded react-email render (ADR-079), which
+        // already includes the CAN-SPAM footer + the native unsubscribe tag, so
+        // it is sent as-is (no wrapBroadcastFooter — that would double the footer).
         const r = await sendResendBroadcast({
           audienceId,
           subject: draft.subject,
-          html: wrapBroadcastFooter(draft.htmlBody),
+          html: draft.htmlBody,
           name: `good-buys-${draft.issueWeek}`,
         });
         return r.ok ? { ok: true, deliveryId: r.broadcastId } : { ok: false, error: r.error };

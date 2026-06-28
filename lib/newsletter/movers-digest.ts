@@ -192,3 +192,62 @@ export function serializeMoversDigest(input: MoversDigestInput): string {
 function escapeYaml(s: string): string {
   return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
+
+// ---------------------------------------------------------------------------
+// Structured digest model (ADR-079) — the typed data the branded react-email
+// template renders from. Same source of truth as the markdown serializer (reuses
+// browseUrl / moveWords / formatUsd / formatDate), so the email + the markdown
+// never drift. The template gets typed fields, not pre-rendered markdown.
+// ---------------------------------------------------------------------------
+
+export type DigestCardModel = {
+  name: string;
+  set: string;
+  /** Signed momentum (negative = down/cooling). */
+  momentumPct: number;
+  /** "down 10.6%" / "up 15.6%". */
+  moveWords: string;
+  arrow: "down" | "up";
+  /** Exact 7-day sold average, formatted ("$11.34"), or null when absent. */
+  avg7dUsd: string | null;
+  avg30dUsd: string | null;
+  saleCount: number;
+  /** Affiliate-wrapped eBay browse search URL (EPN-tagged). */
+  browseUrl: string;
+};
+
+export type DigestModel = {
+  subject: string;
+  previewText: string;
+  dateLine: string;
+  down: DigestCardModel[];
+  up: DigestCardModel[];
+  leadMagnetUrl: string;
+};
+
+function toCardModel(m: MoverRow): DigestCardModel {
+  return {
+    name: m.cardName,
+    set: m.setName,
+    momentumPct: m.momentumPct,
+    moveWords: moveWords(m.momentumPct),
+    arrow: m.momentumPct < 0 ? "down" : "up",
+    avg7dUsd: typeof m.avg7d === "number" ? formatUsd(m.avg7d) : null,
+    avg30dUsd: typeof m.avg30d === "number" ? formatUsd(m.avg30d) : null,
+    saleCount: m.saleCount,
+    browseUrl: browseUrl(m),
+  };
+}
+
+export function buildDigestModel(input: MoversDigestInput): DigestModel {
+  const site = (input.siteUrl ?? DEFAULT_SITE).replace(/\/+$/, "");
+  const parts = buildMoversDigestParts(input);
+  return {
+    subject: parts.subject,
+    previewText: parts.previewText,
+    dateLine: formatDate(input.generatedAt),
+    down: input.movers.down.slice(0, input.maxDown ?? 8).map(toCardModel),
+    up: input.movers.up.slice(0, input.maxUp ?? 4).map(toCardModel),
+    leadMagnetUrl: `${site}${LEAD_MAGNET_PATH}`,
+  };
+}

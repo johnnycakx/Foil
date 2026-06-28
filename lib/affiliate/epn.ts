@@ -251,7 +251,10 @@ export function affiliateSearchUrl(query: string, customId: string): string {
  * quality gate, ADR-077) ask "is this tracked?" without re-encoding the param.
  */
 export function isAffiliateWrapped(url: string): boolean {
-  return new URL(url).searchParams.has("campid");
+  // Decode the HTML ampersand entity first: react-email (and any HTML serializer)
+  // emits hrefs as `…&amp;campid=…`, which would otherwise parse as a param named
+  // "amp;campid". Plain markdown hrefs use a raw `&`; both must validate.
+  return new URL(url.replace(/&amp;/g, "&")).searchParams.has("campid");
 }
 
 export type GetBestListingInput = {

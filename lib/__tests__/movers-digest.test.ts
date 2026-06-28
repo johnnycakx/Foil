@@ -8,7 +8,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { serializeMoversDigest, formatUsd, MOVERS_DIGEST_SEPARATOR } from "../newsletter/movers-digest.ts";
+import { serializeMoversDigest, buildDigestModel, formatUsd, MOVERS_DIGEST_SEPARATOR } from "../newsletter/movers-digest.ts";
 import type { MarketMovers, MoverRow } from "../deals/market-movers-read.ts";
 
 function mover(over: Partial<MoverRow>): MoverRow {
@@ -111,6 +111,40 @@ test("digest browse links are AFFILIATE-TAGGED when EBAY_CAMPAIGN_ID is set (ADR
       assert.match(url, /[?&]campid=5339154326/, `browse link not affiliate-tagged: ${url}`);
       assert.match(url, /[?&]customid=/, `browse link missing customid: ${url}`);
       assert.match(url, /[?&]mkcid=1/, `browse link missing EPN tracking params: ${url}`);
+    }
+  } finally {
+    if (prev === undefined) delete process.env.EBAY_CAMPAIGN_ID;
+    else process.env.EBAY_CAMPAIGN_ID = prev;
+  }
+});
+
+// --- buildDigestModel (ADR-079): the structured model the react-email template
+// renders from. Same source of truth as the markdown serializer. ---
+
+test("buildDigestModel returns typed cards with formatted figures + arrows", () => {
+  const m = buildDigestModel({ movers: MOVERS, generatedAt: "2026-06-28T16:00:00Z" });
+  assert.equal(m.down.length, 2);
+  assert.equal(m.up.length, 1);
+  const first = m.down[0];
+  assert.equal(first.name, "Umbreon VMAX");
+  assert.equal(first.set, "Evolving Skies");
+  assert.equal(first.arrow, "down");
+  assert.equal(first.avg7dUsd, "$880");
+  assert.equal(first.avg30dUsd, "$1,000");
+  assert.equal(m.up[0].arrow, "up");
+  assert.match(m.subject, /trading below their 30-day average/);
+  assert.ok(m.dateLine.length > 0);
+  assert.match(m.leadMagnetUrl, /\/free\/pokemon-card-pricing-cheat-sheet$/);
+});
+
+test("buildDigestModel browse URLs are affiliate-wrapped when EBAY_CAMPAIGN_ID is set", () => {
+  const prev = process.env.EBAY_CAMPAIGN_ID;
+  process.env.EBAY_CAMPAIGN_ID = "5339154326";
+  try {
+    const m = buildDigestModel({ movers: MOVERS, generatedAt: "2026-06-28T16:00:00Z" });
+    for (const card of [...m.down, ...m.up]) {
+      assert.match(card.browseUrl, /ebay\.com\/sch/);
+      assert.match(card.browseUrl, /campid=5339154326/);
     }
   } finally {
     if (prev === undefined) delete process.env.EBAY_CAMPAIGN_ID;

@@ -15,8 +15,8 @@
 
 import { NextResponse } from "next/server";
 import { getMarketMovers, type MoverRow } from "@/lib/deals/market-movers-read";
-import { renderDigestForSend } from "@/lib/newsletter/digest-html";
-import { buildMoversDigestParts } from "@/lib/newsletter/movers-digest";
+import { buildMoversDigestParts, buildDigestModel } from "@/lib/newsletter/movers-digest";
+import { renderMoversDigestEmail } from "@/emails/movers-digest-email";
 import { runDigestQualityGates } from "@/lib/newsletter/digest-quality-gate";
 import { resolveNewsletterDigestMode, isoWeekTag } from "@/lib/newsletter/digest-mode";
 import {
@@ -61,11 +61,14 @@ export async function GET(request: Request): Promise<NextResponse> {
     const generatedAt = now.toISOString();
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://foiltcg.com";
 
-    const rendered = renderDigestForSend({ movers, generatedAt, siteUrl });
     const parts = buildMoversDigestParts({ movers, generatedAt, siteUrl });
+    // The branded react-email template (ADR-079) is the email body; the markdown
+    // parts stay the canonical record + the Discord-card summary source.
+    const model = buildDigestModel({ movers, generatedAt, siteUrl });
+    const html = await renderMoversDigestEmail(model);
 
     // Quality gate BEFORE persisting / posting a card. Fail -> log + skip, no card.
-    const gate = runDigestQualityGates({ parts, movers, html: rendered.html });
+    const gate = runDigestQualityGates({ parts, movers, html });
     if (!gate.passed) {
       console.warn(`[newsletter-digest] quality gate failed (${gate.failures.length}): ${gate.failures.join(" | ")}`);
       return NextResponse.json({ ok: true, reason: "gate_failed", failures: gate.failures });
@@ -74,12 +77,12 @@ export async function GET(request: Request): Promise<NextResponse> {
     const issueWeek = isoWeekTag(now);
     const created = await store.create({
       issueWeek,
-      subject: rendered.subject,
-      previewText: rendered.previewText,
-      htmlBody: rendered.html,
-      markdownBody: rendered.bodyMarkdown,
-      downCount: rendered.downCount,
-      upCount: rendered.upCount,
+      subject: parts.subject,
+      previewText: parts.previewText,
+      htmlBody: html,
+      markdownBody: parts.bodyMarkdown,
+      downCount: parts.downCount,
+      upCount: parts.upCount,
       expiresAt: digestExpiryFrom(nowMs),
     });
     if (!created) {
@@ -93,10 +96,10 @@ export async function GET(request: Request): Promise<NextResponse> {
       await postNewsletterApprovalRequest(contentWebhook, {
         draftId: created.id,
         issueWeek,
-        subject: rendered.subject,
-        previewText: rendered.previewText,
-        downCount: rendered.downCount,
-        upCount: rendered.upCount,
+        subject: parts.subject,
+        previewText: parts.previewText,
+        downCount: parts.downCount,
+        upCount: parts.upCount,
         topCards: topCardsSummary(movers.down),
         expiresLabel: `${DEFAULT_DIGEST_EXPIRY_HOURS}h (then auto-skipped)`,
       });
