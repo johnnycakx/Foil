@@ -188,6 +188,77 @@ async function safeText(response: Response): Promise<string> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// "Good buys this week" movers-digest delivery (ADR-077). On the owner's Discord
+// /approve, the no-spend rail emails the founder the paste-ready issue (Beehiiv
+// RSS-to-Send is a Max/Enterprise feature, not on Scale — so the send stays a
+// manual Beehiiv paste). Deterministic body (no LLM); affiliate links already
+// wrapped. Delegates to sendTransactionalEmail so the Resend plumbing stays in
+// one place; soft-fail identical.
+// ---------------------------------------------------------------------------
+
+export type DigestApprovedEmailInput = {
+  /** Founder inbox (the only recipient — this is an internal paste-ready email). */
+  to: string;
+  /** The newsletter subject the digest generated. */
+  subject: string;
+  previewText: string;
+  /** The paste-ready Beehiiv body HTML (affiliate links already wrapped). */
+  htmlBody: string;
+  /** ISO week tag, e.g. "2026-W26". */
+  issueWeek: string;
+  downCount: number;
+  upCount: number;
+};
+
+/** Wrap the approved digest in a paste-ready founder email: instructions + the
+ *  subject/preview + the body in a bordered box + the deliverability reminders. */
+export function renderDigestApprovedEmailHtml(input: DigestApprovedEmailInput): string {
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  return [
+    `<!doctype html>`,
+    `<html><body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; line-height: 1.55; color: #1a1a1a;">`,
+    `<h1 style="font-size: 20px; margin: 0 0 8px;">Approved: "Good buys this week" (${esc(input.issueWeek)})</h1>`,
+    `<p style="color: #555; font-size: 13px; margin: 0 0 24px;">You approved this digest in Discord. Beehiiv RSS-to-Send is a Max/Enterprise feature (not on Scale), so paste the body below into Beehiiv to send. ${input.downCount} cooling-off + ${input.upCount} heating-up cards.</p>`,
+
+    `<h2 style="font-size: 16px; margin: 24px 0 8px; padding-top: 16px; border-top: 2px solid #C9A24B;">Subject + preview</h2>`,
+    `<table style="width: 100%; border-collapse: collapse; margin: 12px 0;">`,
+    `<tr><td style="font-weight: 600; padding: 6px 8px; background: #f5f5f5; width: 130px;">Subject</td><td style="padding: 6px 8px; background: #f5f5f5;">${esc(input.subject)}</td></tr>`,
+    `<tr><td style="font-weight: 600; padding: 6px 8px;">Preview text</td><td style="padding: 6px 8px;">${esc(input.previewText)}</td></tr>`,
+    `</table>`,
+
+    `<h2 style="font-size: 16px; margin: 24px 0 8px; padding-top: 16px; border-top: 2px solid #C9A24B;">Paste-ready body</h2>`,
+    `<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; background: #fafafa; margin: 12px 0;">`,
+    input.htmlBody,
+    `</div>`,
+
+    `<h2 style="font-size: 16px; margin: 24px 0 8px; padding-top: 16px; border-top: 2px solid #C9A24B;">How to send</h2>`,
+    `<ol style="padding-left: 20px;">`,
+    `<li>Open Beehiiv → <strong>Create New Post</strong>.</li>`,
+    `<li>Paste the subject + preview text from above.</li>`,
+    `<li>Paste the body HTML into the editor (use the code/source view if available).</li>`,
+    `<li>Confirm the footer <strong>mailing address</strong> + <strong>sender display name</strong> are set (deliverability).</li>`,
+    `<li>Send to the list (or schedule).</li>`,
+    `</ol>`,
+    `</body></html>`,
+  ].join("\n");
+}
+
+export async function sendDigestApprovedEmail(
+  input: DigestApprovedEmailInput,
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<SendEmailResult> {
+  return sendTransactionalEmail(
+    {
+      to: input.to,
+      subject: `${EMAIL_SUBJECT_PREFIX}${input.subject}`,
+      html: renderDigestApprovedEmailHtml(input),
+    },
+    opts,
+  );
+}
+
 /**
  * Build the email HTML. Four labeled sections per ADR-012:
  *   (a) WHY THIS TOPIC

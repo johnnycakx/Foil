@@ -167,6 +167,16 @@ test("/api/x/approve is public — bot-triggered, self-gates on X_APPROVE_SECRET
   assert.equal(isPublicRoute("/api/x"), false);
 });
 
+test("/api/newsletter/approve is public — bot-triggered, self-gates on NEWSLETTER_APPROVE_SECRET (ADR-077)", () => {
+  // The Foil HQ bot POSTs here when the owner approves a digest draft whose id
+  // was not an X draft; the route does its own bearer check. Must be reachable
+  // without a Supabase session or the proxy would 302 the bot to /login.
+  assert.equal(isPublicRoute("/api/newsletter/approve"), true);
+  // Exact rule — must not bleed into an adjacent stem.
+  assert.equal(isPublicRoute("/api/newsletter/approve-all"), false);
+  assert.equal(isPublicRoute("/api/newsletter"), false);
+});
+
 test("/api/unsubscribe is public — RFC 8058 one-click + token IS the auth (Task #18)", () => {
   // The endpoint accepts GET (visible-link path) and POST (List-Unsubscribe-
   // Post). The HMAC token in the query string is the only auth — the route

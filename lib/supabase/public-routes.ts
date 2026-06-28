@@ -71,6 +71,12 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // the proxy would 302 the bot's request to /login and break approval.
   { kind: "exact", path: "/api/x/approve" },
 
+  // Newsletter digest approval endpoint (ADR-077). Same contract as /api/x/approve:
+  // the bot POSTs here (its own bearer gate NEWSLETTER_APPROVE_SECRET) when the
+  // owner approves/skips a digest draft whose id was not an X draft. Must be public
+  // or the proxy 302s the bot to /login and approval breaks.
+  { kind: "exact", path: "/api/newsletter/approve" },
+
   // Newsletter subscribe endpoint. Today the EmailCapture component invokes a
   // colocated Server Action so the POST piggy-backs on the host page (already
   // public). Listed here as the contract anchor: if we ever extract to a real

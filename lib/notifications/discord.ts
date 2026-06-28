@@ -347,6 +347,60 @@ export async function postSocialApprovalRequest(
   });
 }
 
+export type NewsletterApprovalInput = {
+  /** The persisted pending-draft id the owner approves by. */
+  draftId: string;
+  /** ISO week tag, e.g. "2026-W26". */
+  issueWeek: string;
+  subject: string;
+  previewText: string;
+  downCount: number;
+  upCount: number;
+  /** A short, human-readable list of the top cooling-off cards for the at-a-glance
+   *  decision (e.g. "Jamming Tower down 10.6%, Flareon VMAX down 10.4%, ..."). */
+  topCards: string;
+  /** When the pending draft auto-skips if not approved (human-readable). */
+  expiresLabel: string;
+};
+
+/**
+ * Post a NEWSLETTER digest APPROVAL REQUEST to Discord (#content-engine) — the
+ * no-spend rail (ADR-077) parity-clone of postSocialApprovalRequest. The owner
+ * approves with `/approve <id>` or skips with `/skip <id>` (the same Foil HQ bot
+ * commands, which fall through to the newsletter endpoint when the id is not an
+ * X draft). On approve the paste-ready issue is emailed to the founder. The card
+ * is a DECISION SUMMARY (subject + counts + top cards), not the full HTML body.
+ * Soft-fail per the lib contract.
+ */
+export async function postNewsletterApprovalRequest(
+  webhookUrl: string,
+  ev: NewsletterApprovalInput,
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<PostWebhookResult> {
+  return postWebhook({
+    webhookUrl,
+    embeds: [
+      {
+        title: "📰 Newsletter digest awaiting approval",
+        description: `Approve with \`/approve ${ev.draftId}\` or skip with \`/skip ${ev.draftId}\` (Foil HQ bot, owner only). On approve, the paste-ready issue is emailed to you.`,
+        color: COLOR_FOIL_ORANGE,
+        timestamp: new Date().toISOString(),
+        fields: [
+          { name: "Draft id", value: `\`${ev.draftId}\``, inline: false },
+          { name: "Week", value: ev.issueWeek, inline: true },
+          { name: "Cooling off", value: String(ev.downCount), inline: true },
+          { name: "Heating up", value: String(ev.upCount), inline: true },
+          { name: "Subject", value: ev.subject.slice(0, 256), inline: false },
+          { name: "Preview", value: ev.previewText.slice(0, 256), inline: false },
+          { name: "Top cards", value: ev.topCards.slice(0, 1000), inline: false },
+          { name: "Auto-skips", value: ev.expiresLabel, inline: false },
+        ],
+      },
+    ],
+    fetchImpl: opts.fetchImpl,
+  });
+}
+
 /**
  * Attach an arbitrary rendered file (PNG or MP4) to a Discord channel via
  * multipart (webhooks accept a file part + payload_json). Discord inline-renders

@@ -43,13 +43,13 @@ export const COMMAND_DEFS = [
     ),
   new SlashCommandBuilder()
     .setName("approve")
-    .setDescription("Approve the pending X post draft with this id — posts it to X. Owner only.")
+    .setDescription("Approve the pending draft with this id — posts the X post, or emails the newsletter issue. Owner only.")
     .addStringOption((opt) =>
       opt.setName("id").setDescription("The draft id from the #content-engine approval message").setRequired(true),
     ),
   new SlashCommandBuilder()
     .setName("skip")
-    .setDescription("Skip the pending X post draft with this id — it is never posted. Owner only.")
+    .setDescription("Skip the pending draft with this id (X post or newsletter digest) — it is never sent. Owner only.")
     .addStringOption((opt) =>
       opt.setName("id").setDescription("The draft id from the #content-engine approval message").setRequired(true),
     ),
@@ -227,23 +227,69 @@ export async function callApprovalEndpoint(
   }
 }
 
+/**
+ * Relay the owner's decision to the Foil app's /api/newsletter/approve endpoint
+ * (ADR-077) — the newsletter digest counterpart of callApprovalEndpoint. Bearer
+ * NEWSLETTER_APPROVE_SECRET. On approve the app emails the paste-ready issue to
+ * the founder (no public action), so this is the fallback when an id is not an X
+ * draft. Injectable appUrl/secret/fetch for tests.
+ */
+export async function callNewsletterApprovalEndpoint(
+  action: "approve" | "skip",
+  id: string,
+  actor: string,
+  deps: { appUrl?: string; secret?: string; fetchImpl?: typeof fetch } = {},
+): Promise<ApprovalEndpointResult> {
+  const appUrl = (deps.appUrl ?? process.env.FOIL_APP_URL ?? "https://foiltcg.com").replace(/\/+$/, "");
+  const secret = deps.secret ?? process.env.NEWSLETTER_APPROVE_SECRET;
+  if (!secret) return { ok: false, error: "NEWSLETTER_APPROVE_SECRET not configured" };
+  const fetchFn = deps.fetchImpl ?? fetch;
+  try {
+    const res = await fetchFn(`${appUrl}/api/newsletter/approve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${secret}` },
+      body: JSON.stringify({ id, action, actor }),
+    });
+    const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    if (res.ok && json.ok === true) {
+      return { ok: true, action: String(json.action ?? action) };
+    }
+    return { ok: false, error: String(json.error ?? `http_${res.status}`), status: res.status };
+  } catch (err) {
+    return { ok: false, error: (err as Error).message };
+  }
+}
+
 async function approvalHandler(
   interaction: ChatInputCommandInteraction,
   action: "approve" | "skip",
 ): Promise<void> {
   if (!isApprovalOwner(interaction.user.id, process.env.X_BOT_OWNER_DISCORD_ID)) {
-    await interaction.reply({ content: "Only the configured owner can approve or skip X posts.", ephemeral: true });
+    await interaction.reply({ content: "Only the configured owner can approve or skip drafts.", ephemeral: true });
     return;
   }
   const id = interaction.options.getString("id", true).trim();
   await interaction.deferReply({ ephemeral: true });
-  const result = await callApprovalEndpoint(action, id, interaction.user.tag);
+
+  // Try the X approval surface first; if the id is not an X draft, fall through
+  // to the newsletter digest surface — one /approve command serves both.
+  let result = await callApprovalEndpoint(action, id, interaction.user.tag);
+  let surface: "x" | "newsletter" = "x";
+  if (!result.ok && result.error === "draft_not_found") {
+    result = await callNewsletterApprovalEndpoint(action, id, interaction.user.tag);
+    surface = "newsletter";
+  }
+
   if (result.ok) {
-    await interaction.editReply(
-      result.action === "posted"
-        ? `Posted to X.${result.postId ? ` Post id \`${result.postId}\`.` : ""}`
-        : `Draft \`${id}\` skipped — it will not be posted.`,
-    );
+    if (result.action === "skipped") {
+      await interaction.editReply(
+        `Draft \`${id}\` skipped — it will not be ${surface === "newsletter" ? "sent" : "posted"}.`,
+      );
+    } else if (result.action === "delivered") {
+      await interaction.editReply("Newsletter issue approved — the paste-ready email is on its way to your inbox.");
+    } else {
+      await interaction.editReply(`Posted to X.${result.postId ? ` Post id \`${result.postId}\`.` : ""}`);
+    }
     return;
   }
   await interaction.editReply(`Could not ${action} draft \`${id}\`: ${result.error}`);
@@ -262,8 +308,8 @@ async function helpHandler(interaction: ChatInputCommandInteraction): Promise<vo
     `• \`/reset\` — wipe my memory for this channel.`,
     `• \`/recall <query>\` — top-5 semantic recall over my channel history.`,
     `• \`/ideas [category]\` — top-10 captured ideas from docs/IDEAS.md (optionally filtered).`,
-    `• \`/approve <id>\` — (owner) approve a pending X post draft → posts it to X.`,
-    `• \`/skip <id>\` — (owner) skip a pending X post draft → never posted.`,
+    `• \`/approve <id>\` — (owner) approve a pending draft → posts the X post, or emails the newsletter issue.`,
+    `• \`/skip <id>\` — (owner) skip a pending draft (X post or newsletter) → never sent.`,
     `• \`/help\` — this list.`,
     ``,
     `**Tools available to me**`,

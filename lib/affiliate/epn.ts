@@ -244,6 +244,16 @@ export function affiliateSearchUrl(query: string, customId: string): string {
   return buildAffiliateUrl(url.toString(), customId);
 }
 
+/**
+ * True if `url` carries the EPN affiliate campaign param — i.e. it was wrapped
+ * (not the soft-fail unwrapped fallback). Lives HERE so the param-name knowledge
+ * stays inside this single boundary module; callers (e.g. the newsletter digest
+ * quality gate, ADR-077) ask "is this tracked?" without re-encoding the param.
+ */
+export function isAffiliateWrapped(url: string): boolean {
+  return new URL(url).searchParams.has("campid");
+}
+
 export type GetBestListingInput = {
   cardName: string;
   setName?: string;
