@@ -55,8 +55,10 @@ export async function processApproval(deps: ApprovalDeps): Promise<ApprovalResul
 
   const imagePng = claimed.image_base64 ? base64ToBytes(claimed.image_base64) : null;
   const videoMp4 = claimed.video_base64 ? base64ToBytes(claimed.video_base64) : null;
-  // The body is link-free; the persisted link is posted as the first reply (Fix 3b).
-  const res = await deps.post({ text: claimed.text, imagePng, videoMp4, linkReply: claimed.link || null });
+  // The body is link-free; the persisted REPLY (v2.2: value-framed / newsletter-
+  // rotated) is posted as the first reply (Fix 3b). Legacy rows with no reply_text
+  // fall back to the bare link.
+  const res = await deps.post({ text: claimed.text, imagePng, videoMp4, linkReply: claimed.reply_text || claimed.link || null });
   if (!res.ok) {
     // Release back to pending so the owner can re-approve once the issue clears.
     await store.release(id, res.error);

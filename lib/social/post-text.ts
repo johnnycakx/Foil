@@ -95,6 +95,50 @@ export function linkFor(input: PostInput): string {
   return `${SITE}/deals`; // educational + weekly_board point at the board
 }
 
+/** The newsletter landing page (a public route) — the list-growth CTA target. */
+export const NEWSLETTER_URL = `${SITE}/newsletter`;
+/** Rotate the newsletter CTA into ~1-in-N daily replies. The X algorithm punishes
+ *  CTA-heavy accounts, so the ask is 80/20 value-to-CTA (STRATEGY-AUDIENCE-MOAT):
+ *  dayIndex % N === 0 → newsletter, else the value-framed link. */
+export const NEWSLETTER_REPLY_EVERY = 5;
+
+/** Deterministic: is `dayIndex` a newsletter-CTA reply day? (~20% at N=5.) */
+export function isNewsletterReplyDay(dayIndex: number): boolean {
+  return ((dayIndex % NEWSLETTER_REPLY_EVERY) + NEWSLETTER_REPLY_EVERY) % NEWSLETTER_REPLY_EVERY === 0;
+}
+
+/**
+ * The threaded REPLY text (v2.2). The post body is link-free for reach (Fix 3b),
+ * so the reply is where the link lives — and the natural home for the value frame
+ * + the occasional newsletter ask, because a CTA in the reply doesn't cost the
+ * body's reach. Pure + deterministic (`dayIndex` drives the rotation), so it
+ * unit-tests without the network and the persisted reply is reproducible.
+ *
+ *   - weekly_board: a value-framed board link + the ONLY explicit save ask (Fix D
+ *     — bookmarks are earned on the genuinely save-worthy weekly board, not begged
+ *     daily). No newsletter rotation (the board already carries its own ask).
+ *   - daily angles (deal/spotlight/educational): a value-framed link line, with
+ *     the newsletter CTA rotating in ~20% of days. NEVER a bookmark/like ask.
+ *
+ * Voice rules apply (no em dash, no hype, exact) — pinned by the reply test.
+ */
+export function buildReplyText(input: PostInput, dayIndex: number): string {
+  const link = linkFor(input);
+  if (input.angle === "weekly_board") {
+    return `This week's biggest movers, the full board: ${link}\n\nBookmark the board, it updates every week.`;
+  }
+  if (isNewsletterReplyDay(dayIndex)) {
+    return `I send the week's biggest movers every Sunday. Free: ${NEWSLETTER_URL}`;
+  }
+  if (input.angle === "price_spotlight") {
+    return `Every recent sale and the live listings: ${link}`;
+  }
+  if (input.angle === "deal_of_day") {
+    return `Full sold history and the live listings: ${link}`;
+  }
+  return `See this week's good buys: ${link}`; // educational → the board, framed as utility
+}
+
 /** Pure: the per-angle instruction + the real figures the model must use verbatim. */
 export function buildUserPrompt(input: PostInput): string {
   const link = linkFor(input);

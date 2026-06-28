@@ -259,6 +259,9 @@ export type SocialDraftInput = {
   text: string;
   /** The page the post links to. */
   link: string;
+  /** The threaded-reply text posted as the first reply (v2.2) — what actually
+   *  carries the link + the value frame / newsletter CTA. Optional for back-compat. */
+  reply?: string;
   /** Whether a portrait image was rendered (the image itself isn't attached —
    *  Discord webhooks need multipart; the review ping carries the text + a note). */
   hasImage: boolean;
@@ -288,7 +291,7 @@ export async function postSocialDraft(
           { name: "Chars", value: String(ev.text.length), inline: true },
           { name: "Image", value: ev.hasImage ? "rendered" : "none", inline: true },
           { name: "Text", value: ev.text.slice(0, 1000), inline: false },
-          { name: "Link", value: ev.link, inline: false },
+          { name: "Reply", value: (ev.reply ?? ev.link).slice(0, 1000), inline: false },
         ],
       },
     ],
@@ -302,6 +305,8 @@ export type SocialApprovalInput = {
   angle: string;
   text: string;
   link: string;
+  /** The threaded-reply text (v2.2) — what gets posted as the first reply. */
+  reply?: string;
   hasImage: boolean;
   /** When the pending draft auto-skips if not approved (human-readable). */
   expiresLabel: string;
@@ -333,7 +338,7 @@ export async function postSocialApprovalRequest(
           { name: "Chars", value: String(ev.text.length), inline: true },
           { name: "Image", value: ev.hasImage ? "rendered" : "none", inline: true },
           { name: "Text", value: ev.text.slice(0, 1000), inline: false },
-          { name: "Link", value: ev.link, inline: false },
+          { name: "Reply", value: (ev.reply ?? ev.link).slice(0, 1000), inline: false },
           { name: "Auto-skips", value: ev.expiresLabel, inline: false },
         ],
       },

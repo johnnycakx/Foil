@@ -9,8 +9,8 @@
 // AND approval mode the orchestrator NEVER calls it — in approval mode the post
 // happens later, out-of-band, only after an explicit owner approval. Proven by test.
 
-import { resolveAngle, WEEKLY_BOARD_MIN_DEALS, type PostAngle } from "./angles.ts";
-import { buildUserPrompt, linkFor, type DealData, type GeneratedPost, type PostInput, type SpotlightData } from "./post-text.ts";
+import { resolveAngle, utcDayNumber, WEEKLY_BOARD_MIN_DEALS, type PostAngle } from "./angles.ts";
+import { buildReplyText, buildUserPrompt, linkFor, type DealData, type GeneratedPost, type PostInput, type SpotlightData } from "./post-text.ts";
 import type { XBotMode } from "./mode.ts";
 import type { PostToXResult } from "./x-client.ts";
 
@@ -18,6 +18,11 @@ export type XBotDraft = {
   angle: PostAngle;
   text: string;
   link: string;
+  /** The threaded-reply text (v2.2): a value-framed link line, or the newsletter
+   *  CTA on a rotation day (weekly_board adds the save ask). The body is link-free;
+   *  this is what gets posted as the first reply (Fix 3b). Persisted so /approve
+   *  posts the SAME reviewed reply. */
+  replyText: string;
   /** The Phase 0 still (the guaranteed fallback). */
   imagePng: Uint8Array | null;
   /** The MP4 motion clip when motion rendered (ADR-074 Phase 1). Null → still-only. */
@@ -135,7 +140,10 @@ export async function runXBot(deps: XBotDeps): Promise<XBotResult> {
     }
   }
 
-  const draft: XBotDraft = { angle, text: generated.text, link: linkFor(input), imagePng, videoMp4 };
+  // The value-framed / newsletter-rotated reply (v2.2). Deterministic by UTC day
+  // so the persisted reply (approval mode) is reproducible + reviewable.
+  const replyText = buildReplyText(input, utcDayNumber(now));
+  const draft: XBotDraft = { angle, text: generated.text, link: linkFor(input), replyText, imagePng, videoMp4 };
 
   // --- DRY-RUN: never touch the X API. Hand the draft to the reviewer. ---
   if (mode === "dry_run") {
@@ -166,8 +174,8 @@ export async function runXBot(deps: XBotDeps): Promise<XBotResult> {
   }
 
   // --- LIVE: the only path that calls the X API boundary. The body is link-free;
-  //     the link is posted as the first reply (Fix 3b). ---
-  const res = await deps.post({ text: generated.text, imagePng, videoMp4, linkReply: draft.link });
+  //     the value-framed reply (v2.2) is posted as the first reply (Fix 3b). ---
+  const res = await deps.post({ text: generated.text, imagePng, videoMp4, linkReply: draft.replyText });
   if (!res.ok) {
     return { ok: false, mode, angle, posted: false, text: generated.text, error: res.error };
   }

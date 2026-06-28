@@ -22,6 +22,10 @@ export type XPostDraft = {
   angle: string;
   text: string;
   link: string;
+  /** The threaded-reply text (v2.2). Persisted so /approve posts the SAME reply
+   *  that was reviewed. Null on legacy rows → the approve path falls back to the
+   *  bare `link`. */
+  reply_text: string | null;
   image_base64: string | null;
   /** The MP4 motion clip (ADR-074 Phase 1), base64. Null = still-only draft.
    *  Persisted ALONGSIDE the still so the approve path can prefer the clip and
@@ -40,6 +44,8 @@ export type NewDraft = {
   angle: string;
   text: string;
   link: string;
+  /** The threaded-reply text (v2.2) — persisted so /approve posts the reviewed reply. */
+  replyText?: string | null;
   imageBase64: string | null;
   /** The MP4 motion clip (ADR-074), base64. Null = still-only. */
   videoBase64?: string | null;
@@ -86,6 +92,7 @@ function rowToDraft(r: Record<string, unknown>): XPostDraft {
     angle: String(r.angle ?? ""),
     text: String(r.text ?? ""),
     link: String(r.link ?? ""),
+    reply_text: (r.reply_text as string | null) ?? null,
     image_base64: (r.image_base64 as string | null) ?? null,
     video_base64: (r.video_base64 as string | null) ?? null,
     status: (r.status as DraftStatus) ?? "pending",
@@ -108,7 +115,7 @@ export function supabaseDraftStore(injected?: SupabaseClient): DraftStore {
     async create(d) {
       const { data, error } = await db()
         .from(TABLE)
-        .insert({ angle: d.angle, text: d.text, link: d.link, image_base64: d.imageBase64, video_base64: d.videoBase64 ?? null, expires_at: d.expiresAt, status: "pending" })
+        .insert({ angle: d.angle, text: d.text, link: d.link, reply_text: d.replyText ?? null, image_base64: d.imageBase64, video_base64: d.videoBase64 ?? null, expires_at: d.expiresAt, status: "pending" })
         .select("id")
         .single();
       if (error || !data) {
@@ -199,7 +206,8 @@ export class InMemoryDraftStore implements DraftStore {
   async create(d: NewDraft): Promise<{ id: string }> {
     const id = `draft-${++this.seq}`;
     this.rows.set(id, {
-      id, angle: d.angle, text: d.text, link: d.link, image_base64: d.imageBase64,
+      id, angle: d.angle, text: d.text, link: d.link, reply_text: d.replyText ?? null,
+      image_base64: d.imageBase64,
       video_base64: d.videoBase64 ?? null,
       status: "pending", created_at: new Date(this.clock()).toISOString(), expires_at: d.expiresAt,
       approved_by: null, posted_at: null, post_id: null, error: null,

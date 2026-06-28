@@ -108,6 +108,7 @@ export async function GET(request: Request): Promise<NextResponse> {
         angle: draft.angle,
         text: draft.text,
         link: draft.link,
+        reply: draft.replyText,
         hasImage: !!draft.imagePng || !!draft.videoMp4,
         dryRun: true,
       });
@@ -125,6 +126,7 @@ export async function GET(request: Request): Promise<NextResponse> {
         angle: draft.angle,
         text: draft.text,
         link: draft.link,
+        replyText: draft.replyText,
         imageBase64: draft.imagePng ? bytesToBase64(draft.imagePng) : null,
         videoBase64: draft.videoMp4 ? bytesToBase64(draft.videoMp4) : null,
         expiresAt,
@@ -136,6 +138,7 @@ export async function GET(request: Request): Promise<NextResponse> {
           angle: draft.angle,
           text: draft.text,
           link: draft.link,
+          reply: draft.replyText,
           hasImage: !!draft.imagePng || !!draft.videoMp4,
           expiresLabel: `${DEFAULT_APPROVAL_EXPIRY_HOURS}h (then auto-skipped)`,
         });
