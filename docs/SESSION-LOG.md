@@ -8,6 +8,16 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-28 (later 4) — Pushed the queued SEO de-stale + OG card-hero commits; post-deploy verification
+
+**Goal: execute `docs/goals/push-and-verify-seo-og.md` — push the two reviewed/gated commits (`4d0302b` SEO metadata de-stale, `837743e` OG card-hero fan) and run post-deploy verification. Push + verify only.** (Claude Code.)
+
+- **P0 premise check passed.** `git log origin/main..HEAD` showed exactly the two expected commits, nothing unexpected. Pushed `b8611b4..837743e` to `origin/main` (no force). Working-tree changes (vending images, newsletter draft, settings, brief) are unrelated and were not carried by the branch push.
+- **Deploy green.** Vercel production `foil-raak3b385-foilapp.vercel.app` went Ready (3m build) — the push's deploy.
+- **Step 4 — OG image (837743e).** `https://foiltcg.com/opengraph-image` → **HTTP 200, image/png, 1200×630, ~573 KB**. Eyeballed the downscaled render: the Pokémon **card-hero fan rendered true in prod** (Umbreon VMAX alt + classic Charizard + Charizard VMAX, navy bg, FoilTCG lockup, "The best price on any Pokémon card." + "Built by John Craig"). Satori fidelity confirmed live. Note: X caches og:image, so the already-posted launch thread preview is unchanged — this upgrades FUTURE shares as caches expire.
+- **Step 5 — scanner-framing spot-check (4d0302b).** `https://foiltcg.com/japanese-pokemon-cards-value` rendered HTML: **zero "scanner" mentions**, `twitter:creator` = `@Johnnycakx`, title de-staled to "Japanese Pokémon Cards Value: 2026 Guide". The de-stale reached prod, not just HTTP 200.
+- **Step 3 — content-marker rendered-content check (ADR-049 / R-015).** `CONTENT_VERIFY_BASE_URL=https://foiltcg.com` content-marker test: **10/11 pass.** Every page our two commits touched is clean in rendered prod HTML — de-staled metadata, the Moonbreon corrected **$2,100** figure, the `@Johnnycakx` handle. **One failure, pre-existing + unrelated to this push:** the live vending post `pokemon-card-vending-machine-placement-in-napa` (`.mdx:49` — *"At approximately $4 a month…"*) trips the banned `approximately\s*\$` vague-hedge regex. Confirmed neither pushed commit touched that post or the content-marker test (`git diff --name-only b8611b4..837743e`); it was only ever invisible because the local pre-push gate runs without a base URL (the content-marker network checks skip). **Did NOT silently expand the push-only scope to fix it** — flagged to John as ROADMAP row **NAPA-HEDGE** with the recommended one-word fix (drop "approximately") to take the standing closure gate green. **Closure:** this SESSION-LOG entry + the NAPA-HEDGE follow-up row; no new env var, no ADR (push + verify, no architectural choice). Conventional `docs:` commit for these notes, pushed.
+
 ## 2026-06-28 (later 3) — OG/social link-preview now features a Pokémon card hero fan
 
 **Goal: execute `docs/goals/og-image-card-hero-art.md` — upgrade the shared link-preview image to feature holo card art (like the landing hero) so a shared foiltcg.com link stops the scroll. Commit, do not push.** (Claude Code; ADR-055 amendment.)
