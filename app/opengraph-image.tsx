@@ -1,9 +1,17 @@
-// Dynamically generated 1200x630 OG/social card (ADR-055). Renders the FoilTCG
-// wordmark lockup on navy: foil-corner mark + cream "Foil" + gold "TCG", in
-// Fredoka where it loads (best-effort fetch; falls back to Satori's default so
-// the card never 500s). Replaces the retired Pokeball / coral scanner card.
+// Dynamically generated 1200x630 OG/social card (ADR-055, card-art amendment).
+// LEFT: the FoilTCG wordmark lockup (foil-corner mark + cream "Foil" + gold
+// "TCG") + one value line on navy. RIGHT: a premium fan of 2-4 holo Pokémon
+// cards (Charizard base1-4 anchor) so a shared link stops the scroll, mirroring
+// the landing-page hero (cream/navy/gold, scarce gold, soft navy-tinted shadows).
+//
+// EDGE-SAFE card art: Satori's WebP support is unreliable and the hero art is
+// .webp, and the edge runtime has no fs/sharp — so the cards are pre-converted
+// webp->jpeg + base64-inlined at build time into app/og-card-art.generated.ts
+// (regenerate via scripts/generate-og-card-art.ts). NEVER 500s: if the generated
+// art is empty OR the font fetch fails, it falls back to the text-only card.
 
 import { ImageResponse } from "next/og";
+import { OG_CARD_ART } from "./og-card-art.generated";
 
 export const runtime = "edge";
 export const size = { width: 1200, height: 630 };
@@ -34,9 +42,26 @@ async function loadFredoka(): Promise<ArrayBuffer | null> {
   }
 }
 
+// Card display size + the fan's per-card transform (back -> front). Center card
+// upright on top; flankers rotated + offset so they overlap into a tasteful fan.
+const CARD_W = 250;
+const CARD_H = 348;
+const FAN: { tx: number; ty: number; rot: number }[] = [
+  { tx: -150, ty: 6, rot: -9 }, // back-left
+  { tx: 150, ty: 6, rot: 9 }, // back-right
+  { tx: 0, ty: -12, rot: 0 }, // front-center (anchor)
+];
+
 export default async function Image() {
   const fredoka = await loadFredoka();
   const wordmarkFont = fredoka ? "Fredoka" : "sans-serif";
+
+  // Up to 3 cards in fan z-order: render the flankers first, the anchor last
+  // (front). The generated module lists [anchor, ...] so reorder to [l, r, anchor].
+  const art = OG_CARD_ART.slice(0, 3);
+  const hasArt = art.length > 0;
+  const fanCards =
+    art.length >= 3 ? [art[1], art[2], art[0]] : art; // flankers behind, anchor front
 
   return new ImageResponse(
     (
@@ -45,47 +70,90 @@ export default async function Image() {
           width: "100%",
           height: "100%",
           display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
+          flexDirection: "row",
           backgroundColor: NAVY,
           color: CREAM,
-          padding: "72px",
           fontFamily: "sans-serif",
         }}
       >
-        {/* Wordmark lockup */}
-        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={MARK_DATA_URL} width={72} height={72} alt="" />
-          <div style={{ display: "flex", fontFamily: wordmarkFont, fontWeight: 700, fontSize: 56, letterSpacing: -1 }}>
-            <span style={{ color: CREAM }}>Foil</span>
-            <span style={{ color: GOLD }}>TCG</span>
+        {/* LEFT — wordmark + value line + CTA */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            padding: 72,
+            width: hasArt ? 660 : "100%",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={MARK_DATA_URL} width={72} height={72} alt="" />
+            <div style={{ display: "flex", fontFamily: wordmarkFont, fontWeight: 700, fontSize: 56, letterSpacing: -1 }}>
+              <span style={{ color: CREAM }}>Foil</span>
+              <span style={{ color: GOLD }}>TCG</span>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            <div
+              style={{
+                display: "flex",
+                fontFamily: wordmarkFont,
+                fontSize: hasArt ? 64 : 82,
+                fontWeight: 700,
+                lineHeight: 1.05,
+                letterSpacing: -2,
+                maxWidth: hasArt ? 500 : 1000,
+              }}
+            >
+              The best price on any Pokémon card.
+            </div>
+            <div style={{ display: "flex", fontSize: 28, color: "#C9D1E4", maxWidth: hasArt ? 500 : 940, lineHeight: 1.3 }}>
+              Live eBay deals, scrubbed for the best price. Free wishlist alerts.
+            </div>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 16, color: SLATE, fontSize: 24 }}>
+            <span style={{ color: GOLD, fontWeight: 700, fontFamily: wordmarkFont }}>foiltcg.com</span>
+            <span>· Built by John Craig</span>
           </div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <div
-            style={{
-              display: "flex",
-              fontFamily: wordmarkFont,
-              fontSize: 82,
-              fontWeight: 700,
-              lineHeight: 1.05,
-              letterSpacing: -2,
-              maxWidth: 1000,
-            }}
-          >
-            The best price on any Pokémon card.
+        {/* RIGHT — the holo card fan over a scarce gold glow. Omitted (left goes
+            full-width) if the generated art is empty — the never-500 soft-fall. */}
+        {hasArt ? (
+          <div style={{ display: "flex", position: "relative", flex: 1, alignItems: "center", justifyContent: "center" }}>
+            <div
+              style={{
+                position: "absolute",
+                width: 460,
+                height: 460,
+                borderRadius: 9999,
+                backgroundImage: `radial-gradient(circle, rgba(201,162,75,0.30), rgba(201,162,75,0) 70%)`,
+              }}
+            />
+            {fanCards.map((c, i) => {
+              const t = FAN[art.length >= 3 ? i : 2]; // single/2-card: use the upright transform
+              return (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  key={c.slug}
+                  src={c.dataUrl}
+                  width={CARD_W}
+                  height={CARD_H}
+                  alt=""
+                  style={{
+                    position: "absolute",
+                    borderRadius: 14,
+                    boxShadow: "0 22px 55px rgba(8,15,30,0.55)",
+                    transform: `translate(${t.tx}px, ${t.ty}px) rotate(${t.rot}deg)`,
+                  }}
+                />
+              );
+            })}
           </div>
-          <div style={{ display: "flex", fontSize: 30, color: "#C9D1E4", maxWidth: 940, lineHeight: 1.3 }}>
-            Live eBay listings, scrubbed for the best real deal. Free wishlist alerts when prices drop.
-          </div>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 16, color: SLATE, fontSize: 24 }}>
-          <span style={{ color: GOLD, fontWeight: 700, fontFamily: wordmarkFont }}>foiltcg.com</span>
-          <span>· Built by John Craig</span>
-        </div>
+        ) : null}
       </div>
     ),
     {

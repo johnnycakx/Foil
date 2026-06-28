@@ -1853,6 +1853,18 @@ Each of the 7 new IDs was missing from `lib/cards/baked-metadata.json`. Two laye
 
 **Cross-refs.** `components/brand/logo.tsx`, `app/layout.tsx`, `app/globals.css`, `app/(site)/page.tsx`, `app/opengraph-image.tsx`, `app/twitter-image.tsx`, `components/cards/sold-history-panel.tsx`, `public/{favicon,icon}.svg`, `public/apple-touch-icon.png`, `DESIGN.md` §5, `lib/__tests__/visual-regression.test.ts`, IDEAS "IP risk: live logo is a Pokeball" (flipped to shipped).
 
+### Amendment (2026-06-28) — OG/social image now features a Pokémon card hero fan (edge-inlined JPEG)
+
+**Status:** Accepted + Built. Implements `docs/goals/og-image-card-hero-art.md`.
+
+**Context.** The shared link-preview card (`app/opengraph-image.tsx`, re-exported by `twitter-image.tsx`) was the flat navy wordmark card — no card art. To make a shared `foiltcg.com` link stop the scroll, it should mirror the landing hero (holo cards + brand).
+
+**The feasibility decision (webp → jpeg, build-time inline).** `opengraph-image.tsx` renders via `next/og` (Satori) on the **edge runtime**, which has no `fs`/`sharp` at request time, and Satori's **WebP support is unreliable** — but the hero art in `public/hero/` is `.webp`. So a new committed build-time script (`scripts/generate-og-card-art.ts`, `npm run og:cards`) converts the chosen cards webp → optimized **JPEG** (Satori-reliable; cards are rectangular scans, no alpha needed; 380px wide, q82, ~184KB total) and base64-inlines them into a committed generated module (`app/og-card-art.generated.ts`). The edge renderer just imports those string constants — deterministic, no runtime fetch of our own origin, no fs/sharp at the edge.
+
+**The card.** A fan of 3 recognizable holos — `base1-4` (Charizard, the anchor) + `swsh7-215` (Umbreon VMAX alt) + `swsh4-188` (Charizard VMAX) — over the navy field with a scarce gold glow + navy-tinted card shadows, beside the FoilTCG wordmark lockup + one value line ("The best price on any Pokémon card."). **Never-500 soft-fall preserved + extended:** empty generated art → the left column goes full-width text-only (the prior card); font fetch failure → Satori default font.
+
+**Consequences.** `twitter-image.tsx` inherits automatically (still re-exports the renderer — the single source). Structurally pinned (`lib/__tests__/og-image.test.ts`: the card-art fan `<img>`, the wordmark, the soft-fall path, + the generated module's data-URL shape/size); Satori can't render under `node --strip-types`, so final fidelity is John eyeballing the deployed `https://foiltcg.com/opengraph-image`. **Caching reality:** X retired its Card Validator + caches og:image aggressively, so this does NOT change the already-posted launch thread's preview or existing shares — it upgrades FUTURE link shares as caches expire (a compounding brand improvement, not a live-post fix). Regenerate the card selection by editing the `CARDS` list + `npm run og:cards`.
+
 ## ADR-056 — Click-time deal redirect (/go/deal/[slug]) + self-hosted homepage hero images
 
 **Date:** 2026-06-05
