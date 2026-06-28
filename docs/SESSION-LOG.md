@@ -8,6 +8,15 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-28 — Launch thread regenerated from LIVE market data (honest numbers)
+
+**Goal: execute `docs/goals/_queue/01-launch-thread-refresh.md` — regenerate the founder X launch thread from the freshest live `market_movers` so the dollar figures are current, not the stale 2026-06-25 ones. Content-generation goal (no app code, no build/test gates).** (Claude Code; Cowork wrote the spec, Claude Code ran it for the live-data reach.)
+
+- **P0 premise check PASSED (freshness is the whole point).** Read `market_movers` via the production `getMarketMovers` read path: 298 rows, newest `computed_at = 2026-06-27T09:03:19Z` (~16h old at generation), 11 fresh down + 15 fresh up movers. Well inside the 48h honesty guard, and PokeTrace is live (the 09:00 UTC movers cron computed real momentum that morning). So the deliverable is the thread, not the STOP report.
+- **Selection (volume-ranked, real trends).** 3 down-movers — Blastoise (Base, -16.8%, 51 sales), Ethan's Ho-Oh ex (Destined Rivals, -16.5%, 207 sales), Iono's Bellibolt ex (Journey Together, -10.3%, 187 sales) — plus 1 up-mover for the "not everything is down" balance tweet: Pikachu (151, +10.0%, 617 sales). All samples 50+ (no thin samples). Avoided the two same-name "Ethan's Ho-Oh ex" prints (one down at $23, one up at $213) to prevent a same-name/opposite-direction contradiction.
+- **Deliverable:** `docs/social/x-launch-thread-2026-06-28.md` — the 6-tweet thread (T1 hook no-link → 3 card tweets → up-mover → newsletter CTA with the link only in the final tweet), in the BRAND-VOICE deadpan-seller voice. Every tweet verified ≤280 chars (214-248) and em-dash-free. Top of file carries the `computedAt` + an exact-figures table (avg7d/avg30d/true momentum/sales/slug) for John's glance-check, a freshness gate note, the first-hour reply checklist (reply velocity = ToS-safe reach; thank early subscribers personally), and the honesty pass. Percentages are true momentum; dollar rounding never enlarges a move.
+- **Not in scope (per spec):** posting (John posts the native thread himself, ideally paired with the first real Blastoise card-hero image when he can reply for an hour) and any app-code change. Committed `docs:`, not pushed.
+
 ## 2026-06-27 (later 8) — Card-hero v2.2: the reply is the newsletter lever (value-frame + 80/20 CTA rotation + board save ask)
 
 **Goal: execute `docs/goals/x-card-hero-v2.2-copy-cta.md` — value-frame the threaded reply + rotate the newsletter CTA in (80/20), and give the weekly board the only save ask. Commit, do not push.** (Claude Code; ADR-074 v2.2 amendment. v2.1 was committed first as `f594370` to keep the boundary clean.)
