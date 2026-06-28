@@ -19,6 +19,39 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-06-28
+category: growth
+status: captured
+---
+## Autonomous content-syndication + engagement-brief engine (multi-platform distribution)
+
+Fan the existing content-engine output (daily card-hero, weekly board, blog) out to every surface where Pokémon collectors gather, adapted per platform, via Postiz (28+ channels). Plus a daily auto-generated "engagement brief": surface ~20 relevant X/Reddit posts where Foil's sold-data adds value, with a drafted reply each → Discord; John posts the replies (the human send is the ToS firewall). HARD LINE: automate content DISTRIBUTION, never engagement ACTIONS (auto-reply/follow/DM = suspension). Researched best-fit: Reddit (r/pkmntcgdeals, r/PokeInvesting — highest intent, strict self-promo rules), Instagram (new FoilTCG acct), TikTok / YouTube Shorts (the MP4), Threads/Bluesky (free safe cross-posts). Needs John to create FoilTCG IG + TikTok.
+
+**Context:** 2026-06-28 — John pushed hard to "automate the distribution process, don't cut corners." The legit version: automate syndication + engagement-targeting research; keep the human on the actual reply (50x/day autoposting = spam-flag/suspension, confirmed via research). No goal spec written yet.
+
+---
+date: 2026-06-28
+category: product
+status: captured
+---
+## Up-mover ("heating up") post angle + direction color-coding on the card-hero number
+
+Add an up-mover post angle so the X bot covers cards heating up, not only deals cooling. It's the prerequisite for two things: (1) color-coding the giant % number at a glance (down/up), and (2) the "scoreboard" call→result series. Note the buyer-semantics twist: on a deal-finder, DOWN is the good news, so "red = down" (stock convention) sends a faint "bad" signal — resolve deliberately, or use the brand's gold as the accent instead. Until up-movers post, every card-hero is a down-mover so color would be monochrome and convey no direction.
+
+**Context:** 2026-06-28 — John wanted the "17%" colored red to imply "down" at a glance. Right instinct, but it only earns its keep once posts have directional variety + the down=good semantics are resolved.
+
+---
+date: 2026-06-28
+category: growth
+status: captured
+---
+## Paid X boost/ads as a LATER gated growth experiment
+
+Once there's a post proven to convert organically AND a tracked impression→/newsletter→subscribe funnel, test a small boost on the best evergreen post with a target cost-per-subscriber. NOT now — boosting a 0-engagement post from a ~1-follower account to cold users converts terribly and teaches nothing. (Distinct from buying followers, which is rejected outright: bots = zero clicks, polluted metrics, suppression + suspension risk.)
+
+**Context:** 2026-06-28 — John asked about X's "Boost visibility" + buying followers. Boost = premature-but-valid-later; follower-buying = rejected. Logged so the boost lever isn't forgotten once the funnel is proven.
+
+---
 date: 2026-06-27
 category: growth
 status: captured
