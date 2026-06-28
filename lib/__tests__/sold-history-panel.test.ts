@@ -81,11 +81,12 @@ test("/cards/[slug]: mounts SoldHistoryPanel between variants and the buy CTA", 
   assert.match(src, /<SoldHistoryPanel\b/);
   assert.match(src, /variants=\{card\.variants\}/);
   assert.match(src, /selectedKey=\{selectedVariant\}/);
-  // Order: CardVariantsSection appears before SoldHistoryPanel, which appears
-  // before the best-listing (buy CTA) heading.
+  // Order: CardVariantsSection before SoldHistoryPanel, before the curated buy
+  // CTA — now the client-hydrated <LiveListingSection> (ADR-047 v2; the
+  // best-listing markup + its `best-deal-heading` moved into that component).
   const variantsIdx = src.indexOf("<CardVariantsSection");
   const panelIdx = src.indexOf("<SoldHistoryPanel");
-  const buyIdx = src.indexOf("best-deal-heading");
+  const buyIdx = src.indexOf("<LiveListingSection");
   assert.ok(variantsIdx > -1 && panelIdx > -1 && buyIdx > -1);
   assert.ok(variantsIdx < panelIdx && panelIdx < buyIdx, "panel must sit between variants and the buy CTA");
 });

@@ -13,8 +13,13 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { LANDING_PATHS } from "../seo/sitemap-landings.ts";
 import { isPublicRoute } from "../supabase/public-routes.ts";
+import { CARD_CATALOG } from "../cards/catalog.ts";
+
+const ROOT = new URL("../..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
 
 test("both tracks' fixed surfaces are in the sitemap (dual-track, ADR-064)", () => {
   // Deal-finder (primary) + vending lead-gen (at /host). The per-post
@@ -70,6 +75,35 @@ test("sitemap omits auth/api/redirect/metadata routes", () => {
   ]) {
     assert.ok(!paths.has(omitted), `${omitted} must not be in the sitemap`);
   }
+});
+
+test("sitemap covers the programmatic long tail (URL count well over 1,000)", () => {
+  // The crawlability goal (SEO health audit, 2026-06-28) depends on Google
+  // discovering every card. The builder layers CARD_CATALOG onto LANDING_PATHS
+  // (+ blog + cities), so the catalog size is the long-tail count. Pin it well
+  // above 1,000 so a catalog-load regression (empty/partial) fails loudly — a
+  // shrunk sitemap silently de-lists the long tail. (Live sitemap.xml served
+  // 1,224 URLs at audit time.)
+  assert.ok(
+    CARD_CATALOG.length + LANDING_PATHS.length > 1000,
+    `sitemap long tail too small: ${CARD_CATALOG.length} cards + ${LANDING_PATHS.length} landings`,
+  );
+});
+
+test("sitemap builder emits ABSOLUTE urls (base-prefixed) for the card long tail", () => {
+  // A relative or wrong-host <loc> breaks crawling. The builder prefixes every
+  // url with the resolved base (NEXT_PUBLIC_SITE_URL → https://foiltcg.com in
+  // prod), incl. the programmatic /cards/[slug] set. Source-assert it (the
+  // builder pulls Next + MDX + the catalog, so it's pinned structurally like the
+  // page tests; the live sitemap.xml was separately verified all-https at audit).
+  const src = readFileSync(join(ROOT, "app/sitemap.ts"), "utf8");
+  // base is the resolved site URL, stripped of a trailing slash.
+  assert.match(src, /process\.env\.NEXT_PUBLIC_SITE_URL/);
+  assert.match(src, /const base = siteUrl\(\)/);
+  // every section builds `${base}...` urls — no bare relative paths.
+  assert.match(src, /url: `\$\{base\}\$\{entry\.path\}`/, "landings are base-prefixed");
+  assert.match(src, /url: `\$\{base\}\/cards\/\$\{entry\.slug\}`/, "card long tail is base-prefixed");
+  assert.match(src, /CARD_CATALOG\.map/, "the full catalog is layered into the sitemap");
 });
 
 test("landing paths are unique and well-formed", () => {

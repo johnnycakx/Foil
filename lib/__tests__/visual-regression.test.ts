@@ -68,6 +68,10 @@ const PUBLIC_SURFACES: readonly string[] = [
   // Session 47.5 / ADR-047: metadata-only listing block (3rd tier) — SDK
   // metadata + two search CTAs, no eBay/PokeTrace.
   "components/cards/metadata-only-listing.tsx",
+  // ADR-047 v2 (SEO crawlability fix): the curated live eBay best-listing +
+  // buy-signal now hydrate client-side here so the card page render stays fast.
+  // Same cream/navy/gold register + coral-hover-only Buy CTA — invariants cover it.
+  "components/cards/live-listing-section.tsx",
   // ADR-069: the insight-led /deals surface — the market-movers board (lead),
   // the demoted single-listing board, and the page itself. Same cream/navy/gold
   // register; coral-hover-only + no-raw-hex invariants cover them.
@@ -282,15 +286,19 @@ test("/cards browse: catalog label uses gold accent (ADR-029)", () => {
 });
 
 test("/cards/[slug]: best-listing block uses gold border + cream surface (ADR-029)", () => {
-  const src = readFile("app/(site)/cards/[slug]/page.tsx");
-  // Gold border on the premium block + cream BG everywhere else.
+  // The best-listing block moved into the client-hydrated section (ADR-047 v2),
+  // but the gold-border + cream-surface premium treatment is preserved there.
+  const src = readFile("components/cards/live-listing-section.tsx");
   assert.match(src, /border-foil-gold\/40/);
   assert.match(src, /bg-foil-cream/);
+  // The page still uses cream surfaces on its remaining sections.
+  assert.match(readFile("app/(site)/cards/[slug]/page.tsx"), /bg-foil-cream/);
 });
 
 test("/cards/[slug]: Buy CTA uses navy bg with gold hover-ring (ADR-029)", () => {
-  const src = readFile("app/(site)/cards/[slug]/page.tsx");
-  // Navy default + gold hover-ring = the niche signal on the primary CTA.
+  // The Buy CTA moved into the client live-listing section (ADR-047 v2); the
+  // navy-default + gold-hover-ring niche signal is preserved.
+  const src = readFile("components/cards/live-listing-section.tsx");
   assert.match(src, /bg-foil-navy[^"']*hover:[^"']*ring-foil-gold/);
 });
 

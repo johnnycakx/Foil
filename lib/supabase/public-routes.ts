@@ -123,6 +123,15 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   { kind: "exact", path: "/api/start" },
   { kind: "exact", path: "/api/cards/search" },
 
+  // Live curated-listing endpoint (SEO crawlability fix, ADR-047 v2). The
+  // per-card page hydrates its live eBay best-listing + buy-signal from
+  // /api/listing/[slug] client-side so the server render stays fast + crawlable.
+  // Anonymous-friendly read (same posture as the anonymous card page, ADR-020);
+  // the route self-protects via R-008 no-store + sanitized inputs. Lives under
+  // /api/listing (NOT /api/cards) precisely so this prefix can't open the rest
+  // of /api/cards/* (which stays gated by default).
+  { kind: "prefix", path: "/api/listing" },
+
   // RFC 8058 one-click unsubscribe endpoint (Task #18 / Session 37). Both
   // GET (visible-link path) and POST (List-Unsubscribe-Post one-click) are
   // anonymous — the HMAC token IS the identity proof; no session needed.

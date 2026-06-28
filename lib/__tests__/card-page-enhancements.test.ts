@@ -138,12 +138,17 @@ test("LiveTimestamp: refreshes via setInterval (not a one-shot)", () => {
 // Page composition — /cards/[slug] mounts the new layer in the right slots.
 // ---------------------------------------------------------------------------
 
-test("/cards/[slug]: composes Breadcrumb + CardVariantsSection + LiveTimestamp + CardMetadataBlock", () => {
+test("/cards/[slug]: composes Breadcrumb + CardVariantsSection + LiveListingSection + CardMetadataBlock", () => {
   const src = readFile("app/(site)/cards/[slug]/page.tsx");
   assert.match(src, /<Breadcrumb\b/);
   assert.match(src, /<CardVariantsSection\b/);
-  assert.match(src, /<LiveTimestamp\b/);
+  // The live eBay block (with its LiveTimestamp chip) now hydrates client-side
+  // via <LiveListingSection> so the server render stays fast/crawlable (ADR-047 v2).
+  assert.match(src, /<LiveListingSection\b/);
   assert.match(src, /<CardMetadataBlock\b/);
+  // LiveTimestamp moved INTO the client section (no longer rendered by the page).
+  const live = readFile("components/cards/live-listing-section.tsx");
+  assert.match(live, /<LiveTimestamp\b/);
 });
 
 test("/cards/[slug]: BreadcrumbList schema is included in schemaGraph", () => {

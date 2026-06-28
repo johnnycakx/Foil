@@ -229,6 +229,19 @@ test("watchlist email-capture endpoint is public — same contract as /api/subsc
   assert.equal(isPublicRoute("/api/watchlist"), true);
 });
 
+test("/api/listing/[slug] is public — client-hydrated curated listing (ADR-047 v2 SEO fix)", () => {
+  // The per-card page fetches its live eBay best-listing here client-side so the
+  // server render stays fast + crawlable. Must be reachable anonymously (same as
+  // the card page). Deliberately under /api/listing so it does NOT open the rest
+  // of /api/cards/* (the "user-data API routes require auth" test keeps
+  // /api/cards gated).
+  assert.equal(isPublicRoute("/api/listing/base1-2-blastoise"), true);
+  assert.equal(isPublicRoute("/api/listing/some-future-slug"), true);
+  // Bleed guard: an adjacent stem stays gated.
+  assert.equal(isPublicRoute("/api/listings"), false);
+  assert.equal(isPublicRoute("/api/listing-internal"), false);
+});
+
 test("metadata routes are public so crawlers can fetch them", () => {
   assert.equal(isPublicRoute("/robots.txt"), true);
   assert.equal(isPublicRoute("/sitemap.xml"), true);

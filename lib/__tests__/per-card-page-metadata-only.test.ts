@@ -19,22 +19,24 @@ test("catalog has ≥1 metadata-only card (the tier is exercised live)", () => {
   for (const c of mo) assert.equal(cardTier(c.slug), "metadata-only");
 });
 
-test("/cards/[slug]: metadata-only skips the live resolve AND the sold-history panel", () => {
+test("/cards/[slug]: metadata-only skips the live block AND the sold-history panel", () => {
   const src = read("app/(site)/cards/[slug]/page.tsx");
-  // resolveVerifiedListing is gated to curated only — metadata-only never calls it.
-  assert.match(src, /if \(tier === "curated"\) \{/);
+  // The live eBay resolve moved off the page entirely (ADR-047 v2); the live
+  // block only mounts for curated via <LiveListingSection>, which metadata-only
+  // never reaches (its own dedicated branch renders first).
+  assert.doesNotMatch(src, /resolveVerifiedListing\(/);
   // Variants + SoldHistoryPanel are skipped for metadata-only.
   assert.match(src, /tier !== "metadata-only" &&/);
-  // Dedicated render branch.
+  // Dedicated render branch (checked before the curated <LiveListingSection>).
   assert.match(src, /tier === "metadata-only" \? \(\s*<MetadataOnlyListing/);
 });
 
 test("/cards/[slug]: metadata-only schema is Product with NO offers", () => {
   const src = read("app/(site)/cards/[slug]/page.tsx");
-  // Offer only when `verified` (curated); AggregateOffer for longtail +
-  // curated-null. metadata-only matches neither → no offers branch runs for it.
-  assert.match(src, /if \(verified\) \{/);
-  assert.match(src, /else if \(tier === "longtail" \|\| tier === "curated"\)/);
+  // Offers come from the baked AggregateOffer for longtail + curated only
+  // (ADR-047 v2: no live Offer anywhere). metadata-only matches neither.
+  assert.match(src, /if \(tier === "longtail" \|\| tier === "curated"\)/);
+  assert.match(src, /aggregateOfferFromTcgplayer/);
   // No `tier === "metadata-only"` clause adds offers.
   assert.doesNotMatch(src, /tier === "metadata-only"[\s\S]{0,120}offers/);
 });

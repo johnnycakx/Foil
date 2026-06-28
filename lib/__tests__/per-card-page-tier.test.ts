@@ -37,35 +37,54 @@ test("cardTier: honors an explicit longtail tier when present", () => {
   }
 });
 
-test("/cards/[slug]: Browse call gated to the curated tier; page forced dynamic (ADR-047)", () => {
+test("/cards/[slug]: the live eBay resolve moved OFF the page render (ADR-047 v2); page still force-dynamic", () => {
   const src = read("app/(site)/cards/[slug]/page.tsx");
   assert.match(src, /const\s+tier\s*=\s*cardTier\(slug\)/);
-  // The VERIFIED resolver only inside the curated branch (not longtail/
-  // metadata-only) — Tranche A #2: the page never calls the title-only picker.
-  assert.match(src, /if \(tier === "curated"\) \{/);
-  assert.match(src, /resolveVerifiedListing\(/);
+  // ADR-047 v2 SEO fix: the page NO LONGER runs the live eBay resolve in its
+  // server render (that ~38s blocking fetch throttled crawl). It hydrates
+  // client-side via <LiveListingSection>. So the page must NOT call the resolver
+  // or the unverified picker.
+  assert.doesNotMatch(src, /resolveVerifiedListing\(/, "the live eBay resolve moved to /api/listing/[slug]");
   assert.doesNotMatch(src, /getBestListing/, "the unverified picker must not return to the page");
-  assert.doesNotMatch(src, /getListingAspects/, "badge reads the resolver's verdict — no second getItem");
+  assert.doesNotMatch(src, /getListingAspects/, "no getItem in the page render");
   assert.doesNotMatch(src, /inferConditionLabel/, "the third redundant title heuristic stays deleted");
-  // R-008: the page is force-dynamic (ISR is incompatible with its searchParams
-  // read — DYNAMIC_SERVER_USAGE), so the live eBay listing is never cached.
+  assert.match(src, /<LiveListingSection\b/, "curated live block hydrates client-side");
+  // R-008: the page is still force-dynamic (searchParams read), and the live
+  // eBay resolve now lives in the force-dynamic + no-store route handler.
   assert.match(src, /export const dynamic = "force-dynamic"/);
 });
 
-test("/cards/[slug]: longtail renders the fallback; curated renders the live block", () => {
-  const src = read("app/(site)/cards/[slug]/page.tsx");
-  assert.match(src, /import \{ LongTailListingFallback \}/);
-  assert.match(src, /tier === "longtail" \? \(\s*<LongTailListingFallback/);
+test("/api/listing/[slug]: the live resolve lives here, curated-gated, force-dynamic + no-store (R-008)", () => {
+  const src = read("app/api/listing/[slug]/route.ts");
+  // The eBay resolve + buy-signal moved here from the page.
+  assert.match(src, /resolveVerifiedListing\(/);
+  assert.match(src, /computeCardBuySignal\(/);
+  // Curated-gated (the only tier with a live ask).
+  assert.match(src, /if \(tier !== "curated"\)/);
+  // R-008: force-dynamic + no-store; never persists the raw aspect map.
+  assert.match(src, /export const dynamic = "force-dynamic"/);
+  assert.match(src, /"Cache-Control":\s*"no-store"/);
+  assert.doesNotMatch(src, /aspects:/, "the raw getItem aspect map is never returned to the client");
 });
 
-test("/cards/[slug]: no live Offer without a verified listing — AggregateOffer fallback when priced", () => {
+test("/cards/[slug]: longtail renders the fallback; curated renders the client live block", () => {
   const src = read("app/(site)/cards/[slug]/page.tsx");
-  // Live Offer ONLY from the verified resolve; longtail + curated-null fall
-  // back to the baked TCGplayer AggregateOffer (zero eBay calls, design §4).
-  assert.match(src, /if \(verified\) \{/);
-  assert.match(src, /else if \(tier === "longtail" \|\| tier === "curated"\)/);
+  assert.match(src, /import \{ LongTailListingFallback \}/);
+  assert.match(src, /import \{ LiveListingSection \}/);
+  assert.match(src, /tier === "longtail" \? \(\s*<LongTailListingFallback/);
+  // curated branch → the client-hydrated live section.
+  assert.match(src, /<LiveListingSection\b/);
+});
+
+test("/cards/[slug]: server JSON-LD always uses the baked AggregateOffer (no volatile live Offer; ADR-047 v2)", () => {
+  const src = read("app/(site)/cards/[slug]/page.tsx");
+  // The live eBay Offer is gone from the crawled structured data; longtail +
+  // curated both carry the STABLE baked TCGplayer AggregateOffer (design §4).
+  assert.match(src, /if \(tier === "longtail" \|\| tier === "curated"\)/);
   assert.match(src, /aggregateOfferFromTcgplayer/);
   assert.match(src, /"@type": "AggregateOffer"/);
+  // No live eBay Offer in the server-rendered JSON-LD anymore.
+  assert.doesNotMatch(src, /availability: "https:\/\/schema\.org\/InStock"/, "the volatile live Offer left the crawled DOM");
 });
 
 test("LongTailListingFallback: server component, affiliate search CTA, palette-clean", () => {
