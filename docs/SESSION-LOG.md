@@ -8,6 +8,14 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-29 (later 7) — Footer "Follow on X" link: close the site→X funnel loop (lightweight, no embed)
+
+**Goal: execute `docs/goals/x-follow-widget-funnel.md` — add a visible Follow-on-X link (the audit found `@Johnnycakx` was metadata-only, no on-site follow CTA). Lightweight styled link, NOT the heavy embed widget.** (Claude Code; no ADR — small, within ADR-066.)
+
+- **P0 confirmed the gap + the constraints:** `@Johnnycakx` appeared ONLY in `twitter.creator` metadata — no visible X link anywhere. Footer = `SiteFooter` in `app/(site)/layout.tsx` (a clean ADR-066 nav/legal/trust zone; the email form was already removed so each page makes one email ask). `layout.tsx` is in `visual-regression.test.ts` PUBLIC_SURFACES (must stay token-compliant). On the `sameAs` bonus: the only `sameAs`-bearing schema is `localBusinessSchema` (the **vending** LocalBusiness — semantically wrong for the Foil X profile, and not emitting sameAs today), so wiring a new deal-finder Org schema would be the gold-plating the goal warns against → used **`rel="me"`** (the goal's zero-cost identity-signal alternative) instead.
+- **Built:** one calm, token-styled footer link — inline X-glyph SVG (`fill="currentColor"`, not an icon font/third-party script) + "Follow on X" → `https://x.com/Johnnycakx`, `target="_blank" rel="me noopener noreferrer"`, `aria-label`, navy-ink hover like its sibling links (secondary to the email ask, no loud color). **No official embed widget** (it ships heavy third-party JS that hurts LCP/CWV — the one X factor that touches SEO). Scope held to a footer link (no follower-count/API/redesign).
+- **Gates:** `npx tsc --noEmit` clean; full `npm test` **1230 tests, 1212 pass, 0 fail, 18 skip** (+5 footer pins: renders + points at the profile, opens safely, accessible inline-SVG, NOT the embed, stays calm/token-styled; the `visual-regression` layout guard still passes); `npm run build` exit 0; `npm run design:lint` 3 pre-existing, **0 on `(site)/layout`**; `/security-review` (independent sub-agent) **no findings** — confirmed `rel="noopener noreferrer"` complete (no reverse-tabnabbing/`window.opener`), hardcoded href + static SVG (no XSS/injection), `noreferrer` suppresses the referrer, and no third-party embed/`widgets.js` (the test structurally guards it). Conventional `feat:` commit; **NOT pushed** (no GSC/crawl dependency — John deploys whenever). Closes the audit's "no visible Follow-on-X CTA" funnel gap.
+
 ## 2026-06-29 (later 6) — Postiz syndication goal: P0 premise check STOPPED the build; channel-split policy captured, build parked
 
 **Goal: execute `docs/goals/postiz-multichannel-autosyndication.md` — fan the content engine's assets out to every SAFE channel via Postiz; P0 first.** (Claude Code; new ADR-085. **Outcome: P0 stop — premise false; John chose "park + capture the design."**)

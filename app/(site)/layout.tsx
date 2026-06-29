@@ -97,6 +97,28 @@ function SiteFooter() {
             <p>© {new Date().getFullYear()} Foil TCG, LLC · Built by John Craig</p>
           </div>
           <nav className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            {/* Site→X funnel loop (audit 2026-06-29): the only visible follow CTA.
+                Secondary to the per-page email ask (ADR-066) — calm navy ink, no
+                loud color. A plain styled link + inline glyph, NOT the official
+                embed widget (that ships heavy third-party JS that hurts LCP/CWV).
+                rel="me" is a zero-cost brand-entity identity signal. */}
+            <a
+              href="https://x.com/Johnnycakx"
+              target="_blank"
+              rel="me noopener noreferrer"
+              aria-label="Follow Foil on X (opens in a new tab)"
+              className="inline-flex items-center gap-1.5 transition hover:text-foil-navy"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                fill="currentColor"
+                className="h-3.5 w-3.5"
+              >
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+              Follow on X
+            </a>
             <Link
               href="/newsletter"
               className="transition hover:text-foil-navy"
