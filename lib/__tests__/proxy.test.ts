@@ -124,6 +124,14 @@ test("Wishlist alert cron route is public — Vercel cron infra invokes with Bea
   assert.equal(isPublicRoute("/api/cron/wishlist-alerts"), true);
 });
 
+test("Resend unsubscribe webhook is public — Resend POSTs with its own Svix signature (ADR-082)", () => {
+  // Covered today by the /api/webhooks prefix (same as Stripe / Vercel / eBay).
+  // The Svix signature header IS the auth; the route self-verifies. Pinned here
+  // so a refactor to per-route exact rules can't silently gate the endpoint —
+  // Resend would then get a 302 to /login and unsubscribe sync would break.
+  assert.equal(isPublicRoute("/api/webhooks/resend"), true);
+});
+
 test("eBay Marketplace Account Deletion webhook is public (ADR-022)", () => {
   // Same contract anchor as the Vercel-deploys webhook: covered today by
   // the /api/webhooks prefix, pinned here so a refactor to per-route exact
