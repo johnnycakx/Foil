@@ -19,6 +19,19 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-06-29
+category: infra
+status: captured
+---
+## Does Beehiiv earn its keep? Consider a single-source Supabase+Resend list
+
+Beehiiv has now cost two build cycles at ≈0 real subscribers: the welcome-email surprise (it auto-sends despite `send_welcome_email: false`) and the silent `unsubscribeEmail` no-op ([ADR-083](DECISIONS.md#adr-083--resend-is-the-sole-send--unsubscribe-surface-beehiiv-is-passive-fixes-the-silent-beehiiv-unsubscribe-no-op)). It's now a passive dual-write (signup capture + archive); the SEND + unsubscribe both run on Resend. Its only forward-looking value is the hosted signup form + Beehiiv's recommendation-network / referral growth levers (real, but list-size-dependent and unused today). Decision to make on a Sunday: keep Beehiiv passive (status quo, accept the small coherence surface), or **rip it out for a single-source Supabase + Resend architecture** (fewer stores = fewer coherence bugs, one less vendor). If kept, at minimum pause the "Foil welcome" automation (R-059).
+
+**Context:** 2026-06-29 — flagged at the close of the Beehiiv-coherence-fix goal (`docs/goals/newsletter-beehiiv-coherence-fix.md`). The dual-write was justified when Beehiiv was the planned sender; ADR-078 moved the send to Resend, so Beehiiv's role shrank to capture/archive — worth re-deciding whether that role justifies a third subscriber store.
+
+---
+
+---
 date: 2026-06-28
 category: growth
 status: captured

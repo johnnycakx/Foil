@@ -308,6 +308,21 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 ---
 
+## R-059 — Beehiiv-side unsubscribe doesn't propagate back (CAN-SPAM exposure)
+
+**Severity:** Medium
+**Status:** `mitigating` (added + largely closed 2026-06-29, [ADR-083](DECISIONS.md#adr-083--resend-is-the-sole-send--unsubscribe-surface-beehiiv-is-passive-fixes-the-silent-beehiiv-unsubscribe-no-op)). The forward leg is fixed + live-verified; one dashboard residual remains.
+
+**The risk.** Subscribers live in three stores (Supabase = source of truth, Resend audience, Beehiiv). The newsletter SENDS via Resend. A Beehiiv-initiated unsubscribe (from the "Foil welcome" automation Beehiiv auto-sends despite `send_welcome_email: false`) marks the person inactive **in Beehiiv only** — they stay subscribed in Resend/Supabase and keep receiving the Resend newsletter. Compounded by a now-fixed bug: `unsubscribeEmail` called phantom SDK methods via `as unknown` casts and silently no-op'd, so even a Resend unsubscribe wasn't reaching Beehiiv.
+
+**Why mitigating (not resolved).** ADR-083 fixed the forward leg — `unsubscribeEmail` now uses the typed `updateByEmail(... {unsubscribe:true})`, verified live (alias `active`→`inactive`) + unit-tested; and exclusion was hard-proven (a fresh broadcast skipped the unsubscribed alias). The architecture decision makes **Resend the sole unsubscribe surface subscribers see** (we don't send via Beehiiv). The **one residual**: the "Foil welcome" automation (`aut_ffd18eec-…`, `live`) is still sending — and the Beehiiv automations API is read-only (no status toggle), so pausing it is a dashboard-only action, deferred because there are ≈0 real subscribers (the exposure is theoretical until acquisition).
+
+**Trigger to escalate.** The first real (non-John) subscriber — pause the "Foil welcome" automation in the Beehiiv dashboard BEFORE then (Automations → Foil welcome → pause). OR: any decision to send real content via Beehiiv again → then wire the (a) bidirectional Beehiiv→Supabase/Resend webhook (ADR-083) instead of relying on "Beehiiv sends nothing."
+
+**Mitigation playbook.** (1) Pause the welcome automation (dashboard, trivial). (2) If Beehiiv must send again, build the reverse webhook. (3) Standing option: drop the Beehiiv dual-write entirely for a single-source Supabase+Resend list (tracked in IDEAS).
+
+---
+
 ## How to log a new risk
 
 1. Next available ID (`R-NNN`, monotonically increasing).

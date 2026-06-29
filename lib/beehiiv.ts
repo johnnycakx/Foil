@@ -106,17 +106,24 @@ export type UnsubscribeResult =
   | { ok: false };
 
 /**
- * Mark a subscriber inactive on Beehiiv. Soft-fail — returns ok:false on
- * any API failure path so the calling route handler can still render a
- * "you've been unsubscribed" confirmation to the user (the email IS the
- * receipt; even if Beehiiv was down, retrying the link works).
+ * Mark a subscriber inactive on Beehiiv via the SDK's `updateByEmail`
+ * (`PUT /publications/{pub}/subscriptions/by_email/{email}` with
+ * `{ unsubscribe: true }`) — one call that targets the subscription by email
+ * and lands it at status `inactive`. Verified live 2026-06-29 (active → inactive).
  *
- * The unsubscribe endpoint is publicly addressable (any holder of a
- * valid HMAC token can hit it on behalf of the embedded email), so the
- * lookup-then-update path lives behind the route handler's HMAC verify.
+ * History ([ADR-083](../docs/DECISIONS.md), amends ADR-082): the prior
+ * implementation called `client.subscriptions.list(...)` then `.update(...)`
+ * through `as unknown as {...}` casts — but NEITHER method exists on the SDK
+ * (the real surface is `index` + `updateByEmail`/`put`/`patch`). The cast hid
+ * that from the typechecker, so at runtime the first call threw on the missing
+ * method and the Beehiiv leg **silently failed**: a Resend-unsubscribed contact
+ * was left `active` in Beehiiv (the bug ADR-082's live test caught). The fix
+ * uses the typed SDK method, so a future SDK signature change fails the build.
  *
- * `not_found` is treated as a success — if the email isn't on the list,
- * the user IS effectively unsubscribed.
+ * Soft-fail — returns ok:false on any real failure so the caller (the Resend
+ * unsubscribe-sync) can log + continue. A 404 (`NotFoundError`) means the email
+ * isn't a subscriber → treated as success (they're effectively unsubscribed),
+ * never a failure.
  */
 export async function unsubscribeEmail(email: string): Promise<UnsubscribeResult> {
   const normalized = email.trim().toLowerCase();
@@ -131,41 +138,15 @@ export async function unsubscribeEmail(email: string): Promise<UnsubscribeResult
     return { ok: false };
   }
 
-  // Look up subscription by email. The SDK's list method supports an
-  // email filter. If the email isn't on the list at all, treat as success.
   try {
-    const listResponse = (await (
-      client.subscriptions as unknown as {
-        list: (
-          pubId: string,
-          req: { email?: string; limit?: number },
-        ) => Promise<{
-          data?: Array<{ id?: string; status?: string; email?: string }>;
-        }>;
-      }
-    ).list(publicationId, { email: normalized, limit: 1 })) ?? {};
-    const rows = listResponse.data ?? [];
-    const match = rows.find((r) => r.email?.toLowerCase() === normalized);
-    if (!match || !match.id) {
-      return { ok: true, status: "not_found" };
-    }
-    if (match.status === "inactive" || match.status === "unsubscribed") {
-      return { ok: true, status: "already_inactive" };
-    }
-
-    // Update the subscription status to inactive.
-    await (
-      client.subscriptions as unknown as {
-        update: (
-          pubId: string,
-          subId: string,
-          req: { subscription_status?: string; status?: string },
-        ) => Promise<unknown>;
-      }
-    ).update(publicationId, match.id, { subscription_status: "inactive" });
-
+    // PUT with unsubscribe:true is idempotent — a re-unsubscribe of an already
+    // inactive row is a no-op that still resolves with status "inactive".
+    await client.subscriptions.updateByEmail(publicationId, normalized, { unsubscribe: true });
     return { ok: true, status: "unsubscribed" };
   } catch (err) {
+    if (err instanceof Beehiiv.NotFoundError) {
+      return { ok: true, status: "not_found" };
+    }
     // eslint-disable-next-line no-console
     console.error("[beehiiv] unsubscribeEmail failed", err);
     return { ok: false };
