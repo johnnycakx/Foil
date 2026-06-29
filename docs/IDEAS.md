@@ -34,13 +34,13 @@ Beehiiv has now cost two build cycles at ≈0 real subscribers: the welcome-emai
 ---
 date: 2026-06-28
 category: growth
-status: captured
+status: triaged
 ---
 ## Autonomous content-syndication + engagement-brief engine (multi-platform distribution)
 
 Fan the existing content-engine output (daily card-hero, weekly board, blog) out to every surface where Pokémon collectors gather, adapted per platform, via Postiz (28+ channels). Plus a daily auto-generated "engagement brief": surface ~20 relevant X/Reddit posts where Foil's sold-data adds value, with a drafted reply each → Discord; John posts the replies (the human send is the ToS firewall). HARD LINE: automate content DISTRIBUTION, never engagement ACTIONS (auto-reply/follow/DM = suspension). Researched best-fit: Reddit (r/pkmntcgdeals, r/PokeInvesting — highest intent, strict self-promo rules), Instagram (new FoilTCG acct), TikTok / YouTube Shorts (the MP4), Threads/Bluesky (free safe cross-posts). Needs John to create FoilTCG IG + TikTok.
 
-**Context:** 2026-06-28 — John pushed hard to "automate the distribution process, don't cut corners." The legit version: automate syndication + engagement-targeting research; keep the human on the actual reply (50x/day autoposting = spam-flag/suspension, confirmed via research). No goal spec written yet.
+**Context:** 2026-06-28 — John pushed hard to "automate the distribution process, don't cut corners." The legit version: automate syndication + engagement-targeting research; keep the human on the actual reply (50x/day autoposting = spam-flag/suspension, confirmed via research). **Triaged 2026-06-29 (the syndication half):** a goal spec was written (`docs/goals/postiz-multichannel-autosyndication.md`) but the P0 premise check STOPPED the build — Postiz is not installed, has no account/API key/connected channels (it was never set up), and connecting channels is OAuth-via-dashboard = John's hands (account creation, which the agent can't do). The safe-vs-human channel split is now policy ([ADR-085](DECISIONS.md#adr-085--content-syndication-safe-vs-human-channel-split-postiz-as-the-headless-layer-build-gated-on-setup)); the build is **parked pending John's Postiz setup** (prerequisites in `docs/runbooks/postiz-syndication-setup.md`; tracked as ROADMAP SYND-POSTIZ). The engagement-brief half (drafted replies → Discord, human posts) is still un-spec'd. Net-new value once unblocked = Bluesky/Threads/Mastodon (X already syndicated direct; owned Discord already auto-postable via our webhook lib).
 
 ---
 date: 2026-06-28
