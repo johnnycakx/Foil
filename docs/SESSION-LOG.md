@@ -8,6 +8,15 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-06-29 — foil-bot crash recovery: slash-command descriptions under Discord's 100-char limit + CI guard
+
+**Goal: finish recovery of the interrupted foil-bot fix — descriptions trimmed under Discord's 100-char cap, a CI guard added, committed + pushed to trigger the Railway redeploy, deploy confirmed green.** (Claude Code; `fix(bot)`.)
+
+- **The crash:** the bot was crash-looped in prod on `39458d6`. `@discordjs/builders` validates a slash-command `setDescription` at builder-construction time (module load), and the `/approve` description was 104 chars — over Discord's hard 100-char cap — so importing `bot/src/handlers/slash-commands.ts` threw `ExpectedConstraintError` the instant the bot booted, before it could connect.
+- **The fix (was uncommitted in the working tree):** `/approve` and `/skip` descriptions recast shorter and em-dash-free (104→83, and the `/skip` recast). New guard `lib/__tests__/bot-slash-commands.test.ts` reads the bot source as TEXT (CI never imports the bot — separate package + discord.js) and structurally asserts every `setDescription` string is ≤100 chars AND em-dash-free (BRAND-VOICE Gate 12).
+- **P0 premise check caught two gaps the "just commit + push" framing missed:** (1) the guard test was **not wired into `npm test`** — added it to the script; (2) with the guard running, its no-em-dash gate **failed on the `/reset` description** (line 27, a pre-existing em dash the crash fix never touched). Fixed the code to comply (em dash → colon) rather than weaken the guard. The em dash didn't cause the crash; the 100-char gate did. Both now pass.
+- **Gates:** full `npm test` **1148 pass / 0 fail / 18 skip** (guard now in-suite + green); `npx tsc --noEmit` clean; `/security-review` no findings (change is two Discord description strings + a text-asserting test + one `package.json` test-path line — zero security surface: no new code path, network, secret, or user-input sink). Committed + pushed; Railway auto-deploy confirmed via `getServiceStatus`. Deleted the temp diagnostic `scripts/_tmp-railway-logs.ts`.
+
 ## 2026-06-28 (later 9) — Editorial newsletter engine (data + WHY + John's CALL), honesty-gated, measured
 
 **Goal: execute `docs/goals/newsletter-editorial-engine-upgrade.md` — upgrade the engine to generate against the editorial blueprint (MOVE→WHY→CALL, signature segments, John's seller voice, the 9 gates); keep the "why" honest as interpretive, not fabricated fact.** (Claude Code; new ADR-080.)

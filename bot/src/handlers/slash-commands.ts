@@ -24,7 +24,7 @@ import { IDEA_CATEGORIES, parseIdeasFile, type IdeaCategory } from "../system-pr
 export const COMMAND_DEFS = [
   new SlashCommandBuilder()
     .setName("reset")
-    .setDescription("Clear my memory for this channel — every past message in #channel is forgotten."),
+    .setDescription("Clear my memory for this channel: every past message in #channel is forgotten."),
   new SlashCommandBuilder()
     .setName("recall")
     .setDescription("Semantic recall over my channel history. Returns the top 5 hits.")
@@ -43,13 +43,13 @@ export const COMMAND_DEFS = [
     ),
   new SlashCommandBuilder()
     .setName("approve")
-    .setDescription("Approve the pending draft with this id — posts the X post, or emails the newsletter issue. Owner only.")
+    .setDescription("Approve a pending draft by id: posts the X post or sends the newsletter. Owner only.")
     .addStringOption((opt) =>
       opt.setName("id").setDescription("The draft id from the #content-engine approval message").setRequired(true),
     ),
   new SlashCommandBuilder()
     .setName("skip")
-    .setDescription("Skip the pending draft with this id (X post or newsletter digest) — it is never sent. Owner only.")
+    .setDescription("Skip a pending draft by id (X post or newsletter). It is never sent. Owner only.")
     .addStringOption((opt) =>
       opt.setName("id").setDescription("The draft id from the #content-engine approval message").setRequired(true),
     ),
