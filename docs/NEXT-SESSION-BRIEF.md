@@ -1,40 +1,41 @@
-# Next-Session Brief — 2026-06-28 — first X post LIVE + launch thread posted + SEO crawl fix shipped
+# Next-Session Brief — 2026-06-28 — newsletter built end-to-end (never-sent → amazing & proven); go-live is next session
 
 > Read this first: current state + the prioritized next plan. (Written by Cowork; commits run on John's machine.)
 
-## State: Foil crossed from "building the engine" to "operating it in public." The X flywheel is live, and the SEO crawl bottleneck is diagnosed + fixed (pending push).
+## Headline
+Today the newsletter went from **never having sent a single issue** to a **fully-built, self-sending, brand-designed, editorially-amazing machine — all proven, none of it live yet.** The whole thing is 5 committed-not-pushed commits + a one-goal final assembly away from going live. Go-live is the clean next-session job (it includes the env-mirroring push, which deserves fresh attention).
 
-Today went from polish → first real public posts → a measured SEO unlock. The big shift: we found WHY organic traffic was flat (a crawl throttle, not a content problem) and shipped the fix.
+## What's LIVE (pushed earlier today)
+- **SEO metadata de-stale** (`4d0302b`) + **OG card-hero image** (`837743e`) — pushed + deployed. Fixed the wrong `@foilcards`→`@Johnnycakx` handle, killed stale "scanner" framing on the indexed Japanese pillar, branded the social link-preview. (The morning's SEO crawl fix `668efbe` is also live — card pages 37.9s→1.8s TTFB; GSC re-crawl window is open, watch indexation over the next 2-4 weeks.)
 
-### Shipped + PUSHED today (2026-06-28)
-- **Card-hero v2.1** (`f594370`) — removed the red ▼ (encoded as a rectangle in MP4), clean navy→tinted-navy gradient background (dropped the muddy blurred-card cover, kept the glow halo), four-beat viral copy restructure, relaxed the per-number "as of today" to a single present-tense anchor, **link-in-first-reply** mechanism (link-free body for reach), + a post-structure quality gate.
-- **Card-hero v2.2** (`fd007b4`) — the reply is now the **newsletter lever**: value-framed card link ~80% of days, newsletter CTA every 5th day (`dayIndex % 5`), board-only "bookmark" save ask. Migration `20260627160000_x_post_drafts_reply_text` applied in prod.
-- **FIRST REAL X POST is LIVE** — Blastoise card-hero (MP4 motion), approved via Discord `/approve`, posted to @Johnnycakx with the threaded value-framed reply. **The `tweet_video` chunked upload is now verified in prod — the last unproven path in the whole system is proven. The X engine works end-to-end.**
-- **Launch thread POSTED** — the 6-tweet native thread (`docs/social/x-launch-thread-2026-06-28.md`), generated from fresh `market_movers` (3 down-movers + Pikachu 151 up-mover, all 50+ sales, honest). **T1 pinned.**
-- **X profile** — bio → "Pokémon TCG market insights from a TCGplayer seller. What's moving and where the real deals are. Free newsletter below." Website link → **`foiltcg.com`** (homepage; its hero leads with the newsletter capture, so message-match holds, and it introduces the product to cold visitors better than /newsletter). **@FoilTCG handle rename still PENDING X profile review** (rate-limited; retry later).
+## What's BUILT but NOT pushed — 5 commits, the whole newsletter system
+In stack order:
+- `ba2d0c5` — `/approve`→deliver rail (Discord approval, parity with the X bot).
+- `01eec73` — **own the SEND via Resend Broadcasts** (fully automated, NO Beehiiv upgrade; verified 6 real sends to John's Primary inbox). List of record = Supabase `newsletter_subscribers`, mirrored to a Resend Audience; Beehiiv kept only as signup-form/archive.
+- `18905e7` — branded **react-email** template (cream/navy/gold), verified 4/4 Gmail **Primary**, 0 Promotions.
+- `027a57b` — the **editorial blueprint** (`docs/knowledge/newsletter-editorial-blueprint.md`) — what makes the newsletter AMAZING.
+- `7763176` — the **editorial engine** (data + WHY + John's seller CALL), honesty-gated. Measured: picks-with-why 0→11/12, verdicts 12/12, all hedged; honesty gates fired in the retry loop (caught fabricated figures + unhedged causal claims). Proven to `_pending/editorial-2026-06-29.md`.
 
-### Shipped but NOT pushed (do this FIRST next session)
-- **SEO crawl fix — Option B "dynamic-but-fast" (committed, NOT pushed).** THE diagnosis (from GSC, this session): **16 indexed / 1,007 "Discovered – currently not indexed" / 0 "Crawled – not indexed."** Discovery works (sitemap healthy: 0.42s, 1,224 URLs); there is **no quality problem** (0 crawled-not-indexed). The wall is **crawling** — and the measured cause is a **37.9s cold TTFB** on card pages: `force-dynamic` blocked the server HTML on a live eBay/PokeTrace fetch, so Google throttled crawl. The fix moved the live curated-tier blocks (eBay `resolveVerifiedListing` + buy-signal + PokeTrace sold-history) **off the server render to a new client-side `/api/listing/[slug]` route** (`components/cards/live-listing-section.tsx`). Server now returns fast evergreen HTML → throttle should lift. R-008 preserved (live blocks fetched client-side, never cached; affiliate HTML leaves the crawled DOM = cleaner for ranking). 1115 tests green, `/security-review` clean. **Chose B over full static/ISR (Option A) because the measurement showed the evergreen render was ALREADY fast (baked snapshot) — only the live blocks needed moving — so B lifts the throttle WITHOUT reopening the ADR-047 `searchParams` 500 landmine. Lower risk, same SEO outcome.**
+## The go-live path (the prioritized plan — next session)
+1. **NL-EDIT-SHIP** (goal spec written: `docs/goals/newsletter-edit-ship-wire-cron-template.md`) — the final assembly. The editorial engine is proven to `_pending` but NOT wired in: the cron still calls the deterministic digest and the template renders the old structure, so a live send today would be the OLD anonymous data table. This goal wires the cron → editorial engine (soft-falling to the deterministic digest on 3-strike, so a generation failure never blocks a send) + renders the new segments (Big Move / Seller's Note / $50 Call) in the template, re-tested Primary-safe.
+2. **Harden the send** (goal spec written: `docs/goals/newsletter-harden-subdomain-unsubscribe.md`) — Resend-unsubscribe→Supabase sync webhook (compliance: an opt-out must propagate across all 3 stores) + a `news.foiltcg.com` sending subdomain. Do BEFORE real subscribers.
+3. **ONE push + activation (John-attended):** apply migrations (`supabase db push`) + set `RESEND_AUDIENCE_ID` / `NEWSLETTER_DIGEST_MODE=approval` / `NEWSLETTER_APPROVE_SECRET` on Vercel prod + the secret on Railway via the authenticated CLIs (NOT just `.env.local` — the silent-no-op trap) + push the stack. Then the weekly Discord `/approve` → branded, editorial, auto-send loop is LIVE.
 
-## Open / next (in priority order)
-1. **PUSH + verify + deploy the SEO crawl fix.** Review the card-page diff, confirm a live card page still renders the listing correctly (now client-hydrated) + content-marker verification (ADR-049), then push. **Then the GSC follow-up:** resubmit `sitemap.xml` (its last process date was 6/11), hit **"Validate Fix"** on the "Discovered – not indexed" row, and **URL Inspect → Request Indexing** on 5–10 top cards (Charizard + chase cards) to prime the re-crawl. This is the autonomous high-intent-traffic unlock — highest-leverage thing on the board.
-2. **X growth = manual outbound + the syndication engine.** With ~1 follower, reach comes from John replying with value on bigger TCG accounts (Regannator, PokemonDealsX, SmartTCG, SanderWojcik, hegstertcg…) ~15 min/day — NOT from posting more (50x/day autobot = suspension; confirmed via research). The autonomous content-syndication engine (below) is the systematized version.
-3. **Queued goal specs** (in `docs/goals/`, gitignored scratch):
-   - `og-image-card-hero-art.md` — OG/link-preview image uses Pokémon card-hero art (currently flat text-on-navy) **+ reconcile the lockup drift** (the OG renderer and the card-hero renderer use different marks — John caught it). Note: Satori may not render the `.webp` hero art → likely needs PNG conversion; won't change the already-posted thread's cached preview.
-   - `seo-crawlability-indexing-health.md` — DONE as Option B; the file documents Option A (full static/ISR) as a **later optimization** once B proves the throttle lifts.
-   - `x-card-hero-v2.2-copy-cta.md` — DONE (v2.2).
-4. **Build the social-syndication-engine goal spec** (not yet written) — see IDEAS. Multi-platform content fan-out (Postiz, 28+ channels) + a daily auto-generated engagement brief. Needs John to create a FoilTCG Instagram + TikTok and connect them. **Hard line (researched + settled): automate content DISTRIBUTION, never engagement ACTIONS (auto-reply/follow/DM = suspension).**
+## The strategic spine (why this mattered)
+Every Pokémon price tracker has the same gainers/droppers data Foil has; none is a beloved newsletter because none supplies the WHY + a judgment. That gap IS the product, and John (Level-4 seller) is the one voice an API can't replicate. The editorial engine encodes exactly that (MOVE→WHY→CALL, John's seller voice, signature segments). North star = grow the owned list; the newsletter is finally a product worth subscribing to.
 
-## Decisions settled today (don't relitigate)
-- **Buying X followers — REJECTED.** Zero clicks/engagement, pollutes the metrics engine, craters engagement-rate → algorithmic suppression, ToS purge/suspension risk, kills the "real numbers, no hype" credibility that IS the brand.
-- **Paid X boost/ads — deferred,** not now. Only makes sense later against a proven converting post + a tracked impression→subscribe funnel.
-- **X vs GSC priority — GSC/SEO is the primary 90-day autonomous-traffic bet** (confirmed fixable bottleneck, high-intent traffic, zero daily human input, compounds permanently). X syndication is the parallel low-effort track. Neither is a fast-traffic source; both are slow-fuse.
+## Hard truths to carry forward (don't relearn)
+- **Subscriber reality: ~0 REAL subscribers.** The handful in Beehiiv/Resend are John's own + test addresses. Deliverability "Primary" wins so far are self-sends — strong signal, not a final verdict. The real bottleneck is acquisition, not tooling.
+- **Auto-send runs on Resend Broadcasts, NOT Beehiiv.** Beehiiv RSS-to-Send is Max/Enterprise; the Send API is Enterprise. We own the send via Resend instead (on Scale we already pay for). Don't re-propose a Beehiiv upgrade for auto-send.
+- **Beehiiv = Scale.** (Confirmed by John 2026-06-28. The `SEND_API_NOT_ENTERPRISE_PLAN` 403 is an Enterprise gate, not free-vs-Scale.)
+- **The "why" in the newsletter is interpretive, hedged — never asserted as fact** (honesty gates enforce it). This protects credibility; keep it.
 
 ## Standing
-- **PokeTrace ACTIVE** (Paddle, cancels **~Jul 16** — re-confirm/renew before then). Load-bearing for the whole insight engine (deals, movers, card pages, X posts).
+- **PokeTrace renews ~Jul 15** — load-bearing for the whole insight engine (movers, /deals, card pages, X, newsletter data). Watch it.
 - `AUTO_PUBLISH_WEEKLY_POSTS` intentionally ON.
-- **Sole-committer rule:** don't edit tracked repo files while Claude Code / the runner is mid git-op (stash/commit/reset). Pushes are tree-safe.
-- Cowork CANNOT commit/push from its sandbox — hand John the `docs:` one-liner.
+- Sole-committer rule: don't edit tracked files while Claude Code/the runner is mid git-op (stash/commit/reset); pushes are tree-safe.
+- Cowork CANNOT commit/push and CANNOT drive the Claude Code terminal — hand John the `docs:` one-liner + the `/goal` pastes.
+- When John sends only a screenshot, READ THE BOARD AND DIRECT — don't ask "what's next?" back.
 
 ## Uncommitted at session end (hand John the docs commit)
-This session's Cowork doc work sits uncommitted in the working tree: `NEXT-SESSION-BRIEF.md`, `COWORK-CONTEXT.md` (the measure-before-rebuild lesson), `IDEAS.md` (syndication engine + up-mover angle + color-coding + paid-boost-later). The SEO crawl fix is committed-not-pushed on `main` separately. Commit the docs, then push the SEO fix when reviewed.
+This brief + today's blueprint placement are in the working tree. The SESSION-LOG / ADRs / COWORK-CONTEXT were committed by each goal. Hand John one `docs:` commit for this brief (the blueprint already committed as `027a57b`).
