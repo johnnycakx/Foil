@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { subscribeAction, type SubscribeActionResult } from "@/app/actions/subscribe";
 
 type Variant = "inline" | "footer";
@@ -26,6 +26,24 @@ export function EmailCapture({
 }) {
   const [state, setState] = useState<SubscribeActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // Inbound channel attribution (ADR-084). Read the landing URL's utm_* (or a
+  // single ?src= as a short alias for utm_source — matches the watchlist
+  // convention) after hydration and mirror them into hidden form fields, so a
+  // /deals?utm_source=reddit signup is stored with that channel. Client-side
+  // (window.location) — no useSearchParams, to avoid forcing every host page
+  // into a Suspense/client-render boundary. The server action sanitizes; the
+  // owned Supabase row is the source of truth.
+  const [utm, setUtm] = useState({ source: "", medium: "", campaign: "" });
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const p = new URLSearchParams(window.location.search);
+    setUtm({
+      source: p.get("utm_source") ?? p.get("src") ?? "",
+      medium: p.get("utm_medium") ?? "",
+      campaign: p.get("utm_campaign") ?? "",
+    });
+  }, []);
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -92,6 +110,9 @@ export function EmailCapture({
         noValidate
       >
         <input type="hidden" name="source" value={source} />
+        <input type="hidden" name="utm_source" value={utm.source} />
+        <input type="hidden" name="utm_medium" value={utm.medium} />
+        <input type="hidden" name="utm_campaign" value={utm.campaign} />
         <label htmlFor={inputId} className="sr-only">
           Email address
         </label>

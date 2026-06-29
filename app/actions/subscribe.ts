@@ -15,13 +15,23 @@ export async function subscribeAction(formData: FormData): Promise<SubscribeActi
   const rawEmail = String(formData.get("email") ?? "");
   const source = String(formData.get("source") ?? "unknown");
 
+  // Inbound channel attribution (ADR-084). EmailCapture mirrors the landing
+  // URL's utm_* (or a single ?src=) into hidden fields; recordSubscriber
+  // sanitizes them. Missing params → null, never an error.
+  const str = (v: FormDataEntryValue | null) => (typeof v === "string" ? v : null);
+  const utm = {
+    source: str(formData.get("utm_source")),
+    medium: str(formData.get("utm_medium")),
+    campaign: str(formData.get("utm_campaign")),
+  };
+
   const result = await subscribeEmail({ email: rawEmail, source });
 
   // Dual-write to the owned list (Supabase) + the Resend marketing audience
   // (ADR-078). Best-effort + non-blocking: the Beehiiv result above is what
   // gates the user-facing success; this just keeps our owned send-list in sync.
   if (result.ok) {
-    void recordSubscriber({ email: rawEmail, source });
+    void recordSubscriber({ email: rawEmail, source, utm });
   }
 
   if (!result.ok) {
