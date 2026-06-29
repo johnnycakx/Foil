@@ -361,6 +361,11 @@ export type NewsletterApprovalInput = {
   topCards: string;
   /** When the pending draft auto-skips if not approved (human-readable). */
   expiresLabel: string;
+  /** Which render produced this issue: "editorial" (the default LLM issue) or
+   *  "deterministic" (the soft-fall digest when editorial generation failed).
+   *  Lets the owner see at a glance whether the safety net fired. Optional for
+   *  back-compat. */
+  source?: "editorial" | "deterministic";
 };
 
 /**
@@ -388,6 +393,11 @@ export async function postNewsletterApprovalRequest(
         fields: [
           { name: "Draft id", value: `\`${ev.draftId}\``, inline: false },
           { name: "Week", value: ev.issueWeek, inline: true },
+          {
+            name: "Format",
+            value: ev.source === "deterministic" ? "⚠️ deterministic (editorial fell back)" : "editorial",
+            inline: true,
+          },
           { name: "Cooling off", value: String(ev.downCount), inline: true },
           { name: "Heating up", value: String(ev.upCount), inline: true },
           { name: "Subject", value: ev.subject.slice(0, 256), inline: false },

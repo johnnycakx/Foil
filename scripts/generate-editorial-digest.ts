@@ -23,6 +23,7 @@ const { getMarketMovers } = await import("../lib/deals/market-movers-read.ts");
 const { buildDigestModel, buildMoversDigestParts } = await import("../lib/newsletter/movers-digest.ts");
 const { generateEditorialIssue, allIssueText, allPicks } = await import("../lib/newsletter/editorial-engine.ts");
 const { runEditorialGates } = await import("../lib/newsletter/editorial-gates.ts");
+const { serializeEditorialIssue } = await import("../lib/newsletter/editorial-serialize.ts");
 
 const movers = await getMarketMovers(50);
 const generatedAt = new Date().toISOString();
@@ -61,27 +62,7 @@ const afterPov = /\bI'd\b|\bI'm\b|my read|as someone|here's what I/i.test(whole)
 const outDir = path.join(process.cwd(), "docs", "newsletter-drafts", "_pending");
 fs.mkdirSync(outDir, { recursive: true });
 const dateSlug = generatedAt.slice(0, 10);
-const md = [
-  `# ${issue.subject}`,
-  ``,
-  `> EDITORIAL ISSUE (ADR-080) — routed to _pending, NOTHING sent. Gates: ${gate.passed ? "PASS" : "FAIL"}`,
-  ``,
-  `**The Open**\n\n${issue.open}`,
-  ``,
-  `**The Big Move — ${issue.bigMove.cardName}**\n\n${issue.bigMove.body}`,
-  ``,
-  `**Cooling Off**\n\n${issue.coolingPicks.map((p) => `- **${p.cardName}** ${p.body}`).join("\n\n")}`,
-  ``,
-  `**Heating Up**\n\n${issue.heatingPicks.map((p) => `- **${p.cardName}** ${p.body}`).join("\n\n")}`,
-  ``,
-  `**Seller's Note**\n\n${issue.sellersNote}`,
-  ``,
-  `**The Read**\n\n${issue.theRead}`,
-  ``,
-  `**One More Thing**\n\n${issue.oneMoreThing}`,
-  ``,
-  `${issue.signoff}`,
-].join("\n");
+const md = serializeEditorialIssue(issue, { gatesPassed: gate.passed });
 const outPath = path.join(outDir, `editorial-${dateSlug}.md`);
 fs.writeFileSync(outPath, md, "utf8");
 

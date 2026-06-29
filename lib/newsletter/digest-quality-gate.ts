@@ -45,6 +45,46 @@ function normalizeDollar(raw: string): string {
   return digits;
 }
 
+/** eBay browse links in a rendered HTML body. react-email entity-encodes `&` to
+ *  `&amp;`, which `isAffiliateWrapped` decodes — so this matches the encoded URL
+ *  verbatim. The exclusion class stops at the closing quote/paren/space. */
+const EBAY_BROWSE_LINK_RE = /https:\/\/www\.ebay\.com\/sch\/[^"')\s]+/g;
+
+export type AffiliateIntegrity = {
+  ok: boolean;
+  /** Total eBay browse links found in the HTML. */
+  total: number;
+  /** How many of those are NOT affiliate-wrapped (untracked). */
+  unwrapped: number;
+  /** Human-readable reason when !ok. */
+  reason?: string;
+};
+
+/**
+ * Revenue + footer-claim integrity for any rendered digest HTML (deterministic
+ * OR editorial). Every eBay browse link must carry the affiliate campid, and
+ * there must be at least one (else the cards have no buy CTAs). Shared by the
+ * deterministic gate and the editorial composer (digest-compose.ts) so both
+ * render paths enforce the same revenue invariant — the issue-#1 unwrapped-link
+ * bug can't regress on either template.
+ */
+export function affiliateLinkIntegrity(html: string): AffiliateIntegrity {
+  const links = html.match(EBAY_BROWSE_LINK_RE) ?? [];
+  if (links.length === 0) {
+    return { ok: false, total: 0, unwrapped: 0, reason: "No eBay browse links found — the cards have no buy CTAs." };
+  }
+  const unwrapped = links.filter((u) => !isAffiliateWrapped(u));
+  if (unwrapped.length > 0) {
+    return {
+      ok: false,
+      total: links.length,
+      unwrapped: unwrapped.length,
+      reason: `${unwrapped.length}/${links.length} eBay links are not affiliate-wrapped (untracked). EBAY_CAMPAIGN_ID must be set so the links are tracked and the footer's affiliate claim holds.`,
+    };
+  }
+  return { ok: true, total: links.length, unwrapped: 0 };
+}
+
 export function runDigestQualityGates(input: DigestGateInput): DigestGateResult {
   const { parts, movers, html } = input;
   const requireAffiliate = input.requireAffiliate ?? true;
@@ -105,15 +145,8 @@ export function runDigestQualityGates(input: DigestGateInput): DigestGateResult 
   // makes the footer's "affiliate searches" line false (the issue-#1 bug). The
   // wrapped-check lives in epn.ts (the affiliate-param boundary).
   if (requireAffiliate) {
-    const ebayLinks = html.match(/https:\/\/www\.ebay\.com\/sch\/[^"')\s]+/g) ?? [];
-    const unwrapped = ebayLinks.filter((u) => !isAffiliateWrapped(u));
-    if (ebayLinks.length === 0) {
-      failures.push("No eBay browse links found in the digest body — the cards have no buy CTAs.");
-    } else if (unwrapped.length > 0) {
-      failures.push(
-        `${unwrapped.length}/${ebayLinks.length} eBay links are not affiliate-wrapped (untracked). EBAY_CAMPAIGN_ID must be set so the links are tracked and the footer's affiliate claim holds.`,
-      );
-    }
+    const affiliate = affiliateLinkIntegrity(html);
+    if (!affiliate.ok && affiliate.reason) failures.push(affiliate.reason);
   }
 
   return { passed: failures.length === 0, failures };

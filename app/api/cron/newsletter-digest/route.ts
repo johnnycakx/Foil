@@ -17,6 +17,9 @@ import { NextResponse } from "next/server";
 import { getMarketMovers, type MoverRow } from "@/lib/deals/market-movers-read";
 import { buildMoversDigestParts, buildDigestModel } from "@/lib/newsletter/movers-digest";
 import { renderMoversDigestEmail } from "@/emails/movers-digest-email";
+import { renderEditorialDigestEmail } from "@/emails/editorial-digest-email";
+import { generateEditorialIssue } from "@/lib/newsletter/editorial-engine";
+import { composeDigestForSend, isSkip } from "@/lib/newsletter/digest-compose";
 import { runDigestQualityGates } from "@/lib/newsletter/digest-quality-gate";
 import { resolveNewsletterDigestMode, isoWeekTag } from "@/lib/newsletter/digest-mode";
 import {
@@ -62,27 +65,39 @@ export async function GET(request: Request): Promise<NextResponse> {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://foiltcg.com";
 
     const parts = buildMoversDigestParts({ movers, generatedAt, siteUrl });
-    // The branded react-email template (ADR-079) is the email body; the markdown
-    // parts stay the canonical record + the Discord-card summary source.
     const model = buildDigestModel({ movers, generatedAt, siteUrl });
-    const html = await renderMoversDigestEmail(model);
 
-    // Quality gate BEFORE persisting / posting a card. Fail -> log + skip, no card.
-    const gate = runDigestQualityGates({ parts, movers, html });
-    if (!gate.passed) {
-      console.warn(`[newsletter-digest] quality gate failed (${gate.failures.length}): ${gate.failures.join(" | ")}`);
-      return NextResponse.json({ ok: true, reason: "gate_failed", failures: gate.failures });
+    // Compose the issue: the EDITORIAL issue (NL-EDIT-SHIP) by default, with the
+    // DETERMINISTIC movers digest as a guaranteed soft-fall (an editorial
+    // generation failure never blocks the weekly send). Skip only if BOTH fail.
+    const composed = await composeDigestForSend({
+      model,
+      movers,
+      parts,
+      generateEditorial: generateEditorialIssue,
+      renderEditorial: renderEditorialDigestEmail,
+      renderDeterministic: renderMoversDigestEmail,
+      runDeterministicGate: runDigestQualityGates,
+      onEditorialSuccess: (issue) => console.log(`[newsletter-digest] editorial issue generated: "${issue.subject}"`),
+      onEditorialFallback: (err) =>
+        console.warn(`[newsletter-digest] editorial generation failed, falling back to deterministic digest: ${err.message}`),
+    });
+
+    if (isSkip(composed)) {
+      console.warn(`[newsletter-digest] both paths failed (${composed.reason}): ${(composed.failures ?? []).join(" | ")}`);
+      return NextResponse.json({ ok: true, reason: composed.reason, failures: composed.failures });
     }
+    console.log(`[newsletter-digest] composed ${composed.source} issue: "${composed.subject}"`);
 
     const issueWeek = isoWeekTag(now);
     const created = await store.create({
       issueWeek,
-      subject: parts.subject,
-      previewText: parts.previewText,
-      htmlBody: html,
-      markdownBody: parts.bodyMarkdown,
-      downCount: parts.downCount,
-      upCount: parts.upCount,
+      subject: composed.subject,
+      previewText: composed.previewText,
+      htmlBody: composed.html,
+      markdownBody: composed.markdownBody,
+      downCount: composed.downCount,
+      upCount: composed.upCount,
       expiresAt: digestExpiryFrom(nowMs),
     });
     if (!created) {
@@ -96,18 +111,19 @@ export async function GET(request: Request): Promise<NextResponse> {
       await postNewsletterApprovalRequest(contentWebhook, {
         draftId: created.id,
         issueWeek,
-        subject: parts.subject,
-        previewText: parts.previewText,
-        downCount: parts.downCount,
-        upCount: parts.upCount,
+        subject: composed.subject,
+        previewText: composed.previewText,
+        downCount: composed.downCount,
+        upCount: composed.upCount,
         topCards: topCardsSummary(movers.down),
         expiresLabel: `${DEFAULT_DIGEST_EXPIRY_HOURS}h (then auto-skipped)`,
+        source: composed.source,
       });
     } else {
       console.warn("[newsletter-digest] DISCORD_WEBHOOK_CONTENT_ENGINE unset — draft persisted but no approval card posted");
     }
 
-    return NextResponse.json({ ok: true, reason: "awaiting_approval", draftId: created.id, issueWeek });
+    return NextResponse.json({ ok: true, reason: "awaiting_approval", draftId: created.id, issueWeek, source: composed.source });
   } catch (err) {
     // Soft-fail: a digest cron failure must never 500 (it would page Vercel + the
     // next week's run recovers anyway).
