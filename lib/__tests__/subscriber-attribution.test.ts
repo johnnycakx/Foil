@@ -94,6 +94,17 @@ test("EmailCapture mirrors utm_* (+ ?src= alias) from the landing URL into hidde
   assert.match(src, /get\("src"\)/);
 });
 
+// --- subscribeAction awaits the owned-list write (not fire-and-forget) ------
+
+test("subscribeAction AWAITS recordSubscriber so the attribution write can't be dropped on a Vercel freeze", () => {
+  // A `void recordSubscriber(...)` left running after the server-action response
+  // can be killed when the function freezes, losing the row + its UTM. The write
+  // must be awaited inside the function lifetime.
+  const src = readFileSync(join(ROOT, "app", "actions", "subscribe.ts"), "utf8");
+  assert.match(src, /await recordSubscriber\(/, "recordSubscriber must be awaited");
+  assert.doesNotMatch(src, /void recordSubscriber\(/, "recordSubscriber must NOT be fire-and-forget");
+});
+
 // --- /deals: exactly one capture (ADR-066 + de-leak guard) ------------------
 
 test("/deals renders exactly ONE EmailCapture, tagged source=deals_board (ADR-066 one-ask + the de-leak fix)", () => {

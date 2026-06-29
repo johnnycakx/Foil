@@ -28,10 +28,17 @@ export async function subscribeAction(formData: FormData): Promise<SubscribeActi
   const result = await subscribeEmail({ email: rawEmail, source });
 
   // Dual-write to the owned list (Supabase) + the Resend marketing audience
-  // (ADR-078). Best-effort + non-blocking: the Beehiiv result above is what
-  // gates the user-facing success; this just keeps our owned send-list in sync.
+  // (ADR-078). AWAITED, not fire-and-forget: on Vercel a `void` promise left
+  // running after the response can be dropped when the function freezes, which
+  // would lose the owned-list row + its UTM attribution (ADR-084) we now depend
+  // on — verified 2026-06-29 (the row landed ~8s post-response, racing the
+  // freeze). Awaiting guarantees the write attempt completes inside the function
+  // lifetime. recordSubscriber is soft-fail (never throws; logs per-leg), so the
+  // await can't break the user-facing success, which stays gated on the Beehiiv
+  // result above. (If the added latency ever matters, Vercel's `after()` runs
+  // it post-response with a completion guarantee — the future optimization.)
   if (result.ok) {
-    void recordSubscriber({ email: rawEmail, source, utm });
+    await recordSubscriber({ email: rawEmail, source, utm });
   }
 
   if (!result.ok) {
