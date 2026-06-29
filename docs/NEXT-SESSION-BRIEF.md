@@ -1,37 +1,60 @@
-# Next-Session Brief — 2026-06-29 — newsletter is LIVE; next = the ADR-082 manual hardening, then acquisition Phase 0
+# Next-Session Brief — 2026-06-29 (late) — newsletter LIVE; the real question is now the CONVERSION MODEL, not more build
 
 > Read this first: current state + the prioritized next plan. (Written by Cowork; commits run on John's machine.)
 
 ## Headline
-The newsletter is **LIVE in production.** The weekly Discord `/approve` → branded, editorial, honesty-gated → Resend-broadcast → Gmail **Primary** loop was activated and smoke-tested end-to-end on 2026-06-29 (migrations applied; `NEWSLETTER_DIGEST_MODE=approval` + `NEWSLETTER_APPROVE_SECRET` [Vercel **and** Railway, sha-matched] + `RESEND_AUDIENCE_ID` set on prod; `a5652da` pushed + deployed green). A real issue ("Pikachu 151 just crossed $104") generated from live `market_movers`, posted a Discord approval card, and on `/approve` sent a Resend broadcast that **landed in John's Gmail Primary, 0 Promotions**. The maiden machine works. **The bottleneck now is acquisition — there are ≈0 real subscribers.**
+The newsletter went from never-sent → **live, editorial, honesty-gated, Primary-verified, hardened, and attributed** today — a genuinely strong machine. But the session's real conclusion is strategic: **the bottleneck is not the quality of the build, it's that ~0 real humans are using it.** We kept building infrastructure ahead of audience (newsletter, attribution, channel policy) — all good work, none of it moves the only scoreboard that matters (subscribers/revenue). **Next session is a DECISION session, not a build session:** pick the conversion model, then commit to the cheapest path to the first real conversion signal. Everything downstream — the $1K spend, what to build, what's worth perfecting — is gated on that decision.
 
 ## What's LIVE in prod now
-- **The newsletter send loop** (NL-SEND/NL-EDIT-SHIP). Weekly cron `/api/cron/newsletter-digest` (Wed 14:13 UTC) generates the **editorial** issue (deterministic digest is the soft-fall), persists a draft, posts a Discord `#content-engine` `/approve` card; on `/approve <id>` the bot relays to `/api/newsletter/approve` → Resend broadcast to the `RESEND_AUDIENCE_ID` audience. List of record = Supabase `newsletter_subscribers`; Beehiiv = signup/archive only. Sends from `alerts@foiltcg.com`.
-- SEO metadata de-stale + OG card-hero image (live). foil-bot recovered + a CI guard for bot slash-command descriptions.
+- **Newsletter `/approve` → editorial → Resend-broadcast loop is LIVE** (ADR-078/080/081/082/083). Real editorial issue ("Pikachu 151 just crossed $104") landed 4/4 Gmail Primary; unsubscribe sync verified across Supabase/Resend/Beehiiv (the live test caught + we fixed a real Beehiiv no-op bug — ADR-083; Resend is now the sole unsubscribe surface, Beehiiv passive). Sends from `alerts@foiltcg.com`; weekly Wed 14:13 UTC cron.
+- **Phase 0 funnel attribution is LIVE** (ADR-084): `/deals` has a strong board-tied email capture; UTM→source captured on every signup (sanitized, sticky first-touch); `npm run subscriber-sources` reads conversion-by-channel; UTM cheat-sheet at `docs/runbooks/acquisition-utm.md`.
+- Anthropic credits topped up + **auto-reload ON** (whole autonomous stack unblocked; the morning "API off" email was real, now resolved).
 
-## Still John-manual — the ADR-082 hardening (do BEFORE pushing acquisition)
-Both are built + the code is deployed (`a5652da`); they need John's dashboard/DNS steps. Runbook: `docs/runbooks/newsletter-unsubscribe-and-subdomain.md`.
-1. **Part A — unsubscribe webhook** (compliance; the one that matters before real subscribers): Resend dashboard → Webhooks → Add Endpoint `https://foiltcg.com/api/webhooks/resend`, events `contact.updated` + `email.complained` → copy the `whsec_…` → `vercel env add RESEND_WEBHOOK_SECRET production` → redeploy. Without it, a Resend unsubscribe is NOT mirrored to Supabase (source of truth) and the opted-out address could be re-mailed.
-2. **Part B — `news.foiltcg.com` sending subdomain** (deliverability): `npm run setup:news-subdomain -- --create` → add the printed SPF/DKIM(×3 CNAME)/DMARC records at the registrar → verify in Resend → `vercel env add NEWSLETTER_FROM production` = `Foil <news@foiltcg.com>`. Until then sends use the verified `alerts@` (transactional reputation shared — fine at ≈0 volume).
+## Shipped today (3 commits UNPUSHED — see audit)
+ADR-082 hardening (`a5652da`, pushed) · ADR-083 Beehiiv fix (`8597d1f`, pushed) · ADR-084 Phase 0 (`3ca0f44`, pushed) · ADR-085 Postiz channel-safety policy (Postiz parked, policy layer built).
+**UNPUSHED:** `5907d68` (await recordSubscriber — reliability), `b1997db` + `4983152` (Postiz park + policy). → push these.
 
-## The real job now — acquisition Phase 0
-The machine is built and live; it sends to ≈0 people. Every hour on tooling from here is lower-leverage than getting the first real subscribers. Prioritize:
-1. **Turn on the funnel that already exists:** the homepage hero + blog/pillar inline `EmailCapture` write to `newsletter_subscribers`. Confirm the capture → audience → next-week's-send path works for a NON-John signup (the loop's been proven only on John's address).
-2. **Drive traffic to it:** the X bot (dry-run-verified, John-manual go-live), the indexed content surfaces (GSC re-crawl window open), and a clear "subscribe for weekly good buys" CTA. The newsletter is now a real reason to subscribe — point at it.
-3. Let a few real weekly sends accumulate clean deliverability, THEN graduate the `/approve` gate toward full-auto.
+## AUDIT — what slipped through the cracks
+**No-regret quick wins (do regardless of the model decision):**
+1. **Push the 3 unpushed commits** (`5907d68`, `b1997db`, `4983152`).
+2. **Add a visible "Follow on X" link/widget** — CONFIRMED missing; `@Johnnycakx` exists only in OG metadata, no visible follow CTA anywhere. Closes the site→X funnel loop (visitors → followers → compounding). Small build: footer/nav link + optional embedded follow button.
+3. **Extend the Sunday acquisition-review scheduled task** to track 4 compounding leading indicators (GSC impressions/clicks WoW, X engagement vs. baseline, channel members, list growth) + CPA-per-arm once paid runs. (Cowork can do this directly.)
+
+**Parked, pre-FIRST-REAL-SUBSCRIBER (not urgent at ~0 subs; do before real ones land):**
+4. Part B — `news.foiltcg.com` sending subdomain (DNS; runbook `newsletter-unsubscribe-and-subdomain.md`).
+5. Pause the Beehiiv "Foil welcome" automation (R-059; manual dashboard toggle — automations API is read-only).
+
+**Queued goal specs, NOT executed (deliberately deferred):**
+6. `graduate-newsletter-x-to-autonomous.md` — removes the last weekly human gates; build when ready.
+7. `owned-deal-channel-scenario-a.md` — free owned Discord/Telegram deal channel; **shelved pending audience validation** (don't build a channel for 0 members).
+8. `postiz-multichannel-autosyndication.md` — parked; resumes when John does the Postiz account + OAuth (runbook `postiz-syndication-setup.md`).
+
+## THE prioritized next step — decide the conversion model (first 10 min of next session)
+Three options; recommendation = freemium:
+- **(A) Free list + affiliate** (current default): low-leverage to *pay* for (free subs monetize at cents, LTV unproven).
+- **(B) Free → paid tier (FREEMIUM) — RECOMMENDED:** free list/deal-channel for reach + affiliate; a paid tier (faster/better/filtered alerts) as the real revenue. Delivery secondary (on-site Stripe vs a Whop-gated Discord — Whop is the fast paid-Discord path). The high-leverage thing to *pay* to acquire is a paying customer.
+- **(C) Paid product first:** direct revenue, but zero proof of demand yet.
+
+**The honest sequence (the $1K is the LAST step):**
+1. **Prove the free product converts — organically, $0.** Founder distribution (Reddit/Discord value-first + X engagement) + the attribution we built. Does `/deals` convert a real human to an *engaged* sub? This one number gates everything.
+2. **Probe willingness-to-pay cheaply** — the $59 founding-member link exists (zero build); or a Whop-gated Discord.
+3. **Build the paid tier** for whichever segment shows demand (the *flipper/investor* segment has real WTP — Foil's "below sold-average" signal is a flip tool; collectors pay less readily).
+4. **THEN deploy the $1K** (`docs/PAID-ACQUISITION-VALIDATION-2026-06-29.md`: lean 2-arm test, Reddit ads primary + small X *traffic* campaign; measure CPA + engagement; scale the winner).
+
+**Single clearest action for John between sessions:** get the first real humans in front of Foil this week (the Monday distribution kit is scheduled — post it for real) and watch `subscriber-sources`. That signal, not more build, makes the next decision real.
 
 ## Hard truths (don't relearn)
-- **≈0 REAL subscribers.** Every "Primary" win so far is a self-send to John's own address — a strong deliverability signal, NOT product-market traction. Acquisition is the bottleneck, not tooling.
-- **Auto-send runs on Resend Broadcasts, NOT Beehiiv** (Beehiiv RSS-to-Send is Max/Enterprise; Beehiiv = Scale, kept as signup/archive). Don't re-propose a Beehiiv upgrade.
-- **Verify in prod, don't infer** (this session's wins came from it): the var readbacks were checked on Vercel/Railway not `.env.local`; the editorial engine was confirmed by the live `source:"editorial"` cron response; Primary placement by the actual `category:primary` Gmail query. The local `npm test` "Anthropic credit too low" failures are the LOCAL key only — prod's key has credits (the live editorial gen proved it).
-- The `railway` CLI fights headless project resolution — use the backboard GraphQL API (`variables` query / `variableUpsert` mutation; service `2d0552e6-…`, project `08088ed2-…`, env `c1af4109-…`) for bot var reads/writes, not `railway variables`.
-- When John sends only a screenshot → READ THE BOARD AND DIRECT, don't ask back.
+- **Building ahead of audience is the trap we hit all session.** Perfect-before-validation causes rework + burns the $20K/October runway. Perfect the hard-to-reverse + trust-critical (brand, data accuracy, editorial honesty); ship "good enough to learn" on everything whose right shape needs real users to reveal.
+- **Paying for free subs is low-leverage; pay to acquire PAYING customers** — but that needs a validated paid product first.
+- **Reddit/Discord auto-posting into others' communities = bans** (CQS shadowban ~2h, proven). Safe automation = OWN channels (Telegram/Discord-webhook/Bluesky/Mastodon/X-API) + paid Reddit *ads*. Owned channels RETAIN/CONVERT, they don't DISCOVER.
+- **Verify irreversible side-effects LIVE, not just on green tests** (the Beehiiv unsubscribe no-op passed unit tests; only the live unsubscribe caught it).
 
 ## Standing
-- **PokeTrace renews ~Jul 15** — load-bearing for the whole insight engine (the newsletter's content source). Watch it.
+- **PokeTrace renews ~Jul 15** (load-bearing; reminder scheduled Jul 13).
 - `AUTO_PUBLISH_WEEKLY_POSTS` intentionally ON.
-- The smoke test consumed the `2026-W27` draft slot (delivered to John); the real Wed cron will see it exists → no duplicate. Normal sends resume W28+.
-- Cowork CANNOT commit/push and CANNOT drive the Claude Code terminal — hand John the `docs:` one-liner + `/goal` pastes.
+- Scheduled tasks: daily GSC indexing, Sunday acquisition review, Monday distribution kit (click "Run now" once to pre-approve Supabase access).
+- **$1K in Mercury — HOLD until the funnel is proven to convert.**
+- Cowork CANNOT commit/push — hand John the `docs:` one-liner + `/goal` pastes.
 
 ## Uncommitted at session end
-The activation push (`a5652da`) already happened. This brief + SESSION-LOG + ROADMAP are the `docs:` commit for this session.
+This brief + the COWORK-CONTEXT learning append + `docs/PAID-ACQUISITION-VALIDATION-2026-06-29.md` are in the working tree. Hand John one `docs:` commit.
