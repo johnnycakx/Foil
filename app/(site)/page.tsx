@@ -102,7 +102,15 @@ function Hero() {
                 width={400}
                 height={560}
                 className="h-full w-full object-cover"
-                priority={false}
+                // Above-the-fold hero showcase: load EAGERLY so the fanned row
+                // never paints blank. The previous lazy default deferred all 8
+                // fetches in prod, leaving empty rectangles on first paint.
+                // Next 16 deprecated the old eager flag in favour of
+                // `loading="eager"` + `fetchPriority="high"` (the documented
+                // above-the-fold pattern); eager fetches on paint without the
+                // "too many preloaded images" warning 8 `priority` flags trip.
+                loading="eager"
+                fetchPriority="high"
               />
             </div>
           </div>
@@ -153,6 +161,12 @@ function Hero() {
             width={44}
             height={44}
             className="h-11 w-11 shrink-0 rounded-full object-cover ring-1 ring-foil-navy/10"
+            // Above-the-fold + trust-critical (the face that replaces a
+            // credential). Eager-load so it never paints blank (Next 16:
+            // `loading="eager"` + `fetchPriority="high"`, the post-`priority`
+            // pattern). The DUPLICATE footer avatar stays lazy — it's below the fold.
+            loading="eager"
+            fetchPriority="high"
           />
           <p className="text-sm text-foil-slate">
             <span className="font-medium text-foil-navy">Built by John Craig.</span>{" "}

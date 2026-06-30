@@ -595,3 +595,44 @@ test("Homepage hero images are self-hosted local webp that exist, no flaky exter
     assert.ok(existsSync(file), `missing self-hosted hero image: public/hero/${id.replace("/", "-")}.webp`);
   }
 });
+
+// ---------------------------------------------------------------------------
+// fix-hero-image-loading — the above-the-fold hero + founder load EAGERLY.
+// The lazy default (`priority={false}` on the hero, no priority on the founder)
+// deferred all 8 hero cards + the founder avatar in prod, painting the hero
+// BLANK on first load. Next 16 deprecated `priority`; the fix is the documented
+// above-the-fold pattern `loading="eager"` + `fetchPriority="high"`. These are
+// STRUCTURAL pins so a refactor can't silently re-lazy the hero — they do NOT
+// prove the pixels render (the original bug was invisible to markup tests; that's
+// what the live/screenshot verification is for, per the goal + design-review-loop).
+// ---------------------------------------------------------------------------
+
+/** Isolate the single <Image …/> block that contains `needle`. */
+function imageBlockContaining(src: string, needle: string): string {
+  const at = src.indexOf(needle);
+  assert.ok(at > -1, `expected to find ${needle} in the homepage`);
+  const start = src.lastIndexOf("<Image", at);
+  const end = src.indexOf("/>", at);
+  assert.ok(start > -1 && end > -1, `could not isolate the <Image> block around ${needle}`);
+  return src.slice(start, end + 2);
+}
+
+test("Hero showcase: the grail card <Image> loads eagerly, never lazy (blank-on-paint regression)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  // Anchor on the src expression (unique to the <Image>), not the bare "/hero/"
+  // string — that also appears in the HERO_CARDS comment above the array.
+  const heroImg = imageBlockContaining(src, "/hero/${c.id");
+  assert.match(heroImg, /loading="eager"/, "hero cards must be loading=eager (above the fold)");
+  assert.match(heroImg, /fetchPriority="high"/, "hero cards should hint fetchPriority=high");
+  assert.doesNotMatch(heroImg, /loading="lazy"/, "hero cards must not be lazy");
+  assert.doesNotMatch(heroImg, /priority=\{false\}/, "the lazy priority={false} misfire must be gone");
+});
+
+test("Hero founder avatar: loads eagerly, never lazy (blank-on-paint regression)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  // The HOMEPAGE founder avatar — NOT the footer avatar (that one lives in
+  // (site)/layout.tsx and correctly stays lazy, below the fold).
+  const founderImg = imageBlockContaining(src, "/founder/john-craig.webp");
+  assert.match(founderImg, /loading="eager"/, "the above-the-fold founder avatar must be eager");
+  assert.doesNotMatch(founderImg, /loading="lazy"/, "founder avatar must not be lazy");
+});
