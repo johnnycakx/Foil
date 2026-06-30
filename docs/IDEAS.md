@@ -67,13 +67,15 @@ Once there's a post proven to convert organically AND a tracked impression→/ne
 ---
 date: 2026-06-27
 category: growth
-status: captured
+status: promoted (partial — the niche-format half; the own-metrics half remains)
 ---
 ## Close the content→metrics loop: let x_post_metrics steer what the X bot posts
 
 We built `x_post_metrics` (daily cron capturing likes/reposts/replies/impressions per post) but aren't feeding it back — post selection + copy structure are still informed guessing. After a few weeks of posts, read which hooks, formats, cards, and angles actually drove engagement and let that steer the generation prompt (or at minimum a monthly "what performed" review). Turns the X bot from "post and hope" into a system that learns on real engagement, not vibes. The plumbing exists; it just needs the feedback path. Pairs with the v2.1 copy rework — measure whether the new hook/format actually lifts engagement instead of assuming it.
 
 **Context:** 2026-06-27 — John invited expansion of the v2.1 copy work. The highest-leverage idea: stop guessing virality, measure it with the metrics we already capture.
+
+**Promoted 2026-06-30 → [ADR-087](DECISIONS.md#adr-087--content-intelligence-mine-winning-formats-from-the-niche-generate-foil-posts-steal-the-container-keep-the-soul) (the niche-format half).** Since we have ≈0 own-post history to learn from, the content→metrics loop is bootstrapped from the WHOLE niche's engagement first: the format-mining sweep ranks the niche's engagement-RATE outliers, extracts the winning FORMATS (the container), and feeds them into Foil's gate-validated own generation (the soul). **The own-`x_post_metrics` feedback half is NOT yet built** — once Foil has a few weeks of its own posts, the same generation prompt should also be steered by which of OUR hooks/formats/cards actually drove engagement (and a "scoreboard" of whether the mined formats lifted our numbers). That closes the loop on first-party data and is the natural next step; engagement RATE is reach, not signups, so the conversion check stays the UTM attribution + Sunday review ([ADR-084](DECISIONS.md#adr-084--acquisition-phase-0-utm-channel-attribution-on-the-owned-newsletter-row--a-founder-only-readout)).
 
 ---
 date: 2026-06-27

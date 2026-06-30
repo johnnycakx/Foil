@@ -38,7 +38,11 @@ export type DraftDeps = {
   generate: (prompt: string) => Promise<string>;
 };
 
-const HYPE = [
+/** Hype / hard-sell phrasing the calm brand voice forbids. Exported + reused by
+ *  the format-generation keep-the-soul gate (lib/social/format-generation.ts) so
+ *  "copy the winning FORMAT" can never degrade into "copy the hype voice" — one
+ *  source of truth for the anti-hype rule across the engagement + content paths. */
+export const HYPE: readonly RegExp[] = [
   /to the moon/i,
   /🚀|🔥|💎/,
   /\binsane\b/i,
@@ -50,6 +54,11 @@ const HYPE = [
   /\bmoonshot\b/i,
   /\bcan'?t lose\b/i,
 ];
+
+/** True when the text uses any hype phrasing. Pure; shared anti-hype check. */
+export function matchesHype(text: string): boolean {
+  return HYPE.some((re) => re.test(text));
+}
 
 /** Format a USD figure the same way the model is told to, so the trace matches. */
 export function usd(n: number): string {

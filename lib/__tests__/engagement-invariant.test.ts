@@ -28,6 +28,16 @@ const ENGAGEMENT_FILES = [
   "lib/engagement/queries.ts",
   "lib/engagement/render.ts",
   "app/api/cron/engagement-brief/route.ts",
+  // Content-intelligence format-mining (ADR-087): reads OTHER accounts' posts to
+  // mine winning FORMATS, then generates OUR OWN posts (dry-run preview only).
+  // The mining/brief/cron surfaces touch others' posts, so they stay strictly
+  // read-only — the same firewall the engagement brief lives behind. (The own-post
+  // GENERATOR — lib/social/format-generation.ts — is intentionally NOT here: it is
+  // an own-post generator like post-text.ts, gate-validated, and is meant to feed
+  // the live X-post path once proven.)
+  "lib/engagement/format-mining.ts",
+  "lib/engagement/format-brief.ts",
+  "app/api/cron/format-mining/route.ts",
   // foil-bot delivery + button handlers (the new firewall surface):
   "bot/src/engagement/queue.ts",
   "bot/src/engagement/buttons.ts",
