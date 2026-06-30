@@ -166,15 +166,60 @@ export function buildExtractionPrompt(outliers: Outlier[]): string {
   ].join("\n");
 }
 
+/** Scan a string for top-level balanced `{...}` JSON objects and return each that
+ *  parses. Salvages the complete patterns from a JSON array that was TRUNCATED
+ *  mid-object (the model hit its token cap), where a whole-array JSON.parse would
+ *  throw and yield nothing. String-aware so a brace inside a quoted value doesn't
+ *  miscount. Pure. */
+function salvageJsonObjects(raw: string): unknown[] {
+  const out: unknown[] = [];
+  let depth = 0;
+  let start = -1;
+  let inStr = false;
+  let esc = false;
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (ch === "\\") esc = true;
+      else if (ch === '"') inStr = false;
+      continue;
+    }
+    if (ch === '"') inStr = true;
+    else if (ch === "{") {
+      if (depth === 0) start = i;
+      depth++;
+    } else if (ch === "}") {
+      depth--;
+      if (depth === 0 && start >= 0) {
+        try {
+          out.push(JSON.parse(raw.slice(start, i + 1)));
+        } catch {
+          /* skip a non-pattern object */
+        }
+        start = -1;
+      }
+    }
+  }
+  return out;
+}
+
+/** Parse the model's pattern list. Fast path: the whole JSON array. Fallback: if
+ *  that fails (truncated array / fenced output / trailing prose), salvage the
+ *  complete `{...}` objects so a near-cap response still yields its full patterns
+ *  rather than zero. */
 function parseJsonArray(raw: string): unknown[] | null {
   const m = raw.match(/\[[\s\S]*\]/);
-  if (!m) return null;
-  try {
-    const parsed = JSON.parse(m[0]);
-    return Array.isArray(parsed) ? parsed : null;
-  } catch {
-    return null;
+  if (m) {
+    try {
+      const parsed = JSON.parse(m[0]);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {
+      /* fall through to salvage */
+    }
   }
+  const salvaged = salvageJsonObjects(raw);
+  return salvaged.length > 0 ? salvaged : null;
 }
 
 /** Coerce one raw model object into a MinedPattern, or null if it's unusable. The

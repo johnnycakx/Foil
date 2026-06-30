@@ -34,7 +34,7 @@ if (fs.existsSync(envPath)) {
 async function claudeGenerate(prompt: string): Promise<string> {
   const message = await anthropic().messages.create({
     model: CONTENT_MODEL,
-    max_tokens: 900,
+    max_tokens: 3000,
     messages: [{ role: "user", content: prompt }],
   });
   const block = message.content.find((b) => b.type === "text");

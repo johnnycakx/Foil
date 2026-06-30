@@ -30,11 +30,14 @@ export const dynamic = "force-dynamic";
 
 const OWN_USERNAME = "Johnnycakx";
 
-/** Single-prompt Claude call (extraction). Soft-fail → "" so extract returns []. */
+/** Single-prompt Claude call (extraction). Soft-fail → "" so extract returns [].
+ *  `max_tokens` is generous: 3-6 patterns × 7 prose fields easily exceeds ~900
+ *  tokens, and a truncated array would parse to zero patterns (the parser also
+ *  salvages complete objects, but headroom keeps the common case whole). */
 async function claudeGenerate(prompt: string): Promise<string> {
   const message = await anthropic().messages.create({
     model: CONTENT_MODEL,
-    max_tokens: 900,
+    max_tokens: 3000,
     messages: [{ role: "user", content: prompt }],
   });
   const block = message.content.find((b) => b.type === "text");

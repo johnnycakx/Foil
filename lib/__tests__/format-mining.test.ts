@@ -211,6 +211,21 @@ test("extractPatterns soft-fails to [] on unparseable model output, and [] on no
   assert.deepEqual(await extractPatterns([], { generate: async () => "[]" }), []);
 });
 
+test("extractPatterns SALVAGES complete patterns from a TRUNCATED array (the prod patterns:0 bug)", async () => {
+  // The model hit its token cap mid-object: two complete patterns, then a third
+  // cut off with no closing brace/bracket. A whole-array JSON.parse throws; the
+  // salvage must still recover the two complete ones (not return zero).
+  const truncated =
+    '```json\n[\n' +
+    '  { "hook": "bold number first", "format": "three beats", "angle": "reality check", "lengthBucket": "medium", "mediaType": "image", "cta": "ask", "whyItWorks": "concrete", "sourcePostId": "real1" },\n' +
+    '  { "hook": "story open", "format": "narrative", "angle": "collection", "lengthBucket": "long", "mediaType": "none", "cta": "", "whyItWorks": "", "sourcePostId": "real2" },\n' +
+    '  { "hook": "this one got cut off by the token limit and never clos';
+  const patterns = await extractPatterns([outlier("real1", 0.4), outlier("real2", 0.2)], { generate: async () => truncated });
+  assert.equal(patterns.length, 2, "the two complete patterns are salvaged despite the truncation");
+  assert.equal(patterns[0].hook, "bold number first");
+  assert.equal(patterns[1].sourcePostId, "real2");
+});
+
 test("buildExtractionPrompt forbids verbatim copying and asks for the transferable mechanics", () => {
   const p = buildExtractionPrompt([outlier("a", 0.5, "some viral pokemon post")]);
   assert.match(p, /CONTAINER, NOT THE CONTENT/i);
