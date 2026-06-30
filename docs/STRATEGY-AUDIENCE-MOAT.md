@@ -86,7 +86,13 @@ Don't lead with CTAs on every post. Build credibility through value first, ask o
 
 ## Bio and value-prop language
 
-Per the 2026-05-25 workshop, the active bio direction is:
+The **LIVE X bio (as of 2026-06-30, set by John on @FoilTCG)** — supersedes the 2026-05-25 workshop direction below, which John explicitly didn't like:
+
+> *Founder | Pokémon TCG market insights from a TCGplayer seller. Tracking sold prices, not asking prices. Free weekly deal drop ↓*
+
+The hook that carries the whole moat in five words: **"sold prices, not asking prices"** (the verifiable-data differentiator, also John's pinned-post + newsletter voice). Credibility (TCGplayer seller) → what (sold-price market insights) → CTA (free weekly drop, arrow points at the foiltcg.com profile link). Note: keep "TCGplayer seller" not "Level-4" in any PUBLIC surface the X bot generates — ADR-066 forbids the "Level-4" jargon in `lib/social` (fine to keep "Level-4" in internal strategy docs as the real credential).
+
+Superseded prior direction (2026-05-25 workshop, retained for history):
 
 > *Pokémon TCG deal hunter, building foiltcg.com. Tell me a card → I email you when it drops. Level-4 TCGplayer seller. DM me what to build next.*
 
