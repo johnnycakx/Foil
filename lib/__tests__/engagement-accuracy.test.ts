@@ -35,6 +35,25 @@ test("resolveCardSlug: other curated chase cards resolve to their exact slug", (
   for (const c of KNOWN_CARDS) assert.ok(c.slug && c.aliases.length > 0 && c.displayName);
 });
 
+test("resolveCardSlug: the expanded chase cards (Prismatic eeveelutions, DR trainers) resolve exactly", () => {
+  assert.equal(resolveCardSlug("is the sylveon ex prismatic worth grading")?.slug, "sv8pt5-156-sylveon-ex");
+  assert.equal(resolveCardSlug("how much is leafeon ex")?.slug, "sv8pt5-144-leafeon-ex");
+  assert.equal(resolveCardSlug("umbreon ex worth it")?.slug, "sv8pt5-161-umbreon-ex"); // the Prismatic ex, distinct from Moonbreon
+  assert.equal(resolveCardSlug("team rocket's mewtwo ex price")?.slug, "sv10-231-team-rocket-s-mewtwo-ex");
+  assert.equal(resolveCardSlug("mew vmax alt art value")?.slug, "swsh8-269-mew-vmax-alt-art");
+});
+
+test("resolveCardSlug: the new entries don't reintroduce ambiguity — bare multi-printing names still resolve to null", () => {
+  assert.equal(resolveCardSlug("how much is charizard ex worth"), null); // many Charizard ex → needs the number
+  assert.equal(resolveCardSlug("is pikachu ex a good buy"), null); // many Pikachu ex → needs set/number
+  assert.equal(resolveCardSlug("rocket's mewtwo worth"), null); // vintage gym2-14, NOT the DR team-rocket ex
+  assert.equal(resolveCardSlug("mew vmax worth it"), null); // ambiguous vs the regular VMAX → needs "alt"
+  // A post naming TWO distinct known cards is ambiguous → null (don't guess which to cite).
+  assert.equal(resolveCardSlug("is moonbreon or umbreon ex the better buy"), null);
+  // ...but a single card named two ways (both alias the SAME slug) still resolves.
+  assert.equal(resolveCardSlug("moonbreon, the umbreon vmax alt art")?.slug, "swsh7-215-umbreon-vmax-alt-art");
+});
+
 // --- wrong-card citation (the brand-critical regression) -------------------
 
 test("draftReply: a Moonbreon post cites swsh7-215 data, and the LLM is NEVER shown the Umbreon-ex row", async () => {

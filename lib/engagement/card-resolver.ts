@@ -55,6 +55,73 @@ export const KNOWN_CARDS: readonly KnownCard[] = [
     displayName: "Pikachu VMAX Rainbow Rare (Vivid Voltage, 188/185)",
     aliases: ["pikachu vmax rainbow", "rainbow pikachu vmax", "vivid voltage pikachu vmax", "pikachu vmax 188"],
   },
+  {
+    slug: "swsh8-269-mew-vmax-alt-art",
+    displayName: "Mew VMAX Alt Art (Fusion Strike, 269/264)",
+    // bare "mew vmax" is ambiguous with the regular VMAX — require "alt".
+    aliases: ["mew vmax alt", "mew vmax alt art", "mew vmax 269"],
+  },
+  // Prismatic Evolutions eeveelution-ex SIRs (sv8pt5) — one printing each, so the
+  // bare "<eeveelution> ex" resolves unambiguously; "prismatic"/number add safety.
+  {
+    slug: "sv8pt5-161-umbreon-ex",
+    displayName: "Umbreon ex SIR (Prismatic Evolutions, 161/131)",
+    aliases: ["umbreon ex prismatic", "prismatic umbreon ex", "umbreon ex 161", "umbreon ex"],
+  },
+  {
+    slug: "sv8pt5-156-sylveon-ex",
+    displayName: "Sylveon ex SIR (Prismatic Evolutions, 156/131)",
+    aliases: ["sylveon ex prismatic", "prismatic sylveon ex", "sylveon ex 156", "sylveon ex"],
+  },
+  {
+    slug: "sv8pt5-144-leafeon-ex",
+    displayName: "Leafeon ex SIR (Prismatic Evolutions, 144/131)",
+    aliases: ["leafeon ex prismatic", "prismatic leafeon ex", "leafeon ex 144", "leafeon ex"],
+  },
+  {
+    slug: "sv8pt5-149-vaporeon-ex",
+    displayName: "Vaporeon ex SIR (Prismatic Evolutions, 149/131)",
+    aliases: ["vaporeon ex prismatic", "prismatic vaporeon ex", "vaporeon ex 149", "vaporeon ex"],
+  },
+  {
+    slug: "sv8pt5-146-flareon-ex",
+    displayName: "Flareon ex SIR (Prismatic Evolutions, 146/131)",
+    aliases: ["flareon ex prismatic", "prismatic flareon ex", "flareon ex 146", "flareon ex"],
+  },
+  // Destined Rivals trainer-ex (sv10) — the character name + "ex" is unique.
+  {
+    slug: "sv10-231-team-rocket-s-mewtwo-ex",
+    displayName: "Team Rocket's Mewtwo ex (Destined Rivals, 231/182)",
+    // "team rocket's" distinguishes from the vintage gym2-14 "Rocket's Mewtwo".
+    aliases: ["team rocket's mewtwo ex", "team rockets mewtwo ex"],
+  },
+  {
+    slug: "sv10-232-cynthia-s-garchomp-ex",
+    displayName: "Cynthia's Garchomp ex (Destined Rivals, 232/182)",
+    aliases: ["cynthia's garchomp ex", "cynthias garchomp ex"],
+  },
+  {
+    slug: "sv10-230-ethan-s-ho-oh-ex",
+    displayName: "Ethan's Ho-Oh ex (Destined Rivals, 230/182)",
+    aliases: ["ethan's ho-oh ex", "ethans ho oh ex"],
+  },
+  {
+    slug: "me1-187-mega-gardevoir-ex",
+    displayName: "Mega Gardevoir ex (Mega Evolution, 187/132)",
+    aliases: ["mega gardevoir ex"],
+  },
+  {
+    slug: "sv8-238-pikachu-ex",
+    displayName: "Pikachu ex SIR (Surging Sparks, 238/191)",
+    // bare "pikachu ex" spans many sets — require the set/number.
+    aliases: ["pikachu ex surging sparks", "surging sparks pikachu ex", "pikachu ex 238"],
+  },
+  {
+    slug: "sv3pt5-199-charizard-ex",
+    displayName: "Charizard ex SIR (151, 199/165)",
+    // bare "charizard ex" / "151 charizard" are ambiguous — require the number.
+    aliases: ["charizard ex 199", "151 charizard ex 199"],
+  },
 ];
 // Recall lever (ADR-086): this map is intentionally conservative — every alias
 // names ONE printing unambiguously, so accuracy never trades for coverage. To
@@ -68,21 +135,25 @@ const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 export type ResolvedCard = { slug: string; displayName: string };
 
 /**
- * Resolve a post's text to ONE specific card, or null. Matches the longest /
- * most-specific alias as a word-bounded phrase; an ambiguous bare name matches
- * no alias and returns null (null over guess). The returned slug is the identity
- * the engine matches the data row against — never the Pokemon name.
+ * Resolve a post's text to ONE specific card, or null. Each alias is matched as a
+ * word-bounded phrase. NULL OVER GUESS in both directions: 0 cards match (a bare
+ * or unknown name) → null; MORE THAN ONE distinct card matches (the post names
+ * two cards) → null, since which one to cite is ambiguous. Only an unambiguous
+ * single-card match resolves. The returned slug is the identity the engine
+ * matches the data row against — never the Pokemon name.
  */
 export function resolveCardSlug(text: string): ResolvedCard | null {
   const t = ` ${norm(text)} `;
-  let best: { card: KnownCard; aliasLen: number } | null = null;
+  const matched = new Map<string, KnownCard>(); // distinct slug -> card
   for (const card of KNOWN_CARDS) {
     for (const alias of card.aliases) {
-      const a = norm(alias);
-      if (new RegExp(`(^| )${escapeRe(a)}( |$)`).test(t)) {
-        if (!best || a.length > best.aliasLen) best = { card, aliasLen: a.length };
+      if (new RegExp(`(^| )${escapeRe(norm(alias))}( |$)`).test(t)) {
+        matched.set(card.slug, card);
+        break; // one alias hit is enough to mark this card
       }
     }
   }
-  return best ? { slug: best.card.slug, displayName: best.card.displayName } : null;
+  if (matched.size !== 1) return null; // 0 = none; >1 = ambiguous → null over guess
+  const card = [...matched.values()][0];
+  return { slug: card.slug, displayName: card.displayName };
 }
