@@ -7,9 +7,13 @@
 // posts every reply by hand).
 
 import type { XPost } from "../social/x-client.ts";
+import { resolveCardSlug } from "./card-resolver.ts";
 
-/** A real market-mover fact the reply may cite (from market_movers; PokeTrace). */
+/** A real market-mover fact the reply may cite (from market_movers; PokeTrace).
+ *  `slug` is the card identity — the engine matches the post's resolved card to
+ *  a fact BY SLUG, never by name (the wrong-card-citation fix). */
 export type MoverFact = {
+  slug: string;
   cardName: string;
   avg7dUsd: number;
   avg30dUsd: number;
@@ -75,29 +79,31 @@ export function validateDraft(reply: string, allowedFigures: Set<string>): strin
   return null;
 }
 
-/** Build the drafting prompt. Pure — exposed for tests. */
-export function buildDraftPrompt(post: XPost, facts: MoverFact[]): string {
-  const factLines = facts
-    .map((f) => `- ${f.cardName}: 7-day avg ${usd(f.avg7dUsd)}, 30-day avg ${usd(f.avg30dUsd)} (${f.sampleSize} sales, ${f.momentumPct > 0 ? "+" : ""}${f.momentumPct}% vs 30d)`)
-    .join("\n");
+/** Build the drafting prompt for a SINGLE, already-resolved card. Pure — exposed
+ *  for tests. The post's card identity is resolved deterministically upstream
+ *  (resolveCardSlug); the model only writes prose for the supplied card, so it
+ *  can never pick a different printing's figure. */
+export function buildDraftPrompt(post: XPost, cardLabel: string, fact: MoverFact): string {
+  const factLine = `${fact.cardName}: 7-day avg ${usd(fact.avg7dUsd)}, 30-day avg ${usd(fact.avg30dUsd)} (${fact.sampleSize} sales, ${fact.momentumPct > 0 ? "+" : ""}${fact.momentumPct}% vs 30d)`;
   return [
     "You draft a single reply to a Pokemon TCG post on X for Foil (a deal-finder + market-insight tool, run by a Level-4 TCGplayer seller).",
-    "GOAL: be genuinely helpful with real sold-data — not promotional. A human will post it by hand, so it must read like a knowledgeable person, never a bot.",
+    "GOAL: be genuinely helpful with real sold-data — not promotional. A human posts it by hand, so it must read like a knowledgeable person, never a bot.",
     "",
     "THE POST you are replying to:",
     `"""${post.text.slice(0, 400)}"""`,
     "",
-    "REAL DATA you may cite (these are the ONLY figures allowed — never invent a number):",
-    factLines || "(none)",
+    `The post is about this EXACT card: ${cardLabel}.`,
+    "Its REAL recent sold data (the ONLY figures you may cite — never invent or adjust a number):",
+    `- ${factLine}`,
     "",
     "RULES (hard):",
-    "- Reply ONLY if a specific card in the post matches one of the data rows above AND a sold-data figure genuinely helps. Otherwise SKIP.",
+    "- Write a reply ONLY if a sold-data figure for THIS card genuinely helps the post. If it does not fit (off-topic, sarcastic, already answered), SKIP.",
     "- Calm, numbers-first, specific. No hype, no emoji, no exclamation, no em dash.",
     "- NO link of any kind (no x.com, no foiltcg.com, no url).",
     "- Cite at most the supplied figures verbatim ($X). Frame any read as a read, not a fact.",
     "- Under 280 characters. Sound like a helpful collector, not an ad.",
     "",
-    'Respond as JSON only: {"skip": true} OR {"matchedCard": "<name>", "reply": "<text>", "dataCited": "<which figure(s)>", "confidence": <0..1>}',
+    'Respond as JSON only: {"skip": true} OR {"reply": "<text>", "dataCited": "<which figure(s)>", "confidence": <0..1>}',
   ].join("\n");
 }
 
@@ -112,17 +118,31 @@ function parseModelJson(raw: string): Record<string, unknown> | null {
 }
 
 /**
- * Draft a reply for one candidate. Soft-fail: any error/parse miss → skip, never
- * throws. Output is gate-validated before it can be returned ok.
+ * Draft a reply for one candidate. The card identity is resolved DETERMINISTICALLY
+ * from the post (resolveCardSlug); the cited figure is the data row whose slug
+ * equals that — never a name-fuzzy match — so a reply can never carry another
+ * printing's price (the Moonbreon -> Umbreon-ex bug). Order: (a) resolve the
+ * exact card + find its data -> draft citing THAT; (b) can't resolve, or the
+ * resolved card has no data row -> skip (null over guess; no numbered claim).
+ * Soft-fail: any error/parse miss/gate failure -> skip/error, never throws; the
+ * output is gate-validated against ONLY the resolved card's figures.
  */
 export async function draftReply(
   input: { post: XPost; facts: MoverFact[] },
   deps: DraftDeps,
 ): Promise<DraftResult> {
-  if (input.facts.length === 0) return { ok: false, reason: "skip", detail: "no_data" };
+  // (1) Deterministic exact-card identity — null over guess.
+  const resolved = resolveCardSlug(input.post.text);
+  if (!resolved) return { ok: false, reason: "skip", detail: "no_card_resolved" };
+
+  // (2) Match the data row BY SLUG (identity), never by name. No data for the
+  //     exact card -> skip rather than substitute a different printing's figure.
+  const fact = input.facts.find((f) => f.slug === resolved.slug);
+  if (!fact) return { ok: false, reason: "skip", detail: "resolved_card_no_data" };
+
   let raw: string;
   try {
-    raw = await deps.generate(buildDraftPrompt(input.post, input.facts));
+    raw = await deps.generate(buildDraftPrompt(input.post, resolved.displayName, fact));
   } catch (err) {
     return { ok: false, reason: "error", detail: (err as Error).message };
   }
@@ -131,12 +151,14 @@ export async function draftReply(
   if (parsed.skip === true || typeof parsed.reply !== "string") return { ok: false, reason: "skip" };
 
   const reply = parsed.reply.trim();
-  const gate = validateDraft(reply, suppliedFigures(input.facts));
+  // The gate's allowed figures are ONLY the resolved card's — so a stray figure
+  // from any other card is rejected even if the model hallucinated one.
+  const gate = validateDraft(reply, suppliedFigures([fact]));
   if (gate) return { ok: false, reason: "gate_failed", detail: gate };
 
   return {
     ok: true,
-    matchedCard: typeof parsed.matchedCard === "string" ? parsed.matchedCard : "",
+    matchedCard: resolved.displayName,
     reply,
     dataCited: typeof parsed.dataCited === "string" ? parsed.dataCited : "",
     confidence: typeof parsed.confidence === "number" ? parsed.confidence : 0.5,

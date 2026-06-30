@@ -37,11 +37,16 @@ async function claudeGenerate(prompt: string): Promise<string> {
   return block && block.type === "text" ? block.text : "";
 }
 
-/** market_movers → the figures a reply may cite (only rows with real averages). */
-function factsFromMovers(rows: Array<{ cardName: string; avg7d: number | null; avg30d: number | null; momentumPct: number; saleCount: number }>): MoverFact[] {
+/** market_movers → the figures a reply may cite (only rows with real averages).
+ *  Carries `cardSlug` as the identity so the draft step matches the post's
+ *  resolved card BY SLUG, never by name (the wrong-card-citation fix). */
+function factsFromMovers(
+  rows: Array<{ cardSlug: string; cardName: string; avg7d: number | null; avg30d: number | null; momentumPct: number; saleCount: number }>,
+): MoverFact[] {
   return rows
     .filter((r) => typeof r.avg7d === "number" && typeof r.avg30d === "number")
     .map((r) => ({
+      slug: r.cardSlug,
       cardName: r.cardName,
       avg7dUsd: r.avg7d as number,
       avg30dUsd: r.avg30d as number,

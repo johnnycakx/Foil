@@ -15,6 +15,7 @@ function post(over: Partial<XPost> & { id: string; text: string }): XPost {
   return {
     authorId: "a1",
     authorUsername: "someuser",
+    authorFollowers: 200, // above the reach floor by default
     createdAt: "2026-06-29T12:00:00.000Z",
     metrics: { likes: 1, replies: 0, reposts: 0, impressions: 100 },
     ...over,
@@ -22,8 +23,8 @@ function post(over: Partial<XPost> & { id: string; text: string }): XPost {
 }
 
 const FACTS: MoverFact[] = [
-  { cardName: "Umbreon VMAX (Evolving Skies)", avg7dUsd: 480, avg30dUsd: 520, momentumPct: -8, sampleSize: 140 },
-  { cardName: "Charizard ex (Obsidian Flames)", avg7dUsd: 35, avg30dUsd: 30, momentumPct: 16, sampleSize: 90 },
+  { slug: "swsh7-215-umbreon-vmax-alt-art", cardName: "Umbreon VMAX (Evolving Skies)", avg7dUsd: 480, avg30dUsd: 520, momentumPct: -8, sampleSize: 140 },
+  { slug: "obf-125-charizard-ex", cardName: "Charizard ex (Obsidian Flames)", avg7dUsd: 35, avg30dUsd: 30, momentumPct: 16, sampleSize: 90 },
 ];
 
 // --- candidate filter ------------------------------------------------------

@@ -339,6 +339,8 @@ export type XPost = {
   text: string;
   authorId: string | null;
   authorUsername: string | null;
+  /** Author follower count (reach signal, ADR-086 hardening). Null if absent. */
+  authorFollowers: number | null;
   createdAt: string | null;
   metrics: { likes: number; replies: number; reposts: number; impressions: number | null } | null;
 };
@@ -371,7 +373,7 @@ export async function searchRecent(
     max_results: String(maxResults),
     "tweet.fields": "created_at,public_metrics,author_id",
     expansions: "author_id",
-    "user.fields": "username",
+    "user.fields": "username,public_metrics",
   };
   const qs = Object.keys(queryParams)
     .map((k) => `${rfc3986(k)}=${rfc3986(queryParams[k])}`)
@@ -383,14 +385,17 @@ export async function searchRecent(
     if (!res.ok) return { ok: false, error: `search_http_${res.status}` };
     const json = (await res.json()) as {
       data?: Array<{ id: string; text: string; author_id?: string; created_at?: string; public_metrics?: Record<string, number> }>;
-      includes?: { users?: Array<{ id: string; username?: string }> };
+      includes?: { users?: Array<{ id: string; username?: string; public_metrics?: Record<string, number> }> };
     };
-    const usernameById = new Map((json.includes?.users ?? []).map((u) => [u.id, u.username ?? null]));
-    const posts: XPost[] = (json.data ?? []).map((t) => ({
+    const userById = new Map((json.includes?.users ?? []).map((u) => [u.id, u]));
+    const posts: XPost[] = (json.data ?? []).map((t) => {
+      const u = t.author_id ? userById.get(t.author_id) : undefined;
+      return {
       id: t.id,
       text: t.text,
       authorId: t.author_id ?? null,
-      authorUsername: t.author_id ? usernameById.get(t.author_id) ?? null : null,
+      authorUsername: u?.username ?? null,
+      authorFollowers: typeof u?.public_metrics?.followers_count === "number" ? u.public_metrics.followers_count : null,
       createdAt: t.created_at ?? null,
       metrics: t.public_metrics
         ? {
@@ -400,7 +405,8 @@ export async function searchRecent(
             impressions: typeof t.public_metrics.impression_count === "number" ? t.public_metrics.impression_count : null,
           }
         : null,
-    }));
+      };
+    });
     return { ok: true, posts };
   } catch (err) {
     return { ok: false, error: `search_failed: ${(err as Error).message}` };

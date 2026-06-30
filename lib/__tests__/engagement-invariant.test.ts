@@ -15,6 +15,7 @@ const ROOT = new URL("../..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/
 // Every file in the engagement path (must all be write-free).
 const ENGAGEMENT_FILES = [
   "lib/engagement/candidate-filter.ts",
+  "lib/engagement/card-resolver.ts",
   "lib/engagement/draft.ts",
   "lib/engagement/brief-engine.ts",
   "lib/engagement/store.ts",

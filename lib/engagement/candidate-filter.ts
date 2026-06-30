@@ -33,6 +33,13 @@ const VALUE_INTENT: readonly RegExp[] = [
 const POKEMON_SIGNAL =
   /pok[eé]mon|\btcg\b|\bcard(s)?\b|charizard|umbreon|moonbreon|booster|\bpsa\b|graded|holo|\bex\b|vmax|vstar|alt art|secret rare/i;
 
+// Target-reach floor (ADR-086 hardening). A reply seen by no one is not worth
+// John's limited daily posts (the @thelou7789 0-follower / ~3-view case). Drop a
+// candidate ONLY when BOTH followers AND views are negligible — a high-follower
+// account with few views, or a low-follower post that went viral, still has reach.
+const REACH_FLOOR_FOLLOWERS = 75;
+const REACH_FLOOR_VIEWS = 30;
+
 /**
  * Evaluate one post as an engagement candidate. Returns null when it isn't a
  * value-add target (off-topic, our own post, a retweet, basically just a link,
@@ -58,6 +65,11 @@ export function evaluateCandidate(post: XPost, ownUsername?: string | null): Can
   const intentHits = VALUE_INTENT.filter((re) => re.test(text)).length;
   if (intentHits === 0) return null;
 
+  // Reach floor: exclude accounts with no audience AND no views.
+  const followers = post.authorFollowers ?? 0;
+  const views = post.metrics?.impressions ?? 0;
+  if (followers < REACH_FLOOR_FOLLOWERS && views < REACH_FLOOR_VIEWS) return null;
+
   const intentScore = Math.min(1, 0.4 + intentHits * 0.2);
   return { post, intentScore };
 }
@@ -76,7 +88,10 @@ export function opportunityScore(c: Candidate, nowMs: number): number {
   const freshness = Math.max(0, 1 - ageHours / 24);
   const eng = c.post.metrics ? c.post.metrics.likes + c.post.metrics.replies + c.post.metrics.reposts : 0;
   const engagement = Math.min(1, Math.log10(eng + 1) / 2); // ~0..1, saturates ~100 interactions
-  return c.intentScore * 0.6 + freshness * 0.3 + engagement * 0.1;
+  // Reach (ADR-086): so John's limited daily posts go to the highest-visibility
+  // best-fit targets, not 100-follower accounts. Saturates ~10k followers.
+  const reach = Math.min(1, Math.log10((c.post.authorFollowers ?? 0) + 1) / 4);
+  return c.intentScore * 0.4 + reach * 0.35 + freshness * 0.15 + engagement * 0.1;
 }
 
 /** Filter a flat list of posts to ranked candidates (highest opportunity first). */
