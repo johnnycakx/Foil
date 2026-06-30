@@ -61,6 +61,16 @@ test("postWebhook POSTs to the URL with username + content + JSON content-type",
   assert.equal(body.content, "hello");
 });
 
+test("postWebhook suppresses ALL mention parsing (ADR-086 @everyone/role-injection guard)", async () => {
+  // Untrusted content (e.g. an X post in the engagement brief) can reach `content`;
+  // allowed_mentions:{parse:[]} is the authoritative Discord control so a malicious
+  // @everyone/@here/<@id> can never ping the ops server through our webhook.
+  const { fetch, calls } = fakeFetch([new Response(null, { status: 204 })]);
+  await postWebhook({ webhookUrl: "https://discord.com/api/webhooks/1/abc", content: "@everyone hi", fetchImpl: fetch });
+  const body = JSON.parse(calls[0].init.body as string) as { allowed_mentions?: { parse?: string[] } };
+  assert.deepEqual(body.allowed_mentions, { parse: [] });
+});
+
 test("postWebhook retries on 429 then succeeds", async () => {
   const { fetch, calls } = fakeFetch([
     new Response(JSON.stringify({ retry_after: 0.05 }), { status: 429 }),

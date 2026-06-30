@@ -52,7 +52,11 @@ export async function postWebhook(input: PostWebhookInput): Promise<PostWebhookR
   }
 
   const fetchFn = input.fetchImpl ?? fetch;
-  const body: Record<string, unknown> = { username: DISCORD_USERNAME };
+  // Suppress ALL mention parsing (ADR-086 security fix): untrusted content can
+  // flow into `content` (e.g. an X post's text in the engagement brief), and no
+  // Foil webhook ever intends to @-ping anyone. This is Discord's authoritative
+  // control against @everyone/@here/role-mention injection through our webhooks.
+  const body: Record<string, unknown> = { username: DISCORD_USERNAME, allowed_mentions: { parse: [] } };
   if (input.content) body.content = input.content;
   if (input.embeds && input.embeds.length) body.embeds = input.embeds;
 

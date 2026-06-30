@@ -117,6 +117,12 @@ test("/legal prefix doesn't bleed into adjacent path stems", () => {
   assert.equal(isPublicRoute("/legal-archive"), false);
 });
 
+test("Engagement-brief cron route is public — Vercel cron infra invokes with Bearer (ADR-086)", () => {
+  // Read+draft+deliver engine; self-gates on CRON_SECRET + ENGAGEMENT_BRIEF_ENABLED.
+  // Covered by the /api/cron prefix; pinned so a refactor can't gate it.
+  assert.equal(isPublicRoute("/api/cron/engagement-brief"), true);
+});
+
 test("Wishlist alert cron route is public — Vercel cron infra invokes with Bearer (ADR-024)", () => {
   // The route does its own bearer gate; the proxy must not redirect a
   // bearer-authenticated request to /login or it would defeat the cron

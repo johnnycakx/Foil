@@ -1,0 +1,88 @@
+// Engagement-brief candidate filter (ADR-086) — pure heuristics, no IO, so the
+// "which posts are worth a data-backed reply" logic is fully unit-tested.
+//
+// READ + RANK ONLY. Nothing in lib/engagement/ ever takes an X action — see
+// the zero-X-write invariant test. This module just decides which recent posts
+// are plausible candidates and scores the opportunity; a human posts every reply.
+
+import type { XPost } from "../social/x-client.ts";
+
+export type Candidate = {
+  post: XPost;
+  /** 0..1 heuristic: how strong the buy/value intent reads. */
+  intentScore: number;
+};
+
+// Buy/value intent — the posts where Foil's sold-data genuinely helps.
+const VALUE_INTENT: readonly RegExp[] = [
+  /\bworth\b/i,
+  /\bvalue\b/i,
+  /how much/i,
+  /should i (buy|sell|grab|cop|keep|get)/i,
+  /good (buy|deal|pickup|price|investment)/i,
+  /\bprice\b/i,
+  /worth (it|anything|buying|grading)/i,
+  /\bgrail\b/i,
+  /is this (a )?(good|worth|real|legit)/i,
+  /(rip|ripping|crack|open).{0,12}(sealed|booster|box|pack)/i,
+  /\b(psa|cgc|bgs)\s?\d/i,
+];
+
+// On-topic guard — search is pokemon-scoped but a stray "worth" off-topic post
+// can slip in; require a card/TCG signal too.
+const POKEMON_SIGNAL =
+  /pok[eé]mon|\btcg\b|\bcard(s)?\b|charizard|umbreon|moonbreon|booster|\bpsa\b|graded|holo|\bex\b|vmax|vstar|alt art|secret rare/i;
+
+/**
+ * Evaluate one post as an engagement candidate. Returns null when it isn't a
+ * value-add target (off-topic, our own post, a retweet, basically just a link,
+ * or no buy/value intent). Otherwise a Candidate with an intent score.
+ */
+export function evaluateCandidate(post: XPost, ownUsername?: string | null): Candidate | null {
+  const text = (post.text ?? "").trim();
+  if (!text) return null;
+
+  // Never target our own account.
+  if (ownUsername && post.authorUsername && post.authorUsername.toLowerCase() === ownUsername.toLowerCase()) {
+    return null;
+  }
+  // Retweets carry no original ask (search uses -is:retweet too; belt + suspenders).
+  if (/^RT @/.test(text)) return null;
+
+  // A post that's basically just a link has no substance to reply to.
+  const stripped = text.replace(/https?:\/\/\S+/g, "").trim();
+  if (stripped.length < 12) return null;
+
+  if (!POKEMON_SIGNAL.test(text)) return null;
+
+  const intentHits = VALUE_INTENT.filter((re) => re.test(text)).length;
+  if (intentHits === 0) return null;
+
+  const intentScore = Math.min(1, 0.4 + intentHits * 0.2);
+  return { post, intentScore };
+}
+
+/**
+ * Opportunity score for ranking: intent (the data-fit signal) weighted most,
+ * plus a freshness bonus (newer posts are still gettable) and a light
+ * engagement bonus (a post with some traction is worth more reach). Pure;
+ * `nowMs` injected for determinism.
+ */
+export function opportunityScore(c: Candidate, nowMs: number): number {
+  const createdMs = c.post.createdAt ? Date.parse(c.post.createdAt) : NaN;
+  const ageHours = Number.isFinite(createdMs) ? (nowMs - createdMs) / 3_600_000 : 24;
+  // 1.0 at 0h decaying to ~0 by ~24h (recent-search is a 7-day window, but a
+  // fresh post is far more replyable before the thread moves on).
+  const freshness = Math.max(0, 1 - ageHours / 24);
+  const eng = c.post.metrics ? c.post.metrics.likes + c.post.metrics.replies + c.post.metrics.reposts : 0;
+  const engagement = Math.min(1, Math.log10(eng + 1) / 2); // ~0..1, saturates ~100 interactions
+  return c.intentScore * 0.6 + freshness * 0.3 + engagement * 0.1;
+}
+
+/** Filter a flat list of posts to ranked candidates (highest opportunity first). */
+export function rankCandidates(posts: XPost[], opts: { ownUsername?: string | null; nowMs: number }): Candidate[] {
+  const candidates = posts
+    .map((p) => evaluateCandidate(p, opts.ownUsername))
+    .filter((c): c is Candidate => c !== null);
+  return candidates.sort((a, b) => opportunityScore(b, opts.nowMs) - opportunityScore(a, opts.nowMs));
+}

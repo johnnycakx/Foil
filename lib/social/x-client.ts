@@ -40,6 +40,7 @@ const VIDEO_STATUS_MAX_POLLS = 12;
 const VIDEO_STATUS_MAX_WAIT_MS = 90_000;
 const CREATE_POST_URL = "https://api.x.com/2/tweets";
 const TWEETS_LOOKUP_URL = "https://api.x.com/2/tweets";
+const SEARCH_RECENT_URL = "https://api.x.com/2/tweets/search/recent";
 
 export type XCredentials = {
   apiKey: string;
@@ -330,6 +331,79 @@ export async function fetchTweetPublicMetrics(
     return { ok: true, metrics, missing };
   } catch (err) {
     return { ok: false, error: `tweets_lookup_failed: ${(err as Error).message}` };
+  }
+}
+
+export type XPost = {
+  id: string;
+  text: string;
+  authorId: string | null;
+  authorUsername: string | null;
+  createdAt: string | null;
+  metrics: { likes: number; replies: number; reposts: number; impressions: number | null } | null;
+};
+
+export type SearchRecentResult = { ok: true; posts: XPost[] } | { ok: false; error: string };
+
+/**
+ * READ-ONLY recent search (GET /2/tweets/search/recent) — the only read the
+ * engagement-brief engine (ADR-086) uses. Returns recent posts matching `query`
+ * with author + public-metrics expansions. This NEVER posts, replies, likes,
+ * follows, or DMs — it only reads. Entitlement verified live 2026-06-29 (HTTP
+ * 200; 300/15min user-auth). Soft-fail; never throws.
+ *
+ * Search is pay-per-usage (billed on data retrieved), so keep `maxResults` small
+ * and the daily query count low; the console spending cap (R-019) bounds it.
+ */
+export async function searchRecent(
+  query: string,
+  input: { maxResults?: number; credentials?: XCredentials; fetchImpl?: typeof fetch } = {},
+): Promise<SearchRecentResult> {
+  const creds = input.credentials ?? xCredentialsFromEnv();
+  if (!creds) return { ok: false, error: "missing_x_credentials" };
+  if (!query.trim()) return { ok: false, error: "empty_query" };
+  const fetchFn = input.fetchImpl ?? fetch;
+  // The API requires 10..100; clamp so a caller can't under/over-shoot.
+  const maxResults = Math.min(Math.max(input.maxResults ?? 10, 10), 100);
+
+  const queryParams: Record<string, string> = {
+    query,
+    max_results: String(maxResults),
+    "tweet.fields": "created_at,public_metrics,author_id",
+    expansions: "author_id",
+    "user.fields": "username",
+  };
+  const qs = Object.keys(queryParams)
+    .map((k) => `${rfc3986(k)}=${rfc3986(queryParams[k])}`)
+    .join("&");
+  const auth = oauthHeader("GET", SEARCH_RECENT_URL, creds, queryParams);
+
+  try {
+    const res = await fetchFn(`${SEARCH_RECENT_URL}?${qs}`, { headers: { Authorization: auth } });
+    if (!res.ok) return { ok: false, error: `search_http_${res.status}` };
+    const json = (await res.json()) as {
+      data?: Array<{ id: string; text: string; author_id?: string; created_at?: string; public_metrics?: Record<string, number> }>;
+      includes?: { users?: Array<{ id: string; username?: string }> };
+    };
+    const usernameById = new Map((json.includes?.users ?? []).map((u) => [u.id, u.username ?? null]));
+    const posts: XPost[] = (json.data ?? []).map((t) => ({
+      id: t.id,
+      text: t.text,
+      authorId: t.author_id ?? null,
+      authorUsername: t.author_id ? usernameById.get(t.author_id) ?? null : null,
+      createdAt: t.created_at ?? null,
+      metrics: t.public_metrics
+        ? {
+            likes: t.public_metrics.like_count ?? 0,
+            replies: t.public_metrics.reply_count ?? 0,
+            reposts: t.public_metrics.retweet_count ?? 0,
+            impressions: typeof t.public_metrics.impression_count === "number" ? t.public_metrics.impression_count : null,
+          }
+        : null,
+    }));
+    return { ok: true, posts };
+  } catch (err) {
+    return { ok: false, error: `search_failed: ${(err as Error).message}` };
   }
 }
 
