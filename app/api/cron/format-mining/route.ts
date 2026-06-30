@@ -28,7 +28,11 @@ import { postWebhook } from "@/lib/notifications/discord";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const OWN_USERNAME = "Johnnycakx";
+// Self-exclusion username: must equal the account the X API creds authenticate
+// as (so the niche sweep never mines our OWN posts). Verified 2026-06-30 via GET
+// /2/users/me on the live tokens → "FoilTCG" (formerly @Johnnycakx, renamed once
+// the X handle review cleared; same user id).
+const OWN_USERNAME = "FoilTCG";
 
 /** Single-prompt Claude call (extraction). Soft-fail → "" so extract returns [].
  *  `max_tokens` is generous: 3-6 patterns × 7 prose fields easily exceeds ~900

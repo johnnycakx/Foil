@@ -25,7 +25,11 @@ import { postWebhook } from "@/lib/notifications/discord";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const OWN_USERNAME = "Johnnycakx";
+// Self-exclusion username: must equal the account the X API creds authenticate
+// as (so the sweep never surfaces our OWN posts as reply candidates). Verified
+// 2026-06-30 via GET /2/users/me on the live tokens → "FoilTCG" (the account
+// formerly @Johnnycakx, renamed once the X handle review cleared; same user id).
+const OWN_USERNAME = "FoilTCG";
 
 /** Claude drafting call — short reply; soft-fail returns "" so draftReply skips. */
 async function claudeGenerate(prompt: string): Promise<string> {

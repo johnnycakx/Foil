@@ -67,9 +67,7 @@ export const metadata: Metadata = {
     title: "Foil: the best price on any Pokémon card",
     description:
       "Search any Pokémon card and instantly see the best live deal across eBay. Free wishlist alerts when prices drop.",
-    // TODO: swap to @FoilTCG once the X rename clears review (live account is
-    // @Johnnycakx today). One-line change here + the per-page twitter.creator.
-    creator: "@Johnnycakx",
+    creator: "@FoilTCG",
   },
 };
 

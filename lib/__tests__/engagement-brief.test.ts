@@ -37,31 +37,31 @@ const FACTS: MoverFact[] = [
 // --- candidate filter ------------------------------------------------------
 
 test("evaluateCandidate: a pokemon buy/value post is a candidate", () => {
-  const c = evaluateCandidate(post({ id: "1", text: "Is this Umbreon VMAX worth $400? Should I buy it?" }), "Johnnycakx");
+  const c = evaluateCandidate(post({ id: "1", text: "Is this Umbreon VMAX worth $400? Should I buy it?" }), "FoilTCG");
   assert.ok(c && c.intentScore > 0.4);
 });
 
 test("evaluateCandidate: off-topic 'worth' (no pokemon signal) is rejected", () => {
-  assert.equal(evaluateCandidate(post({ id: "2", text: "Is this stock worth buying right now?" }), "Johnnycakx"), null);
+  assert.equal(evaluateCandidate(post({ id: "2", text: "Is this stock worth buying right now?" }), "FoilTCG"), null);
 });
 
 test("evaluateCandidate: a pokemon post with no buy/value intent is rejected", () => {
-  assert.equal(evaluateCandidate(post({ id: "3", text: "Just pulled a Charizard from my booster, so happy!" }), "Johnnycakx"), null);
+  assert.equal(evaluateCandidate(post({ id: "3", text: "Just pulled a Charizard from my booster, so happy!" }), "FoilTCG"), null);
 });
 
 test("evaluateCandidate: our own account is never targeted", () => {
-  assert.equal(evaluateCandidate(post({ id: "4", text: "pokemon card worth checking", authorUsername: "Johnnycakx" }), "Johnnycakx"), null);
+  assert.equal(evaluateCandidate(post({ id: "4", text: "pokemon card worth checking", authorUsername: "FoilTCG" }), "FoilTCG"), null);
 });
 
 test("evaluateCandidate: retweets and link-only posts are rejected", () => {
-  assert.equal(evaluateCandidate(post({ id: "5", text: "RT @x: pokemon card worth a lot" }), "Johnnycakx"), null);
-  assert.equal(evaluateCandidate(post({ id: "6", text: "https://t.co/abc" }), "Johnnycakx"), null);
+  assert.equal(evaluateCandidate(post({ id: "5", text: "RT @x: pokemon card worth a lot" }), "FoilTCG"), null);
+  assert.equal(evaluateCandidate(post({ id: "6", text: "https://t.co/abc" }), "FoilTCG"), null);
 });
 
 test("rankCandidates: fresher + higher-intent posts rank above stale low-intent", () => {
   const fresh = post({ id: "f", text: "Is this Charizard ex a good buy? worth it? how much value?", createdAt: "2026-06-29T11:30:00.000Z" });
   const stale = post({ id: "s", text: "pokemon card worth?", createdAt: "2026-06-24T00:00:00.000Z" });
-  const ranked = rankCandidates([stale, fresh], { ownUsername: "Johnnycakx", nowMs: Date.parse("2026-06-29T12:00:00.000Z") });
+  const ranked = rankCandidates([stale, fresh], { ownUsername: "FoilTCG", nowMs: Date.parse("2026-06-29T12:00:00.000Z") });
   assert.equal(ranked[0].post.id, "f");
 });
 
@@ -180,7 +180,7 @@ test("orchestrator: produces a ranked brief + marks the delivered posts briefed"
   const { store, marked } = fakeStore();
   const deps: BriefDeps = {
     queries: ["q1", "q2"],
-    ownUsername: "Johnnycakx",
+    ownUsername: "FoilTCG",
     nowMs: NOW,
     store,
     search: async (q) =>
@@ -200,7 +200,7 @@ test("orchestrator: idempotent — an already-briefed post is excluded", async (
   const { store } = fakeStore(["p1"]);
   const brief = await generateEngagementBrief({
     queries: ["q"],
-    ownUsername: "Johnnycakx",
+    ownUsername: "FoilTCG",
     nowMs: NOW,
     store,
     search: async () => [
@@ -218,7 +218,7 @@ test("orchestrator: dedupes the same post id seen across two queries", async () 
   const dup = post({ id: "dup", text: "Umbreon VMAX worth buying? value?" });
   const brief = await generateEngagementBrief({
     queries: ["q1", "q2"],
-    ownUsername: "Johnnycakx",
+    ownUsername: "FoilTCG",
     nowMs: NOW,
     store,
     search: async () => [dup],
@@ -233,7 +233,7 @@ test("orchestrator: soft-fail — a throwing query and a failing draft drop only
   const { store } = fakeStore();
   const brief = await generateEngagementBrief({
     queries: ["boom", "good"],
-    ownUsername: "Johnnycakx",
+    ownUsername: "FoilTCG",
     nowMs: NOW,
     store,
     search: async (q) => {
@@ -255,7 +255,7 @@ test("orchestrator: produces BOTH data-cite and advisory items, each labelled by
   const adv = post({ id: "adv", text: "getting back into pokemon, what should I buy? worth it?", authorFollowers: 5000 });
   const brief = await generateEngagementBrief({
     queries: ["q"],
-    ownUsername: "Johnnycakx",
+    ownUsername: "FoilTCG",
     nowMs: NOW,
     store,
     search: async () => [dc, adv],
@@ -279,7 +279,7 @@ test("orchestrator: a LOW-reach post with no resolvable card is dropped (advisor
   const lowReach = post({ id: "low", text: "what pokemon card should I buy? worth it?", authorFollowers: 100, metrics: { likes: 0, replies: 0, reposts: 0, impressions: 50 } });
   const brief = await generateEngagementBrief({
     queries: ["q"],
-    ownUsername: "Johnnycakx",
+    ownUsername: "FoilTCG",
     nowMs: NOW,
     store,
     search: async () => [lowReach],
@@ -299,7 +299,7 @@ test("orchestrator: advisory is a FALLBACK — never invoked when data-cite succ
   let advisoryCalled = false;
   const brief = await generateEngagementBrief({
     queries: ["q"],
-    ownUsername: "Johnnycakx",
+    ownUsername: "FoilTCG",
     nowMs: NOW,
     store,
     search: async () => [post({ id: "dc", text: "moonbreon worth it? how much value?", authorFollowers: 8000 })],
@@ -350,7 +350,7 @@ test("orchestrator: respects maxItems (final size cap)", async () => {
   const many = Array.from({ length: 30 }, (_, i) => post({ id: `m${i}`, text: `Umbreon VMAX worth it? value? #${i}` }));
   const brief = await generateEngagementBrief({
     queries: ["q"],
-    ownUsername: "Johnnycakx",
+    ownUsername: "FoilTCG",
     nowMs: NOW,
     store,
     maxItems: 5,

@@ -11,14 +11,14 @@ import { join } from "node:path";
 const ROOT = new URL("../..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
 const layout = readFileSync(join(ROOT, "app", "(site)", "layout.tsx"), "utf8");
 
-test("footer links to the live X profile x.com/Johnnycakx", () => {
-  assert.match(layout, /href="https:\/\/x\.com\/Johnnycakx"/);
+test("footer links to the live X profile x.com/FoilTCG", () => {
+  assert.match(layout, /href="https:\/\/x\.com\/FoilTCG"/);
   assert.match(layout, /Follow on X/);
 });
 
 test("the X link opens in a new tab safely (target=_blank + noopener noreferrer)", () => {
   // Isolate the anchor so the assertions are about THIS link, not the file.
-  const anchor = layout.slice(layout.indexOf('href="https://x.com/Johnnycakx"'));
+  const anchor = layout.slice(layout.indexOf('href="https://x.com/FoilTCG"'));
   assert.match(anchor.slice(0, 400), /target="_blank"/);
   assert.match(anchor.slice(0, 400), /rel="[^"]*noopener[^"]*"/);
   assert.match(anchor.slice(0, 400), /rel="[^"]*noreferrer[^"]*"/);
@@ -27,7 +27,7 @@ test("the X link opens in a new tab safely (target=_blank + noopener noreferrer)
 });
 
 test("the X link is accessible (aria-label) and uses an inline SVG glyph, not an icon font", () => {
-  const anchor = layout.slice(layout.indexOf('href="https://x.com/Johnnycakx"'), layout.indexOf("</a>", layout.indexOf("x.com/Johnnycakx")));
+  const anchor = layout.slice(layout.indexOf('href="https://x.com/FoilTCG"'), layout.indexOf("</a>", layout.indexOf("x.com/FoilTCG")));
   assert.match(anchor, /aria-label="[^"]*X[^"]*"/);
   assert.match(anchor, /<svg/);
   assert.match(anchor, /fill="currentColor"/); // glyph inherits the calm navy ink
@@ -38,7 +38,7 @@ test("does NOT embed the heavy official X/Twitter widget (LCP/CWV guard)", () =>
 });
 
 test("the X link stays calm + token-styled (ADR-066: secondary to the email ask, no loud color)", () => {
-  const anchor = layout.slice(layout.indexOf('href="https://x.com/Johnnycakx"'), layout.indexOf("</a>", layout.indexOf("x.com/Johnnycakx")));
+  const anchor = layout.slice(layout.indexOf('href="https://x.com/FoilTCG"'), layout.indexOf("</a>", layout.indexOf("x.com/FoilTCG")));
   // navy ink on hover, like the sibling footer links — no raw hex, no resting coral.
   assert.match(anchor, /hover:text-foil-navy/);
   assert.doesNotMatch(anchor, /#[0-9a-fA-F]{3,6}/);

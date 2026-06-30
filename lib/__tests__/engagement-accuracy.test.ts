@@ -103,15 +103,15 @@ test("draftReply: a post with no resolvable specific card → SKIP (no numbered 
 // --- target reach (the worthless-target regression) ------------------------
 
 test("evaluateCandidate: the @thelou7789 0-follower / 3-view author is filtered out", () => {
-  assert.equal(evaluateCandidate(THELOU7789_MOONBREON, "Johnnycakx"), null);
+  assert.equal(evaluateCandidate(THELOU7789_MOONBREON, "FoilTCG"), null);
 });
 
 test("evaluateCandidate: the SAME post from an account with real reach is kept", () => {
   const reachy = { ...THELOU7789_MOONBREON, authorFollowers: 5000 };
-  assert.ok(evaluateCandidate(reachy, "Johnnycakx"));
+  assert.ok(evaluateCandidate(reachy, "FoilTCG"));
 });
 
 test("evaluateCandidate: a low-follower but viral (high-view) post is kept (reach floor is followers AND views)", () => {
   const viral = { ...THELOU7789_MOONBREON, authorFollowers: 5, metrics: { likes: 50, replies: 10, reposts: 5, impressions: 9000 } };
-  assert.ok(evaluateCandidate(viral, "Johnnycakx"));
+  assert.ok(evaluateCandidate(viral, "FoilTCG"));
 });

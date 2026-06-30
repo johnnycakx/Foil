@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
-    creator: "@Johnnycakx",
+    creator: "@FoilTCG",
   },
 };
 

@@ -103,7 +103,7 @@ function SiteFooter() {
                 embed widget (that ships heavy third-party JS that hurts LCP/CWV).
                 rel="me" is a zero-cost brand-entity identity signal. */}
             <a
-              href="https://x.com/Johnnycakx"
+              href="https://x.com/FoilTCG"
               target="_blank"
               rel="me noopener noreferrer"
               aria-label="Follow Foil on X (opens in a new tab)"

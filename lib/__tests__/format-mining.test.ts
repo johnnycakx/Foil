@@ -78,10 +78,10 @@ test("drops noise: below the absolute-engagement floor, off-topic, retweets, and
   const tiny = post({ id: "tiny", text: "pokemon card", authorFollowers: 5, metrics: { likes: 4, replies: 0, reposts: 0, impressions: null } }); // 4 < floor 20
   const offTopic = post({ id: "off", text: "just had a great lunch today", metrics: { likes: 5000, replies: 100, reposts: 100, impressions: null } });
   const rt = post({ id: "rt", text: "RT @someone: pokemon charizard worth a lot", metrics: { likes: 500, replies: 0, reposts: 0, impressions: null } });
-  const own = post({ id: "own", text: "pokemon tcg deal of the day charizard", authorUsername: "Johnnycakx", metrics: { likes: 80, replies: 0, reposts: 0, impressions: null } });
+  const own = post({ id: "own", text: "pokemon tcg deal of the day charizard", authorUsername: "FoilTCG", metrics: { likes: 80, replies: 0, reposts: 0, impressions: null } });
   const keep = post({ id: "keep", text: "charizard pokemon card pull", authorFollowers: 2000, metrics: { likes: 60, replies: 10, reposts: 10, impressions: null } });
 
-  const ranked = rankOutliers([tiny, offTopic, rt, own, keep], { ownUsername: "Johnnycakx" });
+  const ranked = rankOutliers([tiny, offTopic, rt, own, keep], { ownUsername: "FoilTCG" });
   assert.deepEqual(ranked.map((o) => o.post.id), ["keep"]);
 });
 

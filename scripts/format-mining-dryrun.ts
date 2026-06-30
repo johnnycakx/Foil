@@ -70,7 +70,7 @@ function cardDataFromMovers(
 
 const result = await runFormatMiningSweep({
   queries: FORMAT_MINING_QUERIES,
-  ownUsername: "Johnnycakx",
+  ownUsername: "FoilTCG", // the X creds' account (renamed from @Johnnycakx); see the cron route
   maxOutliers: 12,
   maxGenerated: 3,
   search: async (q) => {
