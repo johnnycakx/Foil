@@ -21,8 +21,9 @@ export function neutralizeMentions(s: string): string {
 function renderItem(item: EngagementBriefItem, n: number): string {
   const post = neutralizeMentions(item.postText.replace(/\s+/g, " ").trim()).slice(0, 220);
   const card = item.matchedCard ? ` · ${item.matchedCard}` : "";
+  const tag = item.mode === "advisory" ? " `[advisory]`" : " `[data-cite]`";
   return [
-    `**${n}.** ${item.postUrl}${card}`,
+    `**${n}.**${tag} ${item.postUrl}${card}`,
     `> ${post}`,
     `**Reply (post by hand):** ${item.reply}`,
     item.dataCited ? `*data: ${item.dataCited}*` : "",

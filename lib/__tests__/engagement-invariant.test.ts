@@ -12,16 +12,27 @@ import { join } from "node:path";
 
 const ROOT = new URL("../..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
 
-// Every file in the engagement path (must all be write-free).
+// Every file in the engagement path (must all be write-free). Includes the
+// foil-bot button-handler files (ADR-086 v2): the Skip/Post buttons live in the
+// bot, and the "Post" button must NEVER post to X — it only surfaces copy-ready
+// text + a deep link. The invariant test reads these as TEXT (CI never imports
+// the bot — separate package + discord.js), so the firewall can't erode in a
+// refactor of either half.
 const ENGAGEMENT_FILES = [
   "lib/engagement/candidate-filter.ts",
   "lib/engagement/card-resolver.ts",
   "lib/engagement/draft.ts",
   "lib/engagement/brief-engine.ts",
+  "lib/engagement/brief-queue.ts",
   "lib/engagement/store.ts",
   "lib/engagement/queries.ts",
   "lib/engagement/render.ts",
   "app/api/cron/engagement-brief/route.ts",
+  // foil-bot delivery + button handlers (the new firewall surface):
+  "bot/src/engagement/queue.ts",
+  "bot/src/engagement/buttons.ts",
+  "bot/src/engagement/render.ts",
+  "bot/src/engagement/handler.ts",
 ];
 
 // Identifiers / endpoints that perform an X WRITE or engagement action. None may
@@ -35,6 +46,10 @@ const FORBIDDEN: Array<{ pattern: RegExp; what: string }> = [
   { pattern: /upload\.twitter\.com/, what: "the media-upload host" },
   { pattern: /\bapi\.x\.com\b/, what: "a direct X API URL (must go through searchRecent only)" },
   { pattern: /\.(like|follow|retweet|repost|dm|sendDM)\s*\(/i, what: "an engagement action call" },
+  // The engagement path (esp. the bot's "Post" button) must NOT route to the
+  // X-posting approval flow — that DOES post to X. Skip/Post are human-only.
+  { pattern: /callApprovalEndpoint/, what: "the X-posting approval relay (would post to X)" },
+  { pattern: /\/api\/x\/approve/, what: "the X-posting approval endpoint (would post to X)" },
 ];
 
 for (const rel of ENGAGEMENT_FILES) {

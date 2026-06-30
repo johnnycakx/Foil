@@ -11,8 +11,8 @@
 // item, never the brief.
 
 import type { XPost } from "../social/x-client.ts";
-import type { DraftResult, MoverFact } from "./draft.ts";
-import { rankCandidates, opportunityScore, type Candidate } from "./candidate-filter.ts";
+import type { BriefMode, DraftResult, MoverFact } from "./draft.ts";
+import { rankCandidates, opportunityScore, advisoryEligible, type Candidate } from "./candidate-filter.ts";
 import type { BriefStore } from "./store.ts";
 
 export type EngagementBriefItem = {
@@ -20,6 +20,10 @@ export type EngagementBriefItem = {
   postUrl: string;
   postText: string;
   authorUsername: string | null;
+  /** "data_cite" (cites the exact card's real figures) or "advisory" (value-first,
+   *  figure-free). Drives how the Discord card is labelled so John knows whether a
+   *  $ figure is present. */
+  mode: BriefMode;
   matchedCard: string;
   reply: string;
   dataCited: string;
@@ -38,8 +42,13 @@ export type BriefDeps = {
   search: (query: string) => Promise<XPost[]>;
   /** Fetch the real mover facts (figures the replies may cite) once per run. */
   getFacts: () => Promise<MoverFact[]>;
-  /** Draft a reply for a candidate (LLM); gate-validated upstream. */
+  /** Draft a DATA-CITE reply for a candidate (LLM); cites the exact card's real
+   *  figures or skips. Gate-validated upstream. */
   draft: (post: XPost, facts: MoverFact[]) => Promise<DraftResult>;
+  /** Draft an ADVISORY reply (value-first, figure-free) for a high-reach post
+   *  with no resolvable specific card. Optional: omit to keep the v1 data-cite-only
+   *  behavior. Gate-validated upstream. */
+  draftAdvisory?: (post: XPost) => Promise<DraftResult>;
   store: BriefStore;
   queries: readonly string[];
   nowMs: number;
@@ -86,23 +95,34 @@ export async function generateEngagementBrief(deps: BriefDeps): Promise<Engageme
     facts = [];
   }
 
-  // 4. Draft for the top `draftBudget` candidates (bounds LLM cost); keep the
-  //    ones that produce a gate-valid, data-backed reply.
+  // 4. Draft for the top `draftBudget` candidates (bounds LLM cost). Try the
+  //    DATA-CITE path first (exact card + real figures); if that can't apply (no
+  //    resolvable card / no data) AND the post has real reach, fall through to an
+  //    ADVISORY draft (value-first, figure-free) so the high-reach generic posts
+  //    aren't thrown away. Keep only gate-valid replies.
   const drafted: EngagementBriefItem[] = [];
   for (const c of fresh.slice(0, draftBudget)) {
     if (drafted.length >= maxItems) break;
-    let res: DraftResult;
+    let res: DraftResult | null = null;
     try {
       res = await deps.draft(c.post, facts);
     } catch {
-      continue; // soft-fail: drop this candidate, keep going
+      res = null; // soft-fail the data-cite attempt; advisory may still apply
     }
-    if (!res.ok) continue;
+    if ((!res || !res.ok) && deps.draftAdvisory && advisoryEligible(c)) {
+      try {
+        res = await deps.draftAdvisory(c.post);
+      } catch {
+        continue; // soft-fail: drop this candidate, keep going
+      }
+    }
+    if (!res || !res.ok) continue;
     drafted.push({
       postId: c.post.id,
       postUrl: postUrl(c.post),
       postText: c.post.text,
       authorUsername: c.post.authorUsername,
+      mode: res.mode,
       matchedCard: res.matchedCard,
       reply: res.reply,
       dataCited: res.dataCited,

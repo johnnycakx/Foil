@@ -5,8 +5,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type { XPost } from "../social/x-client.ts";
-import { evaluateCandidate, rankCandidates } from "../engagement/candidate-filter.ts";
-import { validateDraft, suppliedFigures, usd, type MoverFact } from "../engagement/draft.ts";
+import { evaluateCandidate, rankCandidates, advisoryEligible } from "../engagement/candidate-filter.ts";
+import {
+  validateDraft,
+  validateAdvisoryDraft,
+  draftAdvisoryReply,
+  suppliedFigures,
+  usd,
+  type MoverFact,
+} from "../engagement/draft.ts";
 import { generateEngagementBrief, type BriefDeps } from "../engagement/brief-engine.ts";
 import type { BriefStore } from "../engagement/store.ts";
 import { renderEngagementBriefChunks, neutralizeMentions } from "../engagement/render.ts";
@@ -86,6 +93,67 @@ test("suppliedFigures + usd: the allowed set is exactly the real averages", () =
   assert.ok(!f.has("$999"));
 });
 
+// --- advisory mode (value-first, figure-free, spam-safe) -------------------
+
+test("advisoryEligible: only high-reach candidates qualify for a no-data advisory reply", () => {
+  const big = { post: post({ id: "b", text: "x", authorFollowers: 5000 }), intentScore: 0.6 };
+  const small = { post: post({ id: "s", text: "x", authorFollowers: 100, metrics: { likes: 0, replies: 0, reposts: 0, impressions: 50 } }), intentScore: 0.6 };
+  const viral = { post: post({ id: "v", text: "x", authorFollowers: 10, metrics: { likes: 0, replies: 0, reposts: 0, impressions: 5000 } }), intentScore: 0.6 };
+  assert.equal(advisoryEligible(big), true, "real audience qualifies");
+  assert.equal(advisoryEligible(small), false, "low followers AND low views does not");
+  assert.equal(advisoryEligible(viral), true, "low followers but viral views qualifies");
+});
+
+test("validateAdvisoryDraft: a clean, helpful, figure-free reply passes", () => {
+  assert.equal(
+    validateAdvisoryDraft("Condition matters more than the hype here. Buy the cleanest copy you can find and hold it. Foil tracks recent sold data if you want to check real prices first."),
+    null,
+  );
+});
+
+test("validateAdvisoryDraft: ANY dollar figure is rejected (advisory is figure-free by design)", () => {
+  assert.equal(validateAdvisoryDraft("It is worth about $120 right now in my honest view."), "advisory_has_figure");
+});
+
+test("validateAdvisoryDraft: a promo / cold-outreach spam pattern is rejected", () => {
+  assert.equal(validateAdvisoryDraft("Check out my page, it lists every deal you could possibly want today."), "spam_pattern");
+  assert.equal(validateAdvisoryDraft("DM me and I will help you find the best ones for cheap right now."), "spam_pattern");
+});
+
+test("validateAdvisoryDraft: a bare link is rejected (the cold-reply spam-flag risk)", () => {
+  assert.equal(validateAdvisoryDraft("The best place to compare is foiltcg.com for live sold data on everything."), "contains_link");
+});
+
+test("validateAdvisoryDraft: the shared voice bar still applies (em dash, hype)", () => {
+  assert.equal(validateAdvisoryDraft("Buy the cleanest copy you can find — condition beats hype every single time here."), "em_dash");
+  assert.equal(validateAdvisoryDraft("This one is going to the moon, grab it now before it runs away from you."), "hype");
+});
+
+test("draftAdvisoryReply: a value-first reply is labelled advisory and carries no figure/data", async () => {
+  const res = await draftAdvisoryReply(
+    { post: post({ id: "a", text: "Getting back into pokemon after years, what should I buy? worth it?" }) },
+    { generate: async () => JSON.stringify({ reply: "Start with sealed from a set you actually like, condition beats hype. Foil tracks recent sold data so you can see what things really sell for before buying.", mentionsFoil: true, confidence: 0.6 }) },
+  );
+  assert.ok(res.ok && res.mode === "advisory", "advisory mode");
+  assert.ok(res.ok && res.dataCited === "" && res.matchedCard === "", "no card / no data cited");
+});
+
+test("draftAdvisoryReply: a draft that sneaks in a $ figure is gate-rejected (no wrong-card risk possible)", async () => {
+  const res = await draftAdvisoryReply(
+    { post: post({ id: "a", text: "what pokemon should I buy? worth it" }) },
+    { generate: async () => JSON.stringify({ reply: "Moonbreon sells around $2,100 these days, a solid long-term hold in my view.", confidence: 0.8 }) },
+  );
+  assert.ok(!res.ok && res.reason === "gate_failed" && res.detail === "advisory_has_figure");
+});
+
+test("draftAdvisoryReply: the model can SKIP a post it can't usefully help", async () => {
+  const res = await draftAdvisoryReply(
+    { post: post({ id: "a", text: "what pokemon should I buy? worth it" }) },
+    { generate: async () => JSON.stringify({ skip: true }) },
+  );
+  assert.ok(!res.ok && res.reason === "skip");
+});
+
 // --- orchestrator: dedupe / idempotency / soft-fail / budget ---------------
 
 function fakeStore(seen: string[] = []): { store: BriefStore; marked: string[] } {
@@ -105,7 +173,7 @@ function fakeStore(seen: string[] = []): { store: BriefStore; marked: string[] }
 const NOW = Date.parse("2026-06-29T12:00:00.000Z");
 
 function okDraft(post: XPost) {
-  return Promise.resolve({ ok: true as const, matchedCard: "Umbreon VMAX", reply: `Sold avg ~${usd(480)} this week.`, dataCited: "$480", confidence: 0.8 });
+  return Promise.resolve({ ok: true as const, mode: "data_cite" as const, matchedCard: "Umbreon VMAX", reply: `Sold avg ~${usd(480)} this week.`, dataCited: "$480", confidence: 0.8 });
 }
 
 test("orchestrator: produces a ranked brief + marks the delivered posts briefed", async () => {
@@ -181,6 +249,71 @@ test("orchestrator: soft-fail — a throwing query and a failing draft drop only
   assert.deepEqual(brief.items.map((i) => i.postId), ["keep"]);
 });
 
+test("orchestrator: produces BOTH data-cite and advisory items, each labelled by mode", async () => {
+  const { store } = fakeStore();
+  const dc = post({ id: "dc", text: "is the moonbreon worth it? how much value?", authorFollowers: 300 });
+  const adv = post({ id: "adv", text: "getting back into pokemon, what should I buy? worth it?", authorFollowers: 5000 });
+  const brief = await generateEngagementBrief({
+    queries: ["q"],
+    ownUsername: "Johnnycakx",
+    nowMs: NOW,
+    store,
+    search: async () => [dc, adv],
+    getFacts: async () => FACTS,
+    // data-cite succeeds for dc; for adv it can't resolve a card → skip.
+    draft: async (p) =>
+      p.id === "dc"
+        ? { ok: true, mode: "data_cite", matchedCard: "Moonbreon", reply: `Sold avg ~${usd(480)}.`, dataCited: "$480", confidence: 0.8 }
+        : { ok: false, reason: "skip", detail: "no_card_resolved" },
+    draftAdvisory: async () => ({ ok: true, mode: "advisory", matchedCard: "", reply: "Buy sealed from a set you like, condition beats hype.", dataCited: "", confidence: 0.6 }),
+  });
+  const byId = Object.fromEntries(brief.items.map((i) => [i.postId, i]));
+  assert.equal(byId.dc?.mode, "data_cite");
+  assert.equal(byId.adv?.mode, "advisory");
+  assert.equal(byId.adv?.dataCited, "", "advisory items carry no data citation");
+});
+
+test("orchestrator: a LOW-reach post with no resolvable card is dropped (advisory is high-reach only)", async () => {
+  const { store } = fakeStore();
+  let advisoryCalled = false;
+  const lowReach = post({ id: "low", text: "what pokemon card should I buy? worth it?", authorFollowers: 100, metrics: { likes: 0, replies: 0, reposts: 0, impressions: 50 } });
+  const brief = await generateEngagementBrief({
+    queries: ["q"],
+    ownUsername: "Johnnycakx",
+    nowMs: NOW,
+    store,
+    search: async () => [lowReach],
+    getFacts: async () => FACTS,
+    draft: async () => ({ ok: false, reason: "skip", detail: "no_card_resolved" }),
+    draftAdvisory: async () => {
+      advisoryCalled = true;
+      return { ok: true, mode: "advisory", matchedCard: "", reply: "x".repeat(20), dataCited: "", confidence: 0.5 };
+    },
+  });
+  assert.equal(brief.items.length, 0, "no advisory for a low-reach generic post");
+  assert.equal(advisoryCalled, false, "advisory drafter never called for a low-reach candidate");
+});
+
+test("orchestrator: advisory is a FALLBACK — never invoked when data-cite succeeds", async () => {
+  const { store } = fakeStore();
+  let advisoryCalled = false;
+  const brief = await generateEngagementBrief({
+    queries: ["q"],
+    ownUsername: "Johnnycakx",
+    nowMs: NOW,
+    store,
+    search: async () => [post({ id: "dc", text: "moonbreon worth it? how much value?", authorFollowers: 8000 })],
+    getFacts: async () => FACTS,
+    draft: async () => ({ ok: true, mode: "data_cite", matchedCard: "Moonbreon", reply: `Sold avg ~${usd(480)}.`, dataCited: "$480", confidence: 0.8 }),
+    draftAdvisory: async () => {
+      advisoryCalled = true;
+      return { ok: false, reason: "skip" };
+    },
+  });
+  assert.equal(brief.items[0]?.mode, "data_cite");
+  assert.equal(advisoryCalled, false, "data-cite success means advisory is not attempted");
+});
+
 // --- render + mention-injection guard --------------------------------------
 
 test("neutralizeMentions defangs @everyone/@here and raw mention embeds in untrusted post text", () => {
@@ -196,6 +329,7 @@ test("renderEngagementBriefChunks: chunks stay under the Discord limit + carry t
     postUrl: `https://x.com/u/status/${i}`,
     postText: "Is this Umbreon VMAX worth buying? ".repeat(3),
     authorUsername: "u",
+    mode: "data_cite" as const,
     matchedCard: "Umbreon VMAX",
     reply: "Sold avg sits near $480 this week, down from $520.",
     dataCited: "$480",

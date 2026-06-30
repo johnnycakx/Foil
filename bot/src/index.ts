@@ -11,6 +11,7 @@ import "dotenv/config";
 import { Client, Events, GatewayIntentBits, Partials } from "discord.js";
 import { handleMention } from "./handlers/mention.ts";
 import { handleSlashCommand, registerSlashCommands } from "./handlers/slash-commands.ts";
+import { handleEngagementButton, startEngagementBriefPoller } from "./engagement/handler.ts";
 
 const REQUIRED_ENV = [
   "DISCORD_BOT_TOKEN",
@@ -42,6 +43,10 @@ const client = new Client({
 client.once(Events.ClientReady, async (c) => {
   console.log(`[boot] online as ${c.user.tag} (id=${c.user.id})`);
   await registerSlashCommands(c);
+  // Arm the engagement-brief delivery poller (ADR-086 v2). No-op until
+  // ENGAGEMENT_BRIEF_CHANNEL_ID is set — the bot, not the webhook, posts the
+  // brief because only an app-owned message can carry working Skip/Post buttons.
+  startEngagementBriefPoller(c);
 });
 
 client.on(Events.MessageCreate, async (message) => {
@@ -50,6 +55,16 @@ client.on(Events.MessageCreate, async (message) => {
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
+  // Engagement-brief Skip/Post buttons (ADR-086 v2). The handler ignores any
+  // button that isn't ours, owner-gates the rest, and NEVER posts to X.
+  if (interaction.isButton()) {
+    try {
+      await handleEngagementButton(interaction);
+    } catch (err) {
+      console.warn("[interaction] button handler threw:", err);
+    }
+    return;
+  }
   if (!interaction.isChatInputCommand()) return;
   try {
     await handleSlashCommand(interaction);

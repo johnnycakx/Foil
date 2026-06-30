@@ -16,8 +16,9 @@ import { anthropic } from "@/lib/anthropic";
 import { CONTENT_MODEL } from "@/lib/seo/content-engine";
 import { ENGAGEMENT_QUERIES } from "@/lib/engagement/queries";
 import { generateEngagementBrief } from "@/lib/engagement/brief-engine";
-import { draftReply, type MoverFact } from "@/lib/engagement/draft";
+import { draftReply, draftAdvisoryReply, type MoverFact } from "@/lib/engagement/draft";
 import { supabaseBriefStore } from "@/lib/engagement/store";
+import { supabaseBriefQueue } from "@/lib/engagement/brief-queue";
 import { renderEngagementBriefChunks } from "@/lib/engagement/render";
 import { postWebhook } from "@/lib/notifications/discord";
 
@@ -81,22 +82,46 @@ export async function GET(request: Request): Promise<NextResponse> {
         return factsFromMovers([...m.down, ...m.up]);
       },
       draft: (post, facts) => draftReply({ post, facts }, { generate: claudeGenerate }),
+      // Advisory fallback (ADR-086 v2): a high-reach post with no resolvable
+      // specific card gets a value-first, figure-free reply (a natural Foil
+      // mention, never a bare link). Carries no $ figure → wrong-card-proof.
+      draftAdvisory: (post) => draftAdvisoryReply({ post }, { generate: claudeGenerate }),
     });
 
     const webhook = process.env.DISCORD_WEBHOOK_CONTENT_ENGINE;
     const dateLabel = new Date().toISOString().slice(0, 10);
-    const chunks = renderEngagementBriefChunks(brief, { dateLabel });
+
+    // DELIVERY (ADR-086 v2): the bot posts the actionable cards (with Skip/Post
+    // buttons) by draining this queue — a standard channel webhook can't carry
+    // interactive buttons. Persist the items; on success post a one-line webhook
+    // summary (visibility). If the queue write fails, FALL BACK to the full
+    // rendered webhook brief so John still gets actionable content (no buttons)
+    // — graceful degradation, never a silent loss.
+    let queued = 0;
+    if (brief.items.length > 0) {
+      queued = await supabaseBriefQueue().enqueue(brief.items);
+    }
 
     if (!webhook) {
       console.warn("[engagement] DISCORD_WEBHOOK_CONTENT_ENGINE unset — brief generated but not delivered");
-    } else if (chunks.length === 0) {
+    } else if (brief.items.length === 0) {
       await postWebhook({ webhookUrl: webhook, content: `🧵 X engagement brief — ${dateLabel}: no new qualifying posts today.` });
+    } else if (queued > 0) {
+      await postWebhook({
+        webhookUrl: webhook,
+        content:
+          `🧵 **X engagement brief — ${dateLabel}** · ${queued} ranked post${queued === 1 ? "" : "s"} ` +
+          `posting to this channel with **Skip / Post** buttons. **Post replies BY HAND on X** (the engine never posts). ` +
+          `Scanned ${brief.scanned}, ${brief.candidates} candidates.`,
+      });
     } else {
-      // Sequential so Discord shows them in order; soft-fail per chunk.
+      // Queue write failed → degrade to the full text brief (no buttons).
+      console.warn("[engagement] queue enqueue returned 0 — falling back to webhook brief");
+      const chunks = renderEngagementBriefChunks(brief, { dateLabel });
       for (const chunk of chunks) await postWebhook({ webhookUrl: webhook, content: chunk });
     }
 
-    return NextResponse.json({ ok: true, scanned: brief.scanned, candidates: brief.candidates, delivered: brief.items.length });
+    return NextResponse.json({ ok: true, scanned: brief.scanned, candidates: brief.candidates, delivered: brief.items.length, queued });
   } catch (err) {
     console.error("[engagement] cron failed:", (err as Error).message);
     return NextResponse.json({ ok: false, error: (err as Error).message });

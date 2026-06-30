@@ -21,8 +21,16 @@ export type MoverFact = {
   sampleSize: number;
 };
 
+/** Which kind of reply a draft is:
+ *  - "data_cite": names a resolvable KNOWN_CARDS mover → cites the EXACT card's
+ *    real figures (the v1 behavior; wrong-card-proof via card-resolver).
+ *  - "advisory": a high-reach, relevant buying-intent / market-curiosity post with
+ *    no resolvable specific card → a value-FIRST reply that carries NO $ figure
+ *    (so zero wrong-card risk) and a natural Foil mention, never a bare link. */
+export type BriefMode = "data_cite" | "advisory";
+
 export type DraftResult =
-  | { ok: true; matchedCard: string; reply: string; dataCited: string; confidence: number }
+  | { ok: true; mode: BriefMode; matchedCard: string; reply: string; dataCited: string; confidence: number }
   | { ok: false; reason: "skip" | "gate_failed" | "error"; detail?: string };
 
 export type DraftDeps = {
@@ -158,9 +166,116 @@ export async function draftReply(
 
   return {
     ok: true,
+    mode: "data_cite",
     matchedCard: resolved.displayName,
     reply,
     dataCited: typeof parsed.dataCited === "string" ? parsed.dataCited : "",
+    confidence: typeof parsed.confidence === "number" ? parsed.confidence : 0.5,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// ADVISORY reply mode (ADR-086 v2). The highest-reach posts are generic buying
+// questions ("I'm 50, what should I buy myself?", "is grading worth it?") that
+// name no specific card — v1 threw them away. Advisory drafts a value-FIRST,
+// genuinely-helpful reply that carries NO dollar figure (so there is zero
+// wrong-card / fabrication risk by construction) and, where it fits naturally,
+// mentions that Foil tracks live deals + recent sold data. The ONE real risk is
+// link-drop spam: a new low-rep account dropping site links to strangers gets
+// spam-flagged, so advisory replies mention Foil by NAME only, never a bare
+// link, and the gate rejects "check out my site" / "DM me" / "link in bio"
+// promo patterns outright.
+// ---------------------------------------------------------------------------
+
+/** Promo / cold-outreach-spam patterns. A reply matching any of these reads as
+ *  an ad from a stranger (the spam-flag trigger) and is rejected. */
+const SPAM = [
+  /check (it |this |my |us )?out/i,
+  /link in (bio|profile)/i,
+  /\bdm me\b/i,
+  /\bfollow (me|us|back)\b/i,
+  /sign ?up/i,
+  /\bsubscribe\b/i,
+  /\bmy (site|page|tool|app|link|profile)\b/i,
+  /click (here|the link|below)/i,
+  /smash (that|the) /i,
+  /\bvisit\b[^.]{0,30}\b(site|page|link|us)\b/i,
+  /\bcheck out\b/i,
+];
+
+/**
+ * Validate an ADVISORY reply. Same calm-voice + no-link + no-em-dash + no-hype
+ * bar as data-cite, PLUS: it must carry NO $ figure at all (advisory is
+ * figure-free by design — that is what makes it wrong-card-proof) and must not
+ * match a cold-outreach-spam pattern. Pure; returns null when clean or a reason
+ * string when it must be rejected.
+ */
+export function validateAdvisoryDraft(reply: string): string | null {
+  const text = reply.trim();
+  if (text.length < 15) return "too_short";
+  if (text.length > 280) return "over_280";
+  if (/(https?:\/\/|x\.com|twitter\.com|t\.co|foiltcg\.com|\.com\/)/i.test(text)) return "contains_link";
+  if (text.includes("—")) return "em_dash";
+  for (const re of HYPE) if (re.test(text)) return "hype";
+  // Advisory carries NO numbers — any $ figure means the model tried to cite
+  // data this path deliberately doesn't supply (so it can't be wrong-card).
+  if (/\$\d/.test(text)) return "advisory_has_figure";
+  for (const re of SPAM) if (re.test(text)) return "spam_pattern";
+  return null;
+}
+
+/** Build the advisory drafting prompt. Pure — exposed for tests. No figures are
+ *  ever supplied, so the model physically cannot cite a (possibly wrong) price. */
+export function buildAdvisoryPrompt(post: XPost): string {
+  return [
+    "You draft a single reply to a Pokemon TCG post on X for Foil (a deal-finder + market-data tool, run by a Level-4 TCGplayer seller).",
+    "This post asks a general buying / collecting / market question and does NOT name one specific card we have data for.",
+    "GOAL: be genuinely, specifically helpful FIRST — the kind of reply a knowledgeable collector leaves. A human posts it by hand, so it must never read like an ad or a bot.",
+    "",
+    "THE POST you are replying to:",
+    `"""${post.text.slice(0, 400)}"""`,
+    "",
+    "RULES (hard):",
+    "- Lead with a genuine, useful take on THEIR question. If you have nothing useful to add, SKIP.",
+    "- You MAY mention, only where it fits naturally, that Foil tracks live deals and recent sold data so you can check what something actually sells for before buying. Mention it by name as a passing aside, not a pitch. Do NOT force it; a purely helpful reply with no mention is fine.",
+    "- NEVER include a link or URL of any kind. NEVER say 'check out', 'DM me', 'link in bio', 'follow me', 'sign up', or anything that reads like promotion.",
+    "- Cite NO dollar figures and NO specific prices (you have no data for this post). Speak qualitatively.",
+    "- Calm, specific, no hype, no emoji, no exclamation, no em dash. Under 280 characters. Sound like a helpful collector, not an ad.",
+    "",
+    'Respond as JSON only: {"skip": true} OR {"reply": "<text>", "mentionsFoil": <true|false>, "confidence": <0..1>}',
+  ].join("\n");
+}
+
+/**
+ * Draft an ADVISORY reply for one candidate (no specific card / no data needed).
+ * Soft-fail: any error/parse miss/gate failure → skip/error, never throws. The
+ * output is gate-validated to carry no figure, no link, and no spam pattern, so
+ * an advisory reply is wrong-card-proof and spam-safe by construction.
+ */
+export async function draftAdvisoryReply(
+  input: { post: XPost },
+  deps: DraftDeps,
+): Promise<DraftResult> {
+  let raw: string;
+  try {
+    raw = await deps.generate(buildAdvisoryPrompt(input.post));
+  } catch (err) {
+    return { ok: false, reason: "error", detail: (err as Error).message };
+  }
+  const parsed = parseModelJson(raw);
+  if (!parsed) return { ok: false, reason: "error", detail: "unparseable" };
+  if (parsed.skip === true || typeof parsed.reply !== "string") return { ok: false, reason: "skip" };
+
+  const reply = parsed.reply.trim();
+  const gate = validateAdvisoryDraft(reply);
+  if (gate) return { ok: false, reason: "gate_failed", detail: gate };
+
+  return {
+    ok: true,
+    mode: "advisory",
+    matchedCard: "",
+    reply,
+    dataCited: "",
     confidence: typeof parsed.confidence === "number" ? parsed.confidence : 0.5,
   };
 }

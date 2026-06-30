@@ -94,6 +94,25 @@ export function opportunityScore(c: Candidate, nowMs: number): number {
   return c.intentScore * 0.4 + reach * 0.35 + freshness * 0.15 + engagement * 0.1;
 }
 
+// Advisory-mode reach gate (ADR-086 v2). Advisory replies (value-first, no data
+// cite) go ONLY to high-reach relevant posts — the generic-but-big buying
+// questions ("I'm 50, what should I buy?", "is grading worth it?") that name no
+// specific card. Stricter than the base candidate floor so a low-reach generic
+// post is skipped rather than cold-replied (the spam-flag risk). A candidate is
+// already relevant + buy/value-intent by the time this is asked.
+const ADVISORY_REACH_FLOOR_FOLLOWERS = 500;
+const ADVISORY_REACH_FLOOR_VIEWS = 1000;
+
+/**
+ * Is this candidate worth a value-first ADVISORY reply (no specific card / no
+ * data)? Only when it has genuine reach: a real audience OR real views. Pure.
+ */
+export function advisoryEligible(c: Candidate): boolean {
+  const followers = c.post.authorFollowers ?? 0;
+  const views = c.post.metrics?.impressions ?? 0;
+  return followers >= ADVISORY_REACH_FLOOR_FOLLOWERS || views >= ADVISORY_REACH_FLOOR_VIEWS;
+}
+
 /** Filter a flat list of posts to ranked candidates (highest opportunity first). */
 export function rankCandidates(posts: XPost[], opts: { ownUsername?: string | null; nowMs: number }): Candidate[] {
   const candidates = posts
