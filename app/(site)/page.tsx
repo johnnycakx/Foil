@@ -15,6 +15,8 @@ export const metadata: Metadata = {
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  // Every peer page declares its canonical; the homepage's is the site root.
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     title: SITE_TITLE,

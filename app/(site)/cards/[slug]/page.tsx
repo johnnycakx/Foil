@@ -111,13 +111,13 @@ export async function generateMetadata({
       description: `Live ${card.name} listings sorted by price. Set a target and we'll email you when one drops.`,
       siteName: "Foil",
       url: `/cards/${slug}`,
-      images: card.image ? [{ url: card.image }] : undefined,
+      images: card.image ? [{ url: card.image }] : ["/opengraph-image"],
     },
     twitter: {
       card: "summary_large_image",
       title: `${card.name} (${card.setName}) — Best deals on eBay`,
       description: `Live ${card.name} listings sorted by price.`,
-      images: card.image ? [card.image] : undefined,
+      images: card.image ? [card.image] : ["/opengraph-image"],
     },
   };
 }

@@ -55,12 +55,17 @@ export async function generateMetadata({
       publishedTime: post.date,
       modifiedTime: post.updated ?? post.date,
       tags: post.tags,
+      // Posts carry no per-post hero image, and overriding openGraph suppresses
+      // the file-based app/opengraph-image.tsx — so fall back to the dynamic OG
+      // (the FoilTCG wordmark card) or every shared post link is a blank card.
+      images: ["/opengraph-image"],
     },
     twitter: {
       card: "summary_large_image",
       title: post.title,
       description: post.description,
       creator: "@FoilTCG",
+      images: ["/opengraph-image"],
     },
   };
 }

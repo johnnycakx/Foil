@@ -42,7 +42,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description,
     alternates: { canonical: `/service-areas/${city.slug}` },
     robots: { index: true, follow: true },
-    openGraph: { title, description, url: `/service-areas/${city.slug}`, type: "website" },
+    openGraph: {
+      title,
+      description,
+      url: `/service-areas/${city.slug}`,
+      type: "website",
+      // Overriding openGraph suppresses the file-based app/opengraph-image.tsx,
+      // so reference the dynamic OG explicitly or the share card is blank.
+      images: ["/opengraph-image"],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/opengraph-image"],
+    },
   };
 }
 

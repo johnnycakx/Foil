@@ -39,6 +39,15 @@ export const metadata: Metadata = {
     description: PAGE_DESCRIPTION,
     url: "/machines",
     type: "website",
+    // Overriding openGraph suppresses the file-based app/opengraph-image.tsx,
+    // so reference the dynamic OG explicitly or the share card is blank.
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: PAGE_TITLE,
+    description: PAGE_DESCRIPTION,
+    images: ["/opengraph-image"],
   },
 };
 

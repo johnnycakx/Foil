@@ -19,12 +19,17 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     siteName: "Foil",
     url: URL_PATH,
+    // A page that exports its own openGraph does NOT inherit the file-based
+    // app/opengraph-image.tsx, so reference the dynamic OG explicitly or the
+    // share card renders blank (see /deals for the canonical pattern).
+    images: ["/opengraph-image"],
   },
   twitter: {
     card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
     creator: "@FoilTCG",
+    images: ["/opengraph-image"],
   },
 };
 

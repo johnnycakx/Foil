@@ -5,7 +5,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { OG_CARD_ART } from "../../app/og-card-art.generated.ts";
 
@@ -53,4 +53,62 @@ test("twitter-image.tsx: still re-exports the OG renderer (single source for bot
   assert.match(src, /import OgImage from "\.\/opengraph-image"/);
   assert.match(src, /export default OgImage/);
   assert.match(src, /width: 1200, height: 630/);
+});
+
+// --- metadata completeness (fix-blank-og-share-cards) -----------------------
+//
+// A page that exports its own `openGraph` object SUPPRESSES the file-based
+// app/opengraph-image.tsx (Next.js behaviour, verified live 2026-06-30), so it
+// MUST reference an OG image or every shared link renders a BLANK card — the
+// exact bug this pins. 16 public pages shipped blank because they overrode
+// openGraph without an `images:`. This is a structural source-scan (resolving
+// generateMetadata would need per-route param mocks + server-only imports); it
+// fails the build on ANY new (site) page that overrides openGraph/twitter
+// without an OG image. Pages with NO openGraph override are skipped — they
+// correctly inherit the file-based image.
+
+/** Extract a metadata sub-object (`openGraph`/`twitter`) by brace-matching. */
+function metadataBlock(src: string, key: "openGraph" | "twitter"): string | null {
+  const at = src.search(new RegExp(`\\b${key}\\s*:\\s*\\{`));
+  if (at < 0) return null;
+  const open = src.indexOf("{", at);
+  let depth = 0;
+  for (let i = open; i < src.length; i++) {
+    if (src[i] === "{") depth++;
+    else if (src[i] === "}" && --depth === 0) return src.slice(open, i + 1);
+  }
+  return null;
+}
+
+/** A block "has an OG image" if it names the dynamic file OG or a real per-
+ *  entity image binding (card image / set logo). */
+const referencesOgImage = (block: string) =>
+  /["']\/opengraph-image["']/.test(block) || /(card\.image|set\.logoUrl)/.test(block);
+
+test("Metadata completeness: every (site) openGraph/twitter block references an OG image (blank-share-card regression)", () => {
+  const siteDir = join(ROOT, "app", "(site)");
+  const pages: string[] = [];
+  (function walk(dir: string) {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (e.name === "page.tsx") pages.push(full);
+    }
+  })(siteDir);
+  assert.ok(pages.length >= 15, `expected the public (site) pages, found ${pages.length}`);
+
+  const offenders: string[] = [];
+  for (const full of pages) {
+    const src = readFileSync(full, "utf8");
+    const rel = full.slice(ROOT.length + 1).replace(/\\/g, "/");
+    const og = metadataBlock(src, "openGraph");
+    if (og && !referencesOgImage(og)) offenders.push(`${rel} (openGraph)`);
+    const tw = metadataBlock(src, "twitter");
+    if (tw && !referencesOgImage(tw)) offenders.push(`${rel} (twitter)`);
+  }
+  assert.deepEqual(
+    offenders,
+    [],
+    `these blocks override openGraph/twitter without an OG image (blank share card): ${offenders.join(", ")}`,
+  );
 });
