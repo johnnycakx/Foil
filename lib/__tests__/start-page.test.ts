@@ -80,6 +80,26 @@ test("StartPageForm: POSTs to /api/start with opt_in_newsletter + cards array", 
   assert.match(src, /cards:\s*selected\.map/);
 });
 
+test("StartPageForm: captures utm_*/?src= on mount and posts attribution (ADR-084/ADR-090)", () => {
+  const src = readFile("components/start-page-form.tsx");
+  // Same client-side capture pattern as EmailCapture — landing URL params,
+  // ?src= as the utm_source alias.
+  assert.match(src, /p\.get\("utm_source"\) \?\? p\.get\("src"\)/);
+  assert.match(src, /p\.get\("utm_medium"\)/);
+  assert.match(src, /p\.get\("utm_campaign"\)/);
+  // Both keys reach the POST body: src (→ watchlists rows) + utm (→ subscriber).
+  assert.match(src, /src:\s*utm\.source \|\| undefined/);
+  assert.match(src, /utm:/);
+});
+
+test("StartPageForm: renders the off-screen honeypot field and posts it (ADR-090)", () => {
+  const src = readFile("components/start-page-form.tsx");
+  assert.match(src, /name="website"/);
+  assert.match(src, /tabIndex=\{-1\}/, "honeypot must not be tabbable");
+  assert.match(src, /aria-hidden="true"/, "honeypot must not be announced");
+  assert.match(src, /website:\s*website \|\| undefined/, "honeypot value must reach the POST body");
+});
+
 // ---------------------------------------------------------------------------
 // /api/start route — structural + slug derivation
 // ---------------------------------------------------------------------------
@@ -126,9 +146,44 @@ test("/api/start route: opt_in_newsletter gates the subscribeEmail call (textual
   );
 });
 
-test("/api/start route: bulk insert into watchlists table via supabaseAdmin", () => {
+test("/api/start route: per-row UPSERT via the shared helper — no bulk insert (ADR-090)", () => {
   const src = readFile("app/api/start/route.ts");
-  assert.match(src, /admin\.from\(["']watchlists["']\)\.insert/);
+  // The old bulk .insert() 500'd the WHOLE batch when one row hit the
+  // UNIQUE(email, card_slug, variant, condition) constraint (a re-submit of
+  // the same cards = "Something broke"). Every row now goes through the same
+  // upsertWatchlist helper as the per-card page form.
+  assert.doesNotMatch(src, /from\(["']watchlists["']\)\.insert\(/, "bulk insert must not return");
+  assert.match(src, /upsertWatchlist\(\s*admin,/);
+  assert.match(src, /import \{ upsertWatchlist \} from "@\/lib\/wishlist\/upsert"/);
+});
+
+test("/api/start route: tri-store newsletter opt-in — recordSubscriber with utm (ADR-090)", () => {
+  const src = readFile("app/api/start/route.ts");
+  // Supabase owned list + Resend audience (the stores the weekly digest
+  // actually sends from) — the old route wrote Beehiiv ONLY, so /start
+  // opt-ins never received an issue.
+  assert.match(src, /recordSubscriber\(\{ email, source: "start-page", utm \}\)/);
+  assert.match(src, /await recordSubscriber/, "owned-list write must be awaited (Vercel freeze)");
+});
+
+test("/api/start route: soft-fail paths ping #errors, not just console.warn (ADR-090)", () => {
+  const src = readFile("app/api/start/route.ts");
+  assert.match(src, /DISCORD_WEBHOOK_ERRORS/);
+  assert.match(src, /postError\(/);
+  assert.match(src, /BeehiivSubscribeFailed/);
+  assert.match(src, /OwnedListWriteFailed/);
+});
+
+test("/api/start route: abuse guards wired — honeypot fake-success, IP limit, watch cap (ADR-090)", () => {
+  const src = readFile("app/api/start/route.ts");
+  assert.match(src, /isHoneypotTripped\(parsed\.data\.website\)/);
+  assert.match(src, /ipLimiter\.check\(clientIpKey\(request\.headers\)\)/);
+  assert.match(src, /exceedsWatchCap\(/);
+  assert.match(src, /watch_cap_reached/);
+  assert.match(src, /rate_limited/);
+  // src is sanitized before persistence (shared charset with every other
+  // URL-derived attribution tag).
+  assert.match(src, /sanitizeUtmValue\(parsed\.data\.src/);
 });
 
 // ---------------------------------------------------------------------------

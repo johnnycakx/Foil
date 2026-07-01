@@ -44,6 +44,10 @@ export async function GET(request: Request): Promise<NextResponse> {
       const { data, error } = await admin
         .from("watchlists")
         .select("id, email, card_slug, target_price_cents, variant, condition, last_notified_at")
+        // Unsubscribed/complained addresses (alerts_paused_at set via
+        // /api/unsubscribe or the Resend webhook) never enter the scan —
+        // the one-click unsubscribe actually stops alerts (ADR-090).
+        .is("alerts_paused_at", null)
         .or(`last_notified_at.is.null,last_notified_at.lt.${cutoffIso}`);
       if (error) {
         return { rows: [], error: error.message };

@@ -20,6 +20,17 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 
 ---
 date: 2026-07-01
+category: infra
+status: captured
+---
+## Double-opt-in for /start + newsletter signups (deferred from the funnel-integrity goal)
+
+[ADR-090](DECISIONS.md#adr-090--start-funnel-integrity-tri-store-opt-in-idempotent-watches-attribution-and-an-unsubscribe-that-stops-alerts) explicitly kept double-opt-in OUT of scope — the funnel now has a honeypot + per-IP limit + per-email watch cap, which handles pre-traffic abuse without adding a confirm-email step that costs real conversions on a list of ≈0. When it fires, the shape is: an HMAC confirmation token (reuse `lib/unsubscribe-token.ts` machinery inverted) + a `confirmed_at` column on `newsletter_subscribers` + the digest send filters unconfirmed. Also the natural moment to revisit a real (Redis/Upstash) rate limiter — the current per-instance in-memory one resets per cold start by design. **Trigger: first deliverability complaint OR >100 real subscribers.**
+
+**Context:** start-funnel-integrity goal (2026-07-01) — audit graded the funnel D; guards shipped, double-opt-in consciously deferred.
+
+---
+date: 2026-07-01
 category: product
 status: captured
 ---

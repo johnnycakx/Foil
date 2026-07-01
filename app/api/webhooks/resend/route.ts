@@ -21,6 +21,7 @@ import {
   type ResendWebhookEvent,
 } from "@/lib/resend-webhook";
 import { syncUnsubscribe } from "@/lib/newsletter/unsubscribe-sync";
+import { pauseWatchlistAlerts } from "@/lib/wishlist/pause";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -62,7 +63,21 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   // Sync each opt-out. Idempotent + soft-fail (a replayed webhook flips 0 rows).
-  const results = await Promise.all(emails.map((email) => syncUnsubscribe(email)));
+  // A spam complaint is the strongest opt-out signal, so it stops EVERYTHING:
+  // besides the newsletter legs, pause every wishlist-alert row for the address
+  // (start-funnel-integrity, ADR-090). A plain contact.updated unsubscribe only
+  // touches the newsletter — alert opt-outs have their own one-click path
+  // through /api/unsubscribe.
+  const isComplaint = event.type === "email.complained";
+  const results = await Promise.all(
+    emails.map(async (email) => {
+      const [sync] = await Promise.all([
+        syncUnsubscribe(email),
+        isComplaint ? pauseWatchlistAlerts(email) : Promise.resolve(null),
+      ]);
+      return sync;
+    }),
+  );
 
   // Retry only when a genuine Supabase (source-of-truth) error occurred — Svix
   // retries with backoff, and the sync is idempotent so a retry is safe. A

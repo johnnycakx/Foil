@@ -46,6 +46,24 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
   const [email, setEmail] = useState("");
   const [optInNewsletter, setOptInNewsletter] = useState(true);
   const [submission, setSubmission] = useState<Submission>({ state: "idle" });
+  // Honeypot — humans never see or fill this (rendered off-screen below).
+  const [website, setWebsite] = useState("");
+
+  // Inbound channel attribution (ADR-084/ADR-090 — same pattern as
+  // EmailCapture). Read the landing URL's utm_* (or a single ?src= alias)
+  // after hydration; POSTed with the form so the route persists src on every
+  // watchlists row + utm on the subscriber record. Client-side
+  // window.location — no useSearchParams, to avoid a Suspense boundary.
+  const [utm, setUtm] = useState({ source: "", medium: "", campaign: "" });
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const p = new URLSearchParams(window.location.search);
+    setUtm({
+      source: p.get("utm_source") ?? p.get("src") ?? "",
+      medium: p.get("utm_medium") ?? "",
+      campaign: p.get("utm_campaign") ?? "",
+    });
+  }, []);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastQueryRef = useRef<string>("");
@@ -141,6 +159,19 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
                 ? null
                 : Math.round(parseFloat(s.targetPriceUsd) * 100),
           })),
+          // Attribution (ADR-084/ADR-090): src lands on every watchlists row;
+          // utm on the subscriber record. Empty strings → undefined so the
+          // payload stays clean when there's no inbound tag.
+          src: utm.source || undefined,
+          utm:
+            utm.source || utm.medium || utm.campaign
+              ? {
+                  source: utm.source || null,
+                  medium: utm.medium || null,
+                  campaign: utm.campaign || null,
+                }
+              : undefined,
+          website: website || undefined,
         }),
       });
       const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; count?: number };
@@ -192,6 +223,23 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
 
   return (
     <form onSubmit={onSubmit} className="rounded-3xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-8">
+      {/* Honeypot (ADR-090) — off-screen, never announced, never tabbable.
+          Humans can't reach it; naive bots fill every field. The route
+          fake-succeeds when it's non-empty. */}
+      <div aria-hidden="true" className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden">
+        <label>
+          Website
+          <input
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+          />
+        </label>
+      </div>
+
       {/* SEARCH — section header (ADR-029: dropped numeric prefix). */}
       <label className="block">
         <span className="font-display text-base font-bold text-foil-navy">Tell me a card</span>

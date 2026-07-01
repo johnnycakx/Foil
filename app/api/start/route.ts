@@ -1,32 +1,50 @@
-// /api/start — bulk watchlist + newsletter subscribe (Task #20 / Session 38).
+// /api/start — bulk watchlist + newsletter subscribe (Task #20 / Session 38;
+// funnel integrity rebuilt 2026-07-01, ADR-090).
 //
 // POST { email, opt_in_newsletter, cards: [{pokemon_tcg_id, name, set_name,
-//        set_id, number, target_price_cents?}] }
+//        set_id, number, target_price_cents?}], src?, utm?, website? }
 //
 // Behavior per row:
 //   - Compute the Foil slug from the supplied set_id + number + name.
 //   - Pre-flight: only accept rows whose computed slug exists in
 //     CARD_CATALOG. The /start client already gates by `cataloguedIds`,
 //     but the server re-validates because the client is untrusted.
-//   - target_price_cents = null on the wire → store with 1¢ floor and the
-//     special "any drop" semantic the cron interprets (the cron's threshold
-//     check is `currentPriceCents <= row.target_price_cents`; setting a
-//     sentinel maximum here means "always meets the threshold" → alert on
-//     ANY listing). We use $10M cents (10_000_000) — well above any real
-//     listing and at the schema's max bound.
-//   - Insert each row via the service-role client.
+//   - target_price_cents = null on the wire → store with the special
+//     "any drop" sentinel the cron interprets (the cron's threshold check is
+//     `currentPriceCents <= row.target_price_cents`; a sentinel maximum means
+//     "always meets the threshold" → alert on ANY listing). $10M cents
+//     (10_000_000) — well above any real listing, at the schema's max bound.
+//   - UPSERT each row via the shared upsertWatchlist helper (the same
+//     (email, card_slug, variant, condition) conflict target as every other
+//     write path) — re-submitting the same cards updates targets and returns
+//     success instead of tripping the UNIQUE constraint into a 500.
 //
-// Newsletter opt-in is soft-failed exactly like /api/watchlist — Beehiiv
-// outage must NOT cause the bulk insert to fail.
+// Newsletter opt-in is tri-store (ADR-078/ADR-084 pattern, same as
+// app/actions/subscribe.ts): Beehiiv subscribeEmail + recordSubscriber
+// (Supabase owned list + Resend audience, with UTM attribution). All legs are
+// soft-fail — the watchlist write is the high-value primitive — but failures
+// now ping #errors instead of dying in a console.warn nobody reads.
 //
-// Public route — anonymous-friendly per ADR-020. The watchlist insert is
-// the high-value primitive; everything else is bonus.
+// Abuse guards (lib/start/guards.ts): honeypot field → fake success; per-IP
+// in-memory request limit → 429; per-email total watch cap → 429.
+//
+// Public route — anonymous-friendly per ADR-020.
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { CARD_CATALOG } from "@/lib/cards/catalog";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { subscribeEmail } from "@/lib/beehiiv";
+import { recordSubscriber, sanitizeUtmValue } from "@/lib/newsletter/subscribers";
+import { upsertWatchlist } from "@/lib/wishlist/upsert";
+import { getAlertSuppression } from "@/lib/wishlist/pause";
+import { postError } from "@/lib/notifications/discord";
+import {
+  clientIpKey,
+  createIpRateLimiter,
+  exceedsWatchCap,
+  isHoneypotTripped,
+} from "@/lib/start/guards";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -44,9 +62,27 @@ const startSchema = z.object({
   email: z.string().email().max(254),
   opt_in_newsletter: z.boolean().optional().default(true),
   cards: z.array(cardSchema).min(1).max(50),
+  /** Inbound source tag (?src= / utm_source alias) — persisted on every
+   *  watchlists row. Untrusted; sanitized to [a-z0-9-] before writing. */
+  src: z.string().max(200).optional(),
+  /** Landing-URL UTM params for the subscriber record (ADR-084). Untrusted;
+   *  recordSubscriber sanitizes. */
+  utm: z
+    .object({
+      source: z.string().max(200).nullable().optional(),
+      medium: z.string().max(200).nullable().optional(),
+      campaign: z.string().max(200).nullable().optional(),
+    })
+    .optional(),
+  /** Honeypot — the form renders it off-screen; humans never fill it. */
+  website: z.string().max(500).optional(),
 });
 
 const SENTINEL_ANY_PRICE_CENTS = 10_000_000;
+
+// Per-instance limiter (module scope survives across requests on a warm
+// function; a cold start resets it — acceptable for a pre-traffic funnel).
+const ipLimiter = createIpRateLimiter();
 
 function slugFromCard(c: z.infer<typeof cardSchema>): string {
   const nameKebab = c.name
@@ -58,7 +94,25 @@ function slugFromCard(c: z.infer<typeof cardSchema>): string {
   return `${c.set_id}-${c.number}-${nameKebab}`;
 }
 
+function notifyErrors(errorType: string, message: string, context: Record<string, string>): void {
+  const webhook = process.env.DISCORD_WEBHOOK_ERRORS;
+  if (!webhook) return;
+  // Fire-and-forget; a Discord outage must never block the response.
+  void postError(webhook, { source: "api-start", errorType, message, context }).catch(() => {});
+}
+
+function maskInline(email: string): string {
+  const at = email.indexOf("@");
+  if (at < 1) return "***";
+  return `${email[0]}***${email.slice(at)}`;
+}
+
 export async function POST(request: Request): Promise<NextResponse> {
+  // Per-IP request limit BEFORE any parsing work.
+  if (!ipLimiter.check(clientIpKey(request.headers))) {
+    return NextResponse.json({ ok: false, error: "rate_limited" }, { status: 429 });
+  }
+
   let raw: unknown;
   try {
     raw = await request.json();
@@ -70,6 +124,15 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (!parsed.success) {
     return NextResponse.json({ ok: false, error: "invalid_payload" }, { status: 400 });
   }
+
+  // Honeypot: a filled "website" field is a bot. Return a FAKE success so the
+  // bot learns nothing; write nothing.
+  if (isHoneypotTripped(parsed.data.website)) {
+    return NextResponse.json({ ok: true, count: parsed.data.cards.length });
+  }
+
+  const email = parsed.data.email.trim().toLowerCase();
+  const src = sanitizeUtmValue(parsed.data.src ?? parsed.data.utm?.source);
 
   // Server-side re-validation: each card's pokemon_tcg_id must be in
   // CARD_CATALOG (client gates this, but the client is untrusted). Slug
@@ -120,39 +183,102 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ ok: false, error: "unavailable" }, { status: 503 });
   }
 
-  // Bulk insert. Duplicate-email-card-slug pairs are silently absorbed by
-  // the watchlists table's unique constraint (if present) OR result in
-  // multiple rows (if not). Either way the alerter dedups by (email, slug)
-  // when sending; we accept the redundancy here.
-  const inserts = accepted.map((row) => ({
-    email: parsed.data.email,
-    card_slug: row.slug,
-    target_price_cents: row.target_price_cents,
-  }));
-  const { error } = await admin.from("watchlists").insert(inserts);
-  if (error) {
-    console.warn("[start] insert failed:", error.message);
-    return NextResponse.json({ ok: false, error: "insert_failed" }, { status: 500 });
+  // Per-email TOTAL watch cap across all requests (the zod cap bounds one
+  // request; this bounds the sum). Count-only HEAD query; on count failure we
+  // proceed (cap is an abuse guard, not a correctness invariant).
+  const { count: existingCount, error: countError } = await admin
+    .from("watchlists")
+    .select("id", { count: "exact", head: true })
+    .eq("email", email);
+  if (!countError && exceedsWatchCap(existingCount ?? 0, accepted.length)) {
+    return NextResponse.json({ ok: false, error: "watch_cap_reached" }, { status: 429 });
   }
 
-  // Soft-fail Beehiiv subscribe.
+  // UPSERT per row via the shared helper — same conflict target as the
+  // per-card page form, so a duplicate updates the target price instead of
+  // failing the whole batch (the old bulk .insert() 500'd on ANY duplicate
+  // against UNIQUE(email, card_slug, variant, condition)). ≤50 rows; a
+  // sequential loop keeps failure attribution per-row.
+  //
+  // Suppression precomputed ONCE for the batch (the helper would otherwise
+  // check per row): a suppressed email's rows are written PAUSED and stay
+  // paused — an unauthenticated submission can't resume email to an address
+  // that unsubscribed or spam-complained (ADR-090 hardening). The response is
+  // indistinguishable from a normal success, so suppression state never leaks.
+  const suppressedPauseIso = await getAlertSuppression(admin, email);
+  let upserted = 0;
+  const failedSlugs: string[] = [];
+  for (const row of accepted) {
+    const { ok } = await upsertWatchlist(
+      admin,
+      {
+        email,
+        card_slug: row.slug,
+        variant: "default",
+        condition: "any-raw",
+        target_price_cents: row.target_price_cents,
+        src,
+      },
+      { suppressedPauseIso },
+    );
+    if (ok) upserted += 1;
+    else failedSlugs.push(row.slug);
+  }
+  if (upserted === 0) {
+    notifyErrors("WatchlistUpsertFailed", "every /api/start watch upsert failed", {
+      email_masked: maskInline(email),
+      attempted: String(accepted.length),
+    });
+    return NextResponse.json({ ok: false, error: "insert_failed" }, { status: 500 });
+  }
+  if (failedSlugs.length > 0) {
+    notifyErrors("WatchlistUpsertPartial", "some /api/start watch upserts failed", {
+      email_masked: maskInline(email),
+      failed: failedSlugs.join(","),
+    });
+  }
+
+  // Tri-store newsletter opt-in (ADR-078 + ADR-084, mirroring
+  // app/actions/subscribe.ts). recordSubscriber (Supabase owned list — the
+  // store the weekly digest actually sends from — + Resend audience) runs
+  // even when Beehiiv fails: unlike the subscribe form, this response's
+  // success is the WATCHLIST, so gating the owned-list write on Beehiiv
+  // would silently drop the subscriber. Every leg soft-fails; failures ping
+  // #errors (the old code console.warn'd into the void).
   if (parsed.data.opt_in_newsletter) {
+    const utm = {
+      source: parsed.data.utm?.source ?? parsed.data.src ?? null,
+      medium: parsed.data.utm?.medium ?? null,
+      campaign: parsed.data.utm?.campaign ?? null,
+    };
     try {
-      const subResult = await subscribeEmail({
-        email: parsed.data.email,
-        source: "start-page",
-      });
+      const subResult = await subscribeEmail({ email, source: "start-page" });
       if (!subResult.ok) {
-        console.warn("[start] beehiiv subscribe returned ok:false");
+        notifyErrors("BeehiivSubscribeFailed", "subscribeEmail returned ok:false", {
+          source: "start-page",
+          email_masked: maskInline(email),
+        });
       }
     } catch (subErr) {
-      console.warn("[start] beehiiv subscribe threw:", (subErr as Error).message);
+      notifyErrors("BeehiivSubscribeThrew", (subErr as Error).message, {
+        source: "start-page",
+        email_masked: maskInline(email),
+      });
+    }
+    // AWAITED (not fire-and-forget) for the same Vercel-freeze reason as
+    // subscribe.ts — a dropped promise loses the owned-list row + its UTM.
+    const recorded = await recordSubscriber({ email, source: "start-page", utm });
+    if (!recorded.supabase) {
+      notifyErrors("OwnedListWriteFailed", "recordSubscriber supabase leg failed", {
+        source: "start-page",
+        email_masked: maskInline(email),
+      });
     }
   }
 
   return NextResponse.json({
     ok: true,
-    count: accepted.length,
+    count: upserted,
     rejected: rejected.length > 0 ? rejected : undefined,
   });
 }

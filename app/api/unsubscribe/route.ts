@@ -20,7 +20,8 @@
 // See ADR-027 + Task #18 / Session 37.
 
 import { NextResponse } from "next/server";
-import { unsubscribeEmail } from "@/lib/beehiiv";
+import { syncUnsubscribe } from "@/lib/newsletter/unsubscribe-sync";
+import { pauseWatchlistAlerts } from "@/lib/wishlist/pause";
 import { verifyUnsubscribeToken } from "@/lib/unsubscribe-token";
 
 export const dynamic = "force-dynamic";
@@ -41,13 +42,20 @@ async function processUnsubscribe(
   if (!verified.ok) {
     return { status: 400, emailMasked: null, tokenOk: false };
   }
-  // Soft-fail Beehiiv. Even on failure we render success — the user's
-  // intent is clear, and they can retry if delivery resumes.
-  try {
-    await unsubscribeEmail(verified.email);
-  } catch {
-    // swallowed deliberately — soft-fail
-  }
+  // This link arrives in BOTH email types (newsletter + wishlist alerts), and
+  // Gmail's inbox-level one-click gives no way to pick — so honoring it means
+  // stopping EVERYTHING for the verified address (start-funnel-integrity,
+  // ADR-090; before this, the alert cron kept sending forever):
+  //   - syncUnsubscribe: newsletter opt-out in Supabase (the send path's
+  //     source of truth) + Beehiiv — replaces the old Beehiiv-only call;
+  //   - pauseWatchlistAlerts: alerts_paused_at on every watchlists row, which
+  //     the alert cron's scan excludes.
+  // Both legs are idempotent + never throw. Even on internal failure we render
+  // success — the user's intent is clear, and a retry works.
+  await Promise.all([
+    syncUnsubscribe(verified.email),
+    pauseWatchlistAlerts(verified.email),
+  ]);
   return { status: 200, emailMasked: maskEmail(verified.email), tokenOk: true };
 }
 
@@ -72,9 +80,9 @@ function renderHtml(opts: { ok: boolean; emailMasked: string | null }): string {
     ? "You&rsquo;ve been unsubscribed."
     : "Unsubscribe link is invalid or expired.";
   const body = opts.ok
-    ? `<p>The email address <code>${safeEmail}</code> has been removed from Foil&rsquo;s newsletter list. If this was a mistake, you can resubscribe at <a href="/newsletter">foiltcg.com/newsletter</a>.</p>
-       <p>Wishlist alerts for specific cards keep coming separately — they're transactional, not the newsletter. To stop those too, email <a href="mailto:john.c.craig24@gmail.com">john.c.craig24@gmail.com</a> from the address on file.</p>`
-    : `<p>This unsubscribe link doesn&rsquo;t look valid. If you arrived here from a Foil email and want to stop receiving the newsletter, email <a href="mailto:john.c.craig24@gmail.com">john.c.craig24@gmail.com</a> and we&rsquo;ll remove you by hand within 24 hours.</p>`;
+    ? `<p>The email address <code>${safeEmail}</code> won&rsquo;t receive any more email from Foil — the newsletter and every card price alert are both stopped.</p>
+       <p>Changed your mind about the newsletter? Rejoin any time at <a href="/newsletter">foiltcg.com/newsletter</a>.</p>`
+    : `<p>This unsubscribe link doesn&rsquo;t look valid. If you arrived here from a Foil email and want to stop receiving it, email <a href="mailto:john.c.craig24@gmail.com">john.c.craig24@gmail.com</a> and we&rsquo;ll remove you by hand within 24 hours.</p>`;
 
   return `<!doctype html>
 <html lang="en">

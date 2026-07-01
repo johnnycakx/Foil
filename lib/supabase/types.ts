@@ -292,6 +292,7 @@ export type Database = {
           created_at: string;
           last_notified_at: string | null;
           src: string | null;
+          alerts_paused_at: string | null;
         };
         Insert: {
           id?: string;
@@ -303,6 +304,7 @@ export type Database = {
           created_at?: string;
           last_notified_at?: string | null;
           src?: string | null;
+          alerts_paused_at?: string | null;
         };
         Update: Partial<{
           id: string;
@@ -314,6 +316,7 @@ export type Database = {
           created_at: string;
           last_notified_at: string | null;
           src: string | null;
+          alerts_paused_at: string | null;
         }>;
         Relationships: [];
       };
