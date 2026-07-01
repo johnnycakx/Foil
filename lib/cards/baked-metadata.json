@@ -1,5 +1,5 @@
 {
-  "bakedAt": "2026-06-25T21:02:08.086Z",
+  "bakedAt": "2026-07-01T19:03:28.236Z",
   "cards": {
     "base1-2": {
       "id": "base1-2",
@@ -30036,6 +30036,6516 @@
           "isUnlimited": false
         }
       ]
+    },
+    "ecard3-146": {
+      "id": "ecard3-146",
+      "name": "Charizard",
+      "setName": "Skyridge",
+      "setId": "ecard3",
+      "number": "146",
+      "image": "https://images.pokemontcg.io/ecard3/146_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2003/05/12"
+    },
+    "sv8-252": {
+      "id": "sv8-252",
+      "name": "Jet Energy",
+      "setName": "Surging Sparks",
+      "setId": "sv8",
+      "number": "252",
+      "image": "https://images.pokemontcg.io/sv8/252_hires.png",
+      "rarity": "Hyper Rare",
+      "releaseDate": "2024/11/08"
+    },
+    "ex15-100": {
+      "id": "ex15-100",
+      "name": "Charizard ★ δ",
+      "setName": "Dragon Frontiers",
+      "setId": "ex15",
+      "number": "100",
+      "image": "https://images.pokemontcg.io/ex15/100_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2006/11/01"
+    },
+    "ex13-104": {
+      "id": "ex13-104",
+      "name": "Pikachu ★",
+      "setName": "Holon Phantoms",
+      "setId": "ex13",
+      "number": "104",
+      "image": "https://images.pokemontcg.io/ex13/104_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2006/05/01"
+    },
+    "ex7-109": {
+      "id": "ex7-109",
+      "name": "Treecko ★",
+      "setName": "Team Rocket Returns",
+      "setId": "ex7",
+      "number": "109",
+      "image": "https://images.pokemontcg.io/ex7/109_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2004/11/01"
+    },
+    "ex8-105": {
+      "id": "ex8-105",
+      "name": "Latias ★",
+      "setName": "Deoxys",
+      "setId": "ex8",
+      "number": "105",
+      "image": "https://images.pokemontcg.io/ex8/105_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2005/02/01"
+    },
+    "ecard2-149": {
+      "id": "ecard2-149",
+      "name": "Lugia",
+      "setName": "Aquapolis",
+      "setId": "ecard2",
+      "number": "149",
+      "image": "https://images.pokemontcg.io/ecard2/149_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2003/01/15"
+    },
+    "sm9-170": {
+      "id": "sm9-170",
+      "name": "Latias & Latios-GX",
+      "setName": "Team Up",
+      "setId": "sm9",
+      "number": "170",
+      "image": "https://images.pokemontcg.io/sm9/170_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/02/01"
+    },
+    "ex16-101": {
+      "id": "ex16-101",
+      "name": "Jolteon ★",
+      "setName": "Power Keepers",
+      "setId": "ex16",
+      "number": "101",
+      "image": "https://images.pokemontcg.io/ex16/101_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2007/02/02"
+    },
+    "ex13-103": {
+      "id": "ex13-103",
+      "name": "Mewtwo ★",
+      "setName": "Holon Phantoms",
+      "setId": "ex13",
+      "number": "103",
+      "image": "https://images.pokemontcg.io/ex13/103_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2006/05/01"
+    },
+    "ex7-107": {
+      "id": "ex7-107",
+      "name": "Mudkip ★",
+      "setName": "Team Rocket Returns",
+      "setId": "ex7",
+      "number": "107",
+      "image": "https://images.pokemontcg.io/ex7/107_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2004/11/01"
+    },
+    "ex16-100": {
+      "id": "ex16-100",
+      "name": "Flareon ★",
+      "setName": "Power Keepers",
+      "setId": "ex16",
+      "number": "100",
+      "image": "https://images.pokemontcg.io/ex16/100_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2007/02/02"
+    },
+    "ecard3-148": {
+      "id": "ecard3-148",
+      "name": "Golem",
+      "setName": "Skyridge",
+      "setId": "ecard3",
+      "number": "148",
+      "image": "https://images.pokemontcg.io/ecard3/148_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2003/05/12"
+    },
+    "sm9-165": {
+      "id": "sm9-165",
+      "name": "Gengar & Mimikyu-GX",
+      "setName": "Team Up",
+      "setId": "sm9",
+      "number": "165",
+      "image": "https://images.pokemontcg.io/sm9/165_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/02/01"
+    },
+    "ex6-108": {
+      "id": "ex6-108",
+      "name": "Gengar ex",
+      "setName": "FireRed & LeafGreen",
+      "setId": "ex6",
+      "number": "108",
+      "image": "https://images.pokemontcg.io/ex6/108_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2004/09/01"
+    },
+    "ex7-97": {
+      "id": "ex7-97",
+      "name": "Rocket's Entei ex",
+      "setName": "Team Rocket Returns",
+      "setId": "ex7",
+      "number": "97",
+      "image": "https://images.pokemontcg.io/ex7/97_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2004/11/01"
+    },
+    "pop5-16": {
+      "id": "pop5-16",
+      "name": "Espeon ★",
+      "setName": "POP Series 5",
+      "setId": "pop5",
+      "number": "16",
+      "image": "https://images.pokemontcg.io/pop5/16_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2007/03/01"
+    },
+    "bwp-BW28": {
+      "id": "bwp-BW28",
+      "name": "Tropical Beach",
+      "setName": "BW Black Star Promos",
+      "setId": "bwp",
+      "number": "BW28",
+      "image": "https://images.pokemontcg.io/bwp/BW28_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2011/03/01"
+    },
+    "ex15-101": {
+      "id": "ex15-101",
+      "name": "Mew ★ δ",
+      "setName": "Dragon Frontiers",
+      "setId": "ex15",
+      "number": "101",
+      "image": "https://images.pokemontcg.io/ex15/101_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2006/11/01"
+    },
+    "ecard2-H29": {
+      "id": "ecard2-H29",
+      "name": "Umbreon",
+      "setName": "Aquapolis",
+      "setId": "ecard2",
+      "number": "H29",
+      "image": "https://images.pokemontcg.io/ecard2/H29_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2003/01/15"
+    },
+    "ex13-102": {
+      "id": "ex13-102",
+      "name": "Gyarados ★ δ",
+      "setName": "Holon Phantoms",
+      "setId": "ex13",
+      "number": "102",
+      "image": "https://images.pokemontcg.io/ex13/102_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2006/05/01"
+    },
+    "ex12-90": {
+      "id": "ex12-90",
+      "name": "Regice ★",
+      "setName": "Legend Maker",
+      "setId": "ex12",
+      "number": "90",
+      "image": "https://images.pokemontcg.io/ex12/90_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2006/02/01"
+    },
+    "basep-40": {
+      "id": "basep-40",
+      "name": "Pokémon Center",
+      "setName": "Wizards Black Star Promos",
+      "setId": "basep",
+      "number": "40",
+      "image": "https://images.pokemontcg.io/basep/40_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "1999/07/01"
+    },
+    "ecard3-H10": {
+      "id": "ecard3-H10",
+      "name": "Gyarados",
+      "setName": "Skyridge",
+      "setId": "ecard3",
+      "number": "H10",
+      "image": "https://images.pokemontcg.io/ecard3/H10_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2003/05/12"
+    },
+    "ex10-114": {
+      "id": "ex10-114",
+      "name": "Raikou ★",
+      "setName": "Unseen Forces",
+      "setId": "ex10",
+      "number": "114",
+      "image": "https://images.pokemontcg.io/ex10/114_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2005/08/01"
+    },
+    "bw8-136": {
+      "id": "bw8-136",
+      "name": "Charizard",
+      "setName": "Plasma Storm",
+      "setId": "bw8",
+      "number": "136",
+      "image": "https://images.pokemontcg.io/bw8/136_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2013/02/06"
+    },
+    "svp-85": {
+      "id": "svp-85",
+      "name": "Pikachu with Grey Felt Hat",
+      "setName": "Scarlet & Violet Black Star Promos",
+      "setId": "svp",
+      "number": "85",
+      "image": "https://images.pokemontcg.io/svp/85_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2023/01/01"
+    },
+    "ex11-112": {
+      "id": "ex11-112",
+      "name": "Kyogre ★",
+      "setName": "Delta Species",
+      "setId": "ex11",
+      "number": "112",
+      "image": "https://images.pokemontcg.io/ex11/112_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2005/10/31"
+    },
+    "ex8-107": {
+      "id": "ex8-107",
+      "name": "Rayquaza ★",
+      "setName": "Deoxys",
+      "setId": "ex8",
+      "number": "107",
+      "image": "https://images.pokemontcg.io/ex8/107_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2005/02/01"
+    },
+    "ex7-108": {
+      "id": "ex7-108",
+      "name": "Torchic ★",
+      "setName": "Team Rocket Returns",
+      "setId": "ex7",
+      "number": "108",
+      "image": "https://images.pokemontcg.io/ex7/108_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2004/11/01"
+    },
+    "ex14-99": {
+      "id": "ex14-99",
+      "name": "Alakazam ★",
+      "setName": "Crystal Guardians",
+      "setId": "ex14",
+      "number": "99",
+      "image": "https://images.pokemontcg.io/ex14/99_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2006/08/01"
+    },
+    "ex11-111": {
+      "id": "ex11-111",
+      "name": "Groudon ★",
+      "setName": "Delta Species",
+      "setId": "ex11",
+      "number": "111",
+      "image": "https://images.pokemontcg.io/ex11/111_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2005/10/31"
+    },
+    "xy2-108": {
+      "id": "xy2-108",
+      "name": "M Charizard-EX",
+      "setName": "Flashfire",
+      "setId": "xy2",
+      "number": "108",
+      "image": "https://images.pokemontcg.io/xy2/108_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2014/05/07"
+    },
+    "ecard3-H11": {
+      "id": "ecard3-H11",
+      "name": "Houndoom",
+      "setName": "Skyridge",
+      "setId": "ecard3",
+      "number": "H11",
+      "image": "https://images.pokemontcg.io/ecard3/H11_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2003/05/12"
+    },
+    "basep-41": {
+      "id": "basep-41",
+      "name": "Lucky Stadium",
+      "setName": "Wizards Black Star Promos",
+      "setId": "basep",
+      "number": "41",
+      "image": "https://images.pokemontcg.io/basep/41_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "1999/07/01"
+    },
+    "xy4-122": {
+      "id": "xy4-122",
+      "name": "Dialga-EX",
+      "setName": "Phantom Forces",
+      "setId": "xy4",
+      "number": "122",
+      "image": "https://images.pokemontcg.io/xy4/122_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2014/11/05"
+    },
+    "hgss1-115": {
+      "id": "hgss1-115",
+      "name": "Grass Energy",
+      "setName": "HeartGold & SoulSilver",
+      "setId": "hgss1",
+      "number": "115",
+      "image": "https://images.pokemontcg.io/hgss1/115_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2010/02/10"
+    },
+    "ex14-100": {
+      "id": "ex14-100",
+      "name": "Celebi ★",
+      "setName": "Crystal Guardians",
+      "setId": "ex14",
+      "number": "100",
+      "image": "https://images.pokemontcg.io/ex14/100_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2006/08/01"
+    },
+    "ex10-105": {
+      "id": "ex10-105",
+      "name": "Lugia ex",
+      "setName": "Unseen Forces",
+      "setId": "ex10",
+      "number": "105",
+      "image": "https://images.pokemontcg.io/ex10/105_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2005/08/01"
+    },
+    "np-5": {
+      "id": "np-5",
+      "name": "Mudkip",
+      "setName": "Nintendo Black Star Promos",
+      "setId": "np",
+      "number": "5",
+      "image": "https://images.pokemontcg.io/np/5_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2003/10/01"
+    },
+    "bwp-BW50": {
+      "id": "bwp-BW50",
+      "name": "Tropical Beach",
+      "setName": "BW Black Star Promos",
+      "setId": "bwp",
+      "number": "BW50",
+      "image": "https://images.pokemontcg.io/bwp/BW50_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2011/03/01"
+    },
+    "ex7-106": {
+      "id": "ex7-106",
+      "name": "Rocket's Zapdos ex",
+      "setName": "Team Rocket Returns",
+      "setId": "ex7",
+      "number": "106",
+      "image": "https://images.pokemontcg.io/ex7/106_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2004/11/01"
+    },
+    "ex8-106": {
+      "id": "ex8-106",
+      "name": "Latios ★",
+      "setName": "Deoxys",
+      "setId": "ex8",
+      "number": "106",
+      "image": "https://images.pokemontcg.io/ex8/106_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2005/02/01"
+    },
+    "sm9-161": {
+      "id": "sm9-161",
+      "name": "Magikarp & Wailord-GX",
+      "setName": "Team Up",
+      "setId": "sm9",
+      "number": "161",
+      "image": "https://images.pokemontcg.io/sm9/161_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/02/01"
+    },
+    "xy7-98": {
+      "id": "xy7-98",
+      "name": "M Rayquaza-EX",
+      "setName": "Ancient Origins",
+      "setId": "xy7",
+      "number": "98",
+      "image": "https://images.pokemontcg.io/xy7/98_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2015/08/12"
+    },
+    "ex11-113": {
+      "id": "ex11-113",
+      "name": "Metagross ★",
+      "setName": "Delta Species",
+      "setId": "ex11",
+      "number": "113",
+      "image": "https://images.pokemontcg.io/ex11/113_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2005/10/31"
+    },
+    "svp-45": {
+      "id": "svp-45",
+      "name": "Paradise Resort",
+      "setName": "Scarlet & Violet Black Star Promos",
+      "setId": "svp",
+      "number": "45",
+      "image": "https://images.pokemontcg.io/svp/45_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2023/01/01"
+    },
+    "ecard1-13": {
+      "id": "ecard1-13",
+      "name": "Gengar",
+      "setName": "Expedition Base Set",
+      "setId": "ecard1",
+      "number": "13",
+      "image": "https://images.pokemontcg.io/ecard1/13_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2002/09/15"
+    },
+    "ex3-100": {
+      "id": "ex3-100",
+      "name": "Charizard",
+      "setName": "Dragon",
+      "setId": "ex3",
+      "number": "100",
+      "image": "https://images.pokemontcg.io/ex3/100_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2003/11/24"
+    },
+    "ecard1-9": {
+      "id": "ecard1-9",
+      "name": "Dragonite",
+      "setName": "Expedition Base Set",
+      "setId": "ecard1",
+      "number": "9",
+      "image": "https://images.pokemontcg.io/ecard1/9_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2002/09/15"
+    },
+    "pl2-111": {
+      "id": "pl2-111",
+      "name": "Snorlax LV.X",
+      "setName": "Rising Rivals",
+      "setId": "pl2",
+      "number": "111",
+      "image": "https://images.pokemontcg.io/pl2/111_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2009/05/16"
+    },
+    "ex12-91": {
+      "id": "ex12-91",
+      "name": "Regirock ★",
+      "setName": "Legend Maker",
+      "setId": "ex12",
+      "number": "91",
+      "image": "https://images.pokemontcg.io/ex12/91_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2006/02/01"
+    },
+    "bw8-134": {
+      "id": "bw8-134",
+      "name": "Lugia-EX",
+      "setName": "Plasma Storm",
+      "setId": "bw8",
+      "number": "134",
+      "image": "https://images.pokemontcg.io/bw8/134_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2013/02/06"
+    },
+    "ecard1-20": {
+      "id": "ecard1-20",
+      "name": "Mewtwo",
+      "setName": "Expedition Base Set",
+      "setId": "ecard1",
+      "number": "20",
+      "image": "https://images.pokemontcg.io/ecard1/20_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2002/09/15"
+    },
+    "xy4-114": {
+      "id": "xy4-114",
+      "name": "Gengar-EX",
+      "setName": "Phantom Forces",
+      "setId": "xy4",
+      "number": "114",
+      "image": "https://images.pokemontcg.io/xy4/114_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2014/11/05"
+    },
+    "bw9-122": {
+      "id": "bw9-122",
+      "name": "Ultra Ball",
+      "setName": "Plasma Freeze",
+      "setId": "bw9",
+      "number": "122",
+      "image": "https://images.pokemontcg.io/bw9/122_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2013/05/08"
+    },
+    "ru1-7": {
+      "id": "ru1-7",
+      "name": "Pikachu",
+      "setName": "Pokémon Rumble",
+      "setId": "ru1",
+      "number": "7",
+      "image": "https://images.pokemontcg.io/ru1/7_hires.png",
+      "rarity": null,
+      "releaseDate": "2009/12/02"
+    },
+    "dp7-103": {
+      "id": "dp7-103",
+      "name": "Charizard",
+      "setName": "Stormfront",
+      "setId": "dp7",
+      "number": "103",
+      "image": "https://images.pokemontcg.io/dp7/103_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2008/11/01"
+    },
+    "sma-SV49": {
+      "id": "sma-SV49",
+      "name": "Charizard-GX",
+      "setName": "Hidden Fates Shiny Vault",
+      "setId": "sma",
+      "number": "SV49",
+      "image": "https://images.pokemontcg.io/sma/SV49_hires.png",
+      "rarity": "Rare Shiny GX",
+      "releaseDate": "2019/08/23"
+    },
+    "bw6-128": {
+      "id": "bw6-128",
+      "name": "Rayquaza",
+      "setName": "Dragons Exalted",
+      "setId": "bw6",
+      "number": "128",
+      "image": "https://images.pokemontcg.io/bw6/128_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2012/08/15"
+    },
+    "pop4-1": {
+      "id": "pop4-1",
+      "name": "Chimecho δ",
+      "setName": "POP Series 4",
+      "setId": "pop4",
+      "number": "1",
+      "image": "https://images.pokemontcg.io/pop4/1_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2006/08/01"
+    },
+    "sm10-205": {
+      "id": "sm10-205",
+      "name": "Gardevoir & Sylveon-GX",
+      "setName": "Unbroken Bonds",
+      "setId": "sm10",
+      "number": "205",
+      "image": "https://images.pokemontcg.io/sm10/205_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/05/03"
+    },
+    "ecard2-148": {
+      "id": "ecard2-148",
+      "name": "Kingdra",
+      "setName": "Aquapolis",
+      "setId": "ecard2",
+      "number": "148",
+      "image": "https://images.pokemontcg.io/ecard2/148_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2003/01/15"
+    },
+    "sm35-78": {
+      "id": "sm35-78",
+      "name": "Mewtwo-GX",
+      "setName": "Shining Legends",
+      "setId": "sm35",
+      "number": "78",
+      "image": "https://images.pokemontcg.io/sm35/78_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2017/10/06"
+    },
+    "ecard2-150": {
+      "id": "ecard2-150",
+      "name": "Nidoking",
+      "setName": "Aquapolis",
+      "setId": "ecard2",
+      "number": "150",
+      "image": "https://images.pokemontcg.io/ecard2/150_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2003/01/15"
+    },
+    "hsp-HGSS18": {
+      "id": "hsp-HGSS18",
+      "name": "Tropical Tidal Wave",
+      "setName": "HGSS Black Star Promos",
+      "setId": "hsp",
+      "number": "HGSS18",
+      "image": "https://images.pokemontcg.io/hsp/HGSS18_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2010/02/10"
+    },
+    "svp-150": {
+      "id": "svp-150",
+      "name": "Paradise Resort",
+      "setName": "Scarlet & Violet Black Star Promos",
+      "setId": "svp",
+      "number": "150",
+      "image": "https://images.pokemontcg.io/svp/150_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2023/01/01"
+    },
+    "bw9-111": {
+      "id": "bw9-111",
+      "name": "Deoxys-EX",
+      "setName": "Plasma Freeze",
+      "setId": "bw9",
+      "number": "111",
+      "image": "https://images.pokemontcg.io/bw9/111_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2013/05/08"
+    },
+    "swshp-SWSH066": {
+      "id": "swshp-SWSH066",
+      "name": "Charizard",
+      "setName": "SWSH Black Star Promos",
+      "setId": "swshp",
+      "number": "SWSH066",
+      "image": "https://images.pokemontcg.io/swshp/SWSH066_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2019/11/15"
+    },
+    "dpp-DP05": {
+      "id": "dpp-DP05",
+      "name": "Tropical Wind",
+      "setName": "DP Black Star Promos",
+      "setId": "dpp",
+      "number": "DP05",
+      "image": "https://images.pokemontcg.io/dpp/DP05_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2007/05/01"
+    },
+    "ex14-4": {
+      "id": "ex14-4",
+      "name": "Charizard δ",
+      "setName": "Crystal Guardians",
+      "setId": "ex14",
+      "number": "4",
+      "image": "https://images.pokemontcg.io/ex14/4_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2006/08/01"
+    },
+    "sv4pt5-232": {
+      "id": "sv4pt5-232",
+      "name": "Mew ex",
+      "setName": "Paldean Fates",
+      "setId": "sv4pt5",
+      "number": "232",
+      "image": "https://images.pokemontcg.io/sv4pt5/232_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2024/01/26"
+    },
+    "ex10-115": {
+      "id": "ex10-115",
+      "name": "Suicune ★",
+      "setName": "Unseen Forces",
+      "setId": "ex10",
+      "number": "115",
+      "image": "https://images.pokemontcg.io/ex10/115_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2005/08/01"
+    },
+    "bw7-145": {
+      "id": "bw7-145",
+      "name": "Black Kyurem-EX",
+      "setName": "Boundaries Crossed",
+      "setId": "bw7",
+      "number": "145",
+      "image": "https://images.pokemontcg.io/bw7/145_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2012/11/07"
+    },
+    "sm3-150": {
+      "id": "sm3-150",
+      "name": "Charizard-GX",
+      "setName": "Burning Shadows",
+      "setId": "sm3",
+      "number": "150",
+      "image": "https://images.pokemontcg.io/sm3/150_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2017/08/05"
+    },
+    "ru1-9": {
+      "id": "ru1-9",
+      "name": "Mewtwo",
+      "setName": "Pokémon Rumble",
+      "setId": "ru1",
+      "number": "9",
+      "image": "https://images.pokemontcg.io/ru1/9_hires.png",
+      "rarity": null,
+      "releaseDate": "2009/12/02"
+    },
+    "ecard3-150": {
+      "id": "ecard3-150",
+      "name": "Kabutops",
+      "setName": "Skyridge",
+      "setId": "ecard3",
+      "number": "150",
+      "image": "https://images.pokemontcg.io/ecard3/150_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2003/05/12"
+    },
+    "bw10-100": {
+      "id": "bw10-100",
+      "name": "Palkia-EX",
+      "setName": "Plasma Blast",
+      "setId": "bw10",
+      "number": "100",
+      "image": "https://images.pokemontcg.io/bw10/100_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2013/08/14"
+    },
+    "ex16-102": {
+      "id": "ex16-102",
+      "name": "Vaporeon ★",
+      "setName": "Power Keepers",
+      "setId": "ex16",
+      "number": "102",
+      "image": "https://images.pokemontcg.io/ex16/102_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2007/02/02"
+    },
+    "bw5-109": {
+      "id": "bw5-109",
+      "name": "Gardevoir",
+      "setName": "Dark Explorers",
+      "setId": "bw5",
+      "number": "109",
+      "image": "https://images.pokemontcg.io/bw5/109_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2012/05/09"
+    },
+    "rsv10pt5-172": {
+      "id": "rsv10pt5-172",
+      "name": "Victini",
+      "setName": "White Flare",
+      "setId": "rsv10pt5",
+      "number": "172",
+      "image": "https://images.pokemontcg.io/rsv10pt5/172_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2025/07/18"
+    },
+    "ex3-90": {
+      "id": "ex3-90",
+      "name": "Dragonite ex",
+      "setName": "Dragon",
+      "setId": "ex3",
+      "number": "90",
+      "image": "https://images.pokemontcg.io/ex3/90_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2003/11/24"
+    },
+    "ex13-100": {
+      "id": "ex13-100",
+      "name": "Mew ex",
+      "setName": "Holon Phantoms",
+      "setId": "ex13",
+      "number": "100",
+      "image": "https://images.pokemontcg.io/ex13/100_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2006/05/01"
+    },
+    "xy4-121": {
+      "id": "xy4-121",
+      "name": "M Gengar-EX",
+      "setName": "Phantom Forces",
+      "setId": "xy4",
+      "number": "121",
+      "image": "https://images.pokemontcg.io/xy4/121_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2014/11/05"
+    },
+    "hgss3-86": {
+      "id": "hgss3-86",
+      "name": "Umbreon",
+      "setName": "HS—Undaunted",
+      "setId": "hgss3",
+      "number": "86",
+      "image": "https://images.pokemontcg.io/hgss3/86_hires.png",
+      "rarity": "Rare Prime",
+      "releaseDate": "2010/08/18"
+    },
+    "ex10-112": {
+      "id": "ex10-112",
+      "name": "Umbreon ex",
+      "setName": "Unseen Forces",
+      "setId": "ex10",
+      "number": "112",
+      "image": "https://images.pokemontcg.io/ex10/112_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2005/08/01"
+    },
+    "me2-125": {
+      "id": "me2-125",
+      "name": "Mega Charizard X ex",
+      "setName": "Phantasmal Flames",
+      "setId": "me2",
+      "number": "125",
+      "image": "https://images.pokemontcg.io/me2/125_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2025/11/14"
+    },
+    "zsv10pt5-172": {
+      "id": "zsv10pt5-172",
+      "name": "Zekrom ex",
+      "setName": "Black Bolt",
+      "setId": "zsv10pt5",
+      "number": "172",
+      "image": "https://images.pokemontcg.io/zsv10pt5/172_hires.png",
+      "rarity": "Black White Rare",
+      "releaseDate": "2025/07/18"
+    },
+    "ex12-92": {
+      "id": "ex12-92",
+      "name": "Registeel ★",
+      "setName": "Legend Maker",
+      "setId": "ex12",
+      "number": "92",
+      "image": "https://images.pokemontcg.io/ex12/92_hires.png",
+      "rarity": "Rare Holo Star",
+      "releaseDate": "2006/02/01"
+    },
+    "dp5-98": {
+      "id": "dp5-98",
+      "name": "Glaceon LV.X",
+      "setName": "Majestic Dawn",
+      "setId": "dp5",
+      "number": "98",
+      "image": "https://images.pokemontcg.io/dp5/98_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2008/05/01"
+    },
+    "ecard2-H28": {
+      "id": "ecard2-H28",
+      "name": "Tyranitar",
+      "setName": "Aquapolis",
+      "setId": "ecard2",
+      "number": "H28",
+      "image": "https://images.pokemontcg.io/ecard2/H28_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2003/01/15"
+    },
+    "ex8-22": {
+      "id": "ex8-22",
+      "name": "Rayquaza",
+      "setName": "Deoxys",
+      "setId": "ex8",
+      "number": "22",
+      "image": "https://images.pokemontcg.io/ex8/22_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2005/02/01"
+    },
+    "col1-SL10": {
+      "id": "col1-SL10",
+      "name": "Rayquaza",
+      "setName": "Call of Legends",
+      "setId": "col1",
+      "number": "SL10",
+      "image": "https://images.pokemontcg.io/col1/SL10_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2011/02/09"
+    },
+    "ex10-111": {
+      "id": "ex10-111",
+      "name": "Tyranitar ex",
+      "setName": "Unseen Forces",
+      "setId": "ex10",
+      "number": "111",
+      "image": "https://images.pokemontcg.io/ex10/111_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2005/08/01"
+    },
+    "zsv10pt5-171": {
+      "id": "zsv10pt5-171",
+      "name": "Victini",
+      "setName": "Black Bolt",
+      "setId": "zsv10pt5",
+      "number": "171",
+      "image": "https://images.pokemontcg.io/zsv10pt5/171_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2025/07/18"
+    },
+    "ex6-105": {
+      "id": "ex6-105",
+      "name": "Charizard ex",
+      "setName": "FireRed & LeafGreen",
+      "setId": "ex6",
+      "number": "105",
+      "image": "https://images.pokemontcg.io/ex6/105_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2004/09/01"
+    },
+    "ecard1-6": {
+      "id": "ecard1-6",
+      "name": "Charizard",
+      "setName": "Expedition Base Set",
+      "setId": "ecard1",
+      "number": "6",
+      "image": "https://images.pokemontcg.io/ecard1/6_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2002/09/15"
+    },
+    "smp-SM78": {
+      "id": "smp-SM78",
+      "name": "Champions Festival",
+      "setName": "SM Black Star Promos",
+      "setId": "smp",
+      "number": "SM78",
+      "image": "https://images.pokemontcg.io/smp/SM78_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2017/02/03"
+    },
+    "ecard1-4": {
+      "id": "ecard1-4",
+      "name": "Blastoise",
+      "setName": "Expedition Base Set",
+      "setId": "ecard1",
+      "number": "4",
+      "image": "https://images.pokemontcg.io/ecard1/4_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2002/09/15"
+    },
+    "rsv10pt5-173": {
+      "id": "rsv10pt5-173",
+      "name": "Reshiram ex",
+      "setName": "White Flare",
+      "setId": "rsv10pt5",
+      "number": "173",
+      "image": "https://images.pokemontcg.io/rsv10pt5/173_hires.png",
+      "rarity": "Black White Rare",
+      "releaseDate": "2025/07/18"
+    },
+    "bp-8": {
+      "id": "bp-8",
+      "name": "Rocket's Mewtwo",
+      "setName": "Best of Game",
+      "setId": "bp",
+      "number": "8",
+      "image": "https://images.pokemontcg.io/bp/8_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2002/12/01"
+    },
+    "swshp-SWSH296": {
+      "id": "swshp-SWSH296",
+      "name": "Champions Festival",
+      "setName": "SWSH Black Star Promos",
+      "setId": "swshp",
+      "number": "SWSH296",
+      "image": "https://images.pokemontcg.io/swshp/SWSH296_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2019/11/15"
+    },
+    "bw8-137": {
+      "id": "bw8-137",
+      "name": "Blastoise",
+      "setName": "Plasma Storm",
+      "setId": "bw8",
+      "number": "137",
+      "image": "https://images.pokemontcg.io/bw8/137_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2013/02/06"
+    },
+    "dc1-15": {
+      "id": "dc1-15",
+      "name": "Team Magma's Groudon-EX",
+      "setName": "Double Crisis",
+      "setId": "dc1",
+      "number": "15",
+      "image": "https://images.pokemontcg.io/dc1/15_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2015/03/25"
+    },
+    "dc1-6": {
+      "id": "dc1-6",
+      "name": "Team Aqua's Kyogre-EX",
+      "setName": "Double Crisis",
+      "setId": "dc1",
+      "number": "6",
+      "image": "https://images.pokemontcg.io/dc1/6_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2015/03/25"
+    },
+    "swshp-SWSH177": {
+      "id": "swshp-SWSH177",
+      "name": "Special Delivery Bidoof",
+      "setName": "SWSH Black Star Promos",
+      "setId": "swshp",
+      "number": "SWSH177",
+      "image": "https://images.pokemontcg.io/swshp/SWSH177_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2019/11/15"
+    },
+    "ex12-83": {
+      "id": "ex12-83",
+      "name": "Arcanine ex",
+      "setName": "Legend Maker",
+      "setId": "ex12",
+      "number": "83",
+      "image": "https://images.pokemontcg.io/ex12/83_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2006/02/01"
+    },
+    "sm12-221": {
+      "id": "sm12-221",
+      "name": "Arceus & Dialga & Palkia-GX",
+      "setName": "Cosmic Eclipse",
+      "setId": "sm12",
+      "number": "221",
+      "image": "https://images.pokemontcg.io/sm12/221_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/11/01"
+    },
+    "sm12-215": {
+      "id": "sm12-215",
+      "name": "Blastoise & Piplup-GX",
+      "setName": "Cosmic Eclipse",
+      "setId": "sm12",
+      "number": "215",
+      "image": "https://images.pokemontcg.io/sm12/215_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/11/01"
+    },
+    "si1-1": {
+      "id": "si1-1",
+      "name": "Mew",
+      "setName": "Southern Islands",
+      "setId": "si1",
+      "number": "1",
+      "image": "https://images.pokemontcg.io/si1/1_hires.png",
+      "rarity": null,
+      "releaseDate": "2001/07/31"
+    },
+    "pop5-12": {
+      "id": "pop5-12",
+      "name": "Pikachu",
+      "setName": "POP Series 5",
+      "setId": "pop5",
+      "number": "12",
+      "image": "https://images.pokemontcg.io/pop5/12_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2007/03/01"
+    },
+    "np-39": {
+      "id": "np-39",
+      "name": "Rayquaza ex",
+      "setName": "Nintendo Black Star Promos",
+      "setId": "np",
+      "number": "39",
+      "image": "https://images.pokemontcg.io/np/39_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2003/10/01"
+    },
+    "pop5-3": {
+      "id": "pop5-3",
+      "name": "Mew δ",
+      "setName": "POP Series 5",
+      "setId": "pop5",
+      "number": "3",
+      "image": "https://images.pokemontcg.io/pop5/3_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2007/03/01"
+    },
+    "ex6-104": {
+      "id": "ex6-104",
+      "name": "Blastoise ex",
+      "setName": "FireRed & LeafGreen",
+      "setId": "ex6",
+      "number": "104",
+      "image": "https://images.pokemontcg.io/ex6/104_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2004/09/01"
+    },
+    "sv2-203": {
+      "id": "sv2-203",
+      "name": "Magikarp",
+      "setName": "Paldea Evolved",
+      "setId": "sv2",
+      "number": "203",
+      "image": "https://images.pokemontcg.io/sv2/203_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2023/06/09"
+    },
+    "pl3-143": {
+      "id": "pl3-143",
+      "name": "Charizard G LV.X",
+      "setName": "Supreme Victors",
+      "setId": "pl3",
+      "number": "143",
+      "image": "https://images.pokemontcg.io/pl3/143_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2009/08/19"
+    },
+    "bw5-107": {
+      "id": "bw5-107",
+      "name": "Darkrai-EX",
+      "setName": "Dark Explorers",
+      "setId": "bw5",
+      "number": "107",
+      "image": "https://images.pokemontcg.io/bw5/107_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2012/05/09"
+    },
+    "sm5-151": {
+      "id": "sm5-151",
+      "name": "Lillie",
+      "setName": "Ultra Prism",
+      "setId": "sm5",
+      "number": "151",
+      "image": "https://images.pokemontcg.io/sm5/151_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2018/02/02"
+    },
+    "bw5-106": {
+      "id": "bw5-106",
+      "name": "Groudon-EX",
+      "setName": "Dark Explorers",
+      "setId": "bw5",
+      "number": "106",
+      "image": "https://images.pokemontcg.io/bw5/106_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2012/05/09"
+    },
+    "swsh12pt5gg-GG69": {
+      "id": "swsh12pt5gg-GG69",
+      "name": "Giratina VSTAR",
+      "setName": "Crown Zenith Galarian Gallery",
+      "setId": "swsh12pt5gg",
+      "number": "GG69",
+      "image": "https://images.pokemontcg.io/swsh12pt5gg/GG69_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2023/01/20"
+    },
+    "bw6-120": {
+      "id": "bw6-120",
+      "name": "Mew-EX",
+      "setName": "Dragons Exalted",
+      "setId": "bw6",
+      "number": "120",
+      "image": "https://images.pokemontcg.io/bw6/120_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2012/08/15"
+    },
+    "sv6-214": {
+      "id": "sv6-214",
+      "name": "Greninja ex",
+      "setName": "Twilight Masquerade",
+      "setId": "sv6",
+      "number": "214",
+      "image": "https://images.pokemontcg.io/sv6/214_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2024/05/24"
+    },
+    "sm11-242": {
+      "id": "sm11-242",
+      "name": "Mewtwo & Mew-GX",
+      "setName": "Unified Minds",
+      "setId": "sm11",
+      "number": "242",
+      "image": "https://images.pokemontcg.io/sm11/242_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2019/08/02"
+    },
+    "xy7-96": {
+      "id": "xy7-96",
+      "name": "Primal Kyogre-EX",
+      "setName": "Ancient Origins",
+      "setId": "xy7",
+      "number": "96",
+      "image": "https://images.pokemontcg.io/xy7/96_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2015/08/12"
+    },
+    "bw11-115": {
+      "id": "bw11-115",
+      "name": "Zekrom",
+      "setName": "Legendary Treasures",
+      "setId": "bw11",
+      "number": "115",
+      "image": "https://images.pokemontcg.io/bw11/115_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2013/11/06"
+    },
+    "sm12-222": {
+      "id": "sm12-222",
+      "name": "Reshiram & Zekrom-GX",
+      "setName": "Cosmic Eclipse",
+      "setId": "sm12",
+      "number": "222",
+      "image": "https://images.pokemontcg.io/sm12/222_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/11/01"
+    },
+    "ex13-16": {
+      "id": "ex13-16",
+      "name": "Rayquaza δ",
+      "setName": "Holon Phantoms",
+      "setId": "ex13",
+      "number": "16",
+      "image": "https://images.pokemontcg.io/ex13/16_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2006/05/01"
+    },
+    "ex11-17": {
+      "id": "ex11-17",
+      "name": "Umbreon δ",
+      "setName": "Delta Species",
+      "setId": "ex11",
+      "number": "17",
+      "image": "https://images.pokemontcg.io/ex11/17_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2005/10/31"
+    },
+    "swshp-SWSH074": {
+      "id": "swshp-SWSH074",
+      "name": "Special Delivery Pikachu",
+      "setName": "SWSH Black Star Promos",
+      "setId": "swshp",
+      "number": "SWSH074",
+      "image": "https://images.pokemontcg.io/swshp/SWSH074_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2019/11/15"
+    },
+    "swsh6-201": {
+      "id": "swsh6-201",
+      "name": "Blaziken VMAX",
+      "setName": "Chilling Reign",
+      "setId": "swsh6",
+      "number": "201",
+      "image": "https://images.pokemontcg.io/swsh6/201_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2021/06/18"
+    },
+    "ru1-10": {
+      "id": "ru1-10",
+      "name": "Mew",
+      "setName": "Pokémon Rumble",
+      "setId": "ru1",
+      "number": "10",
+      "image": "https://images.pokemontcg.io/ru1/10_hires.png",
+      "rarity": null,
+      "releaseDate": "2009/12/02"
+    },
+    "xyp-XY60": {
+      "id": "xyp-XY60",
+      "name": "Gyarados",
+      "setName": "XY Black Star Promos",
+      "setId": "xyp",
+      "number": "XY60",
+      "image": "https://images.pokemontcg.io/xyp/XY60_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2013/10/12"
+    },
+    "bw7-146": {
+      "id": "bw7-146",
+      "name": "White Kyurem-EX",
+      "setName": "Boundaries Crossed",
+      "setId": "bw7",
+      "number": "146",
+      "image": "https://images.pokemontcg.io/bw7/146_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2012/11/07"
+    },
+    "dpp-DP47": {
+      "id": "dpp-DP47",
+      "name": "Rayquaza C LV.X",
+      "setName": "DP Black Star Promos",
+      "setId": "dpp",
+      "number": "DP47",
+      "image": "https://images.pokemontcg.io/dpp/DP47_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2007/05/01"
+    },
+    "pl3-148": {
+      "id": "pl3-148",
+      "name": "Articuno",
+      "setName": "Supreme Victors",
+      "setId": "pl3",
+      "number": "148",
+      "image": "https://images.pokemontcg.io/pl3/148_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2009/08/19"
+    },
+    "me2-130": {
+      "id": "me2-130",
+      "name": "Mega Charizard X ex",
+      "setName": "Phantasmal Flames",
+      "setId": "me2",
+      "number": "130",
+      "image": "https://images.pokemontcg.io/me2/130_hires.png",
+      "rarity": "Mega Hyper Rare",
+      "releaseDate": "2025/11/14"
+    },
+    "sm11-235": {
+      "id": "sm11-235",
+      "name": "Misty's Favor",
+      "setName": "Unified Minds",
+      "setId": "sm11",
+      "number": "235",
+      "image": "https://images.pokemontcg.io/sm11/235_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/08/02"
+    },
+    "np-7": {
+      "id": "np-7",
+      "name": "Treecko",
+      "setName": "Nintendo Black Star Promos",
+      "setId": "np",
+      "number": "7",
+      "image": "https://images.pokemontcg.io/np/7_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2003/10/01"
+    },
+    "xyp-XY124": {
+      "id": "xyp-XY124",
+      "name": "Pikachu-EX",
+      "setName": "XY Black Star Promos",
+      "setId": "xyp",
+      "number": "XY124",
+      "image": "https://images.pokemontcg.io/xyp/XY124_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2013/10/12"
+    },
+    "pop1-17": {
+      "id": "pop1-17",
+      "name": "Tyranitar ex",
+      "setName": "POP Series 1",
+      "setId": "pop1",
+      "number": "17",
+      "image": "https://images.pokemontcg.io/pop1/17_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2004/09/01"
+    },
+    "ex15-10": {
+      "id": "ex15-10",
+      "name": "Snorlax δ",
+      "setName": "Dragon Frontiers",
+      "setId": "ex15",
+      "number": "10",
+      "image": "https://images.pokemontcg.io/ex15/10_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2006/11/01"
+    },
+    "sv4pt5-234": {
+      "id": "sv4pt5-234",
+      "name": "Charizard ex",
+      "setName": "Paldean Fates",
+      "setId": "sv4pt5",
+      "number": "234",
+      "image": "https://images.pokemontcg.io/sv4pt5/234_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2024/01/26"
+    },
+    "bwp-BW97": {
+      "id": "bwp-BW97",
+      "name": "Eevee",
+      "setName": "BW Black Star Promos",
+      "setId": "bwp",
+      "number": "BW97",
+      "image": "https://images.pokemontcg.io/bwp/BW97_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2011/03/01"
+    },
+    "basep-49": {
+      "id": "basep-49",
+      "name": "Snorlax",
+      "setName": "Wizards Black Star Promos",
+      "setId": "basep",
+      "number": "49",
+      "image": "https://images.pokemontcg.io/basep/49_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "1999/07/01"
+    },
+    "hgss4-97": {
+      "id": "hgss4-97",
+      "name": "Mew",
+      "setName": "HS—Triumphant",
+      "setId": "hgss4",
+      "number": "97",
+      "image": "https://images.pokemontcg.io/hgss4/97_hires.png",
+      "rarity": "Rare Prime",
+      "releaseDate": "2010/11/03"
+    },
+    "sm9-53": {
+      "id": "sm9-53",
+      "name": "Gengar & Mimikyu-GX",
+      "setName": "Team Up",
+      "setId": "sm9",
+      "number": "53",
+      "image": "https://images.pokemontcg.io/sm9/53_hires.png",
+      "rarity": "Rare Holo GX",
+      "releaseDate": "2019/02/01"
+    },
+    "hgss4-94": {
+      "id": "hgss4-94",
+      "name": "Gengar",
+      "setName": "HS—Triumphant",
+      "setId": "hgss4",
+      "number": "94",
+      "image": "https://images.pokemontcg.io/hgss4/94_hires.png",
+      "rarity": "Rare Prime",
+      "releaseDate": "2010/11/03"
+    },
+    "ex15-97": {
+      "id": "ex15-97",
+      "name": "Rayquaza ex δ",
+      "setName": "Dragon Frontiers",
+      "setId": "ex15",
+      "number": "97",
+      "image": "https://images.pokemontcg.io/ex15/97_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2006/11/01"
+    },
+    "pl2-108": {
+      "id": "pl2-108",
+      "name": "Infernape E4 LV.X",
+      "setName": "Rising Rivals",
+      "setId": "pl2",
+      "number": "108",
+      "image": "https://images.pokemontcg.io/pl2/108_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2009/05/16"
+    },
+    "bw8-132": {
+      "id": "bw8-132",
+      "name": "Articuno-EX",
+      "setName": "Plasma Storm",
+      "setId": "bw8",
+      "number": "132",
+      "image": "https://images.pokemontcg.io/bw8/132_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2013/02/06"
+    },
+    "col1-SL11": {
+      "id": "col1-SL11",
+      "name": "Suicune",
+      "setName": "Call of Legends",
+      "setId": "col1",
+      "number": "SL11",
+      "image": "https://images.pokemontcg.io/col1/SL11_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2011/02/09"
+    },
+    "pl2-112": {
+      "id": "pl2-112",
+      "name": "Pikachu",
+      "setName": "Rising Rivals",
+      "setId": "pl2",
+      "number": "112",
+      "image": "https://images.pokemontcg.io/pl2/112_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2009/05/16"
+    },
+    "bw11-114": {
+      "id": "bw11-114",
+      "name": "Reshiram",
+      "setName": "Legendary Treasures",
+      "setId": "bw11",
+      "number": "114",
+      "image": "https://images.pokemontcg.io/bw11/114_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2013/11/06"
+    },
+    "sm11-221": {
+      "id": "sm11-221",
+      "name": "Raichu & Alolan Raichu-GX",
+      "setName": "Unified Minds",
+      "setId": "sm11",
+      "number": "221",
+      "image": "https://images.pokemontcg.io/sm11/221_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/08/02"
+    },
+    "smp-SM191": {
+      "id": "smp-SM191",
+      "name": "Mewtwo & Mew-GX",
+      "setName": "SM Black Star Promos",
+      "setId": "smp",
+      "number": "SM191",
+      "image": "https://images.pokemontcg.io/smp/SM191_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2017/02/03"
+    },
+    "ex4-94": {
+      "id": "ex4-94",
+      "name": "Suicune ex",
+      "setName": "Team Magma vs Team Aqua",
+      "setId": "ex4",
+      "number": "94",
+      "image": "https://images.pokemontcg.io/ex4/94_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2004/03/01"
+    },
+    "bw5-104": {
+      "id": "bw5-104",
+      "name": "Kyogre-EX",
+      "setName": "Dark Explorers",
+      "setId": "bw5",
+      "number": "104",
+      "image": "https://images.pokemontcg.io/bw5/104_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2012/05/09"
+    },
+    "ex15-96": {
+      "id": "ex15-96",
+      "name": "Latios ex δ",
+      "setName": "Dragon Frontiers",
+      "setId": "ex15",
+      "number": "96",
+      "image": "https://images.pokemontcg.io/ex15/96_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2006/11/01"
+    },
+    "basep-24": {
+      "id": "basep-24",
+      "name": "_____'s Pikachu",
+      "setName": "Wizards Black Star Promos",
+      "setId": "basep",
+      "number": "24",
+      "image": "https://images.pokemontcg.io/basep/24_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "1999/07/01"
+    },
+    "ex9-96": {
+      "id": "ex9-96",
+      "name": "Milotic ex",
+      "setName": "Emerald",
+      "setId": "ex9",
+      "number": "96",
+      "image": "https://images.pokemontcg.io/ex9/96_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2005/05/01"
+    },
+    "xy5-149": {
+      "id": "xy5-149",
+      "name": "Primal Kyogre-EX",
+      "setName": "Primal Clash",
+      "setId": "xy5",
+      "number": "149",
+      "image": "https://images.pokemontcg.io/xy5/149_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2015/02/04"
+    },
+    "xy7-97": {
+      "id": "xy7-97",
+      "name": "Primal Groudon-EX",
+      "setName": "Ancient Origins",
+      "setId": "xy7",
+      "number": "97",
+      "image": "https://images.pokemontcg.io/xy7/97_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2015/08/12"
+    },
+    "ru1-3": {
+      "id": "ru1-3",
+      "name": "Ninetales",
+      "setName": "Pokémon Rumble",
+      "setId": "ru1",
+      "number": "3",
+      "image": "https://images.pokemontcg.io/ru1/3_hires.png",
+      "rarity": null,
+      "releaseDate": "2009/12/02"
+    },
+    "ex1-101": {
+      "id": "ex1-101",
+      "name": "Mewtwo ex",
+      "setName": "Ruby & Sapphire",
+      "setId": "ex1",
+      "number": "101",
+      "image": "https://images.pokemontcg.io/ex1/101_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2003/07/01"
+    },
+    "sm11-218": {
+      "id": "sm11-218",
+      "name": "Slowpoke & Psyduck-GX",
+      "setName": "Unified Minds",
+      "setId": "sm11",
+      "number": "218",
+      "image": "https://images.pokemontcg.io/sm11/218_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/08/02"
+    },
+    "sm10-201": {
+      "id": "sm10-201",
+      "name": "Greninja & Zoroark-GX",
+      "setName": "Unbroken Bonds",
+      "setId": "sm10",
+      "number": "201",
+      "image": "https://images.pokemontcg.io/sm10/201_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/05/03"
+    },
+    "ex8-99": {
+      "id": "ex8-99",
+      "name": "Deoxys ex",
+      "setName": "Deoxys",
+      "setId": "ex8",
+      "number": "99",
+      "image": "https://images.pokemontcg.io/ex8/99_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2005/02/01"
+    },
+    "pl2-114": {
+      "id": "pl2-114",
+      "name": "Surfing Pikachu",
+      "setName": "Rising Rivals",
+      "setId": "pl2",
+      "number": "114",
+      "image": "https://images.pokemontcg.io/pl2/114_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2009/05/16"
+    },
+    "bw5-103": {
+      "id": "bw5-103",
+      "name": "Entei-EX",
+      "setName": "Dark Explorers",
+      "setId": "bw5",
+      "number": "103",
+      "image": "https://images.pokemontcg.io/bw5/103_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2012/05/09"
+    },
+    "sma-SV69": {
+      "id": "sma-SV69",
+      "name": "Umbreon-GX",
+      "setName": "Hidden Fates Shiny Vault",
+      "setId": "sma",
+      "number": "SV69",
+      "image": "https://images.pokemontcg.io/sma/SV69_hires.png",
+      "rarity": "Rare Shiny GX",
+      "releaseDate": "2019/08/23"
+    },
+    "xy2-107": {
+      "id": "xy2-107",
+      "name": "M Charizard-EX",
+      "setName": "Flashfire",
+      "setId": "xy2",
+      "number": "107",
+      "image": "https://images.pokemontcg.io/xy2/107_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2014/05/07"
+    },
+    "sm12-216": {
+      "id": "sm12-216",
+      "name": "Solgaleo & Lunala-GX",
+      "setName": "Cosmic Eclipse",
+      "setId": "sm12",
+      "number": "216",
+      "image": "https://images.pokemontcg.io/sm12/216_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/11/01"
+    },
+    "np-23": {
+      "id": "np-23",
+      "name": "Metang",
+      "setName": "Nintendo Black Star Promos",
+      "setId": "np",
+      "number": "23",
+      "image": "https://images.pokemontcg.io/np/23_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2003/10/01"
+    },
+    "bwp-BW85": {
+      "id": "bwp-BW85",
+      "name": "Lucario",
+      "setName": "BW Black Star Promos",
+      "setId": "bwp",
+      "number": "BW85",
+      "image": "https://images.pokemontcg.io/bwp/BW85_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2011/03/01"
+    },
+    "sm7-177": {
+      "id": "sm7-177",
+      "name": "Rayquaza-GX",
+      "setName": "Celestial Storm",
+      "setId": "sm7",
+      "number": "177",
+      "image": "https://images.pokemontcg.io/sm7/177_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2018/08/03"
+    },
+    "bw4-97": {
+      "id": "bw4-97",
+      "name": "Zekrom-EX",
+      "setName": "Next Destinies",
+      "setId": "bw4",
+      "number": "97",
+      "image": "https://images.pokemontcg.io/bw4/97_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2012/02/08"
+    },
+    "bw9-117": {
+      "id": "bw9-117",
+      "name": "Empoleon",
+      "setName": "Plasma Freeze",
+      "setId": "bw9",
+      "number": "117",
+      "image": "https://images.pokemontcg.io/bw9/117_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2013/05/08"
+    },
+    "swsh12pt5gg-GG44": {
+      "id": "swsh12pt5gg-GG44",
+      "name": "Mewtwo VSTAR",
+      "setName": "Crown Zenith Galarian Gallery",
+      "setId": "swsh12pt5gg",
+      "number": "GG44",
+      "image": "https://images.pokemontcg.io/swsh12pt5gg/GG44_hires.png",
+      "rarity": "Rare Holo VSTAR",
+      "releaseDate": "2023/01/20"
+    },
+    "bwp-BW98": {
+      "id": "bwp-BW98",
+      "name": "Mew",
+      "setName": "BW Black Star Promos",
+      "setId": "bwp",
+      "number": "BW98",
+      "image": "https://images.pokemontcg.io/bwp/BW98_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2011/03/01"
+    },
+    "ex3-94": {
+      "id": "ex3-94",
+      "name": "Latios ex",
+      "setName": "Dragon",
+      "setId": "ex3",
+      "number": "94",
+      "image": "https://images.pokemontcg.io/ex3/94_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2003/11/24"
+    },
+    "ex4-95": {
+      "id": "ex4-95",
+      "name": "Swampert ex",
+      "setName": "Team Magma vs Team Aqua",
+      "setId": "ex4",
+      "number": "95",
+      "image": "https://images.pokemontcg.io/ex4/95_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2004/03/01"
+    },
+    "bw6-124": {
+      "id": "bw6-124",
+      "name": "Giratina-EX",
+      "setName": "Dragons Exalted",
+      "setId": "bw6",
+      "number": "124",
+      "image": "https://images.pokemontcg.io/bw6/124_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2012/08/15"
+    },
+    "ex9-14": {
+      "id": "ex9-14",
+      "name": "Groudon",
+      "setName": "Emerald",
+      "setId": "ex9",
+      "number": "14",
+      "image": "https://images.pokemontcg.io/ex9/14_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2005/05/01"
+    },
+    "zsv10pt5-166": {
+      "id": "zsv10pt5-166",
+      "name": "Zekrom ex",
+      "setName": "Black Bolt",
+      "setId": "zsv10pt5",
+      "number": "166",
+      "image": "https://images.pokemontcg.io/zsv10pt5/166_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2025/07/18"
+    },
+    "xyp-XY122": {
+      "id": "xyp-XY122",
+      "name": "Blastoise-EX",
+      "setName": "XY Black Star Promos",
+      "setId": "xyp",
+      "number": "XY122",
+      "image": "https://images.pokemontcg.io/xyp/XY122_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2013/10/12"
+    },
+    "pop4-17": {
+      "id": "pop4-17",
+      "name": "Deoxys ex",
+      "setName": "POP Series 4",
+      "setId": "pop4",
+      "number": "17",
+      "image": "https://images.pokemontcg.io/pop4/17_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2006/08/01"
+    },
+    "xyp-XY91": {
+      "id": "xyp-XY91",
+      "name": "Champions Festival",
+      "setName": "XY Black Star Promos",
+      "setId": "xyp",
+      "number": "XY91",
+      "image": "https://images.pokemontcg.io/xyp/XY91_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2013/10/12"
+    },
+    "ex2-98": {
+      "id": "ex2-98",
+      "name": "Raichu ex",
+      "setName": "Sandstorm",
+      "setId": "ex2",
+      "number": "98",
+      "image": "https://images.pokemontcg.io/ex2/98_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2003/09/18"
+    },
+    "smp-SM241": {
+      "id": "smp-SM241",
+      "name": "Umbreon & Darkrai-GX",
+      "setName": "SM Black Star Promos",
+      "setId": "smp",
+      "number": "SM241",
+      "image": "https://images.pokemontcg.io/smp/SM241_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2017/02/03"
+    },
+    "xyp-XY166": {
+      "id": "xyp-XY166",
+      "name": "M Gengar-EX",
+      "setName": "XY Black Star Promos",
+      "setId": "xyp",
+      "number": "XY166",
+      "image": "https://images.pokemontcg.io/xyp/XY166_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2013/10/12"
+    },
+    "ex4-91": {
+      "id": "ex4-91",
+      "name": "Entei ex",
+      "setName": "Team Magma vs Team Aqua",
+      "setId": "ex4",
+      "number": "91",
+      "image": "https://images.pokemontcg.io/ex4/91_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2004/03/01"
+    },
+    "xy6-105": {
+      "id": "xy6-105",
+      "name": "M Rayquaza-EX",
+      "setName": "Roaring Skies",
+      "setId": "xy6",
+      "number": "105",
+      "image": "https://images.pokemontcg.io/xy6/105_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2015/05/06"
+    },
+    "bw10-97": {
+      "id": "bw10-97",
+      "name": "Genesect-EX",
+      "setName": "Plasma Blast",
+      "setId": "bw10",
+      "number": "97",
+      "image": "https://images.pokemontcg.io/bw10/97_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2013/08/14"
+    },
+    "xy2-69": {
+      "id": "xy2-69",
+      "name": "M Charizard-EX",
+      "setName": "Flashfire",
+      "setId": "xy2",
+      "number": "69",
+      "image": "https://images.pokemontcg.io/xy2/69_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2014/05/07"
+    },
+    "ex6-112": {
+      "id": "ex6-112",
+      "name": "Venusaur ex",
+      "setName": "FireRed & LeafGreen",
+      "setId": "ex6",
+      "number": "112",
+      "image": "https://images.pokemontcg.io/ex6/112_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2004/09/01"
+    },
+    "swsh5-155": {
+      "id": "swsh5-155",
+      "name": "Tyranitar V",
+      "setName": "Battle Styles",
+      "setId": "swsh5",
+      "number": "155",
+      "image": "https://images.pokemontcg.io/swsh5/155_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2021/03/19"
+    },
+    "ru1-12": {
+      "id": "ru1-12",
+      "name": "Lucario",
+      "setName": "Pokémon Rumble",
+      "setId": "ru1",
+      "number": "12",
+      "image": "https://images.pokemontcg.io/ru1/12_hires.png",
+      "rarity": null,
+      "releaseDate": "2009/12/02"
+    },
+    "hgss1-114": {
+      "id": "hgss1-114",
+      "name": "Lugia LEGEND",
+      "setName": "HeartGold & SoulSilver",
+      "setId": "hgss1",
+      "number": "114",
+      "image": "https://images.pokemontcg.io/hgss1/114_hires.png",
+      "rarity": "LEGEND",
+      "releaseDate": "2010/02/10"
+    },
+    "sm12-236": {
+      "id": "sm12-236",
+      "name": "Rosa",
+      "setName": "Cosmic Eclipse",
+      "setId": "sm12",
+      "number": "236",
+      "image": "https://images.pokemontcg.io/sm12/236_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/11/01"
+    },
+    "hgss1-113": {
+      "id": "hgss1-113",
+      "name": "Lugia LEGEND",
+      "setName": "HeartGold & SoulSilver",
+      "setId": "hgss1",
+      "number": "113",
+      "image": "https://images.pokemontcg.io/hgss1/113_hires.png",
+      "rarity": "LEGEND",
+      "releaseDate": "2010/02/10"
+    },
+    "ex16-6": {
+      "id": "ex16-6",
+      "name": "Charizard",
+      "setName": "Power Keepers",
+      "setId": "ex16",
+      "number": "6",
+      "image": "https://images.pokemontcg.io/ex16/6_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2007/02/02"
+    },
+    "smp-SM228": {
+      "id": "smp-SM228",
+      "name": "Armored Mewtwo",
+      "setName": "SM Black Star Promos",
+      "setId": "smp",
+      "number": "SM228",
+      "image": "https://images.pokemontcg.io/smp/SM228_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2017/02/03"
+    },
+    "smp-SM231": {
+      "id": "smp-SM231",
+      "name": "Champions Festival",
+      "setName": "SM Black Star Promos",
+      "setId": "smp",
+      "number": "SM231",
+      "image": "https://images.pokemontcg.io/smp/SM231_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2017/02/03"
+    },
+    "hgss3-90": {
+      "id": "hgss3-90",
+      "name": "Rayquaza & Deoxys LEGEND",
+      "setName": "HS—Undaunted",
+      "setId": "hgss3",
+      "number": "90",
+      "image": "https://images.pokemontcg.io/hgss3/90_hires.png",
+      "rarity": "LEGEND",
+      "releaseDate": "2010/08/18"
+    },
+    "ex5-93": {
+      "id": "ex5-93",
+      "name": "Groudon ex",
+      "setName": "Hidden Legends",
+      "setId": "ex5",
+      "number": "93",
+      "image": "https://images.pokemontcg.io/ex5/93_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2004/06/01"
+    },
+    "ex14-2": {
+      "id": "ex14-2",
+      "name": "Blastoise δ",
+      "setName": "Crystal Guardians",
+      "setId": "ex14",
+      "number": "2",
+      "image": "https://images.pokemontcg.io/ex14/2_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2006/08/01"
+    },
+    "dp6-144": {
+      "id": "dp6-144",
+      "name": "Mewtwo LV.X",
+      "setName": "Legends Awakened",
+      "setId": "dp6",
+      "number": "144",
+      "image": "https://images.pokemontcg.io/dp6/144_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2008/08/01"
+    },
+    "zsv10pt5-105": {
+      "id": "zsv10pt5-105",
+      "name": "Seismitoad",
+      "setName": "Black Bolt",
+      "setId": "zsv10pt5",
+      "number": "105",
+      "image": "https://images.pokemontcg.io/zsv10pt5/105_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2025/07/18"
+    },
+    "dpp-DP48": {
+      "id": "dpp-DP48",
+      "name": "Tropical Wind",
+      "setName": "DP Black Star Promos",
+      "setId": "dpp",
+      "number": "DP48",
+      "image": "https://images.pokemontcg.io/dpp/DP48_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2007/05/01"
+    },
+    "dpp-DP45": {
+      "id": "dpp-DP45",
+      "name": "Charizard G LV.X",
+      "setName": "DP Black Star Promos",
+      "setId": "dpp",
+      "number": "DP45",
+      "image": "https://images.pokemontcg.io/dpp/DP45_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2007/05/01"
+    },
+    "ex3-98": {
+      "id": "ex3-98",
+      "name": "Charmander",
+      "setName": "Dragon",
+      "setId": "ex3",
+      "number": "98",
+      "image": "https://images.pokemontcg.io/ex3/98_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2003/11/24"
+    },
+    "ex2-15": {
+      "id": "ex2-15",
+      "name": "Arcanine",
+      "setName": "Sandstorm",
+      "setId": "ex2",
+      "number": "15",
+      "image": "https://images.pokemontcg.io/ex2/15_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2003/09/18"
+    },
+    "ex4-93": {
+      "id": "ex4-93",
+      "name": "Sceptile ex",
+      "setName": "Team Magma vs Team Aqua",
+      "setId": "ex4",
+      "number": "93",
+      "image": "https://images.pokemontcg.io/ex4/93_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2004/03/01"
+    },
+    "dp4-105": {
+      "id": "dp4-105",
+      "name": "Dialga LV.X",
+      "setName": "Great Encounters",
+      "setId": "dp4",
+      "number": "105",
+      "image": "https://images.pokemontcg.io/dp4/105_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2008/02/01"
+    },
+    "ex9-9": {
+      "id": "ex9-9",
+      "name": "Rayquaza",
+      "setName": "Emerald",
+      "setId": "ex9",
+      "number": "9",
+      "image": "https://images.pokemontcg.io/ex9/9_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2005/05/01"
+    },
+    "sm8-227": {
+      "id": "sm8-227",
+      "name": "Lugia-GX",
+      "setName": "Lost Thunder",
+      "setId": "sm8",
+      "number": "227",
+      "image": "https://images.pokemontcg.io/sm8/227_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2018/11/02"
+    },
+    "ex4-44": {
+      "id": "ex4-44",
+      "name": "Psyduck",
+      "setName": "Team Magma vs Team Aqua",
+      "setId": "ex4",
+      "number": "44",
+      "image": "https://images.pokemontcg.io/ex4/44_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2004/03/01"
+    },
+    "bw4-98": {
+      "id": "bw4-98",
+      "name": "Mewtwo-EX",
+      "setName": "Next Destinies",
+      "setId": "bw4",
+      "number": "98",
+      "image": "https://images.pokemontcg.io/bw4/98_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2012/02/08"
+    },
+    "bw4-96": {
+      "id": "bw4-96",
+      "name": "Kyurem-EX",
+      "setName": "Next Destinies",
+      "setId": "bw4",
+      "number": "96",
+      "image": "https://images.pokemontcg.io/bw4/96_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2012/02/08"
+    },
+    "ex12-5": {
+      "id": "ex12-5",
+      "name": "Gengar",
+      "setName": "Legend Maker",
+      "setId": "ex12",
+      "number": "5",
+      "image": "https://images.pokemontcg.io/ex12/5_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2006/02/01"
+    },
+    "swsh6-177": {
+      "id": "swsh6-177",
+      "name": "Galarian Moltres V",
+      "setName": "Chilling Reign",
+      "setId": "swsh6",
+      "number": "177",
+      "image": "https://images.pokemontcg.io/swsh6/177_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2021/06/18"
+    },
+    "xy2-100": {
+      "id": "xy2-100",
+      "name": "Charizard-EX",
+      "setName": "Flashfire",
+      "setId": "xy2",
+      "number": "100",
+      "image": "https://images.pokemontcg.io/xy2/100_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2014/05/07"
+    },
+    "bw6-119": {
+      "id": "bw6-119",
+      "name": "Ho-Oh-EX",
+      "setName": "Dragons Exalted",
+      "setId": "bw6",
+      "number": "119",
+      "image": "https://images.pokemontcg.io/bw6/119_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2012/08/15"
+    },
+    "sm5-148": {
+      "id": "sm5-148",
+      "name": "Cynthia",
+      "setName": "Ultra Prism",
+      "setId": "sm5",
+      "number": "148",
+      "image": "https://images.pokemontcg.io/sm5/148_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2018/02/02"
+    },
+    "swsh12pt5gg-GG70": {
+      "id": "swsh12pt5gg-GG70",
+      "name": "Arceus VSTAR",
+      "setName": "Crown Zenith Galarian Gallery",
+      "setId": "swsh12pt5gg",
+      "number": "GG70",
+      "image": "https://images.pokemontcg.io/swsh12pt5gg/GG70_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2023/01/20"
+    },
+    "ex5-96": {
+      "id": "ex5-96",
+      "name": "Ninetales ex",
+      "setName": "Hidden Legends",
+      "setId": "ex5",
+      "number": "96",
+      "image": "https://images.pokemontcg.io/ex5/96_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2004/06/01"
+    },
+    "ex9-98": {
+      "id": "ex9-98",
+      "name": "Regice ex",
+      "setName": "Emerald",
+      "setId": "ex9",
+      "number": "98",
+      "image": "https://images.pokemontcg.io/ex9/98_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2005/05/01"
+    },
+    "ex3-10": {
+      "id": "ex3-10",
+      "name": "Salamence",
+      "setName": "Dragon",
+      "setId": "ex3",
+      "number": "10",
+      "image": "https://images.pokemontcg.io/ex3/10_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2003/11/24"
+    },
+    "sm10-199": {
+      "id": "sm10-199",
+      "name": "Marshadow & Machamp-GX",
+      "setName": "Unbroken Bonds",
+      "setId": "sm10",
+      "number": "199",
+      "image": "https://images.pokemontcg.io/sm10/199_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/05/03"
+    },
+    "ex16-92": {
+      "id": "ex16-92",
+      "name": "Absol ex",
+      "setName": "Power Keepers",
+      "setId": "ex16",
+      "number": "92",
+      "image": "https://images.pokemontcg.io/ex16/92_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2007/02/02"
+    },
+    "pl3-SH7": {
+      "id": "pl3-SH7",
+      "name": "Milotic",
+      "setName": "Supreme Victors",
+      "setId": "pl3",
+      "number": "SH7",
+      "image": "https://images.pokemontcg.io/pl3/SH7_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2009/08/19"
+    },
+    "pop4-5": {
+      "id": "pop4-5",
+      "name": "Sceptile",
+      "setName": "POP Series 4",
+      "setId": "pop4",
+      "number": "5",
+      "image": "https://images.pokemontcg.io/pop4/5_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2006/08/01"
+    },
+    "swshp-SWSH068": {
+      "id": "swshp-SWSH068",
+      "name": "Snorlax",
+      "setName": "SWSH Black Star Promos",
+      "setId": "swshp",
+      "number": "SWSH068",
+      "image": "https://images.pokemontcg.io/swshp/SWSH068_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2019/11/15"
+    },
+    "bw3-101": {
+      "id": "bw3-101",
+      "name": "N",
+      "setName": "Noble Victories",
+      "setId": "bw3",
+      "number": "101",
+      "image": "https://images.pokemontcg.io/bw3/101_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2011/11/16"
+    },
+    "ex2-73": {
+      "id": "ex2-73",
+      "name": "Psyduck",
+      "setName": "Sandstorm",
+      "setId": "ex2",
+      "number": "73",
+      "image": "https://images.pokemontcg.io/ex2/73_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2003/09/18"
+    },
+    "sm8-226": {
+      "id": "sm8-226",
+      "name": "Mimikyu-GX",
+      "setName": "Lost Thunder",
+      "setId": "sm8",
+      "number": "226",
+      "image": "https://images.pokemontcg.io/sm8/226_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2018/11/02"
+    },
+    "bw9-113": {
+      "id": "bw9-113",
+      "name": "Latios-EX",
+      "setName": "Plasma Freeze",
+      "setId": "bw9",
+      "number": "113",
+      "image": "https://images.pokemontcg.io/bw9/113_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2013/05/08"
+    },
+    "basep-13": {
+      "id": "basep-13",
+      "name": "Venusaur",
+      "setName": "Wizards Black Star Promos",
+      "setId": "basep",
+      "number": "13",
+      "image": "https://images.pokemontcg.io/basep/13_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "1999/07/01"
+    },
+    "bp-9": {
+      "id": "bp-9",
+      "name": "Rocket's Hitmonchan",
+      "setName": "Best of Game",
+      "setId": "bp",
+      "number": "9",
+      "image": "https://images.pokemontcg.io/bp/9_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2002/12/01"
+    },
+    "ex5-94": {
+      "id": "ex5-94",
+      "name": "Kyogre ex",
+      "setName": "Hidden Legends",
+      "setId": "ex5",
+      "number": "94",
+      "image": "https://images.pokemontcg.io/ex5/94_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2004/06/01"
+    },
+    "rsv10pt5-166": {
+      "id": "rsv10pt5-166",
+      "name": "Reshiram ex",
+      "setName": "White Flare",
+      "setId": "rsv10pt5",
+      "number": "166",
+      "image": "https://images.pokemontcg.io/rsv10pt5/166_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2025/07/18"
+    },
+    "pl3-146": {
+      "id": "pl3-146",
+      "name": "Rayquaza C LV.X",
+      "setName": "Supreme Victors",
+      "setId": "pl3",
+      "number": "146",
+      "image": "https://images.pokemontcg.io/pl3/146_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2009/08/19"
+    },
+    "np-1": {
+      "id": "np-1",
+      "name": "Kyogre ex",
+      "setName": "Nintendo Black Star Promos",
+      "setId": "np",
+      "number": "1",
+      "image": "https://images.pokemontcg.io/np/1_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2003/10/01"
+    },
+    "swsh10-172": {
+      "id": "swsh10-172",
+      "name": "Machamp V",
+      "setName": "Astral Radiance",
+      "setId": "swsh10",
+      "number": "172",
+      "image": "https://images.pokemontcg.io/swsh10/172_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2022/05/27"
+    },
+    "bw7-149": {
+      "id": "bw7-149",
+      "name": "Skyla",
+      "setName": "Boundaries Crossed",
+      "setId": "bw7",
+      "number": "149",
+      "image": "https://images.pokemontcg.io/bw7/149_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2012/11/07"
+    },
+    "pop3-1": {
+      "id": "pop3-1",
+      "name": "Blastoise",
+      "setName": "POP Series 3",
+      "setId": "pop3",
+      "number": "1",
+      "image": "https://images.pokemontcg.io/pop3/1_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2006/04/01"
+    },
+    "pl4-SH11": {
+      "id": "pl4-SH11",
+      "name": "Ponyta",
+      "setName": "Arceus",
+      "setId": "pl4",
+      "number": "SH11",
+      "image": "https://images.pokemontcg.io/pl4/SH11_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2009/11/04"
+    },
+    "ex9-15": {
+      "id": "ex9-15",
+      "name": "Kyogre",
+      "setName": "Emerald",
+      "setId": "ex9",
+      "number": "15",
+      "image": "https://images.pokemontcg.io/ex9/15_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2005/05/01"
+    },
+    "hgss2-88": {
+      "id": "hgss2-88",
+      "name": "Tyranitar",
+      "setName": "HS—Unleashed",
+      "setId": "hgss2",
+      "number": "88",
+      "image": "https://images.pokemontcg.io/hgss2/88_hires.png",
+      "rarity": "Rare Prime",
+      "releaseDate": "2010/05/12"
+    },
+    "swsh12tg-TG20": {
+      "id": "swsh12tg-TG20",
+      "name": "Rayquaza VMAX",
+      "setName": "Silver Tempest Trainer Gallery",
+      "setId": "swsh12tg",
+      "number": "TG20",
+      "image": "https://images.pokemontcg.io/swsh12tg/TG20_hires.png",
+      "rarity": "Rare Holo VMAX",
+      "releaseDate": "2022/11/11"
+    },
+    "hgss3-82": {
+      "id": "hgss3-82",
+      "name": "Houndoom",
+      "setName": "HS—Undaunted",
+      "setId": "hgss3",
+      "number": "82",
+      "image": "https://images.pokemontcg.io/hgss3/82_hires.png",
+      "rarity": "Rare Prime",
+      "releaseDate": "2010/08/18"
+    },
+    "pl3-149": {
+      "id": "pl3-149",
+      "name": "Moltres",
+      "setName": "Supreme Victors",
+      "setId": "pl3",
+      "number": "149",
+      "image": "https://images.pokemontcg.io/pl3/149_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2009/08/19"
+    },
+    "bw10-99": {
+      "id": "bw10-99",
+      "name": "Dialga-EX",
+      "setName": "Plasma Blast",
+      "setId": "bw10",
+      "number": "99",
+      "image": "https://images.pokemontcg.io/bw10/99_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2013/08/14"
+    },
+    "xy7-94": {
+      "id": "xy7-94",
+      "name": "Lugia-EX",
+      "setName": "Ancient Origins",
+      "setId": "xy7",
+      "number": "94",
+      "image": "https://images.pokemontcg.io/xy7/94_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2015/08/12"
+    },
+    "bw6-123": {
+      "id": "bw6-123",
+      "name": "Rayquaza-EX",
+      "setName": "Dragons Exalted",
+      "setId": "bw6",
+      "number": "123",
+      "image": "https://images.pokemontcg.io/bw6/123_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2012/08/15"
+    },
+    "bw7-147": {
+      "id": "bw7-147",
+      "name": "Bianca",
+      "setName": "Boundaries Crossed",
+      "setId": "bw7",
+      "number": "147",
+      "image": "https://images.pokemontcg.io/bw7/147_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2012/11/07"
+    },
+    "g1-RC28": {
+      "id": "g1-RC28",
+      "name": "Flareon-EX",
+      "setName": "Generations",
+      "setId": "g1",
+      "number": "RC28",
+      "image": "https://images.pokemontcg.io/g1/RC28_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2016/02/22"
+    },
+    "hgss3-87": {
+      "id": "hgss3-87",
+      "name": "Kyogre & Groudon LEGEND",
+      "setName": "HS—Undaunted",
+      "setId": "hgss3",
+      "number": "87",
+      "image": "https://images.pokemontcg.io/hgss3/87_hires.png",
+      "rarity": "LEGEND",
+      "releaseDate": "2010/08/18"
+    },
+    "hgss3-81": {
+      "id": "hgss3-81",
+      "name": "Espeon",
+      "setName": "HS—Undaunted",
+      "setId": "hgss3",
+      "number": "81",
+      "image": "https://images.pokemontcg.io/hgss3/81_hires.png",
+      "rarity": "Rare Prime",
+      "releaseDate": "2010/08/18"
+    },
+    "sm10-217": {
+      "id": "sm10-217",
+      "name": "Reshiram & Charizard-GX",
+      "setName": "Unbroken Bonds",
+      "setId": "sm10",
+      "number": "217",
+      "image": "https://images.pokemontcg.io/sm10/217_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2019/05/03"
+    },
+    "xy5-151": {
+      "id": "xy5-151",
+      "name": "Primal Groudon-EX",
+      "setName": "Primal Clash",
+      "setId": "xy5",
+      "number": "151",
+      "image": "https://images.pokemontcg.io/xy5/151_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2015/02/04"
+    },
+    "dp1-27": {
+      "id": "dp1-27",
+      "name": "Gengar",
+      "setName": "Diamond & Pearl",
+      "setId": "dp1",
+      "number": "27",
+      "image": "https://images.pokemontcg.io/dp1/27_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2007/05/01"
+    },
+    "sm7-164": {
+      "id": "sm7-164",
+      "name": "Lisia",
+      "setName": "Celestial Storm",
+      "setId": "sm7",
+      "number": "164",
+      "image": "https://images.pokemontcg.io/sm7/164_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2018/08/03"
+    },
+    "xy9-123": {
+      "id": "xy9-123",
+      "name": "Gyarados-EX",
+      "setName": "BREAKpoint",
+      "setId": "xy9",
+      "number": "123",
+      "image": "https://images.pokemontcg.io/xy9/123_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2016/02/03"
+    },
+    "hgss4-99": {
+      "id": "hgss4-99",
+      "name": "Darkrai & Cresselia LEGEND",
+      "setName": "HS—Triumphant",
+      "setId": "hgss4",
+      "number": "99",
+      "image": "https://images.pokemontcg.io/hgss4/99_hires.png",
+      "rarity": "LEGEND",
+      "releaseDate": "2010/11/03"
+    },
+    "ex6-83": {
+      "id": "ex6-83",
+      "name": "Squirtle",
+      "setName": "FireRed & LeafGreen",
+      "setId": "ex6",
+      "number": "83",
+      "image": "https://images.pokemontcg.io/ex6/83_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2004/09/01"
+    },
+    "sv6-220": {
+      "id": "sv6-220",
+      "name": "Perrin",
+      "setName": "Twilight Masquerade",
+      "setId": "sv6",
+      "number": "220",
+      "image": "https://images.pokemontcg.io/sv6/220_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2024/05/24"
+    },
+    "bw11-RC24": {
+      "id": "bw11-RC24",
+      "name": "Mew-EX",
+      "setName": "Legendary Treasures",
+      "setId": "bw11",
+      "number": "RC24",
+      "image": "https://images.pokemontcg.io/bw11/RC24_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2013/11/06"
+    },
+    "pl4-16": {
+      "id": "pl4-16",
+      "name": "Gengar",
+      "setName": "Arceus",
+      "setId": "pl4",
+      "number": "16",
+      "image": "https://images.pokemontcg.io/pl4/16_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2009/11/04"
+    },
+    "ex5-69": {
+      "id": "ex5-69",
+      "name": "Plusle",
+      "setName": "Hidden Legends",
+      "setId": "ex5",
+      "number": "69",
+      "image": "https://images.pokemontcg.io/ex5/69_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2004/06/01"
+    },
+    "g1-RC32": {
+      "id": "g1-RC32",
+      "name": "Sylveon-EX",
+      "setName": "Generations",
+      "setId": "g1",
+      "number": "RC32",
+      "image": "https://images.pokemontcg.io/g1/RC32_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2016/02/22"
+    },
+    "hgss2-95": {
+      "id": "hgss2-95",
+      "name": "Suicune & Entei LEGEND",
+      "setName": "HS—Unleashed",
+      "setId": "hgss2",
+      "number": "95",
+      "image": "https://images.pokemontcg.io/hgss2/95_hires.png",
+      "rarity": "LEGEND",
+      "releaseDate": "2010/05/12"
+    },
+    "si1-4": {
+      "id": "si1-4",
+      "name": "Togepi",
+      "setName": "Southern Islands",
+      "setId": "si1",
+      "number": "4",
+      "image": "https://images.pokemontcg.io/si1/4_hires.png",
+      "rarity": null,
+      "releaseDate": "2001/07/31"
+    },
+    "dp6-2": {
+      "id": "dp6-2",
+      "name": "Dragonite",
+      "setName": "Legends Awakened",
+      "setId": "dp6",
+      "number": "2",
+      "image": "https://images.pokemontcg.io/dp6/2_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2008/08/01"
+    },
+    "bw4-95": {
+      "id": "bw4-95",
+      "name": "Reshiram-EX",
+      "setName": "Next Destinies",
+      "setId": "bw4",
+      "number": "95",
+      "image": "https://images.pokemontcg.io/bw4/95_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2012/02/08"
+    },
+    "bw7-150": {
+      "id": "bw7-150",
+      "name": "Golurk",
+      "setName": "Boundaries Crossed",
+      "setId": "bw7",
+      "number": "150",
+      "image": "https://images.pokemontcg.io/bw7/150_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2012/11/07"
+    },
+    "xy8-163": {
+      "id": "xy8-163",
+      "name": "Mewtwo-EX",
+      "setName": "BREAKthrough",
+      "setId": "xy8",
+      "number": "163",
+      "image": "https://images.pokemontcg.io/xy8/163_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2015/11/04"
+    },
+    "ex5-98": {
+      "id": "ex5-98",
+      "name": "Regirock ex",
+      "setName": "Hidden Legends",
+      "setId": "ex5",
+      "number": "98",
+      "image": "https://images.pokemontcg.io/ex5/98_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2004/06/01"
+    },
+    "bw10-105": {
+      "id": "bw10-105",
+      "name": "Rare Candy",
+      "setName": "Plasma Blast",
+      "setId": "bw10",
+      "number": "105",
+      "image": "https://images.pokemontcg.io/bw10/105_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2013/08/14"
+    },
+    "dp4-104": {
+      "id": "dp4-104",
+      "name": "Darkrai LV.X",
+      "setName": "Great Encounters",
+      "setId": "dp4",
+      "number": "104",
+      "image": "https://images.pokemontcg.io/dp4/104_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2008/02/01"
+    },
+    "dp4-106": {
+      "id": "dp4-106",
+      "name": "Palkia LV.X",
+      "setName": "Great Encounters",
+      "setId": "dp4",
+      "number": "106",
+      "image": "https://images.pokemontcg.io/dp4/106_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2008/02/01"
+    },
+    "g1-RC29": {
+      "id": "g1-RC29",
+      "name": "Pikachu",
+      "setName": "Generations",
+      "setId": "g1",
+      "number": "RC29",
+      "image": "https://images.pokemontcg.io/g1/RC29_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2016/02/22"
+    },
+    "xy6-104": {
+      "id": "xy6-104",
+      "name": "Rayquaza-EX",
+      "setName": "Roaring Skies",
+      "setId": "xy6",
+      "number": "104",
+      "image": "https://images.pokemontcg.io/xy6/104_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2015/05/06"
+    },
+    "dp3-15": {
+      "id": "dp3-15",
+      "name": "Mew",
+      "setName": "Secret Wonders",
+      "setId": "dp3",
+      "number": "15",
+      "image": "https://images.pokemontcg.io/dp3/15_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2007/11/01"
+    },
+    "xy8-164": {
+      "id": "xy8-164",
+      "name": "Mewtwo-EX",
+      "setName": "BREAKthrough",
+      "setId": "xy8",
+      "number": "164",
+      "image": "https://images.pokemontcg.io/xy8/164_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2015/11/04"
+    },
+    "dp7-101": {
+      "id": "dp7-101",
+      "name": "Charmander",
+      "setName": "Stormfront",
+      "setId": "dp7",
+      "number": "101",
+      "image": "https://images.pokemontcg.io/dp7/101_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2008/11/01"
+    },
+    "hgss2-92": {
+      "id": "hgss2-92",
+      "name": "Raikou & Suicune LEGEND",
+      "setName": "HS—Unleashed",
+      "setId": "hgss2",
+      "number": "92",
+      "image": "https://images.pokemontcg.io/hgss2/92_hires.png",
+      "rarity": "LEGEND",
+      "releaseDate": "2010/05/12"
+    },
+    "pl1-124": {
+      "id": "pl1-124",
+      "name": "Giratina LV.X",
+      "setName": "Platinum",
+      "setId": "pl1",
+      "number": "124",
+      "image": "https://images.pokemontcg.io/pl1/124_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2009/02/11"
+    },
+    "g1-12": {
+      "id": "g1-12",
+      "name": "M Charizard-EX",
+      "setName": "Generations",
+      "setId": "g1",
+      "number": "12",
+      "image": "https://images.pokemontcg.io/g1/12_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2016/02/22"
+    },
+    "xy3-113": {
+      "id": "xy3-113",
+      "name": "M Lucario-EX",
+      "setName": "Furious Fists",
+      "setId": "xy3",
+      "number": "113",
+      "image": "https://images.pokemontcg.io/xy3/113_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2014/08/13"
+    },
+    "bw3-98": {
+      "id": "bw3-98",
+      "name": "Victini",
+      "setName": "Noble Victories",
+      "setId": "bw3",
+      "number": "98",
+      "image": "https://images.pokemontcg.io/bw3/98_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2011/11/16"
+    },
+    "sm5-153": {
+      "id": "sm5-153",
+      "name": "Lusamine",
+      "setName": "Ultra Prism",
+      "setId": "sm5",
+      "number": "153",
+      "image": "https://images.pokemontcg.io/sm5/153_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2018/02/02"
+    },
+    "pl1-SH6": {
+      "id": "pl1-SH6",
+      "name": "Vulpix",
+      "setName": "Platinum",
+      "setId": "pl1",
+      "number": "SH6",
+      "image": "https://images.pokemontcg.io/pl1/SH6_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2009/02/11"
+    },
+    "col1-22": {
+      "id": "col1-22",
+      "name": "Umbreon",
+      "setName": "Call of Legends",
+      "setId": "col1",
+      "number": "22",
+      "image": "https://images.pokemontcg.io/col1/22_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2011/02/09"
+    },
+    "xy12-101": {
+      "id": "xy12-101",
+      "name": "M Charizard-EX",
+      "setName": "Evolutions",
+      "setId": "xy12",
+      "number": "101",
+      "image": "https://images.pokemontcg.io/xy12/101_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2016/11/02"
+    },
+    "pl1-122": {
+      "id": "pl1-122",
+      "name": "Dialga G LV.X",
+      "setName": "Platinum",
+      "setId": "pl1",
+      "number": "122",
+      "image": "https://images.pokemontcg.io/pl1/122_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2009/02/11"
+    },
+    "pl4-SH12": {
+      "id": "pl4-SH12",
+      "name": "Shinx",
+      "setName": "Arceus",
+      "setId": "pl4",
+      "number": "SH12",
+      "image": "https://images.pokemontcg.io/pl4/SH12_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2009/11/04"
+    },
+    "bw11-RC22": {
+      "id": "bw11-RC22",
+      "name": "Reshiram",
+      "setName": "Legendary Treasures",
+      "setId": "bw11",
+      "number": "RC22",
+      "image": "https://images.pokemontcg.io/bw11/RC22_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2013/11/06"
+    },
+    "dp1-121": {
+      "id": "dp1-121",
+      "name": "Infernape LV.X",
+      "setName": "Diamond & Pearl",
+      "setId": "dp1",
+      "number": "121",
+      "image": "https://images.pokemontcg.io/dp1/121_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2007/05/01"
+    },
+    "hgss2-93": {
+      "id": "hgss2-93",
+      "name": "Raikou & Suicune LEGEND",
+      "setName": "HS—Unleashed",
+      "setId": "hgss2",
+      "number": "93",
+      "image": "https://images.pokemontcg.io/hgss2/93_hires.png",
+      "rarity": "LEGEND",
+      "releaseDate": "2010/05/12"
+    },
+    "pl1-87": {
+      "id": "pl1-87",
+      "name": "Psyduck",
+      "setName": "Platinum",
+      "setId": "pl1",
+      "number": "87",
+      "image": "https://images.pokemontcg.io/pl1/87_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2009/02/11"
+    },
+    "swsh12pt5gg-GG68": {
+      "id": "swsh12pt5gg-GG68",
+      "name": "Origin Forme Dialga VSTAR",
+      "setName": "Crown Zenith Galarian Gallery",
+      "setId": "swsh12pt5gg",
+      "number": "GG68",
+      "image": "https://images.pokemontcg.io/swsh12pt5gg/GG68_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2023/01/20"
+    },
+    "dp3-3": {
+      "id": "dp3-3",
+      "name": "Charizard",
+      "setName": "Secret Wonders",
+      "setId": "dp3",
+      "number": "3",
+      "image": "https://images.pokemontcg.io/dp3/3_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2007/11/01"
+    },
+    "dp5-5": {
+      "id": "dp5-5",
+      "name": "Glaceon",
+      "setName": "Majestic Dawn",
+      "setId": "dp5",
+      "number": "5",
+      "image": "https://images.pokemontcg.io/dp5/5_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2008/05/01"
+    },
+    "dp5-97": {
+      "id": "dp5-97",
+      "name": "Garchomp LV.X",
+      "setName": "Majestic Dawn",
+      "setId": "dp5",
+      "number": "97",
+      "image": "https://images.pokemontcg.io/dp5/97_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2008/05/01"
+    },
+    "xy4-35": {
+      "id": "xy4-35",
+      "name": "M Gengar-EX",
+      "setName": "Phantom Forces",
+      "setId": "xy4",
+      "number": "35",
+      "image": "https://images.pokemontcg.io/xy4/35_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2014/11/05"
+    },
+    "sm2-158": {
+      "id": "sm2-158",
+      "name": "Sylveon-GX",
+      "setName": "Guardians Rising",
+      "setId": "sm2",
+      "number": "158",
+      "image": "https://images.pokemontcg.io/sm2/158_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2017/05/05"
+    },
+    "sm10-225": {
+      "id": "sm10-225",
+      "name": "Gardevoir & Sylveon-GX",
+      "setName": "Unbroken Bonds",
+      "setId": "sm10",
+      "number": "225",
+      "image": "https://images.pokemontcg.io/sm10/225_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2019/05/03"
+    },
+    "xy1-142": {
+      "id": "xy1-142",
+      "name": "Blastoise-EX",
+      "setName": "XY",
+      "setId": "xy1",
+      "number": "142",
+      "image": "https://images.pokemontcg.io/xy1/142_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2014/02/05"
+    },
+    "xy10-125": {
+      "id": "xy10-125",
+      "name": "Alakazam-EX",
+      "setName": "Fates Collide",
+      "setId": "xy10",
+      "number": "125",
+      "image": "https://images.pokemontcg.io/xy10/125_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2016/05/02"
+    },
+    "xy8-160": {
+      "id": "xy8-160",
+      "name": "M Mewtwo-EX",
+      "setName": "BREAKthrough",
+      "setId": "xy8",
+      "number": "160",
+      "image": "https://images.pokemontcg.io/xy8/160_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2015/11/04"
+    },
+    "sm8-213": {
+      "id": "sm8-213",
+      "name": "Professor Elm's Lecture",
+      "setName": "Lost Thunder",
+      "setId": "sm8",
+      "number": "213",
+      "image": "https://images.pokemontcg.io/sm8/213_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2018/11/02"
+    },
+    "dp3-14": {
+      "id": "dp3-14",
+      "name": "Lugia",
+      "setName": "Secret Wonders",
+      "setId": "dp3",
+      "number": "14",
+      "image": "https://images.pokemontcg.io/dp3/14_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2007/11/01"
+    },
+    "sma-SV59": {
+      "id": "sma-SV59",
+      "name": "Mewtwo-GX",
+      "setName": "Hidden Fates Shiny Vault",
+      "setId": "sma",
+      "number": "SV59",
+      "image": "https://images.pokemontcg.io/sma/SV59_hires.png",
+      "rarity": "Rare Shiny GX",
+      "releaseDate": "2019/08/23"
+    },
+    "hgss4-100": {
+      "id": "hgss4-100",
+      "name": "Darkrai & Cresselia LEGEND",
+      "setName": "HS—Triumphant",
+      "setId": "hgss4",
+      "number": "100",
+      "image": "https://images.pokemontcg.io/hgss4/100_hires.png",
+      "rarity": "LEGEND",
+      "releaseDate": "2010/11/03"
+    },
+    "swsh11tg-TG16": {
+      "id": "swsh11tg-TG16",
+      "name": "Pikachu V",
+      "setName": "Lost Origin Trainer Gallery",
+      "setId": "swsh11tg",
+      "number": "TG16",
+      "image": "https://images.pokemontcg.io/swsh11tg/TG16_hires.png",
+      "rarity": "Rare Holo V",
+      "releaseDate": "2022/09/09"
+    },
+    "sm35-40": {
+      "id": "sm35-40",
+      "name": "Shining Mew",
+      "setName": "Shining Legends",
+      "setId": "sm35",
+      "number": "40",
+      "image": "https://images.pokemontcg.io/sm35/40_hires.png",
+      "rarity": "Rare Shining",
+      "releaseDate": "2017/10/06"
+    },
+    "bw1-115": {
+      "id": "bw1-115",
+      "name": "Pikachu",
+      "setName": "Black & White",
+      "setId": "bw1",
+      "number": "115",
+      "image": "https://images.pokemontcg.io/bw1/115_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2011/04/25"
+    },
+    "swsh45sv-SV107": {
+      "id": "swsh45sv-SV107",
+      "name": "Charizard VMAX",
+      "setName": "Shining Fates Shiny Vault",
+      "setId": "swsh45sv",
+      "number": "SV107",
+      "image": "https://images.pokemontcg.io/swsh45sv/SV107_hires.png",
+      "rarity": "Rare Holo VMAX",
+      "releaseDate": "2021/02/19"
+    },
+    "swsh12pt5gg-GG67": {
+      "id": "swsh12pt5gg-GG67",
+      "name": "Origin Forme Palkia VSTAR",
+      "setName": "Crown Zenith Galarian Gallery",
+      "setId": "swsh12pt5gg",
+      "number": "GG67",
+      "image": "https://images.pokemontcg.io/swsh12pt5gg/GG67_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2023/01/20"
+    },
+    "swsh10tg-TG13": {
+      "id": "swsh10tg-TG13",
+      "name": "Starmie V",
+      "setName": "Astral Radiance Trainer Gallery",
+      "setId": "swsh10tg",
+      "number": "TG13",
+      "image": "https://images.pokemontcg.io/swsh10tg/TG13_hires.png",
+      "rarity": "Rare Holo V",
+      "releaseDate": "2022/05/27"
+    },
+    "xy5-148": {
+      "id": "xy5-148",
+      "name": "Kyogre-EX",
+      "setName": "Primal Clash",
+      "setId": "xy5",
+      "number": "148",
+      "image": "https://images.pokemontcg.io/xy5/148_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2015/02/04"
+    },
+    "xy7-93": {
+      "id": "xy7-93",
+      "name": "Giratina-EX",
+      "setName": "Ancient Origins",
+      "setId": "xy7",
+      "number": "93",
+      "image": "https://images.pokemontcg.io/xy7/93_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2015/08/12"
+    },
+    "col1-20": {
+      "id": "col1-20",
+      "name": "Rayquaza",
+      "setName": "Call of Legends",
+      "setId": "col1",
+      "number": "20",
+      "image": "https://images.pokemontcg.io/col1/20_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2011/02/09"
+    },
+    "xy8-159": {
+      "id": "xy8-159",
+      "name": "M Mewtwo-EX",
+      "setName": "BREAKthrough",
+      "setId": "xy8",
+      "number": "159",
+      "image": "https://images.pokemontcg.io/xy8/159_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2015/11/04"
+    },
+    "dp6-14": {
+      "id": "dp6-14",
+      "name": "Rayquaza",
+      "setName": "Legends Awakened",
+      "setId": "dp6",
+      "number": "14",
+      "image": "https://images.pokemontcg.io/dp6/14_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2008/08/01"
+    },
+    "si1-11": {
+      "id": "si1-11",
+      "name": "Marill",
+      "setName": "Southern Islands",
+      "setId": "si1",
+      "number": "11",
+      "image": "https://images.pokemontcg.io/si1/11_hires.png",
+      "rarity": null,
+      "releaseDate": "2001/07/31"
+    },
+    "hgss4-18": {
+      "id": "hgss4-18",
+      "name": "Dragonite",
+      "setName": "HS—Triumphant",
+      "setId": "hgss4",
+      "number": "18",
+      "image": "https://images.pokemontcg.io/hgss4/18_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2010/11/03"
+    },
+    "xy3-107": {
+      "id": "xy3-107",
+      "name": "Lucario-EX",
+      "setName": "Furious Fists",
+      "setId": "xy3",
+      "number": "107",
+      "image": "https://images.pokemontcg.io/xy3/107_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2014/08/13"
+    },
+    "bw10-102": {
+      "id": "bw10-102",
+      "name": "Exeggcute",
+      "setName": "Plasma Blast",
+      "setId": "bw10",
+      "number": "102",
+      "image": "https://images.pokemontcg.io/bw10/102_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2013/08/14"
+    },
+    "bp-7": {
+      "id": "bp-7",
+      "name": "Dark Venusaur",
+      "setName": "Best of Game",
+      "setId": "bp",
+      "number": "7",
+      "image": "https://images.pokemontcg.io/bp/7_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2002/12/01"
+    },
+    "col1-94": {
+      "id": "col1-94",
+      "name": "Darkness Energy",
+      "setName": "Call of Legends",
+      "setId": "col1",
+      "number": "94",
+      "image": "https://images.pokemontcg.io/col1/94_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2011/02/09"
+    },
+    "swsh6-224": {
+      "id": "swsh6-224",
+      "name": "Snorlax",
+      "setName": "Chilling Reign",
+      "setId": "swsh6",
+      "number": "224",
+      "image": "https://images.pokemontcg.io/swsh6/224_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2021/06/18"
+    },
+    "sm1-154": {
+      "id": "sm1-154",
+      "name": "Umbreon-GX",
+      "setName": "Sun & Moon",
+      "setId": "sm1",
+      "number": "154",
+      "image": "https://images.pokemontcg.io/sm1/154_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2017/02/03"
+    },
+    "hgss1-123": {
+      "id": "hgss1-123",
+      "name": "Gyarados",
+      "setName": "HeartGold & SoulSilver",
+      "setId": "hgss1",
+      "number": "123",
+      "image": "https://images.pokemontcg.io/hgss1/123_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2010/02/10"
+    },
+    "hgss2-TWO": {
+      "id": "hgss2-TWO",
+      "name": "Alph Lithograph",
+      "setName": "HS—Unleashed",
+      "setId": "hgss2",
+      "number": "TWO",
+      "image": "https://images.pokemontcg.io/hgss2/TWO_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2010/05/12"
+    },
+    "pl2-113": {
+      "id": "pl2-113",
+      "name": "Flying Pikachu",
+      "setName": "Rising Rivals",
+      "setId": "pl2",
+      "number": "113",
+      "image": "https://images.pokemontcg.io/pl2/113_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2009/05/16"
+    },
+    "svp-132": {
+      "id": "svp-132",
+      "name": "Greninja ex",
+      "setName": "Scarlet & Violet Black Star Promos",
+      "setId": "svp",
+      "number": "132",
+      "image": "https://images.pokemontcg.io/svp/132_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2023/01/01"
+    },
+    "swsh9tg-TG23": {
+      "id": "swsh9tg-TG23",
+      "name": "Umbreon VMAX",
+      "setName": "Brilliant Stars Trainer Gallery",
+      "setId": "swsh9tg",
+      "number": "TG23",
+      "image": "https://images.pokemontcg.io/swsh9tg/TG23_hires.png",
+      "rarity": "Rare Holo VMAX",
+      "releaseDate": "2022/02/25"
+    },
+    "bw8-131": {
+      "id": "bw8-131",
+      "name": "Victini-EX",
+      "setName": "Plasma Storm",
+      "setId": "bw8",
+      "number": "131",
+      "image": "https://images.pokemontcg.io/bw8/131_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2013/02/06"
+    },
+    "sv2-211": {
+      "id": "sv2-211",
+      "name": "Raichu",
+      "setName": "Paldea Evolved",
+      "setId": "sv2",
+      "number": "211",
+      "image": "https://images.pokemontcg.io/sv2/211_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2023/06/09"
+    },
+    "ex1-3": {
+      "id": "ex1-3",
+      "name": "Blaziken",
+      "setName": "Ruby & Sapphire",
+      "setId": "ex1",
+      "number": "3",
+      "image": "https://images.pokemontcg.io/ex1/3_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2003/07/01"
+    },
+    "sm35-56": {
+      "id": "sm35-56",
+      "name": "Shining Rayquaza",
+      "setName": "Shining Legends",
+      "setId": "sm35",
+      "number": "56",
+      "image": "https://images.pokemontcg.io/sm35/56_hires.png",
+      "rarity": "Rare Shining",
+      "releaseDate": "2017/10/06"
+    },
+    "xy3-108": {
+      "id": "xy3-108",
+      "name": "Dragonite-EX",
+      "setName": "Furious Fists",
+      "setId": "xy3",
+      "number": "108",
+      "image": "https://images.pokemontcg.io/xy3/108_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2014/08/13"
+    },
+    "bw1-114": {
+      "id": "bw1-114",
+      "name": "Zekrom",
+      "setName": "Black & White",
+      "setId": "bw1",
+      "number": "114",
+      "image": "https://images.pokemontcg.io/bw1/114_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2011/04/25"
+    },
+    "dp7-102": {
+      "id": "dp7-102",
+      "name": "Charmeleon",
+      "setName": "Stormfront",
+      "setId": "dp7",
+      "number": "102",
+      "image": "https://images.pokemontcg.io/dp7/102_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2008/11/01"
+    },
+    "sv4-199": {
+      "id": "sv4-199",
+      "name": "Groudon",
+      "setName": "Paradox Rift",
+      "setId": "sv4",
+      "number": "199",
+      "image": "https://images.pokemontcg.io/sv4/199_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2023/11/03"
+    },
+    "ex1-99": {
+      "id": "ex1-99",
+      "name": "Lapras ex",
+      "setName": "Ruby & Sapphire",
+      "setId": "ex1",
+      "number": "99",
+      "image": "https://images.pokemontcg.io/ex1/99_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2003/07/01"
+    },
+    "dp6-11": {
+      "id": "dp6-11",
+      "name": "Mewtwo",
+      "setName": "Legends Awakened",
+      "setId": "dp6",
+      "number": "11",
+      "image": "https://images.pokemontcg.io/dp6/11_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2008/08/01"
+    },
+    "g1-RC31": {
+      "id": "g1-RC31",
+      "name": "M Gardevoir-EX",
+      "setName": "Generations",
+      "setId": "g1",
+      "number": "RC31",
+      "image": "https://images.pokemontcg.io/g1/RC31_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2016/02/22"
+    },
+    "sm6-135": {
+      "id": "sm6-135",
+      "name": "Lucario-GX",
+      "setName": "Forbidden Light",
+      "setId": "sm6",
+      "number": "135",
+      "image": "https://images.pokemontcg.io/sm6/135_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2018/05/04"
+    },
+    "dp3-131": {
+      "id": "dp3-131",
+      "name": "Gardevoir LV.X",
+      "setName": "Secret Wonders",
+      "setId": "dp3",
+      "number": "131",
+      "image": "https://images.pokemontcg.io/dp3/131_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2007/11/01"
+    },
+    "xy6-61": {
+      "id": "xy6-61",
+      "name": "M Rayquaza-EX",
+      "setName": "Roaring Skies",
+      "setId": "xy6",
+      "number": "61",
+      "image": "https://images.pokemontcg.io/xy6/61_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2015/05/06"
+    },
+    "sv3-223": {
+      "id": "sv3-223",
+      "name": "Charizard ex",
+      "setName": "Obsidian Flames",
+      "setId": "sv3",
+      "number": "223",
+      "image": "https://images.pokemontcg.io/sv3/223_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2023/08/11"
+    },
+    "dpp-DP12": {
+      "id": "dpp-DP12",
+      "name": "Lucario LV.X",
+      "setName": "DP Black Star Promos",
+      "setId": "dpp",
+      "number": "DP12",
+      "image": "https://images.pokemontcg.io/dpp/DP12_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2007/05/01"
+    },
+    "pop5-2": {
+      "id": "pop5-2",
+      "name": "Lugia",
+      "setName": "POP Series 5",
+      "setId": "pop5",
+      "number": "2",
+      "image": "https://images.pokemontcg.io/pop5/2_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2007/03/01"
+    },
+    "sm6-133": {
+      "id": "sm6-133",
+      "name": "Greninja-GX",
+      "setName": "Forbidden Light",
+      "setId": "sm6",
+      "number": "133",
+      "image": "https://images.pokemontcg.io/sm6/133_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2018/05/04"
+    },
+    "pop4-9": {
+      "id": "pop4-9",
+      "name": "Pokémon Fan Club",
+      "setName": "POP Series 4",
+      "setId": "pop4",
+      "number": "9",
+      "image": "https://images.pokemontcg.io/pop4/9_hires.png",
+      "rarity": "Uncommon",
+      "releaseDate": "2006/08/01"
+    },
+    "dp7-18": {
+      "id": "dp7-18",
+      "name": "Gengar",
+      "setName": "Stormfront",
+      "setId": "dp7",
+      "number": "18",
+      "image": "https://images.pokemontcg.io/dp7/18_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2008/11/01"
+    },
+    "sm8-207": {
+      "id": "sm8-207",
+      "name": "Lugia-GX",
+      "setName": "Lost Thunder",
+      "setId": "sm8",
+      "number": "207",
+      "image": "https://images.pokemontcg.io/sm8/207_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2018/11/02"
+    },
+    "bw1-113": {
+      "id": "bw1-113",
+      "name": "Reshiram",
+      "setName": "Black & White",
+      "setId": "bw1",
+      "number": "113",
+      "image": "https://images.pokemontcg.io/bw1/113_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2011/04/25"
+    },
+    "pl4-17": {
+      "id": "pl4-17",
+      "name": "Gengar",
+      "setName": "Arceus",
+      "setId": "pl4",
+      "number": "17",
+      "image": "https://images.pokemontcg.io/pl4/17_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2009/11/04"
+    },
+    "sv5-177": {
+      "id": "sv5-177",
+      "name": "Gastly",
+      "setName": "Temporal Forces",
+      "setId": "sv5",
+      "number": "177",
+      "image": "https://images.pokemontcg.io/sv5/177_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2024/03/22"
+    },
+    "sm7-160": {
+      "id": "sm7-160",
+      "name": "Rayquaza-GX",
+      "setName": "Celestial Storm",
+      "setId": "sm7",
+      "number": "160",
+      "image": "https://images.pokemontcg.io/sm7/160_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2018/08/03"
+    },
+    "sm8-223": {
+      "id": "sm8-223",
+      "name": "Tyranitar-GX",
+      "setName": "Lost Thunder",
+      "setId": "sm8",
+      "number": "223",
+      "image": "https://images.pokemontcg.io/sm8/223_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2018/11/02"
+    },
+    "dp6-141": {
+      "id": "dp6-141",
+      "name": "Gliscor LV.X",
+      "setName": "Legends Awakened",
+      "setId": "dp6",
+      "number": "141",
+      "image": "https://images.pokemontcg.io/dp6/141_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2008/08/01"
+    },
+    "swsh1-206": {
+      "id": "swsh1-206",
+      "name": "Snorlax VMAX",
+      "setName": "Sword & Shield",
+      "setId": "swsh1",
+      "number": "206",
+      "image": "https://images.pokemontcg.io/swsh1/206_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2020/02/07"
+    },
+    "sv2-226": {
+      "id": "sv2-226",
+      "name": "Maushold",
+      "setName": "Paldea Evolved",
+      "setId": "sv2",
+      "number": "226",
+      "image": "https://images.pokemontcg.io/sv2/226_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2023/06/09"
+    },
+    "ex1-102": {
+      "id": "ex1-102",
+      "name": "Scyther ex",
+      "setName": "Ruby & Sapphire",
+      "setId": "ex1",
+      "number": "102",
+      "image": "https://images.pokemontcg.io/ex1/102_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2003/07/01"
+    },
+    "hsp-HGSS02": {
+      "id": "hsp-HGSS02",
+      "name": "Lugia",
+      "setName": "HGSS Black Star Promos",
+      "setId": "hsp",
+      "number": "HGSS02",
+      "image": "https://images.pokemontcg.io/hsp/HGSS02_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2010/02/10"
+    },
+    "dp1-50": {
+      "id": "dp1-50",
+      "name": "Haunter",
+      "setName": "Diamond & Pearl",
+      "setId": "dp1",
+      "number": "50",
+      "image": "https://images.pokemontcg.io/dp1/50_hires.png",
+      "rarity": "Uncommon",
+      "releaseDate": "2007/05/01"
+    },
+    "swsh6-179": {
+      "id": "swsh6-179",
+      "name": "Galarian Slowking V",
+      "setName": "Chilling Reign",
+      "setId": "swsh6",
+      "number": "179",
+      "image": "https://images.pokemontcg.io/swsh6/179_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2021/06/18"
+    },
+    "dp2-122": {
+      "id": "dp2-122",
+      "name": "Lucario LV.X",
+      "setName": "Mysterious Treasures",
+      "setId": "dp2",
+      "number": "122",
+      "image": "https://images.pokemontcg.io/dp2/122_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2007/08/01"
+    },
+    "pop4-2": {
+      "id": "pop4-2",
+      "name": "Deoxys δ",
+      "setName": "POP Series 4",
+      "setId": "pop4",
+      "number": "2",
+      "image": "https://images.pokemontcg.io/pop4/2_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2006/08/01"
+    },
+    "xy6-102": {
+      "id": "xy6-102",
+      "name": "M Latios-EX",
+      "setName": "Roaring Skies",
+      "setId": "xy6",
+      "number": "102",
+      "image": "https://images.pokemontcg.io/xy6/102_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2015/05/06"
+    },
+    "xy11-116": {
+      "id": "xy11-116",
+      "name": "Gardevoir-EX",
+      "setName": "Steam Siege",
+      "setId": "xy11",
+      "number": "116",
+      "image": "https://images.pokemontcg.io/xy11/116_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2016/08/03"
+    },
+    "dp1-122": {
+      "id": "dp1-122",
+      "name": "Torterra LV.X",
+      "setName": "Diamond & Pearl",
+      "setId": "dp1",
+      "number": "122",
+      "image": "https://images.pokemontcg.io/dp1/122_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2007/05/01"
+    },
+    "xy1-146": {
+      "id": "xy1-146",
+      "name": "Xerneas-EX",
+      "setName": "XY",
+      "setId": "xy1",
+      "number": "146",
+      "image": "https://images.pokemontcg.io/xy1/146_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2014/02/05"
+    },
+    "svp-131": {
+      "id": "svp-131",
+      "name": "Kingdra ex",
+      "setName": "Scarlet & Violet Black Star Promos",
+      "setId": "svp",
+      "number": "131",
+      "image": "https://images.pokemontcg.io/svp/131_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2023/01/01"
+    },
+    "dp3-2": {
+      "id": "dp3-2",
+      "name": "Blastoise",
+      "setName": "Secret Wonders",
+      "setId": "dp3",
+      "number": "2",
+      "image": "https://images.pokemontcg.io/dp3/2_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2007/11/01"
+    },
+    "xy12-11": {
+      "id": "xy12-11",
+      "name": "Charizard",
+      "setName": "Evolutions",
+      "setId": "xy12",
+      "number": "11",
+      "image": "https://images.pokemontcg.io/xy12/11_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2016/11/02"
+    },
+    "xy5-154": {
+      "id": "xy5-154",
+      "name": "M Aggron-EX",
+      "setName": "Primal Clash",
+      "setId": "xy5",
+      "number": "154",
+      "image": "https://images.pokemontcg.io/xy5/154_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2015/02/04"
+    },
+    "si1-17": {
+      "id": "si1-17",
+      "name": "Vileplume",
+      "setName": "Southern Islands",
+      "setId": "si1",
+      "number": "17",
+      "image": "https://images.pokemontcg.io/si1/17_hires.png",
+      "rarity": null,
+      "releaseDate": "2001/07/31"
+    },
+    "pop6-9": {
+      "id": "pop6-9",
+      "name": "Pikachu",
+      "setName": "POP Series 6",
+      "setId": "pop6",
+      "number": "9",
+      "image": "https://images.pokemontcg.io/pop6/9_hires.png",
+      "rarity": "Uncommon",
+      "releaseDate": "2007/09/01"
+    },
+    "swsh6-166": {
+      "id": "swsh6-166",
+      "name": "Zeraora V",
+      "setName": "Chilling Reign",
+      "setId": "swsh6",
+      "number": "166",
+      "image": "https://images.pokemontcg.io/swsh6/166_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2021/06/18"
+    },
+    "swsh10-167": {
+      "id": "swsh10-167",
+      "name": "Origin Forme Palkia V",
+      "setName": "Astral Radiance",
+      "setId": "swsh10",
+      "number": "167",
+      "image": "https://images.pokemontcg.io/swsh10/167_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2022/05/27"
+    },
+    "dp1-71": {
+      "id": "dp1-71",
+      "name": "Bonsly",
+      "setName": "Diamond & Pearl",
+      "setId": "dp1",
+      "number": "71",
+      "image": "https://images.pokemontcg.io/dp1/71_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2007/05/01"
+    },
+    "bw3-102": {
+      "id": "bw3-102",
+      "name": "Meowth",
+      "setName": "Noble Victories",
+      "setId": "bw3",
+      "number": "102",
+      "image": "https://images.pokemontcg.io/bw3/102_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2011/11/16"
+    },
+    "sv6-188": {
+      "id": "sv6-188",
+      "name": "Eevee",
+      "setName": "Twilight Masquerade",
+      "setId": "sv6",
+      "number": "188",
+      "image": "https://images.pokemontcg.io/sv6/188_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2024/05/24"
+    },
+    "rsv10pt5-105": {
+      "id": "rsv10pt5-105",
+      "name": "Oshawott",
+      "setName": "White Flare",
+      "setId": "rsv10pt5",
+      "number": "105",
+      "image": "https://images.pokemontcg.io/rsv10pt5/105_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2025/07/18"
+    },
+    "pop5-5": {
+      "id": "pop5-5",
+      "name": "Charmeleon δ",
+      "setName": "POP Series 5",
+      "setId": "pop5",
+      "number": "5",
+      "image": "https://images.pokemontcg.io/pop5/5_hires.png",
+      "rarity": "Uncommon",
+      "releaseDate": "2007/03/01"
+    },
+    "rsv10pt5-169": {
+      "id": "rsv10pt5-169",
+      "name": "Hydreigon ex",
+      "setName": "White Flare",
+      "setId": "rsv10pt5",
+      "number": "169",
+      "image": "https://images.pokemontcg.io/rsv10pt5/169_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2025/07/18"
+    },
+    "dp5-32": {
+      "id": "dp5-32",
+      "name": "Umbreon",
+      "setName": "Majestic Dawn",
+      "setId": "dp5",
+      "number": "32",
+      "image": "https://images.pokemontcg.io/dp5/32_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2008/05/01"
+    },
+    "xy1-144": {
+      "id": "xy1-144",
+      "name": "Yveltal-EX",
+      "setName": "XY",
+      "setId": "xy1",
+      "number": "144",
+      "image": "https://images.pokemontcg.io/xy1/144_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2014/02/05"
+    },
+    "swsh9tg-TG16": {
+      "id": "swsh9tg-TG16",
+      "name": "Mimikyu V",
+      "setName": "Brilliant Stars Trainer Gallery",
+      "setId": "swsh9tg",
+      "number": "TG16",
+      "image": "https://images.pokemontcg.io/swsh9tg/TG16_hires.png",
+      "rarity": "Rare Holo V",
+      "releaseDate": "2022/02/25"
+    },
+    "sm75-78": {
+      "id": "sm75-78",
+      "name": "Ultra Necrozma-GX",
+      "setName": "Dragon Majesty",
+      "setId": "sm75",
+      "number": "78",
+      "image": "https://images.pokemontcg.io/sm75/78_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2018/09/07"
+    },
+    "pop1-3": {
+      "id": "pop1-3",
+      "name": "Rayquaza",
+      "setName": "POP Series 1",
+      "setId": "pop1",
+      "number": "3",
+      "image": "https://images.pokemontcg.io/pop1/3_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2004/09/01"
+    },
+    "sv1-245": {
+      "id": "sv1-245",
+      "name": "Gardevoir ex",
+      "setName": "Scarlet & Violet",
+      "setId": "sv1",
+      "number": "245",
+      "image": "https://images.pokemontcg.io/sv1/245_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2023/03/31"
+    },
+    "xy9-115": {
+      "id": "xy9-115",
+      "name": "M Gyarados-EX",
+      "setName": "BREAKpoint",
+      "setId": "xy9",
+      "number": "115",
+      "image": "https://images.pokemontcg.io/xy9/115_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2016/02/03"
+    },
+    "sm35-76": {
+      "id": "sm35-76",
+      "name": "Mewtwo-GX",
+      "setName": "Shining Legends",
+      "setId": "sm35",
+      "number": "76",
+      "image": "https://images.pokemontcg.io/sm35/76_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2017/10/06"
+    },
+    "dp7-100": {
+      "id": "dp7-100",
+      "name": "Regigigas LV.X",
+      "setName": "Stormfront",
+      "setId": "dp7",
+      "number": "100",
+      "image": "https://images.pokemontcg.io/dp7/100_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2008/11/01"
+    },
+    "xy1-141": {
+      "id": "xy1-141",
+      "name": "Venusaur-EX",
+      "setName": "XY",
+      "setId": "xy1",
+      "number": "141",
+      "image": "https://images.pokemontcg.io/xy1/141_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2014/02/05"
+    },
+    "xy4-34": {
+      "id": "xy4-34",
+      "name": "Gengar-EX",
+      "setName": "Phantom Forces",
+      "setId": "xy4",
+      "number": "34",
+      "image": "https://images.pokemontcg.io/xy4/34_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2014/11/05"
+    },
+    "sv6pt5-78": {
+      "id": "sv6pt5-78",
+      "name": "Persian",
+      "setName": "Shrouded Fable",
+      "setId": "sv6pt5",
+      "number": "78",
+      "image": "https://images.pokemontcg.io/sv6pt5/78_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2024/08/02"
+    },
+    "sm5-157": {
+      "id": "sm5-157",
+      "name": "Leafeon-GX",
+      "setName": "Ultra Prism",
+      "setId": "sm5",
+      "number": "157",
+      "image": "https://images.pokemontcg.io/sm5/157_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2018/02/02"
+    },
+    "dp4-82": {
+      "id": "dp4-82",
+      "name": "Slowpoke",
+      "setName": "Great Encounters",
+      "setId": "dp4",
+      "number": "82",
+      "image": "https://images.pokemontcg.io/dp4/82_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2008/02/01"
+    },
+    "pop6-6": {
+      "id": "pop6-6",
+      "name": "Drifloon",
+      "setName": "POP Series 6",
+      "setId": "pop6",
+      "number": "6",
+      "image": "https://images.pokemontcg.io/pop6/6_hires.png",
+      "rarity": "Uncommon",
+      "releaseDate": "2007/09/01"
+    },
+    "swsh9tg-TG17": {
+      "id": "swsh9tg-TG17",
+      "name": "Mimikyu VMAX",
+      "setName": "Brilliant Stars Trainer Gallery",
+      "setId": "swsh9tg",
+      "number": "TG17",
+      "image": "https://images.pokemontcg.io/swsh9tg/TG17_hires.png",
+      "rarity": "Rare Holo VMAX",
+      "releaseDate": "2022/02/25"
+    },
+    "zsv10pt5-165": {
+      "id": "zsv10pt5-165",
+      "name": "Kyurem ex",
+      "setName": "Black Bolt",
+      "setId": "zsv10pt5",
+      "number": "165",
+      "image": "https://images.pokemontcg.io/zsv10pt5/165_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2025/07/18"
+    },
+    "xy6-76": {
+      "id": "xy6-76",
+      "name": "M Rayquaza-EX",
+      "setName": "Roaring Skies",
+      "setId": "xy6",
+      "number": "76",
+      "image": "https://images.pokemontcg.io/xy6/76_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2015/05/06"
+    },
+    "sv4pt5-131": {
+      "id": "sv4pt5-131",
+      "name": "Pikachu",
+      "setName": "Paldean Fates",
+      "setId": "sv4pt5",
+      "number": "131",
+      "image": "https://images.pokemontcg.io/sv4pt5/131_hires.png",
+      "rarity": "Shiny Rare",
+      "releaseDate": "2024/01/26"
+    },
+    "swsh10tg-TG23": {
+      "id": "swsh10tg-TG23",
+      "name": "Garchomp V",
+      "setName": "Astral Radiance Trainer Gallery",
+      "setId": "swsh10tg",
+      "number": "TG23",
+      "image": "https://images.pokemontcg.io/swsh10tg/TG23_hires.png",
+      "rarity": "Rare Holo V",
+      "releaseDate": "2022/05/27"
+    },
+    "swsh9tg-TG14": {
+      "id": "swsh9tg-TG14",
+      "name": "Sylveon V",
+      "setName": "Brilliant Stars Trainer Gallery",
+      "setId": "swsh9tg",
+      "number": "TG14",
+      "image": "https://images.pokemontcg.io/swsh9tg/TG14_hires.png",
+      "rarity": "Rare Holo V",
+      "releaseDate": "2022/02/25"
+    },
+    "sm5-159": {
+      "id": "sm5-159",
+      "name": "Glaceon-GX",
+      "setName": "Ultra Prism",
+      "setId": "sm5",
+      "number": "159",
+      "image": "https://images.pokemontcg.io/sm5/159_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2018/02/02"
+    },
+    "xy10-118": {
+      "id": "xy10-118",
+      "name": "M Alakazam-EX",
+      "setName": "Fates Collide",
+      "setId": "xy10",
+      "number": "118",
+      "image": "https://images.pokemontcg.io/xy10/118_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2016/05/02"
+    },
+    "xy9-114": {
+      "id": "xy9-114",
+      "name": "Gyarados-EX",
+      "setName": "BREAKpoint",
+      "setId": "xy9",
+      "number": "114",
+      "image": "https://images.pokemontcg.io/xy9/114_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2016/02/03"
+    },
+    "pop3-17": {
+      "id": "pop3-17",
+      "name": "Ho-Oh ex",
+      "setName": "POP Series 3",
+      "setId": "pop3",
+      "number": "17",
+      "image": "https://images.pokemontcg.io/pop3/17_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2006/04/01"
+    },
+    "swsh5-170": {
+      "id": "swsh5-170",
+      "name": "Rapid Strike Urshifu VMAX",
+      "setName": "Battle Styles",
+      "setId": "swsh5",
+      "number": "170",
+      "image": "https://images.pokemontcg.io/swsh5/170_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2021/03/19"
+    },
+    "sv2-222": {
+      "id": "sv2-222",
+      "name": "Tyranitar",
+      "setName": "Paldea Evolved",
+      "setId": "sv2",
+      "number": "222",
+      "image": "https://images.pokemontcg.io/sv2/222_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2023/06/09"
+    },
+    "swsh10-161": {
+      "id": "swsh10-161",
+      "name": "Beedrill V",
+      "setName": "Astral Radiance",
+      "setId": "swsh10",
+      "number": "161",
+      "image": "https://images.pokemontcg.io/swsh10/161_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2022/05/27"
+    },
+    "xy8-158": {
+      "id": "xy8-158",
+      "name": "Mewtwo-EX",
+      "setName": "BREAKthrough",
+      "setId": "xy8",
+      "number": "158",
+      "image": "https://images.pokemontcg.io/xy8/158_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2015/11/04"
+    },
+    "sm4-112": {
+      "id": "sm4-112",
+      "name": "Gyarados-GX",
+      "setName": "Crimson Invasion",
+      "setId": "sm4",
+      "number": "112",
+      "image": "https://images.pokemontcg.io/sm4/112_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2017/11/03"
+    },
+    "sm7-175": {
+      "id": "sm7-175",
+      "name": "Scizor-GX",
+      "setName": "Celestial Storm",
+      "setId": "sm7",
+      "number": "175",
+      "image": "https://images.pokemontcg.io/sm7/175_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2018/08/03"
+    },
+    "sv5-208": {
+      "id": "sv5-208",
+      "name": "Raging Bolt ex",
+      "setName": "Temporal Forces",
+      "setId": "sv5",
+      "number": "208",
+      "image": "https://images.pokemontcg.io/sv5/208_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2024/03/22"
+    },
+    "pop3-16": {
+      "id": "pop3-16",
+      "name": "Pichu Bros.",
+      "setName": "POP Series 3",
+      "setId": "pop3",
+      "number": "16",
+      "image": "https://images.pokemontcg.io/pop3/16_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2006/04/01"
+    },
+    "dv1-21": {
+      "id": "dv1-21",
+      "name": "Kyurem",
+      "setName": "Dragon Vault",
+      "setId": "dv1",
+      "number": "21",
+      "image": "https://images.pokemontcg.io/dv1/21_hires.png",
+      "rarity": null,
+      "releaseDate": "2012/10/05"
+    },
+    "xy9-117": {
+      "id": "xy9-117",
+      "name": "Espeon-EX",
+      "setName": "BREAKpoint",
+      "setId": "xy9",
+      "number": "117",
+      "image": "https://images.pokemontcg.io/xy9/117_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2016/02/03"
+    },
+    "sm7-170": {
+      "id": "sm7-170",
+      "name": "Blaziken-GX",
+      "setName": "Celestial Storm",
+      "setId": "sm7",
+      "number": "170",
+      "image": "https://images.pokemontcg.io/sm7/170_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2018/08/03"
+    },
+    "sv6-217": {
+      "id": "sv6-217",
+      "name": "Carmine",
+      "setName": "Twilight Masquerade",
+      "setId": "sv6",
+      "number": "217",
+      "image": "https://images.pokemontcg.io/sv6/217_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2024/05/24"
+    },
+    "sv4pt5-202": {
+      "id": "sv4pt5-202",
+      "name": "Snorlax",
+      "setName": "Paldean Fates",
+      "setId": "sv4pt5",
+      "number": "202",
+      "image": "https://images.pokemontcg.io/sv4pt5/202_hires.png",
+      "rarity": "Shiny Rare",
+      "releaseDate": "2024/01/26"
+    },
+    "swsh5-146": {
+      "id": "swsh5-146",
+      "name": "Empoleon V",
+      "setName": "Battle Styles",
+      "setId": "swsh5",
+      "number": "146",
+      "image": "https://images.pokemontcg.io/swsh5/146_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2021/03/19"
+    },
+    "sv2-269": {
+      "id": "sv2-269",
+      "name": "Iono",
+      "setName": "Paldea Evolved",
+      "setId": "sv2",
+      "number": "269",
+      "image": "https://images.pokemontcg.io/sv2/269_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2023/06/09"
+    },
+    "swsh2-189": {
+      "id": "swsh2-189",
+      "name": "Boss's Orders",
+      "setName": "Rebel Clash",
+      "setId": "swsh2",
+      "number": "189",
+      "image": "https://images.pokemontcg.io/swsh2/189_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2020/05/01"
+    },
+    "xy10-55": {
+      "id": "xy10-55",
+      "name": "Umbreon-EX",
+      "setName": "Fates Collide",
+      "setId": "xy10",
+      "number": "55",
+      "image": "https://images.pokemontcg.io/xy10/55_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2016/05/02"
+    },
+    "sv1-210": {
+      "id": "sv1-210",
+      "name": "Drowzee",
+      "setName": "Scarlet & Violet",
+      "setId": "sv1",
+      "number": "210",
+      "image": "https://images.pokemontcg.io/sv1/210_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2023/03/31"
+    },
+    "sv5-193": {
+      "id": "sv5-193",
+      "name": "Gengar ex",
+      "setName": "Temporal Forces",
+      "setId": "sv5",
+      "number": "193",
+      "image": "https://images.pokemontcg.io/sv5/193_hires.png",
+      "rarity": "Ultra Rare",
+      "releaseDate": "2024/03/22"
+    },
+    "sm3-169": {
+      "id": "sm3-169",
+      "name": "Fairy Energy",
+      "setName": "Burning Shadows",
+      "setId": "sm3",
+      "number": "169",
+      "image": "https://images.pokemontcg.io/sm3/169_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2017/08/05"
+    },
+    "hsp-HGSS07": {
+      "id": "hsp-HGSS07",
+      "name": "Feraligatr",
+      "setName": "HGSS Black Star Promos",
+      "setId": "hsp",
+      "number": "HGSS07",
+      "image": "https://images.pokemontcg.io/hsp/HGSS07_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2010/02/10"
+    },
+    "swsh10-177": {
+      "id": "swsh10-177",
+      "name": "Origin Forme Dialga V",
+      "setName": "Astral Radiance",
+      "setId": "swsh10",
+      "number": "177",
+      "image": "https://images.pokemontcg.io/swsh10/177_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2022/05/27"
+    },
+    "sv5-205": {
+      "id": "sv5-205",
+      "name": "Walking Wake ex",
+      "setName": "Temporal Forces",
+      "setId": "sv5",
+      "number": "205",
+      "image": "https://images.pokemontcg.io/sv5/205_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2024/03/22"
+    },
+    "swsh1-142": {
+      "id": "swsh1-142",
+      "name": "Snorlax VMAX",
+      "setName": "Sword & Shield",
+      "setId": "swsh1",
+      "number": "142",
+      "image": "https://images.pokemontcg.io/swsh1/142_hires.png",
+      "rarity": "Rare Holo VMAX",
+      "releaseDate": "2020/02/07"
+    },
+    "sv6pt5-68": {
+      "id": "sv6pt5-68",
+      "name": "Duskull",
+      "setName": "Shrouded Fable",
+      "setId": "sv6pt5",
+      "number": "68",
+      "image": "https://images.pokemontcg.io/sv6pt5/68_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2024/08/02"
+    },
+    "sv4-253": {
+      "id": "sv4-253",
+      "name": "Altaria ex",
+      "setName": "Paradox Rift",
+      "setId": "sv4",
+      "number": "253",
+      "image": "https://images.pokemontcg.io/sv4/253_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2023/11/03"
+    },
+    "dp2-121": {
+      "id": "dp2-121",
+      "name": "Electivire LV.X",
+      "setName": "Mysterious Treasures",
+      "setId": "dp2",
+      "number": "121",
+      "image": "https://images.pokemontcg.io/dp2/121_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2007/08/01"
+    },
+    "bw3-100": {
+      "id": "bw3-100",
+      "name": "Cobalion",
+      "setName": "Noble Victories",
+      "setId": "bw3",
+      "number": "100",
+      "image": "https://images.pokemontcg.io/bw3/100_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2011/11/16"
+    },
+    "pop9-1": {
+      "id": "pop9-1",
+      "name": "Garchomp",
+      "setName": "POP Series 9",
+      "setId": "pop9",
+      "number": "1",
+      "image": "https://images.pokemontcg.io/pop9/1_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2009/03/01"
+    },
+    "swsh11tg-TG05": {
+      "id": "swsh11tg-TG05",
+      "name": "Pikachu",
+      "setName": "Lost Origin Trainer Gallery",
+      "setId": "swsh11tg",
+      "number": "TG05",
+      "image": "https://images.pokemontcg.io/swsh11tg/TG05_hires.png",
+      "rarity": "Trainer Gallery Rare Holo",
+      "releaseDate": "2022/09/09"
+    },
+    "pop2-10": {
+      "id": "pop2-10",
+      "name": "Pokémon Park",
+      "setName": "POP Series 2",
+      "setId": "pop2",
+      "number": "10",
+      "image": "https://images.pokemontcg.io/pop2/10_hires.png",
+      "rarity": "Uncommon",
+      "releaseDate": "2005/08/01"
+    },
+    "hsp-HGSS21": {
+      "id": "hsp-HGSS21",
+      "name": "Suicune",
+      "setName": "HGSS Black Star Promos",
+      "setId": "hsp",
+      "number": "HGSS21",
+      "image": "https://images.pokemontcg.io/hsp/HGSS21_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2010/02/10"
+    },
+    "sm3-147": {
+      "id": "sm3-147",
+      "name": "Wicke",
+      "setName": "Burning Shadows",
+      "setId": "sm3",
+      "number": "147",
+      "image": "https://images.pokemontcg.io/sm3/147_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2017/08/05"
+    },
+    "xy9-118": {
+      "id": "xy9-118",
+      "name": "Darkrai-EX",
+      "setName": "BREAKpoint",
+      "setId": "xy9",
+      "number": "118",
+      "image": "https://images.pokemontcg.io/xy9/118_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2016/02/03"
+    },
+    "pop2-17": {
+      "id": "pop2-17",
+      "name": "Celebi ex",
+      "setName": "POP Series 2",
+      "setId": "pop2",
+      "number": "17",
+      "image": "https://images.pokemontcg.io/pop2/17_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2005/08/01"
+    },
+    "sm6-120": {
+      "id": "sm6-120",
+      "name": "Greninja-GX",
+      "setName": "Forbidden Light",
+      "setId": "sm6",
+      "number": "120",
+      "image": "https://images.pokemontcg.io/sm6/120_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2018/05/04"
+    },
+    "hsp-HGSS20": {
+      "id": "hsp-HGSS20",
+      "name": "Entei",
+      "setName": "HGSS Black Star Promos",
+      "setId": "hsp",
+      "number": "HGSS20",
+      "image": "https://images.pokemontcg.io/hsp/HGSS20_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2010/02/10"
+    },
+    "pgo-79": {
+      "id": "pgo-79",
+      "name": "Mewtwo VSTAR",
+      "setName": "Pokémon GO",
+      "setId": "pgo",
+      "number": "79",
+      "image": "https://images.pokemontcg.io/pgo/79_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2022/07/01"
+    },
+    "sm75-71": {
+      "id": "sm75-71",
+      "name": "Reshiram-GX",
+      "setName": "Dragon Majesty",
+      "setId": "sm75",
+      "number": "71",
+      "image": "https://images.pokemontcg.io/sm75/71_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2018/09/07"
+    },
+    "xy3-112": {
+      "id": "xy3-112",
+      "name": "M Heracross-EX",
+      "setName": "Furious Fists",
+      "setId": "xy3",
+      "number": "112",
+      "image": "https://images.pokemontcg.io/xy3/112_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2014/08/13"
+    },
+    "dp2-2": {
+      "id": "dp2-2",
+      "name": "Alakazam",
+      "setName": "Mysterious Treasures",
+      "setId": "dp2",
+      "number": "2",
+      "image": "https://images.pokemontcg.io/dp2/2_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2007/08/01"
+    },
+    "xy11-112": {
+      "id": "xy11-112",
+      "name": "M Gardevoir-EX",
+      "setName": "Steam Siege",
+      "setId": "xy11",
+      "number": "112",
+      "image": "https://images.pokemontcg.io/xy11/112_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2016/08/03"
+    },
+    "swsh11tg-TG06": {
+      "id": "swsh11tg-TG06",
+      "name": "Gengar",
+      "setName": "Lost Origin Trainer Gallery",
+      "setId": "swsh11tg",
+      "number": "TG06",
+      "image": "https://images.pokemontcg.io/swsh11tg/TG06_hires.png",
+      "rarity": "Trainer Gallery Rare Holo",
+      "releaseDate": "2022/09/09"
+    },
+    "fut20-5": {
+      "id": "fut20-5",
+      "name": "Sobble on the Ball",
+      "setName": "Pokémon Futsal Collection",
+      "setId": "fut20",
+      "number": "5",
+      "image": "https://images.pokemontcg.io/fut20/5_hires.png",
+      "rarity": null,
+      "releaseDate": "2020/09/11"
+    },
+    "sv1-212": {
+      "id": "sv1-212",
+      "name": "Kirlia",
+      "setName": "Scarlet & Violet",
+      "setId": "sv1",
+      "number": "212",
+      "image": "https://images.pokemontcg.io/sv1/212_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2023/03/31"
+    },
+    "sv6-187": {
+      "id": "sv6-187",
+      "name": "Chansey",
+      "setName": "Twilight Masquerade",
+      "setId": "sv6",
+      "number": "187",
+      "image": "https://images.pokemontcg.io/sv6/187_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2024/05/24"
+    },
+    "sm6-139": {
+      "id": "sm6-139",
+      "name": "Xerneas-GX",
+      "setName": "Forbidden Light",
+      "setId": "sm6",
+      "number": "139",
+      "image": "https://images.pokemontcg.io/sm6/139_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2018/05/04"
+    },
+    "pop3-12": {
+      "id": "pop3-12",
+      "name": "Ditto",
+      "setName": "POP Series 3",
+      "setId": "pop3",
+      "number": "12",
+      "image": "https://images.pokemontcg.io/pop3/12_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2006/04/01"
+    },
+    "sm75-74": {
+      "id": "sm75-74",
+      "name": "White Kyurem-GX",
+      "setName": "Dragon Majesty",
+      "setId": "sm75",
+      "number": "74",
+      "image": "https://images.pokemontcg.io/sm75/74_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2018/09/07"
+    },
+    "sv4-193": {
+      "id": "sv4-193",
+      "name": "Plusle",
+      "setName": "Paradox Rift",
+      "setId": "sv4",
+      "number": "193",
+      "image": "https://images.pokemontcg.io/sv4/193_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2023/11/03"
+    },
+    "xy12-106": {
+      "id": "xy12-106",
+      "name": "Dragonite-EX",
+      "setName": "Evolutions",
+      "setId": "xy12",
+      "number": "106",
+      "image": "https://images.pokemontcg.io/xy12/106_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2016/11/02"
+    },
+    "fut20-2": {
+      "id": "fut20-2",
+      "name": "Eevee on the Ball",
+      "setName": "Pokémon Futsal Collection",
+      "setId": "fut20",
+      "number": "2",
+      "image": "https://images.pokemontcg.io/fut20/2_hires.png",
+      "rarity": null,
+      "releaseDate": "2020/09/11"
+    },
+    "swsh5-148": {
+      "id": "swsh5-148",
+      "name": "Mimikyu V",
+      "setName": "Battle Styles",
+      "setId": "swsh5",
+      "number": "148",
+      "image": "https://images.pokemontcg.io/swsh5/148_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2021/03/19"
+    },
+    "xy12-13": {
+      "id": "xy12-13",
+      "name": "M Charizard-EX",
+      "setName": "Evolutions",
+      "setId": "xy12",
+      "number": "13",
+      "image": "https://images.pokemontcg.io/xy12/13_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2016/11/02"
+    },
+    "sm3-168": {
+      "id": "sm3-168",
+      "name": "Darkness Energy",
+      "setName": "Burning Shadows",
+      "setId": "sm3",
+      "number": "168",
+      "image": "https://images.pokemontcg.io/sm3/168_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2017/08/05"
+    },
+    "sv6pt5-67": {
+      "id": "sv6pt5-67",
+      "name": "Horsea",
+      "setName": "Shrouded Fable",
+      "setId": "sv6pt5",
+      "number": "67",
+      "image": "https://images.pokemontcg.io/sv6pt5/67_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2024/08/02"
+    },
+    "xy3-55": {
+      "id": "xy3-55",
+      "name": "M Lucario-EX",
+      "setName": "Furious Fists",
+      "setId": "xy3",
+      "number": "55",
+      "image": "https://images.pokemontcg.io/xy3/55_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2014/08/13"
+    },
+    "sm3-142": {
+      "id": "sm3-142",
+      "name": "Acerola",
+      "setName": "Burning Shadows",
+      "setId": "sm3",
+      "number": "142",
+      "image": "https://images.pokemontcg.io/sm3/142_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2017/08/05"
+    },
+    "pop3-4": {
+      "id": "pop3-4",
+      "name": "Minun",
+      "setName": "POP Series 3",
+      "setId": "pop3",
+      "number": "4",
+      "image": "https://images.pokemontcg.io/pop3/4_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2006/04/01"
+    },
+    "sm1-152": {
+      "id": "sm1-152",
+      "name": "Espeon-GX",
+      "setName": "Sun & Moon",
+      "setId": "sm1",
+      "number": "152",
+      "image": "https://images.pokemontcg.io/sm1/152_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2017/02/03"
+    },
+    "pop7-3": {
+      "id": "pop7-3",
+      "name": "Latias",
+      "setName": "POP Series 7",
+      "setId": "pop7",
+      "number": "3",
+      "image": "https://images.pokemontcg.io/pop7/3_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2008/03/01"
+    },
+    "pgo-81": {
+      "id": "pgo-81",
+      "name": "Dragonite VSTAR",
+      "setName": "Pokémon GO",
+      "setId": "pgo",
+      "number": "81",
+      "image": "https://images.pokemontcg.io/pgo/81_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2022/07/01"
+    },
+    "sv4-194": {
+      "id": "sv4-194",
+      "name": "Minun",
+      "setName": "Paradox Rift",
+      "setId": "sv4",
+      "number": "194",
+      "image": "https://images.pokemontcg.io/sv4/194_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2023/11/03"
+    },
+    "sm1-147": {
+      "id": "sm1-147",
+      "name": "Lillie",
+      "setName": "Sun & Moon",
+      "setId": "sm1",
+      "number": "147",
+      "image": "https://images.pokemontcg.io/sm1/147_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2017/02/03"
+    },
+    "sv4-206": {
+      "id": "sv4-206",
+      "name": "Morpeko",
+      "setName": "Paradox Rift",
+      "setId": "sv4",
+      "number": "206",
+      "image": "https://images.pokemontcg.io/sv4/206_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2023/11/03"
+    },
+    "sv1-204": {
+      "id": "sv1-204",
+      "name": "Slowpoke",
+      "setName": "Scarlet & Violet",
+      "setId": "sv1",
+      "number": "204",
+      "image": "https://images.pokemontcg.io/sv1/204_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2023/03/31"
+    },
+    "pop2-16": {
+      "id": "pop2-16",
+      "name": "Pikachu",
+      "setName": "POP Series 2",
+      "setId": "pop2",
+      "number": "16",
+      "image": "https://images.pokemontcg.io/pop2/16_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2005/08/01"
+    },
+    "swsh2-200": {
+      "id": "swsh2-200",
+      "name": "Boss's Orders",
+      "setName": "Rebel Clash",
+      "setId": "swsh2",
+      "number": "200",
+      "image": "https://images.pokemontcg.io/swsh2/200_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2020/05/01"
+    },
+    "pop1-5": {
+      "id": "pop1-5",
+      "name": "Swampert",
+      "setName": "POP Series 1",
+      "setId": "pop1",
+      "number": "5",
+      "image": "https://images.pokemontcg.io/pop1/5_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2004/09/01"
+    },
+    "bw3-97": {
+      "id": "bw3-97",
+      "name": "Virizion",
+      "setName": "Noble Victories",
+      "setId": "bw3",
+      "number": "97",
+      "image": "https://images.pokemontcg.io/bw3/97_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2011/11/16"
+    },
+    "pop2-1": {
+      "id": "pop2-1",
+      "name": "Entei",
+      "setName": "POP Series 2",
+      "setId": "pop2",
+      "number": "1",
+      "image": "https://images.pokemontcg.io/pop2/1_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2005/08/01"
+    },
+    "sv3-199": {
+      "id": "sv3-199",
+      "name": "Ninetales",
+      "setName": "Obsidian Flames",
+      "setId": "sv3",
+      "number": "199",
+      "image": "https://images.pokemontcg.io/sv3/199_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2023/08/11"
+    },
+    "dv1-11": {
+      "id": "dv1-11",
+      "name": "Rayquaza",
+      "setName": "Dragon Vault",
+      "setId": "dv1",
+      "number": "11",
+      "image": "https://images.pokemontcg.io/dv1/11_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2012/10/05"
+    },
+    "sm4-110": {
+      "id": "sm4-110",
+      "name": "Lusamine",
+      "setName": "Crimson Invasion",
+      "setId": "sm4",
+      "number": "110",
+      "image": "https://images.pokemontcg.io/sm4/110_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2017/11/03"
+    },
+    "sv3-202": {
+      "id": "sv3-202",
+      "name": "Cleffa",
+      "setName": "Obsidian Flames",
+      "setId": "sv3",
+      "number": "202",
+      "image": "https://images.pokemontcg.io/sv3/202_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2023/08/11"
+    },
+    "sv3-228": {
+      "id": "sv3-228",
+      "name": "Charizard ex",
+      "setName": "Obsidian Flames",
+      "setId": "sv3",
+      "number": "228",
+      "image": "https://images.pokemontcg.io/sv3/228_hires.png",
+      "rarity": "Hyper Rare",
+      "releaseDate": "2023/08/11"
+    },
+    "sm35-75": {
+      "id": "sm35-75",
+      "name": "Raichu-GX",
+      "setName": "Shining Legends",
+      "setId": "sm35",
+      "number": "75",
+      "image": "https://images.pokemontcg.io/sm35/75_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2017/10/06"
+    },
+    "pop2-12": {
+      "id": "pop2-12",
+      "name": "Bulbasaur",
+      "setName": "POP Series 2",
+      "setId": "pop2",
+      "number": "12",
+      "image": "https://images.pokemontcg.io/pop2/12_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2005/08/01"
+    },
+    "pgo-86": {
+      "id": "pgo-86",
+      "name": "Mewtwo VSTAR",
+      "setName": "Pokémon GO",
+      "setId": "pgo",
+      "number": "86",
+      "image": "https://images.pokemontcg.io/pgo/86_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2022/07/01"
+    },
+    "sm2-149": {
+      "id": "sm2-149",
+      "name": "Primarina-GX",
+      "setName": "Guardians Rising",
+      "setId": "sm2",
+      "number": "149",
+      "image": "https://images.pokemontcg.io/sm2/149_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2017/05/05"
+    },
+    "swsh12tg-TG29": {
+      "id": "swsh12tg-TG29",
+      "name": "Rayquaza VMAX",
+      "setName": "Silver Tempest Trainer Gallery",
+      "setId": "swsh12tg",
+      "number": "TG29",
+      "image": "https://images.pokemontcg.io/swsh12tg/TG29_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2022/11/11"
+    },
+    "swsh12tg-TG15": {
+      "id": "swsh12tg-TG15",
+      "name": "Blaziken VMAX",
+      "setName": "Silver Tempest Trainer Gallery",
+      "setId": "swsh12tg",
+      "number": "TG15",
+      "image": "https://images.pokemontcg.io/swsh12tg/TG15_hires.png",
+      "rarity": "Rare Holo VMAX",
+      "releaseDate": "2022/11/11"
+    },
+    "sv6pt5-66": {
+      "id": "sv6pt5-66",
+      "name": "Houndoom",
+      "setName": "Shrouded Fable",
+      "setId": "sv6pt5",
+      "number": "66",
+      "image": "https://images.pokemontcg.io/sv6pt5/66_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2024/08/02"
+    },
+    "bp-6": {
+      "id": "bp-6",
+      "name": "Dark Ivysaur",
+      "setName": "Best of Game",
+      "setId": "bp",
+      "number": "6",
+      "image": "https://images.pokemontcg.io/bp/6_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2002/12/01"
+    },
+    "xy0-26": {
+      "id": "xy0-26",
+      "name": "Snorlax",
+      "setName": "Kalos Starter Set",
+      "setId": "xy0",
+      "number": "26",
+      "image": "https://images.pokemontcg.io/xy0/26_hires.png",
+      "rarity": null,
+      "releaseDate": "2013/11/08"
+    },
+    "bp-2": {
+      "id": "bp-2",
+      "name": "Hitmonchan",
+      "setName": "Best of Game",
+      "setId": "bp",
+      "number": "2",
+      "image": "https://images.pokemontcg.io/bp/2_hires.png",
+      "rarity": "Promo",
+      "releaseDate": "2002/12/01"
+    },
+    "swsh1-200": {
+      "id": "swsh1-200",
+      "name": "Marnie",
+      "setName": "Sword & Shield",
+      "setId": "swsh1",
+      "number": "200",
+      "image": "https://images.pokemontcg.io/swsh1/200_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2020/02/07"
+    },
+    "swsh10-175": {
+      "id": "swsh10-175",
+      "name": "Hisuian Sneasler V",
+      "setName": "Astral Radiance",
+      "setId": "swsh10",
+      "number": "175",
+      "image": "https://images.pokemontcg.io/swsh10/175_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2022/05/27"
+    },
+    "pop6-12": {
+      "id": "pop6-12",
+      "name": "Buneary",
+      "setName": "POP Series 6",
+      "setId": "pop6",
+      "number": "12",
+      "image": "https://images.pokemontcg.io/pop6/12_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2007/09/01"
+    },
+    "sv1-211": {
+      "id": "sv1-211",
+      "name": "Ralts",
+      "setName": "Scarlet & Violet",
+      "setId": "sv1",
+      "number": "211",
+      "image": "https://images.pokemontcg.io/sv1/211_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2023/03/31"
+    },
+    "swsh12tg-TG14": {
+      "id": "swsh12tg-TG14",
+      "name": "Blaziken V",
+      "setName": "Silver Tempest Trainer Gallery",
+      "setId": "swsh12tg",
+      "number": "TG14",
+      "image": "https://images.pokemontcg.io/swsh12tg/TG14_hires.png",
+      "rarity": "Rare Holo V",
+      "releaseDate": "2022/11/11"
+    },
+    "fut20-4": {
+      "id": "fut20-4",
+      "name": "Scorbunny on the Ball",
+      "setName": "Pokémon Futsal Collection",
+      "setId": "fut20",
+      "number": "4",
+      "image": "https://images.pokemontcg.io/fut20/4_hires.png",
+      "rarity": null,
+      "releaseDate": "2020/09/11"
+    },
+    "xy1-143": {
+      "id": "xy1-143",
+      "name": "Emolga-EX",
+      "setName": "XY",
+      "setId": "xy1",
+      "number": "143",
+      "image": "https://images.pokemontcg.io/xy1/143_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2014/02/05"
+    },
+    "pop8-16": {
+      "id": "pop8-16",
+      "name": "Riolu",
+      "setName": "POP Series 8",
+      "setId": "pop8",
+      "number": "16",
+      "image": "https://images.pokemontcg.io/pop8/16_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2008/09/01"
+    },
+    "swsh11tg-TG03": {
+      "id": "swsh11tg-TG03",
+      "name": "Charizard",
+      "setName": "Lost Origin Trainer Gallery",
+      "setId": "swsh11tg",
+      "number": "TG03",
+      "image": "https://images.pokemontcg.io/swsh11tg/TG03_hires.png",
+      "rarity": "Trainer Gallery Rare Holo",
+      "releaseDate": "2022/09/09"
+    },
+    "sm2-146": {
+      "id": "sm2-146",
+      "name": "Decidueye-GX",
+      "setName": "Guardians Rising",
+      "setId": "sm2",
+      "number": "146",
+      "image": "https://images.pokemontcg.io/sm2/146_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2017/05/05"
+    },
+    "pop8-3": {
+      "id": "pop8-3",
+      "name": "Luxray",
+      "setName": "POP Series 8",
+      "setId": "pop8",
+      "number": "3",
+      "image": "https://images.pokemontcg.io/pop8/3_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2008/09/01"
+    },
+    "sm75-70": {
+      "id": "sm75-70",
+      "name": "Zinnia",
+      "setName": "Dragon Majesty",
+      "setId": "sm75",
+      "number": "70",
+      "image": "https://images.pokemontcg.io/sm75/70_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2018/09/07"
+    },
+    "sm1-140": {
+      "id": "sm1-140",
+      "name": "Espeon-GX",
+      "setName": "Sun & Moon",
+      "setId": "sm1",
+      "number": "140",
+      "image": "https://images.pokemontcg.io/sm1/140_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2017/02/03"
+    },
+    "swsh5-168": {
+      "id": "swsh5-168",
+      "name": "Single Strike Urshifu VMAX",
+      "setName": "Battle Styles",
+      "setId": "swsh5",
+      "number": "168",
+      "image": "https://images.pokemontcg.io/swsh5/168_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2021/03/19"
+    },
+    "sm1-142": {
+      "id": "sm1-142",
+      "name": "Umbreon-GX",
+      "setName": "Sun & Moon",
+      "setId": "sm1",
+      "number": "142",
+      "image": "https://images.pokemontcg.io/sm1/142_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2017/02/03"
+    },
+    "swsh1-197": {
+      "id": "swsh1-197",
+      "name": "Snorlax V",
+      "setName": "Sword & Shield",
+      "setId": "swsh1",
+      "number": "197",
+      "image": "https://images.pokemontcg.io/swsh1/197_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2020/02/07"
+    },
+    "pop7-2": {
+      "id": "pop7-2",
+      "name": "Gallade",
+      "setName": "POP Series 7",
+      "setId": "pop7",
+      "number": "2",
+      "image": "https://images.pokemontcg.io/pop7/2_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2008/03/01"
+    },
+    "xy10-116": {
+      "id": "xy10-116",
+      "name": "Glaceon-EX",
+      "setName": "Fates Collide",
+      "setId": "xy10",
+      "number": "116",
+      "image": "https://images.pokemontcg.io/xy10/116_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2016/05/02"
+    },
+    "pop6-2": {
+      "id": "pop6-2",
+      "name": "Lucario",
+      "setName": "POP Series 6",
+      "setId": "pop6",
+      "number": "2",
+      "image": "https://images.pokemontcg.io/pop6/2_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2007/09/01"
+    },
+    "xy11-109": {
+      "id": "xy11-109",
+      "name": "M Steelix-EX",
+      "setName": "Steam Siege",
+      "setId": "xy11",
+      "number": "109",
+      "image": "https://images.pokemontcg.io/xy11/109_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2016/08/03"
+    },
+    "mcd19-6": {
+      "id": "mcd19-6",
+      "name": "Pikachu",
+      "setName": "McDonald's Collection 2019",
+      "setId": "mcd19",
+      "number": "6",
+      "image": "https://images.pokemontcg.io/mcd19/6_hires.png",
+      "rarity": null,
+      "releaseDate": "2019/10/15"
+    },
+    "dv1-5": {
+      "id": "dv1-5",
+      "name": "Dragonite",
+      "setName": "Dragon Vault",
+      "setId": "dv1",
+      "number": "5",
+      "image": "https://images.pokemontcg.io/dv1/5_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2012/10/05"
+    },
+    "me2-109": {
+      "id": "me2-109",
+      "name": "Mega Charizard X ex",
+      "setName": "Phantasmal Flames",
+      "setId": "me2",
+      "number": "109",
+      "image": "https://images.pokemontcg.io/me2/109_hires.png",
+      "rarity": "Ultra Rare",
+      "releaseDate": "2025/11/14"
+    },
+    "pop1-4": {
+      "id": "pop1-4",
+      "name": "Sceptile",
+      "setName": "POP Series 1",
+      "setId": "pop1",
+      "number": "4",
+      "image": "https://images.pokemontcg.io/pop1/4_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2004/09/01"
+    },
+    "sv3-198": {
+      "id": "sv3-198",
+      "name": "Gloom",
+      "setName": "Obsidian Flames",
+      "setId": "sv3",
+      "number": "198",
+      "image": "https://images.pokemontcg.io/sv3/198_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2023/08/11"
+    },
+    "me2-129": {
+      "id": "me2-129",
+      "name": "Dawn",
+      "setName": "Phantasmal Flames",
+      "setId": "me2",
+      "number": "129",
+      "image": "https://images.pokemontcg.io/me2/129_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2025/11/14"
+    },
+    "sm4-101": {
+      "id": "sm4-101",
+      "name": "Gyarados-GX",
+      "setName": "Crimson Invasion",
+      "setId": "sm4",
+      "number": "101",
+      "image": "https://images.pokemontcg.io/sm4/101_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2017/11/03"
+    },
+    "pop7-7": {
+      "id": "pop7-7",
+      "name": "Flaaffy",
+      "setName": "POP Series 7",
+      "setId": "pop7",
+      "number": "7",
+      "image": "https://images.pokemontcg.io/pop7/7_hires.png",
+      "rarity": "Uncommon",
+      "releaseDate": "2008/03/01"
+    },
+    "pop7-4": {
+      "id": "pop7-4",
+      "name": "Latios",
+      "setName": "POP Series 7",
+      "setId": "pop7",
+      "number": "4",
+      "image": "https://images.pokemontcg.io/pop7/4_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2008/03/01"
+    },
+    "dc1-31": {
+      "id": "dc1-31",
+      "name": "Team Magma's Great Ball",
+      "setName": "Double Crisis",
+      "setId": "dc1",
+      "number": "31",
+      "image": "https://images.pokemontcg.io/dc1/31_hires.png",
+      "rarity": "Uncommon",
+      "releaseDate": "2015/03/25"
+    },
+    "pop7-6": {
+      "id": "pop7-6",
+      "name": "Delibird",
+      "setName": "POP Series 7",
+      "setId": "pop7",
+      "number": "6",
+      "image": "https://images.pokemontcg.io/pop7/6_hires.png",
+      "rarity": "Uncommon",
+      "releaseDate": "2008/03/01"
+    },
+    "swsh12tg-TG13": {
+      "id": "swsh12tg-TG13",
+      "name": "Serperior V",
+      "setName": "Silver Tempest Trainer Gallery",
+      "setId": "swsh12tg",
+      "number": "TG13",
+      "image": "https://images.pokemontcg.io/swsh12tg/TG13_hires.png",
+      "rarity": "Rare Holo V",
+      "releaseDate": "2022/11/11"
+    },
+    "bw2-97": {
+      "id": "bw2-97",
+      "name": "Thundurus",
+      "setName": "Emerging Powers",
+      "setId": "bw2",
+      "number": "97",
+      "image": "https://images.pokemontcg.io/bw2/97_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2011/08/31"
+    },
+    "swsh1-204": {
+      "id": "swsh1-204",
+      "name": "Morpeko VMAX",
+      "setName": "Sword & Shield",
+      "setId": "swsh1",
+      "number": "204",
+      "image": "https://images.pokemontcg.io/swsh1/204_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2020/02/07"
+    },
+    "swsh2-177": {
+      "id": "swsh2-177",
+      "name": "Ninetales V",
+      "setName": "Rebel Clash",
+      "setId": "swsh2",
+      "number": "177",
+      "image": "https://images.pokemontcg.io/swsh2/177_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2020/05/01"
+    },
+    "pop6-8": {
+      "id": "pop6-8",
+      "name": "Riolu",
+      "setName": "POP Series 6",
+      "setId": "pop6",
+      "number": "8",
+      "image": "https://images.pokemontcg.io/pop6/8_hires.png",
+      "rarity": "Uncommon",
+      "releaseDate": "2007/09/01"
+    },
+    "mcd21-25": {
+      "id": "mcd21-25",
+      "name": "Pikachu",
+      "setName": "McDonald's Collection 2021",
+      "setId": "mcd21",
+      "number": "25",
+      "image": "https://images.pokemontcg.io/mcd21/25_hires.png",
+      "rarity": null,
+      "releaseDate": "2021/02/09"
+    },
+    "pop8-2": {
+      "id": "pop8-2",
+      "name": "Lucario",
+      "setName": "POP Series 8",
+      "setId": "pop8",
+      "number": "2",
+      "image": "https://images.pokemontcg.io/pop8/2_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2008/09/01"
+    },
+    "sm4-111": {
+      "id": "sm4-111",
+      "name": "Olivia",
+      "setName": "Crimson Invasion",
+      "setId": "sm4",
+      "number": "111",
+      "image": "https://images.pokemontcg.io/sm4/111_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2017/11/03"
+    },
+    "bw2-98": {
+      "id": "bw2-98",
+      "name": "Tornadus",
+      "setName": "Emerging Powers",
+      "setId": "bw2",
+      "number": "98",
+      "image": "https://images.pokemontcg.io/bw2/98_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2011/08/31"
+    },
+    "pop1-16": {
+      "id": "pop1-16",
+      "name": "Armaldo ex",
+      "setName": "POP Series 1",
+      "setId": "pop1",
+      "number": "16",
+      "image": "https://images.pokemontcg.io/pop1/16_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2004/09/01"
+    },
+    "sm4-38": {
+      "id": "sm4-38",
+      "name": "Gengar",
+      "setName": "Crimson Invasion",
+      "setId": "sm4",
+      "number": "38",
+      "image": "https://images.pokemontcg.io/sm4/38_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2017/11/03"
+    },
+    "xy11-79": {
+      "id": "xy11-79",
+      "name": "M Gardevoir-EX",
+      "setName": "Steam Siege",
+      "setId": "xy11",
+      "number": "79",
+      "image": "https://images.pokemontcg.io/xy11/79_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2016/08/03"
+    },
+    "swsh2-197": {
+      "id": "swsh2-197",
+      "name": "Dragapult VMAX",
+      "setName": "Rebel Clash",
+      "setId": "swsh2",
+      "number": "197",
+      "image": "https://images.pokemontcg.io/swsh2/197_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2020/05/01"
+    },
+    "swsh10tg-TG21": {
+      "id": "swsh10tg-TG21",
+      "name": "Zacian V",
+      "setName": "Astral Radiance Trainer Gallery",
+      "setId": "swsh10tg",
+      "number": "TG21",
+      "image": "https://images.pokemontcg.io/swsh10tg/TG21_hires.png",
+      "rarity": "Rare Holo V",
+      "releaseDate": "2022/05/27"
+    },
+    "swsh3-190": {
+      "id": "swsh3-190",
+      "name": "Butterfree VMAX",
+      "setName": "Darkness Ablaze",
+      "setId": "swsh3",
+      "number": "190",
+      "image": "https://images.pokemontcg.io/swsh3/190_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2020/08/14"
+    },
+    "fut20-3": {
+      "id": "fut20-3",
+      "name": "Grookey on the Ball",
+      "setName": "Pokémon Futsal Collection",
+      "setId": "fut20",
+      "number": "3",
+      "image": "https://images.pokemontcg.io/fut20/3_hires.png",
+      "rarity": null,
+      "releaseDate": "2020/09/11"
+    },
+    "pop9-11": {
+      "id": "pop9-11",
+      "name": "Pichu",
+      "setName": "POP Series 9",
+      "setId": "pop9",
+      "number": "11",
+      "image": "https://images.pokemontcg.io/pop9/11_hires.png",
+      "rarity": "Uncommon",
+      "releaseDate": "2009/03/01"
+    },
+    "dc1-26": {
+      "id": "dc1-26",
+      "name": "Team Aqua Grunt",
+      "setName": "Double Crisis",
+      "setId": "dc1",
+      "number": "26",
+      "image": "https://images.pokemontcg.io/dc1/26_hires.png",
+      "rarity": "Uncommon",
+      "releaseDate": "2015/03/25"
+    },
+    "swsh45sv-SV039": {
+      "id": "swsh45sv-SV039",
+      "name": "Yamper",
+      "setName": "Shining Fates Shiny Vault",
+      "setId": "swsh45sv",
+      "number": "SV039",
+      "image": "https://images.pokemontcg.io/swsh45sv/SV039_hires.png",
+      "rarity": "Rare Shiny",
+      "releaseDate": "2021/02/19"
+    },
+    "pop9-15": {
+      "id": "pop9-15",
+      "name": "Pikachu",
+      "setName": "POP Series 9",
+      "setId": "pop9",
+      "number": "15",
+      "image": "https://images.pokemontcg.io/pop9/15_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2009/03/01"
+    },
+    "swsh2-192": {
+      "id": "swsh2-192",
+      "name": "Sonia",
+      "setName": "Rebel Clash",
+      "setId": "swsh2",
+      "number": "192",
+      "image": "https://images.pokemontcg.io/swsh2/192_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2020/05/01"
+    },
+    "pop8-15": {
+      "id": "pop8-15",
+      "name": "Piplup",
+      "setName": "POP Series 8",
+      "setId": "pop8",
+      "number": "15",
+      "image": "https://images.pokemontcg.io/pop8/15_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2008/09/01"
+    },
+    "dc1-3": {
+      "id": "dc1-3",
+      "name": "Team Aqua's Spheal",
+      "setName": "Double Crisis",
+      "setId": "dc1",
+      "number": "3",
+      "image": "https://images.pokemontcg.io/dc1/3_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2015/03/25"
+    },
+    "swsh45sv-SV022": {
+      "id": "swsh45sv-SV022",
+      "name": "Suicune",
+      "setName": "Shining Fates Shiny Vault",
+      "setId": "swsh45sv",
+      "number": "SV022",
+      "image": "https://images.pokemontcg.io/swsh45sv/SV022_hires.png",
+      "rarity": "Rare Shiny",
+      "releaseDate": "2021/02/19"
+    },
+    "mcd19-5": {
+      "id": "mcd19-5",
+      "name": "Lapras",
+      "setName": "McDonald's Collection 2019",
+      "setId": "mcd19",
+      "number": "5",
+      "image": "https://images.pokemontcg.io/mcd19/5_hires.png",
+      "rarity": null,
+      "releaseDate": "2019/10/15"
+    },
+    "dv1-9": {
+      "id": "dv1-9",
+      "name": "Latias",
+      "setName": "Dragon Vault",
+      "setId": "dv1",
+      "number": "9",
+      "image": "https://images.pokemontcg.io/dv1/9_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2012/10/05"
+    },
+    "mcd19-10": {
+      "id": "mcd19-10",
+      "name": "Alolan Meowth",
+      "setName": "McDonald's Collection 2019",
+      "setId": "mcd19",
+      "number": "10",
+      "image": "https://images.pokemontcg.io/mcd19/10_hires.png",
+      "rarity": null,
+      "releaseDate": "2019/10/15"
+    },
+    "swsh45sv-SV119": {
+      "id": "swsh45sv-SV119",
+      "name": "Ditto VMAX",
+      "setName": "Shining Fates Shiny Vault",
+      "setId": "swsh45sv",
+      "number": "SV119",
+      "image": "https://images.pokemontcg.io/swsh45sv/SV119_hires.png",
+      "rarity": "Rare Holo VMAX",
+      "releaseDate": "2021/02/19"
+    },
+    "det1-10": {
+      "id": "det1-10",
+      "name": "Detective Pikachu",
+      "setName": "Detective Pikachu",
+      "setId": "det1",
+      "number": "10",
+      "image": "https://images.pokemontcg.io/det1/10_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2019/04/05"
+    },
+    "mcd12-10": {
+      "id": "mcd12-10",
+      "name": "Scraggy",
+      "setName": "McDonald's Collection 2012",
+      "setId": "mcd12",
+      "number": "10",
+      "image": "https://images.pokemontcg.io/mcd12/10_hires.png",
+      "rarity": null,
+      "releaseDate": "2012/06/15"
+    },
+    "swsh3-193": {
+      "id": "swsh3-193",
+      "name": "Scizor VMAX",
+      "setName": "Darkness Ablaze",
+      "setId": "swsh3",
+      "number": "193",
+      "image": "https://images.pokemontcg.io/swsh3/193_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2020/08/14"
+    },
+    "swsh45sv-SV047": {
+      "id": "swsh45sv-SV047",
+      "name": "Galarian Ponyta",
+      "setName": "Shining Fates Shiny Vault",
+      "setId": "swsh45sv",
+      "number": "SV047",
+      "image": "https://images.pokemontcg.io/swsh45sv/SV047_hires.png",
+      "rarity": "Rare Shiny",
+      "releaseDate": "2021/02/19"
+    },
+    "swsh10tg-TG16": {
+      "id": "swsh10tg-TG16",
+      "name": "Galarian Articuno V",
+      "setName": "Astral Radiance Trainer Gallery",
+      "setId": "swsh10tg",
+      "number": "TG16",
+      "image": "https://images.pokemontcg.io/swsh10tg/TG16_hires.png",
+      "rarity": "Rare Holo V",
+      "releaseDate": "2022/05/27"
+    },
+    "swsh10tg-TG20": {
+      "id": "swsh10tg-TG20",
+      "name": "Galarian Moltres V",
+      "setName": "Astral Radiance Trainer Gallery",
+      "setId": "swsh10tg",
+      "number": "TG20",
+      "image": "https://images.pokemontcg.io/swsh10tg/TG20_hires.png",
+      "rarity": "Rare Holo V",
+      "releaseDate": "2022/05/27"
+    },
+    "swsh3-192": {
+      "id": "swsh3-192",
+      "name": "Eternatus VMAX",
+      "setName": "Darkness Ablaze",
+      "setId": "swsh3",
+      "number": "192",
+      "image": "https://images.pokemontcg.io/swsh3/192_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2020/08/14"
+    },
+    "mcd12-4": {
+      "id": "mcd12-4",
+      "name": "Pignite",
+      "setName": "McDonald's Collection 2012",
+      "setId": "mcd12",
+      "number": "4",
+      "image": "https://images.pokemontcg.io/mcd12/4_hires.png",
+      "rarity": null,
+      "releaseDate": "2012/06/15"
+    },
+    "mcd19-1": {
+      "id": "mcd19-1",
+      "name": "Caterpie",
+      "setName": "McDonald's Collection 2019",
+      "setId": "mcd19",
+      "number": "1",
+      "image": "https://images.pokemontcg.io/mcd19/1_hires.png",
+      "rarity": null,
+      "releaseDate": "2019/10/15"
+    },
+    "det1-5": {
+      "id": "det1-5",
+      "name": "Charizard",
+      "setName": "Detective Pikachu",
+      "setId": "det1",
+      "number": "5",
+      "image": "https://images.pokemontcg.io/det1/5_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/04/05"
+    },
+    "det1-17": {
+      "id": "det1-17",
+      "name": "Ditto",
+      "setName": "Detective Pikachu",
+      "setId": "det1",
+      "number": "17",
+      "image": "https://images.pokemontcg.io/det1/17_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/04/05"
+    },
+    "mcd11-4": {
+      "id": "mcd11-4",
+      "name": "Oshawott",
+      "setName": "McDonald's Collection 2011",
+      "setId": "mcd11",
+      "number": "4",
+      "image": "https://images.pokemontcg.io/mcd11/4_hires.png",
+      "rarity": null,
+      "releaseDate": "2011/06/17"
+    },
+    "swsh45-70": {
+      "id": "swsh45-70",
+      "name": "Poké Kid",
+      "setName": "Shining Fates",
+      "setId": "swsh45",
+      "number": "70",
+      "image": "https://images.pokemontcg.io/swsh45/70_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2021/02/19"
+    },
+    "mcd12-6": {
+      "id": "mcd12-6",
+      "name": "Emolga",
+      "setName": "McDonald's Collection 2012",
+      "setId": "mcd12",
+      "number": "6",
+      "image": "https://images.pokemontcg.io/mcd12/6_hires.png",
+      "rarity": null,
+      "releaseDate": "2012/06/15"
+    },
+    "mcd21-17": {
+      "id": "mcd21-17",
+      "name": "Squirtle",
+      "setName": "McDonald's Collection 2021",
+      "setId": "mcd21",
+      "number": "17",
+      "image": "https://images.pokemontcg.io/mcd21/17_hires.png",
+      "rarity": null,
+      "releaseDate": "2021/02/09"
+    },
+    "swsh3-194": {
+      "id": "swsh3-194",
+      "name": "Salamence VMAX",
+      "setName": "Darkness Ablaze",
+      "setId": "swsh3",
+      "number": "194",
+      "image": "https://images.pokemontcg.io/swsh3/194_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2020/08/14"
+    },
+    "mcd11-8": {
+      "id": "mcd11-8",
+      "name": "Sandile",
+      "setName": "McDonald's Collection 2011",
+      "setId": "mcd11",
+      "number": "8",
+      "image": "https://images.pokemontcg.io/mcd11/8_hires.png",
+      "rarity": null,
+      "releaseDate": "2011/06/17"
+    },
+    "mcd12-3": {
+      "id": "mcd12-3",
+      "name": "Dwebble",
+      "setName": "McDonald's Collection 2012",
+      "setId": "mcd12",
+      "number": "3",
+      "image": "https://images.pokemontcg.io/mcd12/3_hires.png",
+      "rarity": null,
+      "releaseDate": "2012/06/15"
+    },
+    "det1-12": {
+      "id": "det1-12",
+      "name": "Mewtwo",
+      "setName": "Detective Pikachu",
+      "setId": "det1",
+      "number": "12",
+      "image": "https://images.pokemontcg.io/det1/12_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/04/05"
+    },
+    "pop9-16": {
+      "id": "pop9-16",
+      "name": "Piplup",
+      "setName": "POP Series 9",
+      "setId": "pop9",
+      "number": "16",
+      "image": "https://images.pokemontcg.io/pop9/16_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2009/03/01"
+    },
+    "bw1-14": {
+      "id": "bw1-14",
+      "name": "Sawsbuck",
+      "setName": "Black & White",
+      "setId": "bw1",
+      "number": "14",
+      "image": "https://images.pokemontcg.io/bw1/14_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2011/04/25"
+    },
+    "xy0-27": {
+      "id": "xy0-27",
+      "name": "Miltank",
+      "setName": "Kalos Starter Set",
+      "setId": "xy0",
+      "number": "27",
+      "image": "https://images.pokemontcg.io/xy0/27_hires.png",
+      "rarity": null,
+      "releaseDate": "2013/11/08"
+    },
+    "det1-9": {
+      "id": "det1-9",
+      "name": "Greninja",
+      "setName": "Detective Pikachu",
+      "setId": "det1",
+      "number": "9",
+      "image": "https://images.pokemontcg.io/det1/9_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/04/05"
+    },
+    "xy0-14": {
+      "id": "xy0-14",
+      "name": "Greninja",
+      "setName": "Kalos Starter Set",
+      "setId": "xy0",
+      "number": "14",
+      "image": "https://images.pokemontcg.io/xy0/14_hires.png",
+      "rarity": null,
+      "releaseDate": "2013/11/08"
+    },
+    "dv1-4": {
+      "id": "dv1-4",
+      "name": "Dragonair",
+      "setName": "Dragon Vault",
+      "setId": "dv1",
+      "number": "4",
+      "image": "https://images.pokemontcg.io/dv1/4_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2012/10/05"
+    },
+    "xy0-29": {
+      "id": "xy0-29",
+      "name": "Bidoof",
+      "setName": "Kalos Starter Set",
+      "setId": "xy0",
+      "number": "29",
+      "image": "https://images.pokemontcg.io/xy0/29_hires.png",
+      "rarity": null,
+      "releaseDate": "2013/11/08"
+    },
+    "bw2-33": {
+      "id": "bw2-33",
+      "name": "Joltik",
+      "setName": "Emerging Powers",
+      "setId": "bw2",
+      "number": "33",
+      "image": "https://images.pokemontcg.io/bw2/33_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2011/08/31"
+    },
+    "swsh45-72": {
+      "id": "swsh45-72",
+      "name": "Skyla",
+      "setName": "Shining Fates",
+      "setId": "swsh45",
+      "number": "72",
+      "image": "https://images.pokemontcg.io/swsh45/72_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2021/02/19"
+    },
+    "mcd11-9": {
+      "id": "mcd11-9",
+      "name": "Zorua",
+      "setName": "McDonald's Collection 2011",
+      "setId": "mcd11",
+      "number": "9",
+      "image": "https://images.pokemontcg.io/mcd11/9_hires.png",
+      "rarity": null,
+      "releaseDate": "2011/06/17"
+    },
+    "bw2-29": {
+      "id": "bw2-29",
+      "name": "Cubchoo",
+      "setName": "Emerging Powers",
+      "setId": "bw2",
+      "number": "29",
+      "image": "https://images.pokemontcg.io/bw2/29_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2011/08/31"
+    },
+    "mcd11-2": {
+      "id": "mcd11-2",
+      "name": "Maractus",
+      "setName": "McDonald's Collection 2011",
+      "setId": "mcd11",
+      "number": "2",
+      "image": "https://images.pokemontcg.io/mcd11/2_hires.png",
+      "rarity": null,
+      "releaseDate": "2011/06/17"
+    },
+    "pop8-8": {
+      "id": "pop8-8",
+      "name": "Luxio",
+      "setName": "POP Series 8",
+      "setId": "pop8",
+      "number": "8",
+      "image": "https://images.pokemontcg.io/pop8/8_hires.png",
+      "rarity": "Uncommon",
+      "releaseDate": "2008/09/01"
+    },
+    "bw2-67": {
+      "id": "bw2-67",
+      "name": "Zoroark",
+      "setName": "Emerging Powers",
+      "setId": "bw2",
+      "number": "67",
+      "image": "https://images.pokemontcg.io/bw2/67_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2011/08/31"
+    },
+    "xy0-28": {
+      "id": "xy0-28",
+      "name": "Skitty",
+      "setName": "Kalos Starter Set",
+      "setId": "xy0",
+      "number": "28",
+      "image": "https://images.pokemontcg.io/xy0/28_hires.png",
+      "rarity": null,
+      "releaseDate": "2013/11/08"
+    },
+    "swsh45-64": {
+      "id": "swsh45-64",
+      "name": "Alcremie V",
+      "setName": "Shining Fates",
+      "setId": "swsh45",
+      "number": "64",
+      "image": "https://images.pokemontcg.io/swsh45/64_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2021/02/19"
+    },
+    "mcd12-9": {
+      "id": "mcd12-9",
+      "name": "Purrloin",
+      "setName": "McDonald's Collection 2012",
+      "setId": "mcd12",
+      "number": "9",
+      "image": "https://images.pokemontcg.io/mcd12/9_hires.png",
+      "rarity": null,
+      "releaseDate": "2012/06/15"
+    },
+    "swsh45-51": {
+      "id": "swsh45-51",
+      "name": "Ditto VMAX",
+      "setName": "Shining Fates",
+      "setId": "swsh45",
+      "number": "51",
+      "image": "https://images.pokemontcg.io/swsh45/51_hires.png",
+      "rarity": "Rare Holo VMAX",
+      "releaseDate": "2021/02/19"
+    },
+    "mcd21-20": {
+      "id": "mcd21-20",
+      "name": "Piplup",
+      "setName": "McDonald's Collection 2021",
+      "setId": "mcd21",
+      "number": "20",
+      "image": "https://images.pokemontcg.io/mcd21/20_hires.png",
+      "rarity": null,
+      "releaseDate": "2021/02/09"
+    },
+    "swsh45-73": {
+      "id": "swsh45-73",
+      "name": "Alcremie VMAX",
+      "setName": "Shining Fates",
+      "setId": "swsh45",
+      "number": "73",
+      "image": "https://images.pokemontcg.io/swsh45/73_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2021/02/19"
+    },
+    "mcd22-4": {
+      "id": "mcd22-4",
+      "name": "Growlithe",
+      "setName": "McDonald's Collection 2022",
+      "setId": "mcd22",
+      "number": "4",
+      "image": "https://images.pokemontcg.io/mcd22/4_hires.png",
+      "rarity": null,
+      "releaseDate": "2022/08/03"
+    },
+    "mcd22-7": {
+      "id": "mcd22-7",
+      "name": "Pikachu",
+      "setName": "McDonald's Collection 2022",
+      "setId": "mcd22",
+      "number": "7",
+      "image": "https://images.pokemontcg.io/mcd22/7_hires.png",
+      "rarity": null,
+      "releaseDate": "2022/08/03"
+    },
+    "pop9-3": {
+      "id": "pop9-3",
+      "name": "Raichu",
+      "setName": "POP Series 9",
+      "setId": "pop9",
+      "number": "3",
+      "image": "https://images.pokemontcg.io/pop9/3_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2009/03/01"
+    },
+    "mcd22-2": {
+      "id": "mcd22-2",
+      "name": "Rowlet",
+      "setName": "McDonald's Collection 2022",
+      "setId": "mcd22",
+      "number": "2",
+      "image": "https://images.pokemontcg.io/mcd22/2_hires.png",
+      "rarity": null,
+      "releaseDate": "2022/08/03"
+    },
+    "bw1-71": {
+      "id": "bw1-71",
+      "name": "Zoroark",
+      "setName": "Black & White",
+      "setId": "bw1",
+      "number": "71",
+      "image": "https://images.pokemontcg.io/bw1/71_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2011/04/25"
+    },
+    "mcd22-15": {
+      "id": "mcd22-15",
+      "name": "Smeargle",
+      "setName": "McDonald's Collection 2022",
+      "setId": "mcd22",
+      "number": "15",
+      "image": "https://images.pokemontcg.io/mcd22/15_hires.png",
+      "rarity": null,
+      "releaseDate": "2022/08/03"
+    },
+    "mcd11-3": {
+      "id": "mcd11-3",
+      "name": "Tepig",
+      "setName": "McDonald's Collection 2011",
+      "setId": "mcd11",
+      "number": "3",
+      "image": "https://images.pokemontcg.io/mcd11/3_hires.png",
+      "rarity": null,
+      "releaseDate": "2011/06/17"
+    },
+    "mcd21-19": {
+      "id": "mcd21-19",
+      "name": "Mudkip",
+      "setName": "McDonald's Collection 2021",
+      "setId": "mcd21",
+      "number": "19",
+      "image": "https://images.pokemontcg.io/mcd21/19_hires.png",
+      "rarity": null,
+      "releaseDate": "2021/02/09"
+    },
+    "mcd21-1": {
+      "id": "mcd21-1",
+      "name": "Bulbasaur",
+      "setName": "McDonald's Collection 2021",
+      "setId": "mcd21",
+      "number": "1",
+      "image": "https://images.pokemontcg.io/mcd21/1_hires.png",
+      "rarity": null,
+      "releaseDate": "2021/02/09"
+    },
+    "mcd22-5": {
+      "id": "mcd22-5",
+      "name": "Victini",
+      "setName": "McDonald's Collection 2022",
+      "setId": "mcd22",
+      "number": "5",
+      "image": "https://images.pokemontcg.io/mcd22/5_hires.png",
+      "rarity": null,
+      "releaseDate": "2022/08/03"
+    },
+    "ex14-94": {
+      "id": "ex14-94",
+      "name": "Jirachi ex",
+      "setName": "Crystal Guardians",
+      "setId": "ex14",
+      "number": "94",
+      "image": "https://images.pokemontcg.io/ex14/94_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2006/08/01"
+    },
+    "si1-14": {
+      "id": "si1-14",
+      "name": "Slowking",
+      "setName": "Southern Islands",
+      "setId": "si1",
+      "number": "14",
+      "image": "https://images.pokemontcg.io/si1/14_hires.png",
+      "rarity": null,
+      "releaseDate": "2001/07/31"
+    },
+    "ex2-96": {
+      "id": "ex2-96",
+      "name": "Gardevoir ex",
+      "setName": "Sandstorm",
+      "setId": "ex2",
+      "number": "96",
+      "image": "https://images.pokemontcg.io/ex2/96_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2003/09/18"
+    },
+    "ex2-24": {
+      "id": "ex2-24",
+      "name": "Umbreon",
+      "setName": "Sandstorm",
+      "setId": "ex2",
+      "number": "24",
+      "image": "https://images.pokemontcg.io/ex2/24_hires.png",
+      "rarity": "Rare",
+      "releaseDate": "2003/09/18"
+    },
+    "dp5-99": {
+      "id": "dp5-99",
+      "name": "Leafeon LV.X",
+      "setName": "Majestic Dawn",
+      "setId": "dp5",
+      "number": "99",
+      "image": "https://images.pokemontcg.io/dp5/99_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2008/05/01"
+    },
+    "sma-SV76": {
+      "id": "sma-SV76",
+      "name": "Sylveon-GX",
+      "setName": "Hidden Fates Shiny Vault",
+      "setId": "sma",
+      "number": "SV76",
+      "image": "https://images.pokemontcg.io/sma/SV76_hires.png",
+      "rarity": "Rare Shiny GX",
+      "releaseDate": "2019/08/23"
+    },
+    "sm11-226": {
+      "id": "sm11-226",
+      "name": "Mega Sableye & Tyranitar-GX",
+      "setName": "Unified Minds",
+      "setId": "sm11",
+      "number": "226",
+      "image": "https://images.pokemontcg.io/sm11/226_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/08/02"
+    },
+    "sm9-186": {
+      "id": "sm9-186",
+      "name": "Gengar & Mimikyu-GX",
+      "setName": "Team Up",
+      "setId": "sm9",
+      "number": "186",
+      "image": "https://images.pokemontcg.io/sm9/186_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2019/02/01"
+    },
+    "hgss1-111": {
+      "id": "hgss1-111",
+      "name": "Ho-Oh LEGEND",
+      "setName": "HeartGold & SoulSilver",
+      "setId": "hgss1",
+      "number": "111",
+      "image": "https://images.pokemontcg.io/hgss1/111_hires.png",
+      "rarity": "LEGEND",
+      "releaseDate": "2010/02/10"
+    },
+    "bw9-120": {
+      "id": "bw9-120",
+      "name": "Garchomp",
+      "setName": "Plasma Freeze",
+      "setId": "bw9",
+      "number": "120",
+      "image": "https://images.pokemontcg.io/bw9/120_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2013/05/08"
+    },
+    "ex11-12": {
+      "id": "ex11-12",
+      "name": "Mewtwo δ",
+      "setName": "Delta Species",
+      "setId": "ex11",
+      "number": "12",
+      "image": "https://images.pokemontcg.io/ex11/12_hires.png",
+      "rarity": "Rare Holo",
+      "releaseDate": "2005/10/31"
+    },
+    "xy5-150": {
+      "id": "xy5-150",
+      "name": "Groudon-EX",
+      "setName": "Primal Clash",
+      "setId": "xy5",
+      "number": "150",
+      "image": "https://images.pokemontcg.io/xy5/150_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2015/02/04"
+    },
+    "xy10-119": {
+      "id": "xy10-119",
+      "name": "Umbreon-EX",
+      "setName": "Fates Collide",
+      "setId": "xy10",
+      "number": "119",
+      "image": "https://images.pokemontcg.io/xy10/119_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2016/05/02"
+    },
+    "sv4pt5-233": {
+      "id": "sv4pt5-233",
+      "name": "Gardevoir ex",
+      "setName": "Paldean Fates",
+      "setId": "sv4pt5",
+      "number": "233",
+      "image": "https://images.pokemontcg.io/sv4pt5/233_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2024/01/26"
+    },
+    "pl4-97": {
+      "id": "pl4-97",
+      "name": "Gengar LV.X",
+      "setName": "Arceus",
+      "setId": "pl4",
+      "number": "97",
+      "image": "https://images.pokemontcg.io/pl4/97_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2009/11/04"
+    },
+    "swsh11tg-TG17": {
+      "id": "swsh11tg-TG17",
+      "name": "Pikachu VMAX",
+      "setName": "Lost Origin Trainer Gallery",
+      "setId": "swsh11tg",
+      "number": "TG17",
+      "image": "https://images.pokemontcg.io/swsh11tg/TG17_hires.png",
+      "rarity": "Rare Holo VMAX",
+      "releaseDate": "2022/09/09"
+    },
+    "ex1-103": {
+      "id": "ex1-103",
+      "name": "Sneasel ex",
+      "setName": "Ruby & Sapphire",
+      "setId": "ex1",
+      "number": "103",
+      "image": "https://images.pokemontcg.io/ex1/103_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2003/07/01"
+    },
+    "swsh9tg-TG15": {
+      "id": "swsh9tg-TG15",
+      "name": "Sylveon VMAX",
+      "setName": "Brilliant Stars Trainer Gallery",
+      "setId": "swsh9tg",
+      "number": "TG15",
+      "image": "https://images.pokemontcg.io/swsh9tg/TG15_hires.png",
+      "rarity": "Rare Holo VMAX",
+      "releaseDate": "2022/02/25"
+    },
+    "sv5-211": {
+      "id": "sv5-211",
+      "name": "Morty's Conviction",
+      "setName": "Temporal Forces",
+      "setId": "sv5",
+      "number": "211",
+      "image": "https://images.pokemontcg.io/sv5/211_hires.png",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2024/03/22"
+    },
+    "bw11-RC23": {
+      "id": "bw11-RC23",
+      "name": "Emolga",
+      "setName": "Legendary Treasures",
+      "setId": "bw11",
+      "number": "RC23",
+      "image": "https://images.pokemontcg.io/bw11/RC23_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2013/11/06"
+    },
+    "dp4-80": {
+      "id": "dp4-80",
+      "name": "Mudkip",
+      "setName": "Great Encounters",
+      "setId": "dp4",
+      "number": "80",
+      "image": "https://images.pokemontcg.io/dp4/80_hires.png",
+      "rarity": "Common",
+      "releaseDate": "2008/02/01"
+    },
+    "sm2-140": {
+      "id": "sm2-140",
+      "name": "Sylveon-GX",
+      "setName": "Guardians Rising",
+      "setId": "sm2",
+      "number": "140",
+      "image": "https://images.pokemontcg.io/sm2/140_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2017/05/05"
+    },
+    "sv6pt5-98": {
+      "id": "sv6pt5-98",
+      "name": "Basic Darkness Energy",
+      "setName": "Shrouded Fable",
+      "setId": "sv6pt5",
+      "number": "98",
+      "image": "https://images.pokemontcg.io/sv6pt5/98_hires.png",
+      "rarity": "Hyper Rare",
+      "releaseDate": "2024/08/02"
+    },
+    "pl1-126": {
+      "id": "pl1-126",
+      "name": "Shaymin LV.X",
+      "setName": "Platinum",
+      "setId": "pl1",
+      "number": "126",
+      "image": "https://images.pokemontcg.io/pl1/126_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2009/02/11"
+    },
+    "fut20-1": {
+      "id": "fut20-1",
+      "name": "Pikachu on the Ball",
+      "setName": "Pokémon Futsal Collection",
+      "setId": "fut20",
+      "number": "1",
+      "image": "https://images.pokemontcg.io/fut20/1_hires.png",
+      "rarity": null,
+      "releaseDate": "2020/09/11"
+    },
+    "xy2-13": {
+      "id": "xy2-13",
+      "name": "M Charizard-EX",
+      "setName": "Flashfire",
+      "setId": "xy2",
+      "number": "13",
+      "image": "https://images.pokemontcg.io/xy2/13_hires.png",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2014/05/07"
+    },
+    "pgo-72": {
+      "id": "pgo-72",
+      "name": "Mewtwo V",
+      "setName": "Pokémon GO",
+      "setId": "pgo",
+      "number": "72",
+      "image": "https://images.pokemontcg.io/pgo/72_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2022/07/01"
+    },
+    "sm75-67": {
+      "id": "sm75-67",
+      "name": "Dragonite-GX",
+      "setName": "Dragon Majesty",
+      "setId": "sm75",
+      "number": "67",
+      "image": "https://images.pokemontcg.io/sm75/67_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2018/09/07"
+    },
+    "dp2-124": {
+      "id": "dp2-124",
+      "name": "Time-Space Distortion",
+      "setName": "Mysterious Treasures",
+      "setId": "dp2",
+      "number": "124",
+      "image": "https://images.pokemontcg.io/dp2/124_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2007/08/01"
+    },
+    "xy12-102": {
+      "id": "xy12-102",
+      "name": "M Blastoise-EX",
+      "setName": "Evolutions",
+      "setId": "xy12",
+      "number": "102",
+      "image": "https://images.pokemontcg.io/xy12/102_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2016/11/02"
+    },
+    "sm6-138": {
+      "id": "sm6-138",
+      "name": "Dialga-GX",
+      "setName": "Forbidden Light",
+      "setId": "sm6",
+      "number": "138",
+      "image": "https://images.pokemontcg.io/sm6/138_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2018/05/04"
+    },
+    "swsh3-20": {
+      "id": "swsh3-20",
+      "name": "Charizard VMAX",
+      "setName": "Darkness Ablaze",
+      "setId": "swsh3",
+      "number": "20",
+      "image": "https://images.pokemontcg.io/swsh3/20_hires.png",
+      "rarity": "Rare Holo VMAX",
+      "releaseDate": "2020/08/14"
+    },
+    "dp2-123": {
+      "id": "dp2-123",
+      "name": "Magmortar LV.X",
+      "setName": "Mysterious Treasures",
+      "setId": "dp2",
+      "number": "123",
+      "image": "https://images.pokemontcg.io/dp2/123_hires.png",
+      "rarity": "Rare Holo LV.X",
+      "releaseDate": "2007/08/01"
+    },
+    "mcd19-12": {
+      "id": "mcd19-12",
+      "name": "Eevee",
+      "setName": "McDonald's Collection 2019",
+      "setId": "mcd19",
+      "number": "12",
+      "image": "https://images.pokemontcg.io/mcd19/12_hires.png",
+      "rarity": null,
+      "releaseDate": "2019/10/15"
+    },
+    "xy11-115": {
+      "id": "xy11-115",
+      "name": "Volcanion-EX",
+      "setName": "Steam Siege",
+      "setId": "xy11",
+      "number": "115",
+      "image": "https://images.pokemontcg.io/xy11/115_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2016/08/03"
+    },
+    "pgo-11": {
+      "id": "pgo-11",
+      "name": "Radiant Charizard",
+      "setName": "Pokémon GO",
+      "setId": "pgo",
+      "number": "11",
+      "image": "https://images.pokemontcg.io/pgo/11_hires.png",
+      "rarity": "Radiant Rare",
+      "releaseDate": "2022/07/01"
+    },
+    "me2-106": {
+      "id": "me2-106",
+      "name": "Meowth",
+      "setName": "Phantasmal Flames",
+      "setId": "me2",
+      "number": "106",
+      "image": "https://images.pokemontcg.io/me2/106_hires.png",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2025/11/14"
+    },
+    "bw4-101": {
+      "id": "bw4-101",
+      "name": "Chandelure",
+      "setName": "Next Destinies",
+      "setId": "bw4",
+      "number": "101",
+      "image": "https://images.pokemontcg.io/bw4/101_hires.png",
+      "rarity": "Rare Secret",
+      "releaseDate": "2012/02/08"
+    },
+    "sma-SV82": {
+      "id": "sma-SV82",
+      "name": "Cynthia",
+      "setName": "Hidden Fates Shiny Vault",
+      "setId": "sma",
+      "number": "SV82",
+      "image": "https://images.pokemontcg.io/sma/SV82_hires.png",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2019/08/23"
+    },
+    "sm2-150": {
+      "id": "sm2-150",
+      "name": "Alolan Ninetales-GX",
+      "setName": "Guardians Rising",
+      "setId": "sm2",
+      "number": "150",
+      "image": "https://images.pokemontcg.io/sm2/150_hires.png",
+      "rarity": "Rare Rainbow",
+      "releaseDate": "2017/05/05"
     }
   },
   "sets": {

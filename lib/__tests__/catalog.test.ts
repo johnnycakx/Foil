@@ -18,6 +18,7 @@ import {
   relatedCardsForSlug,
   setIdsInCatalog,
 } from "../cards/catalog.ts";
+import { TOP5_PER_SET_CATALOG } from "../cards/catalog-top5-per-set.generated.ts";
 
 test("catalog has exactly 207 curated entries", () => {
   const curated = CARD_CATALOG.filter((e) => e.tier === undefined || e.tier === "curated");
@@ -29,6 +30,40 @@ test("long-tail entries (ADR-046) are tagged tier='longtail'", () => {
   // The generated wave adds ~800; floor (not pin) since it's regenerated.
   assert.ok(longtail.length === 0 || longtail.length >= 100, `unexpected longtail count: ${longtail.length}`);
   for (const e of longtail) assert.equal(e.tier, "longtail");
+});
+
+test("top-5-per-set breadth expansion contributes ≤5 cards per set", () => {
+  // The breadth-expansion invariant (top5-per-set goal, extends ADR-046): each
+  // English set contributes at most its 5 most-valuable cards to THIS wave. A
+  // set may still show >5 in CARD_CATALOG overall (the curated block + wave-1
+  // long-tail add DEPTH to the 29 original sets) — this pins the WAVE, which is
+  // the generated file we regenerate, in isolation.
+  const bySet = new Map<string, number>();
+  for (const e of TOP5_PER_SET_CATALOG) {
+    const setId = e.pokemonTcgId.split("-")[0];
+    bySet.set(setId, (bySet.get(setId) ?? 0) + 1);
+  }
+  for (const [setId, n] of bySet) {
+    assert.ok(n <= 5, `set ${setId} contributes ${n} cards to the top-5-per-set wave (>5)`);
+  }
+});
+
+test("top-5-per-set entries carry no fabricated fields (valid id + slug, tier longtail)", () => {
+  // null-over-guess: every wave entry is a real SDK-shaped id + a
+  // route-valid slug, tagged tier "longtail" (SDK price renders; PokeTrace lazy).
+  const idRe = /^[a-z0-9]+(?:pt[0-9]+)?-[a-zA-Z0-9]+$/;
+  const slugRe = /^[a-z0-9]+(?:pt[0-9]+)?-[a-z0-9]+-[a-z0-9-]+$/;
+  for (const e of TOP5_PER_SET_CATALOG) {
+    assert.match(e.pokemonTcgId, idRe, `bad id in top5 wave: ${e.pokemonTcgId}`);
+    assert.match(e.slug, slugRe, `bad slug in top5 wave: ${e.slug}`);
+    assert.equal(e.tier, "longtail", `top5 wave entry not tier longtail: ${e.slug}`);
+    // The slug's set prefix must match the id's set prefix (no cross-set slug).
+    assert.equal(
+      e.slug.split("-")[0],
+      e.pokemonTcgId.split("-")[0],
+      `slug/id set mismatch: ${e.slug} vs ${e.pokemonTcgId}`,
+    );
+  }
 });
 
 test("every slug in the catalog is unique", () => {
@@ -88,18 +123,26 @@ test("relatedCardsForSlug returns [] for an unknown slug — defensive", () => {
   assert.deepEqual(relatedCardsForSlug("not-real-slug"), []);
 });
 
-test("setIdsInCatalog returns 29 distinct ids: 23 vintage (Base first) + 6 modern (ADR-070)", () => {
+test("setIdsInCatalog spans every English set after the top-5-per-set breadth expansion (ADR-088)", () => {
   const ids = setIdsInCatalog();
-  // 23 curated/vintage sets, then the 6 modern mover sets the ADR-070 expansion
-  // appended via the long-tail (sv8pt5/sv8/me1/sv9/sv10/sv7).
-  assert.equal(ids.length, 29);
-  // The curated block is unchanged: vintage WotC opens (base1); the Session 43
-  // grail-seed block closes the curated sets with swsh35 at index 22.
+  // Breadth expansion (ADR-088): the catalog went 29 → ~159 distinct sets when
+  // every English set's top-5-by-value cards were added. Floored (not pinned) —
+  // the set count is generated and grows as new sets release + get TCGplayer
+  // prices. Pre-expansion the catalog covered 29 sets; the floor guards the
+  // breadth win without pinning a regenerated count.
+  assert.ok(ids.length >= 150, `expected ≥150 distinct sets after breadth expansion, got ${ids.length}`);
+  // The curated block is unchanged and still leads: vintage WotC opens (base1);
+  // the Session 43 grail-seed block closes the curated sets with swsh35 at index 22.
   assert.equal(ids[0], "base1");
   assert.equal(ids[22], "swsh35");
-  // The 6 modern mover sets are present (appended after the curated block).
+  // The 6 modern mover sets (ADR-070) are still present.
   for (const m of ["sv8pt5", "sv8", "me1", "sv9", "sv10", "sv7"]) {
     assert.ok(ids.includes(m), `missing modern set ${m}`);
+  }
+  // Spot-check a few sets that were MISSING before the breadth expansion now
+  // resolve (previously-absent eras: e-Card, EX, Diamond & Pearl, XY, Sun & Moon).
+  for (const s of ["ecard1", "ex1", "dp1", "xy1", "sm1"]) {
+    assert.ok(ids.includes(s), `breadth expansion missing previously-absent set ${s}`);
   }
   // No duplicates.
   assert.equal(new Set(ids).size, ids.length);

@@ -36,6 +36,12 @@ import { createBakeCheckpoint } from "./bake-checkpoint.ts";
 
 const STATE_PATH = ".bake-cards-state.json";
 const RESUME = process.argv.includes("--resume");
+// --only-missing: skip cards already present in the loaded snapshot (their SDK
+// metadata is stable + already baked, and their PokeTrace `variants` are
+// preserved untouched). Bakes ONLY net-new catalog entries — the fast path for
+// an incremental catalog expansion (avoids re-fetching ~1.2k already-baked cards
+// when the SDK is slow). Existing entries keep their full baked record.
+const ONLY_MISSING = process.argv.includes("--only-missing");
 
 const POKEMON_TCG_API_BASE = "https://api.pokemontcg.io/v2/cards";
 const POKEMON_TCG_SETS_BASE = "https://api.pokemontcg.io/v2/sets";
@@ -121,10 +127,18 @@ function parseSet(raw: RawSet): SetMetadata | null {
   };
 }
 
+// Per-request timeout so a stalled connection (pokemontcg.io flaps between
+// healthy + timing-out under load) aborts and retries instead of hanging on
+// undici's ~300s default — which, at CONCURRENCY, would stall the whole bake.
+const FETCH_TIMEOUT_MS = 15_000;
+
 async function fetchOne(url: string): Promise<Response | null> {
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
     try {
-      const r = await fetch(url, { headers: { Accept: "application/json" } });
+      const r = await fetch(url, { headers: { Accept: "application/json" }, signal: ctrl.signal });
+      clearTimeout(timer);
       if (r.ok) return r;
       // Retry on 4xx + 5xx — for catalog IDs we control, 4xx is upstream flake.
       if ((r.status >= 400) && attempt < RETRY_DELAYS_MS.length) {
@@ -133,6 +147,7 @@ async function fetchOne(url: string): Promise<Response | null> {
       }
       return r;
     } catch {
+      clearTimeout(timer);
       if (attempt < RETRY_DELAYS_MS.length) {
         await sleep(RETRY_DELAYS_MS[attempt]);
         continue;
@@ -238,10 +253,26 @@ async function main(): Promise<void> {
       resumeSkipped++;
       return;
     }
+    // --only-missing: leave already-baked cards exactly as they are (metadata +
+    // preserved PokeTrace variants) and bake only net-new entries.
+    if (ONLY_MISSING && existing.cards[id]) {
+      completed++;
+      preserved++;
+      return;
+    }
     const card = await bakeCard(id);
     completed++;
     if (card) {
-      mergedCards[id] = card;
+      // Preserve the baked-ONLY PokeTrace `variants` (Session 49 / ADR-042).
+      // This script fetches SDK metadata, which has no PokeTrace UUIDs, so a
+      // naive overwrite would DROP the variants that `bake:poketrace-uuids`
+      // layered on — silently regressing every card's sold-history panel to
+      // "not yet available" and forcing a full (rate-limited) PokeTrace re-bake
+      // to restore. Overlay the fresh metadata onto the prior entry instead so
+      // `variants` survives; net-new cards (no prior entry) get none, which is
+      // correct — PokeTrace enrichment stays lazy.
+      const prior = existing.cards[id];
+      mergedCards[id] = prior ? { ...prior, ...card } : card;
       baked++;
       console.log(`  [${completed}/${CARD_CATALOG.length}] ${id} -> baked: ${card.name}`);
     } else if (existing.cards[id]) {

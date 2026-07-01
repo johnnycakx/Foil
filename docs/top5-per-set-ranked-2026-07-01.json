@@ -1,0 +1,5852 @@
+[
+  {
+    "pokemonTcgId": "ecard3-146",
+    "slug": "ecard3-146-charizard",
+    "name": "Charizard",
+    "setId": "ecard3",
+    "number": "146",
+    "rarity": "Rare Secret",
+    "score": 7000
+  },
+  {
+    "pokemonTcgId": "ex13-103",
+    "slug": "ex13-103-mewtwo",
+    "name": "Mewtwo ★",
+    "setId": "ex13",
+    "number": "103",
+    "rarity": "Rare Holo Star",
+    "score": 5000
+  },
+  {
+    "pokemonTcgId": "ex11-112",
+    "slug": "ex11-112-kyogre",
+    "name": "Kyogre ★",
+    "setId": "ex11",
+    "number": "112",
+    "rarity": "Rare Holo Star",
+    "score": 4000
+  },
+  {
+    "pokemonTcgId": "ex15-100",
+    "slug": "ex15-100-charizard",
+    "name": "Charizard ★ δ",
+    "setId": "ex15",
+    "number": "100",
+    "rarity": "Rare Holo Star",
+    "score": 4000
+  },
+  {
+    "pokemonTcgId": "ex7-107",
+    "slug": "ex7-107-mudkip",
+    "name": "Mudkip ★",
+    "setId": "ex7",
+    "number": "107",
+    "rarity": "Rare Holo Star",
+    "score": 3999.99
+  },
+  {
+    "pokemonTcgId": "ex13-104",
+    "slug": "ex13-104-pikachu",
+    "name": "Pikachu ★",
+    "setId": "ex13",
+    "number": "104",
+    "rarity": "Rare Holo Star",
+    "score": 3200
+  },
+  {
+    "pokemonTcgId": "sm9-170",
+    "slug": "sm9-170-latias-and-latios-gx",
+    "name": "Latias & Latios-GX",
+    "setId": "sm9",
+    "number": "170",
+    "rarity": "Rare Ultra",
+    "score": 2968.65
+  },
+  {
+    "pokemonTcgId": "ex8-107",
+    "slug": "ex8-107-rayquaza",
+    "name": "Rayquaza ★",
+    "setId": "ex8",
+    "number": "107",
+    "rarity": "Rare Holo Star",
+    "score": 2500.99
+  },
+  {
+    "pokemonTcgId": "ex7-109",
+    "slug": "ex7-109-treecko",
+    "name": "Treecko ★",
+    "setId": "ex7",
+    "number": "109",
+    "rarity": "Rare Holo Star",
+    "score": 2400
+  },
+  {
+    "pokemonTcgId": "ex8-105",
+    "slug": "ex8-105-latias",
+    "name": "Latias ★",
+    "setId": "ex8",
+    "number": "105",
+    "rarity": "Rare Holo Star",
+    "score": 2300
+  },
+  {
+    "pokemonTcgId": "ecard2-149",
+    "slug": "ecard2-149-lugia",
+    "name": "Lugia",
+    "setId": "ecard2",
+    "number": "149",
+    "rarity": "Rare Secret",
+    "score": 2225
+  },
+  {
+    "pokemonTcgId": "ex15-101",
+    "slug": "ex15-101-mew",
+    "name": "Mew ★ δ",
+    "setId": "ex15",
+    "number": "101",
+    "rarity": "Rare Holo Star",
+    "score": 2200
+  },
+  {
+    "pokemonTcgId": "ex16-100",
+    "slug": "ex16-100-flareon",
+    "name": "Flareon ★",
+    "setId": "ex16",
+    "number": "100",
+    "rarity": "Rare Holo Star",
+    "score": 1999.95
+  },
+  {
+    "pokemonTcgId": "ex16-101",
+    "slug": "ex16-101-jolteon",
+    "name": "Jolteon ★",
+    "setId": "ex16",
+    "number": "101",
+    "rarity": "Rare Holo Star",
+    "score": 1999.94
+  },
+  {
+    "pokemonTcgId": "ex7-108",
+    "slug": "ex7-108-torchic",
+    "name": "Torchic ★",
+    "setId": "ex7",
+    "number": "108",
+    "rarity": "Rare Holo Star",
+    "score": 1969.69
+  },
+  {
+    "pokemonTcgId": "pop5-16",
+    "slug": "pop5-16-espeon",
+    "name": "Espeon ★",
+    "setId": "pop5",
+    "number": "16",
+    "rarity": "Rare",
+    "score": 1900
+  },
+  {
+    "pokemonTcgId": "ecard3-148",
+    "slug": "ecard3-148-golem",
+    "name": "Golem",
+    "setId": "ecard3",
+    "number": "148",
+    "rarity": "Rare Secret",
+    "score": 1600.97
+  },
+  {
+    "pokemonTcgId": "sm9-165",
+    "slug": "sm9-165-gengar-and-mimikyu-gx",
+    "name": "Gengar & Mimikyu-GX",
+    "setId": "sm9",
+    "number": "165",
+    "rarity": "Rare Ultra",
+    "score": 1549.58
+  },
+  {
+    "pokemonTcgId": "np-5",
+    "slug": "np-5-mudkip",
+    "name": "Mudkip",
+    "setId": "np",
+    "number": "5",
+    "rarity": "Promo",
+    "score": 1500
+  },
+  {
+    "pokemonTcgId": "bwp-BW28",
+    "slug": "bwp-bw28-tropical-beach",
+    "name": "Tropical Beach",
+    "setId": "bwp",
+    "number": "BW28",
+    "rarity": "Promo",
+    "score": 1500
+  },
+  {
+    "pokemonTcgId": "ex6-108",
+    "slug": "ex6-108-gengar-ex",
+    "name": "Gengar ex",
+    "setId": "ex6",
+    "number": "108",
+    "rarity": "Rare Holo EX",
+    "score": 1399.99
+  },
+  {
+    "pokemonTcgId": "ex7-97",
+    "slug": "ex7-97-rocket-s-entei-ex",
+    "name": "Rocket's Entei ex",
+    "setId": "ex7",
+    "number": "97",
+    "rarity": "Rare Holo EX",
+    "score": 1299.99
+  },
+  {
+    "pokemonTcgId": "ecard2-H29",
+    "slug": "ecard2-h29-umbreon",
+    "name": "Umbreon",
+    "setId": "ecard2",
+    "number": "H29",
+    "rarity": "Rare Holo",
+    "score": 1252.62
+  },
+  {
+    "pokemonTcgId": "ex12-90",
+    "slug": "ex12-90-regice",
+    "name": "Regice ★",
+    "setId": "ex12",
+    "number": "90",
+    "rarity": "Rare Holo Star",
+    "score": 1250
+  },
+  {
+    "pokemonTcgId": "ecard3-H10",
+    "slug": "ecard3-h10-gyarados",
+    "name": "Gyarados",
+    "setId": "ecard3",
+    "number": "H10",
+    "rarity": "Rare Holo",
+    "score": 1249.94
+  },
+  {
+    "pokemonTcgId": "basep-41",
+    "slug": "basep-41-lucky-stadium",
+    "name": "Lucky Stadium",
+    "setId": "basep",
+    "number": "41",
+    "rarity": "Promo",
+    "score": 1212.75
+  },
+  {
+    "pokemonTcgId": "ex13-102",
+    "slug": "ex13-102-gyarados",
+    "name": "Gyarados ★ δ",
+    "setId": "ex13",
+    "number": "102",
+    "rarity": "Rare Holo Star",
+    "score": 1200
+  },
+  {
+    "pokemonTcgId": "bw8-136",
+    "slug": "bw8-136-charizard",
+    "name": "Charizard",
+    "setId": "bw8",
+    "number": "136",
+    "rarity": "Rare Secret",
+    "score": 1150
+  },
+  {
+    "pokemonTcgId": "basep-40",
+    "slug": "basep-40-pok-mon-center",
+    "name": "Pokémon Center",
+    "setId": "basep",
+    "number": "40",
+    "rarity": "Promo",
+    "score": 1108
+  },
+  {
+    "pokemonTcgId": "ex10-114",
+    "slug": "ex10-114-raikou",
+    "name": "Raikou ★",
+    "setId": "ex10",
+    "number": "114",
+    "rarity": "Rare Holo Star",
+    "score": 1100
+  },
+  {
+    "pokemonTcgId": "ex10-115",
+    "slug": "ex10-115-suicune",
+    "name": "Suicune ★",
+    "setId": "ex10",
+    "number": "115",
+    "rarity": "Rare Holo Star",
+    "score": 1100
+  },
+  {
+    "pokemonTcgId": "sv4pt5-232",
+    "slug": "sv4pt5-232-mew-ex",
+    "name": "Mew ex",
+    "setId": "sv4pt5",
+    "number": "232",
+    "rarity": "Special Illustration Rare",
+    "score": 1082.18
+  },
+  {
+    "pokemonTcgId": "svp-85",
+    "slug": "svp-85-pikachu-with-grey-felt-hat",
+    "name": "Pikachu with Grey Felt Hat",
+    "setId": "svp",
+    "number": "85",
+    "rarity": "Promo",
+    "score": 1062.79
+  },
+  {
+    "pokemonTcgId": "ex14-99",
+    "slug": "ex14-99-alakazam",
+    "name": "Alakazam ★",
+    "setId": "ex14",
+    "number": "99",
+    "rarity": "Rare Holo Star",
+    "score": 1025
+  },
+  {
+    "pokemonTcgId": "ex11-111",
+    "slug": "ex11-111-groudon",
+    "name": "Groudon ★",
+    "setId": "ex11",
+    "number": "111",
+    "rarity": "Rare Holo Star",
+    "score": 1010
+  },
+  {
+    "pokemonTcgId": "xy2-108",
+    "slug": "xy2-108-m-charizard-ex",
+    "name": "M Charizard-EX",
+    "setId": "xy2",
+    "number": "108",
+    "rarity": "Rare Secret",
+    "score": 1000.62
+  },
+  {
+    "pokemonTcgId": "ecard3-H11",
+    "slug": "ecard3-h11-houndoom",
+    "name": "Houndoom",
+    "setId": "ecard3",
+    "number": "H11",
+    "rarity": "Rare Holo",
+    "score": 1000
+  },
+  {
+    "pokemonTcgId": "ecard3-150",
+    "slug": "ecard3-150-kabutops",
+    "name": "Kabutops",
+    "setId": "ecard3",
+    "number": "150",
+    "rarity": "Rare Secret",
+    "score": 1000
+  },
+  {
+    "pokemonTcgId": "bwp-BW50",
+    "slug": "bwp-bw50-tropical-beach",
+    "name": "Tropical Beach",
+    "setId": "bwp",
+    "number": "BW50",
+    "rarity": "Promo",
+    "score": 999.99
+  },
+  {
+    "pokemonTcgId": "hgss1-115",
+    "slug": "hgss1-115-grass-energy",
+    "name": "Grass Energy",
+    "setId": "hgss1",
+    "number": "115",
+    "rarity": "Common",
+    "score": 999
+  },
+  {
+    "pokemonTcgId": "xy4-122",
+    "slug": "xy4-122-dialga-ex",
+    "name": "Dialga-EX",
+    "setId": "xy4",
+    "number": "122",
+    "rarity": "Rare Secret",
+    "score": 974.97
+  },
+  {
+    "pokemonTcgId": "xy7-98",
+    "slug": "xy7-98-m-rayquaza-ex",
+    "name": "M Rayquaza-EX",
+    "setId": "xy7",
+    "number": "98",
+    "rarity": "Rare Secret",
+    "score": 972
+  },
+  {
+    "pokemonTcgId": "ex11-113",
+    "slug": "ex11-113-metagross",
+    "name": "Metagross ★",
+    "setId": "ex11",
+    "number": "113",
+    "rarity": "Rare Holo Star",
+    "score": 951.99
+  },
+  {
+    "pokemonTcgId": "ex14-100",
+    "slug": "ex14-100-celebi",
+    "name": "Celebi ★",
+    "setId": "ex14",
+    "number": "100",
+    "rarity": "Rare Holo Star",
+    "score": 950
+  },
+  {
+    "pokemonTcgId": "ex10-105",
+    "slug": "ex10-105-lugia-ex",
+    "name": "Lugia ex",
+    "setId": "ex10",
+    "number": "105",
+    "rarity": "Rare Holo EX",
+    "score": 902.49
+  },
+  {
+    "pokemonTcgId": "ex16-102",
+    "slug": "ex16-102-vaporeon",
+    "name": "Vaporeon ★",
+    "setId": "ex16",
+    "number": "102",
+    "rarity": "Rare Holo Star",
+    "score": 900.99
+  },
+  {
+    "pokemonTcgId": "ex7-106",
+    "slug": "ex7-106-rocket-s-zapdos-ex",
+    "name": "Rocket's Zapdos ex",
+    "setId": "ex7",
+    "number": "106",
+    "rarity": "Rare Holo EX",
+    "score": 899.99
+  },
+  {
+    "pokemonTcgId": "ex8-106",
+    "slug": "ex8-106-latios",
+    "name": "Latios ★",
+    "setId": "ex8",
+    "number": "106",
+    "rarity": "Rare Holo Star",
+    "score": 899
+  },
+  {
+    "pokemonTcgId": "me2-125",
+    "slug": "me2-125-mega-charizard-x-ex",
+    "name": "Mega Charizard X ex",
+    "setId": "me2",
+    "number": "125",
+    "rarity": "Special Illustration Rare",
+    "score": 864.68
+  },
+  {
+    "pokemonTcgId": "sm9-161",
+    "slug": "sm9-161-magikarp-and-wailord-gx",
+    "name": "Magikarp & Wailord-GX",
+    "setId": "sm9",
+    "number": "161",
+    "rarity": "Rare Ultra",
+    "score": 851.77
+  },
+  {
+    "pokemonTcgId": "svp-45",
+    "slug": "svp-45-paradise-resort",
+    "name": "Paradise Resort",
+    "setId": "svp",
+    "number": "45",
+    "rarity": "Promo",
+    "score": 850
+  },
+  {
+    "pokemonTcgId": "ecard1-13",
+    "slug": "ecard1-13-gengar",
+    "name": "Gengar",
+    "setId": "ecard1",
+    "number": "13",
+    "rarity": "Rare Holo",
+    "score": 799.98
+  },
+  {
+    "pokemonTcgId": "ecard1-9",
+    "slug": "ecard1-9-dragonite",
+    "name": "Dragonite",
+    "setId": "ecard1",
+    "number": "9",
+    "rarity": "Rare Holo",
+    "score": 799.69
+  },
+  {
+    "pokemonTcgId": "pl2-111",
+    "slug": "pl2-111-snorlax-lv-x",
+    "name": "Snorlax LV.X",
+    "setId": "pl2",
+    "number": "111",
+    "rarity": "Rare Holo LV.X",
+    "score": 797.47
+  },
+  {
+    "pokemonTcgId": "ex3-100",
+    "slug": "ex3-100-charizard",
+    "name": "Charizard",
+    "setId": "ex3",
+    "number": "100",
+    "rarity": "Rare Secret",
+    "score": 772.48
+  },
+  {
+    "pokemonTcgId": "ru1-7",
+    "slug": "ru1-7-pikachu",
+    "name": "Pikachu",
+    "setId": "ru1",
+    "number": "7",
+    "rarity": "",
+    "score": 750
+  },
+  {
+    "pokemonTcgId": "xy4-114",
+    "slug": "xy4-114-gengar-ex",
+    "name": "Gengar-EX",
+    "setId": "xy4",
+    "number": "114",
+    "rarity": "Rare Ultra",
+    "score": 749.53
+  },
+  {
+    "pokemonTcgId": "ex12-91",
+    "slug": "ex12-91-regirock",
+    "name": "Regirock ★",
+    "setId": "ex12",
+    "number": "91",
+    "rarity": "Rare Holo Star",
+    "score": 747
+  },
+  {
+    "pokemonTcgId": "bw8-134",
+    "slug": "bw8-134-lugia-ex",
+    "name": "Lugia-EX",
+    "setId": "bw8",
+    "number": "134",
+    "rarity": "Rare Ultra",
+    "score": 725
+  },
+  {
+    "pokemonTcgId": "ecard1-20",
+    "slug": "ecard1-20-mewtwo",
+    "name": "Mewtwo",
+    "setId": "ecard1",
+    "number": "20",
+    "rarity": "Rare Holo",
+    "score": 699.97
+  },
+  {
+    "pokemonTcgId": "bw9-122",
+    "slug": "bw9-122-ultra-ball",
+    "name": "Ultra Ball",
+    "setId": "bw9",
+    "number": "122",
+    "rarity": "Rare Secret",
+    "score": 698.84
+  },
+  {
+    "pokemonTcgId": "sma-SV49",
+    "slug": "sma-sv49-charizard-gx",
+    "name": "Charizard-GX",
+    "setId": "sma",
+    "number": "SV49",
+    "rarity": "Rare Shiny GX",
+    "score": 683.33
+  },
+  {
+    "pokemonTcgId": "sm35-78",
+    "slug": "sm35-78-mewtwo-gx",
+    "name": "Mewtwo-GX",
+    "setId": "sm35",
+    "number": "78",
+    "rarity": "Rare Secret",
+    "score": 681.88
+  },
+  {
+    "pokemonTcgId": "dp7-103",
+    "slug": "dp7-103-charizard",
+    "name": "Charizard",
+    "setId": "dp7",
+    "number": "103",
+    "rarity": "Rare Secret",
+    "score": 668.75
+  },
+  {
+    "pokemonTcgId": "bw6-128",
+    "slug": "bw6-128-rayquaza",
+    "name": "Rayquaza",
+    "setId": "bw6",
+    "number": "128",
+    "rarity": "Rare Secret",
+    "score": 637.46
+  },
+  {
+    "pokemonTcgId": "pop4-1",
+    "slug": "pop4-1-chimecho",
+    "name": "Chimecho δ",
+    "setId": "pop4",
+    "number": "1",
+    "rarity": "Rare",
+    "score": 631.36
+  },
+  {
+    "pokemonTcgId": "sm10-205",
+    "slug": "sm10-205-gardevoir-and-sylveon-gx",
+    "name": "Gardevoir & Sylveon-GX",
+    "setId": "sm10",
+    "number": "205",
+    "rarity": "Rare Ultra",
+    "score": 608.94
+  },
+  {
+    "pokemonTcgId": "ecard2-150",
+    "slug": "ecard2-150-nidoking",
+    "name": "Nidoking",
+    "setId": "ecard2",
+    "number": "150",
+    "rarity": "Rare Secret",
+    "score": 600
+  },
+  {
+    "pokemonTcgId": "ecard2-148",
+    "slug": "ecard2-148-kingdra",
+    "name": "Kingdra",
+    "setId": "ecard2",
+    "number": "148",
+    "rarity": "Rare Secret",
+    "score": 599.99
+  },
+  {
+    "pokemonTcgId": "svp-150",
+    "slug": "svp-150-paradise-resort",
+    "name": "Paradise Resort",
+    "setId": "svp",
+    "number": "150",
+    "rarity": "Promo",
+    "score": 599.99
+  },
+  {
+    "pokemonTcgId": "hsp-HGSS18",
+    "slug": "hsp-hgss18-tropical-tidal-wave",
+    "name": "Tropical Tidal Wave",
+    "setId": "hsp",
+    "number": "HGSS18",
+    "rarity": "Promo",
+    "score": 599.95
+  },
+  {
+    "pokemonTcgId": "bw7-145",
+    "slug": "bw7-145-black-kyurem-ex",
+    "name": "Black Kyurem-EX",
+    "setId": "bw7",
+    "number": "145",
+    "rarity": "Rare Ultra",
+    "score": 598.98
+  },
+  {
+    "pokemonTcgId": "bw9-111",
+    "slug": "bw9-111-deoxys-ex",
+    "name": "Deoxys-EX",
+    "setId": "bw9",
+    "number": "111",
+    "rarity": "Rare Ultra",
+    "score": 598.96
+  },
+  {
+    "pokemonTcgId": "swshp-SWSH066",
+    "slug": "swshp-swsh066-charizard",
+    "name": "Charizard",
+    "setId": "swshp",
+    "number": "SWSH066",
+    "rarity": "Promo",
+    "score": 580.92
+  },
+  {
+    "pokemonTcgId": "zsv10pt5-171",
+    "slug": "zsv10pt5-171-victini",
+    "name": "Victini",
+    "setId": "zsv10pt5",
+    "number": "171",
+    "rarity": "Rare",
+    "score": 575.93
+  },
+  {
+    "pokemonTcgId": "dpp-DP05",
+    "slug": "dpp-dp05-tropical-wind",
+    "name": "Tropical Wind",
+    "setId": "dpp",
+    "number": "DP05",
+    "rarity": "Promo",
+    "score": 575
+  },
+  {
+    "pokemonTcgId": "ex14-4",
+    "slug": "ex14-4-charizard",
+    "name": "Charizard δ",
+    "setId": "ex14",
+    "number": "4",
+    "rarity": "Rare Holo",
+    "score": 558.5
+  },
+  {
+    "pokemonTcgId": "ecard1-6",
+    "slug": "ecard1-6-charizard",
+    "name": "Charizard",
+    "setId": "ecard1",
+    "number": "6",
+    "rarity": "Rare Holo",
+    "score": 556.25
+  },
+  {
+    "pokemonTcgId": "zsv10pt5-172",
+    "slug": "zsv10pt5-172-zekrom-ex",
+    "name": "Zekrom ex",
+    "setId": "zsv10pt5",
+    "number": "172",
+    "rarity": "Black White Rare",
+    "score": 555.64
+  },
+  {
+    "pokemonTcgId": "ru1-9",
+    "slug": "ru1-9-mewtwo",
+    "name": "Mewtwo",
+    "setId": "ru1",
+    "number": "9",
+    "rarity": "",
+    "score": 550
+  },
+  {
+    "pokemonTcgId": "sm3-150",
+    "slug": "sm3-150-charizard-gx",
+    "name": "Charizard-GX",
+    "setId": "sm3",
+    "number": "150",
+    "rarity": "Rare Rainbow",
+    "score": 544.55
+  },
+  {
+    "pokemonTcgId": "bw5-109",
+    "slug": "bw5-109-gardevoir",
+    "name": "Gardevoir",
+    "setId": "bw5",
+    "number": "109",
+    "rarity": "Rare Secret",
+    "score": 544
+  },
+  {
+    "pokemonTcgId": "col1-SL10",
+    "slug": "col1-sl10-rayquaza",
+    "name": "Rayquaza",
+    "setId": "col1",
+    "number": "SL10",
+    "rarity": "Rare Holo",
+    "score": 543.19
+  },
+  {
+    "pokemonTcgId": "bw10-100",
+    "slug": "bw10-100-palkia-ex",
+    "name": "Palkia-EX",
+    "setId": "bw10",
+    "number": "100",
+    "rarity": "Rare Ultra",
+    "score": 541.35
+  },
+  {
+    "pokemonTcgId": "ex8-22",
+    "slug": "ex8-22-rayquaza",
+    "name": "Rayquaza",
+    "setId": "ex8",
+    "number": "22",
+    "rarity": "Rare",
+    "score": 534
+  },
+  {
+    "pokemonTcgId": "rsv10pt5-172",
+    "slug": "rsv10pt5-172-victini",
+    "name": "Victini",
+    "setId": "rsv10pt5",
+    "number": "172",
+    "rarity": "Rare",
+    "score": 526.43
+  },
+  {
+    "pokemonTcgId": "xy4-121",
+    "slug": "xy4-121-m-gengar-ex",
+    "name": "M Gengar-EX",
+    "setId": "xy4",
+    "number": "121",
+    "rarity": "Rare Secret",
+    "score": 524.6
+  },
+  {
+    "pokemonTcgId": "ex3-90",
+    "slug": "ex3-90-dragonite-ex",
+    "name": "Dragonite ex",
+    "setId": "ex3",
+    "number": "90",
+    "rarity": "Rare Holo EX",
+    "score": 519.67
+  },
+  {
+    "pokemonTcgId": "ex13-100",
+    "slug": "ex13-100-mew-ex",
+    "name": "Mew ex",
+    "setId": "ex13",
+    "number": "100",
+    "rarity": "Rare Holo EX",
+    "score": 512.44
+  },
+  {
+    "pokemonTcgId": "bw7-146",
+    "slug": "bw7-146-white-kyurem-ex",
+    "name": "White Kyurem-EX",
+    "setId": "bw7",
+    "number": "146",
+    "rarity": "Rare Ultra",
+    "score": 509.97
+  },
+  {
+    "pokemonTcgId": "hgss3-86",
+    "slug": "hgss3-86-umbreon",
+    "name": "Umbreon",
+    "setId": "hgss3",
+    "number": "86",
+    "rarity": "Rare Prime",
+    "score": 506.94
+  },
+  {
+    "pokemonTcgId": "ex10-112",
+    "slug": "ex10-112-umbreon-ex",
+    "name": "Umbreon ex",
+    "setId": "ex10",
+    "number": "112",
+    "rarity": "Rare Holo EX",
+    "score": 500.66
+  },
+  {
+    "pokemonTcgId": "ecard2-H28",
+    "slug": "ecard2-h28-tyranitar",
+    "name": "Tyranitar",
+    "setId": "ecard2",
+    "number": "H28",
+    "rarity": "Rare Holo",
+    "score": 500
+  },
+  {
+    "pokemonTcgId": "ex6-105",
+    "slug": "ex6-105-charizard-ex",
+    "name": "Charizard ex",
+    "setId": "ex6",
+    "number": "105",
+    "rarity": "Rare Holo EX",
+    "score": 500
+  },
+  {
+    "pokemonTcgId": "ex12-92",
+    "slug": "ex12-92-registeel",
+    "name": "Registeel ★",
+    "setId": "ex12",
+    "number": "92",
+    "rarity": "Rare Holo Star",
+    "score": 500
+  },
+  {
+    "pokemonTcgId": "dp5-98",
+    "slug": "dp5-98-glaceon-lv-x",
+    "name": "Glaceon LV.X",
+    "setId": "dp5",
+    "number": "98",
+    "rarity": "Rare Holo LV.X",
+    "score": 500
+  },
+  {
+    "pokemonTcgId": "bp-8",
+    "slug": "bp-8-rocket-s-mewtwo",
+    "name": "Rocket's Mewtwo",
+    "setId": "bp",
+    "number": "8",
+    "rarity": "Promo",
+    "score": 500
+  },
+  {
+    "pokemonTcgId": "ex10-111",
+    "slug": "ex10-111-tyranitar-ex",
+    "name": "Tyranitar ex",
+    "setId": "ex10",
+    "number": "111",
+    "rarity": "Rare Holo EX",
+    "score": 499.99
+  },
+  {
+    "pokemonTcgId": "swshp-SWSH296",
+    "slug": "swshp-swsh296-champions-festival",
+    "name": "Champions Festival",
+    "setId": "swshp",
+    "number": "SWSH296",
+    "rarity": "Promo",
+    "score": 499.99
+  },
+  {
+    "pokemonTcgId": "ecard1-4",
+    "slug": "ecard1-4-blastoise",
+    "name": "Blastoise",
+    "setId": "ecard1",
+    "number": "4",
+    "rarity": "Rare Holo",
+    "score": 499.95
+  },
+  {
+    "pokemonTcgId": "hgss4-94",
+    "slug": "hgss4-94-gengar",
+    "name": "Gengar",
+    "setId": "hgss4",
+    "number": "94",
+    "rarity": "Rare Prime",
+    "score": 493.44
+  },
+  {
+    "pokemonTcgId": "dc1-6",
+    "slug": "dc1-6-team-aqua-s-kyogre-ex",
+    "name": "Team Aqua's Kyogre-EX",
+    "setId": "dc1",
+    "number": "6",
+    "rarity": "Rare Ultra",
+    "score": 493.29
+  },
+  {
+    "pokemonTcgId": "smp-SM78",
+    "slug": "smp-sm78-champions-festival",
+    "name": "Champions Festival",
+    "setId": "smp",
+    "number": "SM78",
+    "rarity": "Promo",
+    "score": 489.99
+  },
+  {
+    "pokemonTcgId": "sm12-221",
+    "slug": "sm12-221-arceus-and-dialga-and-palkia-gx",
+    "name": "Arceus & Dialga & Palkia-GX",
+    "setId": "sm12",
+    "number": "221",
+    "rarity": "Rare Ultra",
+    "score": 489.21
+  },
+  {
+    "pokemonTcgId": "swshp-SWSH177",
+    "slug": "swshp-swsh177-special-delivery-bidoof",
+    "name": "Special Delivery Bidoof",
+    "setId": "swshp",
+    "number": "SWSH177",
+    "rarity": "Promo",
+    "score": 488.91
+  },
+  {
+    "pokemonTcgId": "rsv10pt5-173",
+    "slug": "rsv10pt5-173-reshiram-ex",
+    "name": "Reshiram ex",
+    "setId": "rsv10pt5",
+    "number": "173",
+    "rarity": "Black White Rare",
+    "score": 487.95
+  },
+  {
+    "pokemonTcgId": "bw9-120",
+    "slug": "bw9-120-garchomp",
+    "name": "Garchomp",
+    "setId": "bw9",
+    "number": "120",
+    "rarity": "Rare Secret",
+    "score": 486.98
+  },
+  {
+    "pokemonTcgId": "ex9-96",
+    "slug": "ex9-96-milotic-ex",
+    "name": "Milotic ex",
+    "setId": "ex9",
+    "number": "96",
+    "rarity": "Rare Holo EX",
+    "score": 479.99
+  },
+  {
+    "pokemonTcgId": "bw8-137",
+    "slug": "bw8-137-blastoise",
+    "name": "Blastoise",
+    "setId": "bw8",
+    "number": "137",
+    "rarity": "Rare Secret",
+    "score": 464.98
+  },
+  {
+    "pokemonTcgId": "dc1-15",
+    "slug": "dc1-15-team-magma-s-groudon-ex",
+    "name": "Team Magma's Groudon-EX",
+    "setId": "dc1",
+    "number": "15",
+    "rarity": "Rare Ultra",
+    "score": 463.22
+  },
+  {
+    "pokemonTcgId": "sm5-151",
+    "slug": "sm5-151-lillie",
+    "name": "Lillie",
+    "setId": "sm5",
+    "number": "151",
+    "rarity": "Rare Ultra",
+    "score": 458.23
+  },
+  {
+    "pokemonTcgId": "ex12-83",
+    "slug": "ex12-83-arcanine-ex",
+    "name": "Arcanine ex",
+    "setId": "ex12",
+    "number": "83",
+    "rarity": "Rare Holo EX",
+    "score": 457.49
+  },
+  {
+    "pokemonTcgId": "sm12-215",
+    "slug": "sm12-215-blastoise-and-piplup-gx",
+    "name": "Blastoise & Piplup-GX",
+    "setId": "sm12",
+    "number": "215",
+    "rarity": "Rare Ultra",
+    "score": 451.65
+  },
+  {
+    "pokemonTcgId": "pl3-143",
+    "slug": "pl3-143-charizard-g-lv-x",
+    "name": "Charizard G LV.X",
+    "setId": "pl3",
+    "number": "143",
+    "rarity": "Rare Holo LV.X",
+    "score": 442.59
+  },
+  {
+    "pokemonTcgId": "si1-1",
+    "slug": "si1-1-mew",
+    "name": "Mew",
+    "setId": "si1",
+    "number": "1",
+    "rarity": "",
+    "score": 440.82
+  },
+  {
+    "pokemonTcgId": "np-39",
+    "slug": "np-39-rayquaza-ex",
+    "name": "Rayquaza ex",
+    "setId": "np",
+    "number": "39",
+    "rarity": "Promo",
+    "score": 435.84
+  },
+  {
+    "pokemonTcgId": "pop5-12",
+    "slug": "pop5-12-pikachu",
+    "name": "Pikachu",
+    "setId": "pop5",
+    "number": "12",
+    "rarity": "Common",
+    "score": 434.85
+  },
+  {
+    "pokemonTcgId": "pop5-3",
+    "slug": "pop5-3-mew",
+    "name": "Mew δ",
+    "setId": "pop5",
+    "number": "3",
+    "rarity": "Rare",
+    "score": 434.6
+  },
+  {
+    "pokemonTcgId": "ex6-104",
+    "slug": "ex6-104-blastoise-ex",
+    "name": "Blastoise ex",
+    "setId": "ex6",
+    "number": "104",
+    "rarity": "Rare Holo EX",
+    "score": 430
+  },
+  {
+    "pokemonTcgId": "sv2-203",
+    "slug": "sv2-203-magikarp",
+    "name": "Magikarp",
+    "setId": "sv2",
+    "number": "203",
+    "rarity": "Illustration Rare",
+    "score": 428.54
+  },
+  {
+    "pokemonTcgId": "bw5-106",
+    "slug": "bw5-106-groudon-ex",
+    "name": "Groudon-EX",
+    "setId": "bw5",
+    "number": "106",
+    "rarity": "Rare Ultra",
+    "score": 427.46
+  },
+  {
+    "pokemonTcgId": "bw6-120",
+    "slug": "bw6-120-mew-ex",
+    "name": "Mew-EX",
+    "setId": "bw6",
+    "number": "120",
+    "rarity": "Rare Ultra",
+    "score": 423.51
+  },
+  {
+    "pokemonTcgId": "bw5-107",
+    "slug": "bw5-107-darkrai-ex",
+    "name": "Darkrai-EX",
+    "setId": "bw5",
+    "number": "107",
+    "rarity": "Rare Ultra",
+    "score": 420.69
+  },
+  {
+    "pokemonTcgId": "xy7-96",
+    "slug": "xy7-96-primal-kyogre-ex",
+    "name": "Primal Kyogre-EX",
+    "setId": "xy7",
+    "number": "96",
+    "rarity": "Rare Secret",
+    "score": 417.85
+  },
+  {
+    "pokemonTcgId": "pl4-97",
+    "slug": "pl4-97-gengar-lv-x",
+    "name": "Gengar LV.X",
+    "setId": "pl4",
+    "number": "97",
+    "rarity": "Rare Holo LV.X",
+    "score": 414.54
+  },
+  {
+    "pokemonTcgId": "swsh12pt5gg-GG69",
+    "slug": "swsh12pt5gg-gg69-giratina-vstar",
+    "name": "Giratina VSTAR",
+    "setId": "swsh12pt5gg",
+    "number": "GG69",
+    "rarity": "Rare Secret",
+    "score": 413.01
+  },
+  {
+    "pokemonTcgId": "bw11-115",
+    "slug": "bw11-115-zekrom",
+    "name": "Zekrom",
+    "setId": "bw11",
+    "number": "115",
+    "rarity": "Rare Secret",
+    "score": 410.98
+  },
+  {
+    "pokemonTcgId": "sm12-222",
+    "slug": "sm12-222-reshiram-and-zekrom-gx",
+    "name": "Reshiram & Zekrom-GX",
+    "setId": "sm12",
+    "number": "222",
+    "rarity": "Rare Ultra",
+    "score": 404.94
+  },
+  {
+    "pokemonTcgId": "sv6-214",
+    "slug": "sv6-214-greninja-ex",
+    "name": "Greninja ex",
+    "setId": "sv6",
+    "number": "214",
+    "rarity": "Special Illustration Rare",
+    "score": 400.83
+  },
+  {
+    "pokemonTcgId": "sm11-242",
+    "slug": "sm11-242-mewtwo-and-mew-gx",
+    "name": "Mewtwo & Mew-GX",
+    "setId": "sm11",
+    "number": "242",
+    "rarity": "Rare Rainbow",
+    "score": 397.5
+  },
+  {
+    "pokemonTcgId": "xy6-105",
+    "slug": "xy6-105-m-rayquaza-ex",
+    "name": "M Rayquaza-EX",
+    "setId": "xy6",
+    "number": "105",
+    "rarity": "Rare Ultra",
+    "score": 397.12
+  },
+  {
+    "pokemonTcgId": "xyp-XY60",
+    "slug": "xyp-xy60-gyarados",
+    "name": "Gyarados",
+    "setId": "xyp",
+    "number": "XY60",
+    "rarity": "Promo",
+    "score": 391.16
+  },
+  {
+    "pokemonTcgId": "ex11-17",
+    "slug": "ex11-17-umbreon",
+    "name": "Umbreon δ",
+    "setId": "ex11",
+    "number": "17",
+    "rarity": "Rare Holo",
+    "score": 388.32
+  },
+  {
+    "pokemonTcgId": "ex13-16",
+    "slug": "ex13-16-rayquaza",
+    "name": "Rayquaza δ",
+    "setId": "ex13",
+    "number": "16",
+    "rarity": "Rare Holo",
+    "score": 387.49
+  },
+  {
+    "pokemonTcgId": "ex11-12",
+    "slug": "ex11-12-mewtwo",
+    "name": "Mewtwo δ",
+    "setId": "ex11",
+    "number": "12",
+    "rarity": "Rare Holo",
+    "score": 385.33
+  },
+  {
+    "pokemonTcgId": "swshp-SWSH074",
+    "slug": "swshp-swsh074-special-delivery-pikachu",
+    "name": "Special Delivery Pikachu",
+    "setId": "swshp",
+    "number": "SWSH074",
+    "rarity": "Promo",
+    "score": 383.6
+  },
+  {
+    "pokemonTcgId": "sm9-186",
+    "slug": "sm9-186-gengar-and-mimikyu-gx",
+    "name": "Gengar & Mimikyu-GX",
+    "setId": "sm9",
+    "number": "186",
+    "rarity": "Rare Rainbow",
+    "score": 377.74
+  },
+  {
+    "pokemonTcgId": "sm11-226",
+    "slug": "sm11-226-mega-sableye-and-tyranitar-gx",
+    "name": "Mega Sableye & Tyranitar-GX",
+    "setId": "sm11",
+    "number": "226",
+    "rarity": "Rare Ultra",
+    "score": 375.32
+  },
+  {
+    "pokemonTcgId": "np-7",
+    "slug": "np-7-treecko",
+    "name": "Treecko",
+    "setId": "np",
+    "number": "7",
+    "rarity": "Promo",
+    "score": 374.95
+  },
+  {
+    "pokemonTcgId": "swsh6-201",
+    "slug": "swsh6-201-blaziken-vmax",
+    "name": "Blaziken VMAX",
+    "setId": "swsh6",
+    "number": "201",
+    "rarity": "Rare Rainbow",
+    "score": 374.24
+  },
+  {
+    "pokemonTcgId": "xyp-XY124",
+    "slug": "xyp-xy124-pikachu-ex",
+    "name": "Pikachu-EX",
+    "setId": "xyp",
+    "number": "XY124",
+    "rarity": "Promo",
+    "score": 373.87
+  },
+  {
+    "pokemonTcgId": "ru1-10",
+    "slug": "ru1-10-mew",
+    "name": "Mew",
+    "setId": "ru1",
+    "number": "10",
+    "rarity": "",
+    "score": 367.1
+  },
+  {
+    "pokemonTcgId": "dpp-DP47",
+    "slug": "dpp-dp47-rayquaza-c-lv-x",
+    "name": "Rayquaza C LV.X",
+    "setId": "dpp",
+    "number": "DP47",
+    "rarity": "Promo",
+    "score": 359.99
+  },
+  {
+    "pokemonTcgId": "pl3-148",
+    "slug": "pl3-148-articuno",
+    "name": "Articuno",
+    "setId": "pl3",
+    "number": "148",
+    "rarity": "Rare Secret",
+    "score": 357.14
+  },
+  {
+    "pokemonTcgId": "me2-130",
+    "slug": "me2-130-mega-charizard-x-ex",
+    "name": "Mega Charizard X ex",
+    "setId": "me2",
+    "number": "130",
+    "rarity": "Mega Hyper Rare",
+    "score": 353.77
+  },
+  {
+    "pokemonTcgId": "bwp-BW97",
+    "slug": "bwp-bw97-eevee",
+    "name": "Eevee",
+    "setId": "bwp",
+    "number": "BW97",
+    "rarity": "Promo",
+    "score": 349.99
+  },
+  {
+    "pokemonTcgId": "basep-49",
+    "slug": "basep-49-snorlax",
+    "name": "Snorlax",
+    "setId": "basep",
+    "number": "49",
+    "rarity": "Promo",
+    "score": 341.88
+  },
+  {
+    "pokemonTcgId": "sm11-235",
+    "slug": "sm11-235-misty-s-favor",
+    "name": "Misty's Favor",
+    "setId": "sm11",
+    "number": "235",
+    "rarity": "Rare Ultra",
+    "score": 341.13
+  },
+  {
+    "pokemonTcgId": "sm9-53",
+    "slug": "sm9-53-gengar-and-mimikyu-gx",
+    "name": "Gengar & Mimikyu-GX",
+    "setId": "sm9",
+    "number": "53",
+    "rarity": "Rare Holo GX",
+    "score": 335.88
+  },
+  {
+    "pokemonTcgId": "sv4pt5-234",
+    "slug": "sv4pt5-234-charizard-ex",
+    "name": "Charizard ex",
+    "setId": "sv4pt5",
+    "number": "234",
+    "rarity": "Special Illustration Rare",
+    "score": 335.77
+  },
+  {
+    "pokemonTcgId": "pop1-17",
+    "slug": "pop1-17-tyranitar-ex",
+    "name": "Tyranitar ex",
+    "setId": "pop1",
+    "number": "17",
+    "rarity": "Rare",
+    "score": 335.66
+  },
+  {
+    "pokemonTcgId": "ex15-10",
+    "slug": "ex15-10-snorlax",
+    "name": "Snorlax δ",
+    "setId": "ex15",
+    "number": "10",
+    "rarity": "Rare Holo",
+    "score": 334.76
+  },
+  {
+    "pokemonTcgId": "hgss4-97",
+    "slug": "hgss4-97-mew",
+    "name": "Mew",
+    "setId": "hgss4",
+    "number": "97",
+    "rarity": "Rare Prime",
+    "score": 331.34
+  },
+  {
+    "pokemonTcgId": "sm11-221",
+    "slug": "sm11-221-raichu-and-alolan-raichu-gx",
+    "name": "Raichu & Alolan Raichu-GX",
+    "setId": "sm11",
+    "number": "221",
+    "rarity": "Rare Ultra",
+    "score": 330.29
+  },
+  {
+    "pokemonTcgId": "ex15-97",
+    "slug": "ex15-97-rayquaza-ex",
+    "name": "Rayquaza ex δ",
+    "setId": "ex15",
+    "number": "97",
+    "rarity": "Rare Holo EX",
+    "score": 330
+  },
+  {
+    "pokemonTcgId": "ex15-96",
+    "slug": "ex15-96-latios-ex",
+    "name": "Latios ex δ",
+    "setId": "ex15",
+    "number": "96",
+    "rarity": "Rare Holo EX",
+    "score": 329.98
+  },
+  {
+    "pokemonTcgId": "bw8-132",
+    "slug": "bw8-132-articuno-ex",
+    "name": "Articuno-EX",
+    "setId": "bw8",
+    "number": "132",
+    "rarity": "Rare Ultra",
+    "score": 329.18
+  },
+  {
+    "pokemonTcgId": "pl2-108",
+    "slug": "pl2-108-infernape-e4-lv-x",
+    "name": "Infernape E4 LV.X",
+    "setId": "pl2",
+    "number": "108",
+    "rarity": "Rare Holo LV.X",
+    "score": 325
+  },
+  {
+    "pokemonTcgId": "col1-SL11",
+    "slug": "col1-sl11-suicune",
+    "name": "Suicune",
+    "setId": "col1",
+    "number": "SL11",
+    "rarity": "Rare Holo",
+    "score": 325
+  },
+  {
+    "pokemonTcgId": "pl2-112",
+    "slug": "pl2-112-pikachu",
+    "name": "Pikachu",
+    "setId": "pl2",
+    "number": "112",
+    "rarity": "Rare Secret",
+    "score": 323.07
+  },
+  {
+    "pokemonTcgId": "bw5-103",
+    "slug": "bw5-103-entei-ex",
+    "name": "Entei-EX",
+    "setId": "bw5",
+    "number": "103",
+    "rarity": "Rare Ultra",
+    "score": 320
+  },
+  {
+    "pokemonTcgId": "bw11-114",
+    "slug": "bw11-114-reshiram",
+    "name": "Reshiram",
+    "setId": "bw11",
+    "number": "114",
+    "rarity": "Rare Secret",
+    "score": 319.91
+  },
+  {
+    "pokemonTcgId": "bw5-104",
+    "slug": "bw5-104-kyogre-ex",
+    "name": "Kyogre-EX",
+    "setId": "bw5",
+    "number": "104",
+    "rarity": "Rare Ultra",
+    "score": 318.96
+  },
+  {
+    "pokemonTcgId": "xy5-149",
+    "slug": "xy5-149-primal-kyogre-ex",
+    "name": "Primal Kyogre-EX",
+    "setId": "xy5",
+    "number": "149",
+    "rarity": "Rare Ultra",
+    "score": 317.35
+  },
+  {
+    "pokemonTcgId": "smp-SM191",
+    "slug": "smp-sm191-mewtwo-and-mew-gx",
+    "name": "Mewtwo & Mew-GX",
+    "setId": "smp",
+    "number": "SM191",
+    "rarity": "Promo",
+    "score": 315.74
+  },
+  {
+    "pokemonTcgId": "xy7-97",
+    "slug": "xy7-97-primal-groudon-ex",
+    "name": "Primal Groudon-EX",
+    "setId": "xy7",
+    "number": "97",
+    "rarity": "Rare Secret",
+    "score": 315.43
+  },
+  {
+    "pokemonTcgId": "ex4-94",
+    "slug": "ex4-94-suicune-ex",
+    "name": "Suicune ex",
+    "setId": "ex4",
+    "number": "94",
+    "rarity": "Rare Holo EX",
+    "score": 314.98
+  },
+  {
+    "pokemonTcgId": "sm10-201",
+    "slug": "sm10-201-greninja-and-zoroark-gx",
+    "name": "Greninja & Zoroark-GX",
+    "setId": "sm10",
+    "number": "201",
+    "rarity": "Rare Ultra",
+    "score": 314.79
+  },
+  {
+    "pokemonTcgId": "bwp-BW85",
+    "slug": "bwp-bw85-lucario",
+    "name": "Lucario",
+    "setId": "bwp",
+    "number": "BW85",
+    "rarity": "Promo",
+    "score": 312.47
+  },
+  {
+    "pokemonTcgId": "basep-24",
+    "slug": "basep-24-s-pikachu",
+    "name": "_____'s Pikachu",
+    "setId": "basep",
+    "number": "24",
+    "rarity": "Promo",
+    "score": 312.28
+  },
+  {
+    "pokemonTcgId": "ex1-101",
+    "slug": "ex1-101-mewtwo-ex",
+    "name": "Mewtwo ex",
+    "setId": "ex1",
+    "number": "101",
+    "rarity": "Rare Holo EX",
+    "score": 310.73
+  },
+  {
+    "pokemonTcgId": "pl2-114",
+    "slug": "pl2-114-surfing-pikachu",
+    "name": "Surfing Pikachu",
+    "setId": "pl2",
+    "number": "114",
+    "rarity": "Rare Secret",
+    "score": 310.5
+  },
+  {
+    "pokemonTcgId": "ru1-3",
+    "slug": "ru1-3-ninetales",
+    "name": "Ninetales",
+    "setId": "ru1",
+    "number": "3",
+    "rarity": "",
+    "score": 309.81
+  },
+  {
+    "pokemonTcgId": "sm11-218",
+    "slug": "sm11-218-slowpoke-and-psyduck-gx",
+    "name": "Slowpoke & Psyduck-GX",
+    "setId": "sm11",
+    "number": "218",
+    "rarity": "Rare Ultra",
+    "score": 306.63
+  },
+  {
+    "pokemonTcgId": "swsh12pt5gg-GG44",
+    "slug": "swsh12pt5gg-gg44-mewtwo-vstar",
+    "name": "Mewtwo VSTAR",
+    "setId": "swsh12pt5gg",
+    "number": "GG44",
+    "rarity": "Rare Holo VSTAR",
+    "score": 304.59
+  },
+  {
+    "pokemonTcgId": "sma-SV69",
+    "slug": "sma-sv69-umbreon-gx",
+    "name": "Umbreon-GX",
+    "setId": "sma",
+    "number": "SV69",
+    "rarity": "Rare Shiny GX",
+    "score": 302.21
+  },
+  {
+    "pokemonTcgId": "bwp-BW98",
+    "slug": "bwp-bw98-mew",
+    "name": "Mew",
+    "setId": "bwp",
+    "number": "BW98",
+    "rarity": "Promo",
+    "score": 300
+  },
+  {
+    "pokemonTcgId": "ex8-99",
+    "slug": "ex8-99-deoxys-ex",
+    "name": "Deoxys ex",
+    "setId": "ex8",
+    "number": "99",
+    "rarity": "Rare Holo EX",
+    "score": 299.99
+  },
+  {
+    "pokemonTcgId": "xyp-XY91",
+    "slug": "xyp-xy91-champions-festival",
+    "name": "Champions Festival",
+    "setId": "xyp",
+    "number": "XY91",
+    "rarity": "Promo",
+    "score": 299.99
+  },
+  {
+    "pokemonTcgId": "pop4-17",
+    "slug": "pop4-17-deoxys-ex",
+    "name": "Deoxys ex",
+    "setId": "pop4",
+    "number": "17",
+    "rarity": "Rare",
+    "score": 299
+  },
+  {
+    "pokemonTcgId": "sm12-216",
+    "slug": "sm12-216-solgaleo-and-lunala-gx",
+    "name": "Solgaleo & Lunala-GX",
+    "setId": "sm12",
+    "number": "216",
+    "rarity": "Rare Ultra",
+    "score": 298.75
+  },
+  {
+    "pokemonTcgId": "xy2-107",
+    "slug": "xy2-107-m-charizard-ex",
+    "name": "M Charizard-EX",
+    "setId": "xy2",
+    "number": "107",
+    "rarity": "Rare Secret",
+    "score": 297.92
+  },
+  {
+    "pokemonTcgId": "np-23",
+    "slug": "np-23-metang",
+    "name": "Metang",
+    "setId": "np",
+    "number": "23",
+    "rarity": "Promo",
+    "score": 295.24
+  },
+  {
+    "pokemonTcgId": "bw9-117",
+    "slug": "bw9-117-empoleon",
+    "name": "Empoleon",
+    "setId": "bw9",
+    "number": "117",
+    "rarity": "Rare Secret",
+    "score": 293.33
+  },
+  {
+    "pokemonTcgId": "bw10-97",
+    "slug": "bw10-97-genesect-ex",
+    "name": "Genesect-EX",
+    "setId": "bw10",
+    "number": "97",
+    "rarity": "Rare Ultra",
+    "score": 292.27
+  },
+  {
+    "pokemonTcgId": "sm7-177",
+    "slug": "sm7-177-rayquaza-gx",
+    "name": "Rayquaza-GX",
+    "setId": "sm7",
+    "number": "177",
+    "rarity": "Rare Rainbow",
+    "score": 284.03
+  },
+  {
+    "pokemonTcgId": "bw4-97",
+    "slug": "bw4-97-zekrom-ex",
+    "name": "Zekrom-EX",
+    "setId": "bw4",
+    "number": "97",
+    "rarity": "Rare Ultra",
+    "score": 281.54
+  },
+  {
+    "pokemonTcgId": "ru1-12",
+    "slug": "ru1-12-lucario",
+    "name": "Lucario",
+    "setId": "ru1",
+    "number": "12",
+    "rarity": "",
+    "score": 280.48
+  },
+  {
+    "pokemonTcgId": "bw6-124",
+    "slug": "bw6-124-giratina-ex",
+    "name": "Giratina-EX",
+    "setId": "bw6",
+    "number": "124",
+    "rarity": "Rare Ultra",
+    "score": 280.36
+  },
+  {
+    "pokemonTcgId": "ex3-94",
+    "slug": "ex3-94-latios-ex",
+    "name": "Latios ex",
+    "setId": "ex3",
+    "number": "94",
+    "rarity": "Rare Holo EX",
+    "score": 280.33
+  },
+  {
+    "pokemonTcgId": "ex4-95",
+    "slug": "ex4-95-swampert-ex",
+    "name": "Swampert ex",
+    "setId": "ex4",
+    "number": "95",
+    "rarity": "Rare Holo EX",
+    "score": 280
+  },
+  {
+    "pokemonTcgId": "ex9-14",
+    "slug": "ex9-14-groudon",
+    "name": "Groudon",
+    "setId": "ex9",
+    "number": "14",
+    "rarity": "Rare",
+    "score": 279.99
+  },
+  {
+    "pokemonTcgId": "zsv10pt5-166",
+    "slug": "zsv10pt5-166-zekrom-ex",
+    "name": "Zekrom ex",
+    "setId": "zsv10pt5",
+    "number": "166",
+    "rarity": "Special Illustration Rare",
+    "score": 279.21
+  },
+  {
+    "pokemonTcgId": "xyp-XY122",
+    "slug": "xyp-xy122-blastoise-ex",
+    "name": "Blastoise-EX",
+    "setId": "xyp",
+    "number": "XY122",
+    "rarity": "Promo",
+    "score": 278.62
+  },
+  {
+    "pokemonTcgId": "xyp-XY166",
+    "slug": "xyp-xy166-m-gengar-ex",
+    "name": "M Gengar-EX",
+    "setId": "xyp",
+    "number": "XY166",
+    "rarity": "Promo",
+    "score": 277.22
+  },
+  {
+    "pokemonTcgId": "hgss1-114",
+    "slug": "hgss1-114-lugia-legend",
+    "name": "Lugia LEGEND",
+    "setId": "hgss1",
+    "number": "114",
+    "rarity": "LEGEND",
+    "score": 275.7
+  },
+  {
+    "pokemonTcgId": "ex2-98",
+    "slug": "ex2-98-raichu-ex",
+    "name": "Raichu ex",
+    "setId": "ex2",
+    "number": "98",
+    "rarity": "Rare Holo EX",
+    "score": 274.58
+  },
+  {
+    "pokemonTcgId": "smp-SM241",
+    "slug": "smp-sm241-umbreon-and-darkrai-gx",
+    "name": "Umbreon & Darkrai-GX",
+    "setId": "smp",
+    "number": "SM241",
+    "rarity": "Promo",
+    "score": 273.97
+  },
+  {
+    "pokemonTcgId": "swsh5-155",
+    "slug": "swsh5-155-tyranitar-v",
+    "name": "Tyranitar V",
+    "setId": "swsh5",
+    "number": "155",
+    "rarity": "Rare Ultra",
+    "score": 273.92
+  },
+  {
+    "pokemonTcgId": "ex16-6",
+    "slug": "ex16-6-charizard",
+    "name": "Charizard",
+    "setId": "ex16",
+    "number": "6",
+    "rarity": "Rare Holo",
+    "score": 272.97
+  },
+  {
+    "pokemonTcgId": "ex4-91",
+    "slug": "ex4-91-entei-ex",
+    "name": "Entei ex",
+    "setId": "ex4",
+    "number": "91",
+    "rarity": "Rare Holo EX",
+    "score": 272.41
+  },
+  {
+    "pokemonTcgId": "sm12-236",
+    "slug": "sm12-236-rosa",
+    "name": "Rosa",
+    "setId": "sm12",
+    "number": "236",
+    "rarity": "Rare Ultra",
+    "score": 270.23
+  },
+  {
+    "pokemonTcgId": "xy2-69",
+    "slug": "xy2-69-m-charizard-ex",
+    "name": "M Charizard-EX",
+    "setId": "xy2",
+    "number": "69",
+    "rarity": "Rare Holo EX",
+    "score": 268.8
+  },
+  {
+    "pokemonTcgId": "ex6-112",
+    "slug": "ex6-112-venusaur-ex",
+    "name": "Venusaur ex",
+    "setId": "ex6",
+    "number": "112",
+    "rarity": "Rare Holo EX",
+    "score": 264.31
+  },
+  {
+    "pokemonTcgId": "hgss3-90",
+    "slug": "hgss3-90-rayquaza-and-deoxys-legend",
+    "name": "Rayquaza & Deoxys LEGEND",
+    "setId": "hgss3",
+    "number": "90",
+    "rarity": "LEGEND",
+    "score": 264.3
+  },
+  {
+    "pokemonTcgId": "dp6-144",
+    "slug": "dp6-144-mewtwo-lv-x",
+    "name": "Mewtwo LV.X",
+    "setId": "dp6",
+    "number": "144",
+    "rarity": "Rare Holo LV.X",
+    "score": 264.14
+  },
+  {
+    "pokemonTcgId": "ex5-93",
+    "slug": "ex5-93-groudon-ex",
+    "name": "Groudon ex",
+    "setId": "ex5",
+    "number": "93",
+    "rarity": "Rare Holo EX",
+    "score": 263.03
+  },
+  {
+    "pokemonTcgId": "ex14-2",
+    "slug": "ex14-2-blastoise",
+    "name": "Blastoise δ",
+    "setId": "ex14",
+    "number": "2",
+    "rarity": "Rare Holo",
+    "score": 261.4
+  },
+  {
+    "pokemonTcgId": "hgss1-113",
+    "slug": "hgss1-113-lugia-legend",
+    "name": "Lugia LEGEND",
+    "setId": "hgss1",
+    "number": "113",
+    "rarity": "LEGEND",
+    "score": 261.24
+  },
+  {
+    "pokemonTcgId": "dpp-DP45",
+    "slug": "dpp-dp45-charizard-g-lv-x",
+    "name": "Charizard G LV.X",
+    "setId": "dpp",
+    "number": "DP45",
+    "rarity": "Promo",
+    "score": 261.14
+  },
+  {
+    "pokemonTcgId": "ex3-98",
+    "slug": "ex3-98-charmander",
+    "name": "Charmander",
+    "setId": "ex3",
+    "number": "98",
+    "rarity": "Rare Secret",
+    "score": 259.98
+  },
+  {
+    "pokemonTcgId": "smp-SM228",
+    "slug": "smp-sm228-armored-mewtwo",
+    "name": "Armored Mewtwo",
+    "setId": "smp",
+    "number": "SM228",
+    "rarity": "Promo",
+    "score": 253.4
+  },
+  {
+    "pokemonTcgId": "zsv10pt5-105",
+    "slug": "zsv10pt5-105-seismitoad",
+    "name": "Seismitoad",
+    "setId": "zsv10pt5",
+    "number": "105",
+    "rarity": "Illustration Rare",
+    "score": 253.04
+  },
+  {
+    "pokemonTcgId": "smp-SM231",
+    "slug": "smp-sm231-champions-festival",
+    "name": "Champions Festival",
+    "setId": "smp",
+    "number": "SM231",
+    "rarity": "Promo",
+    "score": 250.49
+  },
+  {
+    "pokemonTcgId": "ex4-44",
+    "slug": "ex4-44-psyduck",
+    "name": "Psyduck",
+    "setId": "ex4",
+    "number": "44",
+    "rarity": "Common",
+    "score": 249.99
+  },
+  {
+    "pokemonTcgId": "ex4-93",
+    "slug": "ex4-93-sceptile-ex",
+    "name": "Sceptile ex",
+    "setId": "ex4",
+    "number": "93",
+    "rarity": "Rare Holo EX",
+    "score": 249.99
+  },
+  {
+    "pokemonTcgId": "dp4-105",
+    "slug": "dp4-105-dialga-lv-x",
+    "name": "Dialga LV.X",
+    "setId": "dp4",
+    "number": "105",
+    "rarity": "Rare Holo LV.X",
+    "score": 249.99
+  },
+  {
+    "pokemonTcgId": "ex9-9",
+    "slug": "ex9-9-rayquaza",
+    "name": "Rayquaza",
+    "setId": "ex9",
+    "number": "9",
+    "rarity": "Rare Holo",
+    "score": 249.98
+  },
+  {
+    "pokemonTcgId": "dpp-DP48",
+    "slug": "dpp-dp48-tropical-wind",
+    "name": "Tropical Wind",
+    "setId": "dpp",
+    "number": "DP48",
+    "rarity": "Promo",
+    "score": 249
+  },
+  {
+    "pokemonTcgId": "bw4-96",
+    "slug": "bw4-96-kyurem-ex",
+    "name": "Kyurem-EX",
+    "setId": "bw4",
+    "number": "96",
+    "rarity": "Rare Ultra",
+    "score": 248.99
+  },
+  {
+    "pokemonTcgId": "xy2-100",
+    "slug": "xy2-100-charizard-ex",
+    "name": "Charizard-EX",
+    "setId": "xy2",
+    "number": "100",
+    "rarity": "Rare Ultra",
+    "score": 247.68
+  },
+  {
+    "pokemonTcgId": "ex2-15",
+    "slug": "ex2-15-arcanine",
+    "name": "Arcanine",
+    "setId": "ex2",
+    "number": "15",
+    "rarity": "Rare",
+    "score": 246.49
+  },
+  {
+    "pokemonTcgId": "sm8-227",
+    "slug": "sm8-227-lugia-gx",
+    "name": "Lugia-GX",
+    "setId": "sm8",
+    "number": "227",
+    "rarity": "Rare Rainbow",
+    "score": 245.05
+  },
+  {
+    "pokemonTcgId": "ex12-5",
+    "slug": "ex12-5-gengar",
+    "name": "Gengar",
+    "setId": "ex12",
+    "number": "5",
+    "rarity": "Rare Holo",
+    "score": 244.99
+  },
+  {
+    "pokemonTcgId": "ex6-83",
+    "slug": "ex6-83-squirtle",
+    "name": "Squirtle",
+    "setId": "ex6",
+    "number": "83",
+    "rarity": "Common",
+    "score": 244.95
+  },
+  {
+    "pokemonTcgId": "ex9-98",
+    "slug": "ex9-98-regice-ex",
+    "name": "Regice ex",
+    "setId": "ex9",
+    "number": "98",
+    "rarity": "Rare Holo EX",
+    "score": 244.49
+  },
+  {
+    "pokemonTcgId": "bw6-119",
+    "slug": "bw6-119-ho-oh-ex",
+    "name": "Ho-Oh-EX",
+    "setId": "bw6",
+    "number": "119",
+    "rarity": "Rare Ultra",
+    "score": 243.28
+  },
+  {
+    "pokemonTcgId": "bw4-98",
+    "slug": "bw4-98-mewtwo-ex",
+    "name": "Mewtwo-EX",
+    "setId": "bw4",
+    "number": "98",
+    "rarity": "Rare Ultra",
+    "score": 240.81
+  },
+  {
+    "pokemonTcgId": "swsh12pt5gg-GG70",
+    "slug": "swsh12pt5gg-gg70-arceus-vstar",
+    "name": "Arceus VSTAR",
+    "setId": "swsh12pt5gg",
+    "number": "GG70",
+    "rarity": "Rare Secret",
+    "score": 240.13
+  },
+  {
+    "pokemonTcgId": "pl3-SH7",
+    "slug": "pl3-sh7-milotic",
+    "name": "Milotic",
+    "setId": "pl3",
+    "number": "SH7",
+    "rarity": "Rare",
+    "score": 240.08
+  },
+  {
+    "pokemonTcgId": "swsh6-177",
+    "slug": "swsh6-177-galarian-moltres-v",
+    "name": "Galarian Moltres V",
+    "setId": "swsh6",
+    "number": "177",
+    "rarity": "Rare Ultra",
+    "score": 236.82
+  },
+  {
+    "pokemonTcgId": "ex14-94",
+    "slug": "ex14-94-jirachi-ex",
+    "name": "Jirachi ex",
+    "setId": "ex14",
+    "number": "94",
+    "rarity": "Rare Holo EX",
+    "score": 235
+  },
+  {
+    "pokemonTcgId": "sm8-226",
+    "slug": "sm8-226-mimikyu-gx",
+    "name": "Mimikyu-GX",
+    "setId": "sm8",
+    "number": "226",
+    "rarity": "Rare Rainbow",
+    "score": 234.65
+  },
+  {
+    "pokemonTcgId": "sm5-148",
+    "slug": "sm5-148-cynthia",
+    "name": "Cynthia",
+    "setId": "sm5",
+    "number": "148",
+    "rarity": "Rare Ultra",
+    "score": 233.93
+  },
+  {
+    "pokemonTcgId": "ex5-96",
+    "slug": "ex5-96-ninetales-ex",
+    "name": "Ninetales ex",
+    "setId": "ex5",
+    "number": "96",
+    "rarity": "Rare Holo EX",
+    "score": 232.5
+  },
+  {
+    "pokemonTcgId": "sm10-199",
+    "slug": "sm10-199-marshadow-and-machamp-gx",
+    "name": "Marshadow & Machamp-GX",
+    "setId": "sm10",
+    "number": "199",
+    "rarity": "Rare Ultra",
+    "score": 232.27
+  },
+  {
+    "pokemonTcgId": "ex3-10",
+    "slug": "ex3-10-salamence",
+    "name": "Salamence",
+    "setId": "ex3",
+    "number": "10",
+    "rarity": "Rare Holo",
+    "score": 231.2
+  },
+  {
+    "pokemonTcgId": "ex16-92",
+    "slug": "ex16-92-absol-ex",
+    "name": "Absol ex",
+    "setId": "ex16",
+    "number": "92",
+    "rarity": "Rare Holo EX",
+    "score": 230.48
+  },
+  {
+    "pokemonTcgId": "bw9-113",
+    "slug": "bw9-113-latios-ex",
+    "name": "Latios-EX",
+    "setId": "bw9",
+    "number": "113",
+    "rarity": "Rare Ultra",
+    "score": 230.32
+  },
+  {
+    "pokemonTcgId": "si1-14",
+    "slug": "si1-14-slowking",
+    "name": "Slowking",
+    "setId": "si1",
+    "number": "14",
+    "rarity": "",
+    "score": 230.28
+  },
+  {
+    "pokemonTcgId": "pop4-5",
+    "slug": "pop4-5-sceptile",
+    "name": "Sceptile",
+    "setId": "pop4",
+    "number": "5",
+    "rarity": "Rare",
+    "score": 229.96
+  },
+  {
+    "pokemonTcgId": "swshp-SWSH068",
+    "slug": "swshp-swsh068-snorlax",
+    "name": "Snorlax",
+    "setId": "swshp",
+    "number": "SWSH068",
+    "rarity": "Promo",
+    "score": 229.56
+  },
+  {
+    "pokemonTcgId": "bw3-101",
+    "slug": "bw3-101-n",
+    "name": "N",
+    "setId": "bw3",
+    "number": "101",
+    "rarity": "Rare Ultra",
+    "score": 228.49
+  },
+  {
+    "pokemonTcgId": "ex2-73",
+    "slug": "ex2-73-psyduck",
+    "name": "Psyduck",
+    "setId": "ex2",
+    "number": "73",
+    "rarity": "Common",
+    "score": 226.56
+  },
+  {
+    "pokemonTcgId": "np-1",
+    "slug": "np-1-kyogre-ex",
+    "name": "Kyogre ex",
+    "setId": "np",
+    "number": "1",
+    "rarity": "Promo",
+    "score": 225
+  },
+  {
+    "pokemonTcgId": "ex5-94",
+    "slug": "ex5-94-kyogre-ex",
+    "name": "Kyogre ex",
+    "setId": "ex5",
+    "number": "94",
+    "rarity": "Rare Holo EX",
+    "score": 223.75
+  },
+  {
+    "pokemonTcgId": "basep-13",
+    "slug": "basep-13-venusaur",
+    "name": "Venusaur",
+    "setId": "basep",
+    "number": "13",
+    "rarity": "Promo",
+    "score": 223.4
+  },
+  {
+    "pokemonTcgId": "rsv10pt5-166",
+    "slug": "rsv10pt5-166-reshiram-ex",
+    "name": "Reshiram ex",
+    "setId": "rsv10pt5",
+    "number": "166",
+    "rarity": "Special Illustration Rare",
+    "score": 220.04
+  },
+  {
+    "pokemonTcgId": "ex9-15",
+    "slug": "ex9-15-kyogre",
+    "name": "Kyogre",
+    "setId": "ex9",
+    "number": "15",
+    "rarity": "Rare",
+    "score": 220
+  },
+  {
+    "pokemonTcgId": "bp-9",
+    "slug": "bp-9-rocket-s-hitmonchan",
+    "name": "Rocket's Hitmonchan",
+    "setId": "bp",
+    "number": "9",
+    "rarity": "Promo",
+    "score": 220
+  },
+  {
+    "pokemonTcgId": "bw7-149",
+    "slug": "bw7-149-skyla",
+    "name": "Skyla",
+    "setId": "bw7",
+    "number": "149",
+    "rarity": "Rare Ultra",
+    "score": 219.35
+  },
+  {
+    "pokemonTcgId": "pl3-146",
+    "slug": "pl3-146-rayquaza-c-lv-x",
+    "name": "Rayquaza C LV.X",
+    "setId": "pl3",
+    "number": "146",
+    "rarity": "Rare Holo LV.X",
+    "score": 218.66
+  },
+  {
+    "pokemonTcgId": "swsh10-172",
+    "slug": "swsh10-172-machamp-v",
+    "name": "Machamp V",
+    "setId": "swsh10",
+    "number": "172",
+    "rarity": "Rare Ultra",
+    "score": 217.92
+  },
+  {
+    "pokemonTcgId": "pop3-1",
+    "slug": "pop3-1-blastoise",
+    "name": "Blastoise",
+    "setId": "pop3",
+    "number": "1",
+    "rarity": "Rare",
+    "score": 217.5
+  },
+  {
+    "pokemonTcgId": "swsh12tg-TG20",
+    "slug": "swsh12tg-tg20-rayquaza-vmax",
+    "name": "Rayquaza VMAX",
+    "setId": "swsh12tg",
+    "number": "TG20",
+    "rarity": "Rare Holo VMAX",
+    "score": 216.56
+  },
+  {
+    "pokemonTcgId": "pl4-SH11",
+    "slug": "pl4-sh11-ponyta",
+    "name": "Ponyta",
+    "setId": "pl4",
+    "number": "SH11",
+    "rarity": "Rare",
+    "score": 215.61
+  },
+  {
+    "pokemonTcgId": "bw10-99",
+    "slug": "bw10-99-dialga-ex",
+    "name": "Dialga-EX",
+    "setId": "bw10",
+    "number": "99",
+    "rarity": "Rare Ultra",
+    "score": 215.12
+  },
+  {
+    "pokemonTcgId": "hgss2-88",
+    "slug": "hgss2-88-tyranitar",
+    "name": "Tyranitar",
+    "setId": "hgss2",
+    "number": "88",
+    "rarity": "Rare Prime",
+    "score": 214.33
+  },
+  {
+    "pokemonTcgId": "hgss3-82",
+    "slug": "hgss3-82-houndoom",
+    "name": "Houndoom",
+    "setId": "hgss3",
+    "number": "82",
+    "rarity": "Rare Prime",
+    "score": 213.74
+  },
+  {
+    "pokemonTcgId": "bw6-123",
+    "slug": "bw6-123-rayquaza-ex",
+    "name": "Rayquaza-EX",
+    "setId": "bw6",
+    "number": "123",
+    "rarity": "Rare Ultra",
+    "score": 212.46
+  },
+  {
+    "pokemonTcgId": "pl3-149",
+    "slug": "pl3-149-moltres",
+    "name": "Moltres",
+    "setId": "pl3",
+    "number": "149",
+    "rarity": "Rare Secret",
+    "score": 211.69
+  },
+  {
+    "pokemonTcgId": "sm10-217",
+    "slug": "sm10-217-reshiram-and-charizard-gx",
+    "name": "Reshiram & Charizard-GX",
+    "setId": "sm10",
+    "number": "217",
+    "rarity": "Rare Rainbow",
+    "score": 210.58
+  },
+  {
+    "pokemonTcgId": "xy7-94",
+    "slug": "xy7-94-lugia-ex",
+    "name": "Lugia-EX",
+    "setId": "xy7",
+    "number": "94",
+    "rarity": "Rare Ultra",
+    "score": 210.29
+  },
+  {
+    "pokemonTcgId": "g1-RC28",
+    "slug": "g1-rc28-flareon-ex",
+    "name": "Flareon-EX",
+    "setId": "g1",
+    "number": "RC28",
+    "rarity": "Rare Ultra",
+    "score": 209.05
+  },
+  {
+    "pokemonTcgId": "bw7-147",
+    "slug": "bw7-147-bianca",
+    "name": "Bianca",
+    "setId": "bw7",
+    "number": "147",
+    "rarity": "Rare Ultra",
+    "score": 208.26
+  },
+  {
+    "pokemonTcgId": "xy5-151",
+    "slug": "xy5-151-primal-groudon-ex",
+    "name": "Primal Groudon-EX",
+    "setId": "xy5",
+    "number": "151",
+    "rarity": "Rare Ultra",
+    "score": 206.52
+  },
+  {
+    "pokemonTcgId": "sv4pt5-233",
+    "slug": "sv4pt5-233-gardevoir-ex",
+    "name": "Gardevoir ex",
+    "setId": "sv4pt5",
+    "number": "233",
+    "rarity": "Special Illustration Rare",
+    "score": 205.7
+  },
+  {
+    "pokemonTcgId": "hgss3-87",
+    "slug": "hgss3-87-kyogre-and-groudon-legend",
+    "name": "Kyogre & Groudon LEGEND",
+    "setId": "hgss3",
+    "number": "87",
+    "rarity": "LEGEND",
+    "score": 203.27
+  },
+  {
+    "pokemonTcgId": "ex2-96",
+    "slug": "ex2-96-gardevoir-ex",
+    "name": "Gardevoir ex",
+    "setId": "ex2",
+    "number": "96",
+    "rarity": "Rare Holo EX",
+    "score": 202.75
+  },
+  {
+    "pokemonTcgId": "hgss3-81",
+    "slug": "hgss3-81-espeon",
+    "name": "Espeon",
+    "setId": "hgss3",
+    "number": "81",
+    "rarity": "Rare Prime",
+    "score": 202.7
+  },
+  {
+    "pokemonTcgId": "ex2-24",
+    "slug": "ex2-24-umbreon",
+    "name": "Umbreon",
+    "setId": "ex2",
+    "number": "24",
+    "rarity": "Rare",
+    "score": 200
+  },
+  {
+    "pokemonTcgId": "dp5-99",
+    "slug": "dp5-99-leafeon-lv-x",
+    "name": "Leafeon LV.X",
+    "setId": "dp5",
+    "number": "99",
+    "rarity": "Rare Holo LV.X",
+    "score": 200
+  },
+  {
+    "pokemonTcgId": "dp1-27",
+    "slug": "dp1-27-gengar",
+    "name": "Gengar",
+    "setId": "dp1",
+    "number": "27",
+    "rarity": "Rare",
+    "score": 199.99
+  },
+  {
+    "pokemonTcgId": "sma-SV76",
+    "slug": "sma-sv76-sylveon-gx",
+    "name": "Sylveon-GX",
+    "setId": "sma",
+    "number": "SV76",
+    "rarity": "Rare Shiny GX",
+    "score": 196.46
+  },
+  {
+    "pokemonTcgId": "bw4-101",
+    "slug": "bw4-101-chandelure",
+    "name": "Chandelure",
+    "setId": "bw4",
+    "number": "101",
+    "rarity": "Rare Secret",
+    "score": 195.67
+  },
+  {
+    "pokemonTcgId": "sma-SV82",
+    "slug": "sma-sv82-cynthia",
+    "name": "Cynthia",
+    "setId": "sma",
+    "number": "SV82",
+    "rarity": "Rare Ultra",
+    "score": 194.74
+  },
+  {
+    "pokemonTcgId": "hgss1-111",
+    "slug": "hgss1-111-ho-oh-legend",
+    "name": "Ho-Oh LEGEND",
+    "setId": "hgss1",
+    "number": "111",
+    "rarity": "LEGEND",
+    "score": 194.7
+  },
+  {
+    "pokemonTcgId": "bw10-105",
+    "slug": "bw10-105-rare-candy",
+    "name": "Rare Candy",
+    "setId": "bw10",
+    "number": "105",
+    "rarity": "Rare Secret",
+    "score": 194.38
+  },
+  {
+    "pokemonTcgId": "sm7-164",
+    "slug": "sm7-164-lisia",
+    "name": "Lisia",
+    "setId": "sm7",
+    "number": "164",
+    "rarity": "Rare Ultra",
+    "score": 192.24
+  },
+  {
+    "pokemonTcgId": "xy9-123",
+    "slug": "xy9-123-gyarados-ex",
+    "name": "Gyarados-EX",
+    "setId": "xy9",
+    "number": "123",
+    "rarity": "Rare Secret",
+    "score": 189.71
+  },
+  {
+    "pokemonTcgId": "hgss4-99",
+    "slug": "hgss4-99-darkrai-and-cresselia-legend",
+    "name": "Darkrai & Cresselia LEGEND",
+    "setId": "hgss4",
+    "number": "99",
+    "rarity": "LEGEND",
+    "score": 189.41
+  },
+  {
+    "pokemonTcgId": "pl1-122",
+    "slug": "pl1-122-dialga-g-lv-x",
+    "name": "Dialga G LV.X",
+    "setId": "pl1",
+    "number": "122",
+    "rarity": "Rare Holo LV.X",
+    "score": 189.2
+  },
+  {
+    "pokemonTcgId": "g1-RC32",
+    "slug": "g1-rc32-sylveon-ex",
+    "name": "Sylveon-EX",
+    "setId": "g1",
+    "number": "RC32",
+    "rarity": "Rare Ultra",
+    "score": 186.36
+  },
+  {
+    "pokemonTcgId": "sv6-220",
+    "slug": "sv6-220-perrin",
+    "name": "Perrin",
+    "setId": "sv6",
+    "number": "220",
+    "rarity": "Special Illustration Rare",
+    "score": 185.51
+  },
+  {
+    "pokemonTcgId": "bw11-RC24",
+    "slug": "bw11-rc24-mew-ex",
+    "name": "Mew-EX",
+    "setId": "bw11",
+    "number": "RC24",
+    "rarity": "Rare Ultra",
+    "score": 182.76
+  },
+  {
+    "pokemonTcgId": "pl4-16",
+    "slug": "pl4-16-gengar",
+    "name": "Gengar",
+    "setId": "pl4",
+    "number": "16",
+    "rarity": "Rare",
+    "score": 182.65
+  },
+  {
+    "pokemonTcgId": "ex5-69",
+    "slug": "ex5-69-plusle",
+    "name": "Plusle",
+    "setId": "ex5",
+    "number": "69",
+    "rarity": "Common",
+    "score": 180.19
+  },
+  {
+    "pokemonTcgId": "hgss2-95",
+    "slug": "hgss2-95-suicune-and-entei-legend",
+    "name": "Suicune & Entei LEGEND",
+    "setId": "hgss2",
+    "number": "95",
+    "rarity": "LEGEND",
+    "score": 180
+  },
+  {
+    "pokemonTcgId": "si1-4",
+    "slug": "si1-4-togepi",
+    "name": "Togepi",
+    "setId": "si1",
+    "number": "4",
+    "rarity": "",
+    "score": 179.82
+  },
+  {
+    "pokemonTcgId": "dp6-2",
+    "slug": "dp6-2-dragonite",
+    "name": "Dragonite",
+    "setId": "dp6",
+    "number": "2",
+    "rarity": "Rare Holo",
+    "score": 179.39
+  },
+  {
+    "pokemonTcgId": "bw4-95",
+    "slug": "bw4-95-reshiram-ex",
+    "name": "Reshiram-EX",
+    "setId": "bw4",
+    "number": "95",
+    "rarity": "Rare Ultra",
+    "score": 178.28
+  },
+  {
+    "pokemonTcgId": "dp3-15",
+    "slug": "dp3-15-mew",
+    "name": "Mew",
+    "setId": "dp3",
+    "number": "15",
+    "rarity": "Rare Holo",
+    "score": 178.12
+  },
+  {
+    "pokemonTcgId": "ex5-98",
+    "slug": "ex5-98-regirock-ex",
+    "name": "Regirock ex",
+    "setId": "ex5",
+    "number": "98",
+    "rarity": "Rare Holo EX",
+    "score": 177.98
+  },
+  {
+    "pokemonTcgId": "bw7-150",
+    "slug": "bw7-150-golurk",
+    "name": "Golurk",
+    "setId": "bw7",
+    "number": "150",
+    "rarity": "Rare Secret",
+    "score": 174.99
+  },
+  {
+    "pokemonTcgId": "xy8-164",
+    "slug": "xy8-164-mewtwo-ex",
+    "name": "Mewtwo-EX",
+    "setId": "xy8",
+    "number": "164",
+    "rarity": "Rare Secret",
+    "score": 174.9
+  },
+  {
+    "pokemonTcgId": "bw3-98",
+    "slug": "bw3-98-victini",
+    "name": "Victini",
+    "setId": "bw3",
+    "number": "98",
+    "rarity": "Rare Ultra",
+    "score": 174.29
+  },
+  {
+    "pokemonTcgId": "xy8-163",
+    "slug": "xy8-163-mewtwo-ex",
+    "name": "Mewtwo-EX",
+    "setId": "xy8",
+    "number": "163",
+    "rarity": "Rare Secret",
+    "score": 168.7
+  },
+  {
+    "pokemonTcgId": "xy6-104",
+    "slug": "xy6-104-rayquaza-ex",
+    "name": "Rayquaza-EX",
+    "setId": "xy6",
+    "number": "104",
+    "rarity": "Rare Ultra",
+    "score": 167.97
+  },
+  {
+    "pokemonTcgId": "dp4-106",
+    "slug": "dp4-106-palkia-lv-x",
+    "name": "Palkia LV.X",
+    "setId": "dp4",
+    "number": "106",
+    "rarity": "Rare Holo LV.X",
+    "score": 167.5
+  },
+  {
+    "pokemonTcgId": "g1-RC29",
+    "slug": "g1-rc29-pikachu",
+    "name": "Pikachu",
+    "setId": "g1",
+    "number": "RC29",
+    "rarity": "Rare Ultra",
+    "score": 166.99
+  },
+  {
+    "pokemonTcgId": "dp4-104",
+    "slug": "dp4-104-darkrai-lv-x",
+    "name": "Darkrai LV.X",
+    "setId": "dp4",
+    "number": "104",
+    "rarity": "Rare Holo LV.X",
+    "score": 165.67
+  },
+  {
+    "pokemonTcgId": "dp3-3",
+    "slug": "dp3-3-charizard",
+    "name": "Charizard",
+    "setId": "dp3",
+    "number": "3",
+    "rarity": "Rare Holo",
+    "score": 165
+  },
+  {
+    "pokemonTcgId": "dp7-101",
+    "slug": "dp7-101-charmander",
+    "name": "Charmander",
+    "setId": "dp7",
+    "number": "101",
+    "rarity": "Rare Secret",
+    "score": 164.22
+  },
+  {
+    "pokemonTcgId": "hgss2-92",
+    "slug": "hgss2-92-raikou-and-suicune-legend",
+    "name": "Raikou & Suicune LEGEND",
+    "setId": "hgss2",
+    "number": "92",
+    "rarity": "LEGEND",
+    "score": 164.14
+  },
+  {
+    "pokemonTcgId": "xy4-35",
+    "slug": "xy4-35-m-gengar-ex",
+    "name": "M Gengar-EX",
+    "setId": "xy4",
+    "number": "35",
+    "rarity": "Rare Holo EX",
+    "score": 162.82
+  },
+  {
+    "pokemonTcgId": "xy3-113",
+    "slug": "xy3-113-m-lucario-ex",
+    "name": "M Lucario-EX",
+    "setId": "xy3",
+    "number": "113",
+    "rarity": "Rare Secret",
+    "score": 161.59
+  },
+  {
+    "pokemonTcgId": "bw11-RC22",
+    "slug": "bw11-rc22-reshiram",
+    "name": "Reshiram",
+    "setId": "bw11",
+    "number": "RC22",
+    "rarity": "Rare Ultra",
+    "score": 159.37
+  },
+  {
+    "pokemonTcgId": "pl1-124",
+    "slug": "pl1-124-giratina-lv-x",
+    "name": "Giratina LV.X",
+    "setId": "pl1",
+    "number": "124",
+    "rarity": "Rare Holo LV.X",
+    "score": 159.26
+  },
+  {
+    "pokemonTcgId": "g1-12",
+    "slug": "g1-12-m-charizard-ex",
+    "name": "M Charizard-EX",
+    "setId": "g1",
+    "number": "12",
+    "rarity": "Rare Holo EX",
+    "score": 159.19
+  },
+  {
+    "pokemonTcgId": "sm2-158",
+    "slug": "sm2-158-sylveon-gx",
+    "name": "Sylveon-GX",
+    "setId": "sm2",
+    "number": "158",
+    "rarity": "Rare Rainbow",
+    "score": 159.03
+  },
+  {
+    "pokemonTcgId": "sm5-153",
+    "slug": "sm5-153-lusamine",
+    "name": "Lusamine",
+    "setId": "sm5",
+    "number": "153",
+    "rarity": "Rare Ultra",
+    "score": 158
+  },
+  {
+    "pokemonTcgId": "dp1-121",
+    "slug": "dp1-121-infernape-lv-x",
+    "name": "Infernape LV.X",
+    "setId": "dp1",
+    "number": "121",
+    "rarity": "Rare Holo LV.X",
+    "score": 157.48
+  },
+  {
+    "pokemonTcgId": "hgss2-93",
+    "slug": "hgss2-93-raikou-and-suicune-legend",
+    "name": "Raikou & Suicune LEGEND",
+    "setId": "hgss2",
+    "number": "93",
+    "rarity": "LEGEND",
+    "score": 157.46
+  },
+  {
+    "pokemonTcgId": "pl1-SH6",
+    "slug": "pl1-sh6-vulpix",
+    "name": "Vulpix",
+    "setId": "pl1",
+    "number": "SH6",
+    "rarity": "Rare",
+    "score": 157.42
+  },
+  {
+    "pokemonTcgId": "col1-22",
+    "slug": "col1-22-umbreon",
+    "name": "Umbreon",
+    "setId": "col1",
+    "number": "22",
+    "rarity": "Rare Holo",
+    "score": 154.3
+  },
+  {
+    "pokemonTcgId": "xy12-101",
+    "slug": "xy12-101-m-charizard-ex",
+    "name": "M Charizard-EX",
+    "setId": "xy12",
+    "number": "101",
+    "rarity": "Rare Ultra",
+    "score": 153.06
+  },
+  {
+    "pokemonTcgId": "swsh45sv-SV107",
+    "slug": "swsh45sv-sv107-charizard-vmax",
+    "name": "Charizard VMAX",
+    "setId": "swsh45sv",
+    "number": "SV107",
+    "rarity": "Rare Holo VMAX",
+    "score": 151.24
+  },
+  {
+    "pokemonTcgId": "pl4-SH12",
+    "slug": "pl4-sh12-shinx",
+    "name": "Shinx",
+    "setId": "pl4",
+    "number": "SH12",
+    "rarity": "Rare",
+    "score": 151.08
+  },
+  {
+    "pokemonTcgId": "sm35-40",
+    "slug": "sm35-40-shining-mew",
+    "name": "Shining Mew",
+    "setId": "sm35",
+    "number": "40",
+    "rarity": "Rare Shining",
+    "score": 150.62
+  },
+  {
+    "pokemonTcgId": "xy1-142",
+    "slug": "xy1-142-blastoise-ex",
+    "name": "Blastoise-EX",
+    "setId": "xy1",
+    "number": "142",
+    "rarity": "Rare Ultra",
+    "score": 150.54
+  },
+  {
+    "pokemonTcgId": "pl1-87",
+    "slug": "pl1-87-psyduck",
+    "name": "Psyduck",
+    "setId": "pl1",
+    "number": "87",
+    "rarity": "Common",
+    "score": 149.99
+  },
+  {
+    "pokemonTcgId": "swsh12pt5gg-GG68",
+    "slug": "swsh12pt5gg-gg68-origin-forme-dialga-vstar",
+    "name": "Origin Forme Dialga VSTAR",
+    "setId": "swsh12pt5gg",
+    "number": "GG68",
+    "rarity": "Rare Secret",
+    "score": 149.75
+  },
+  {
+    "pokemonTcgId": "xy10-125",
+    "slug": "xy10-125-alakazam-ex",
+    "name": "Alakazam-EX",
+    "setId": "xy10",
+    "number": "125",
+    "rarity": "Rare Secret",
+    "score": 148.54
+  },
+  {
+    "pokemonTcgId": "dp5-97",
+    "slug": "dp5-97-garchomp-lv-x",
+    "name": "Garchomp LV.X",
+    "setId": "dp5",
+    "number": "97",
+    "rarity": "Rare Holo LV.X",
+    "score": 146.67
+  },
+  {
+    "pokemonTcgId": "dp5-5",
+    "slug": "dp5-5-glaceon",
+    "name": "Glaceon",
+    "setId": "dp5",
+    "number": "5",
+    "rarity": "Rare Holo",
+    "score": 145.47
+  },
+  {
+    "pokemonTcgId": "sm10-225",
+    "slug": "sm10-225-gardevoir-and-sylveon-gx",
+    "name": "Gardevoir & Sylveon-GX",
+    "setId": "sm10",
+    "number": "225",
+    "rarity": "Rare Rainbow",
+    "score": 145.31
+  },
+  {
+    "pokemonTcgId": "xy8-160",
+    "slug": "xy8-160-m-mewtwo-ex",
+    "name": "M Mewtwo-EX",
+    "setId": "xy8",
+    "number": "160",
+    "rarity": "Rare Ultra",
+    "score": 145.26
+  },
+  {
+    "pokemonTcgId": "xy3-107",
+    "slug": "xy3-107-lucario-ex",
+    "name": "Lucario-EX",
+    "setId": "xy3",
+    "number": "107",
+    "rarity": "Rare Ultra",
+    "score": 144.92
+  },
+  {
+    "pokemonTcgId": "swsh12pt5gg-GG67",
+    "slug": "swsh12pt5gg-gg67-origin-forme-palkia-vstar",
+    "name": "Origin Forme Palkia VSTAR",
+    "setId": "swsh12pt5gg",
+    "number": "GG67",
+    "rarity": "Rare Secret",
+    "score": 144.82
+  },
+  {
+    "pokemonTcgId": "dp6-14",
+    "slug": "dp6-14-rayquaza",
+    "name": "Rayquaza",
+    "setId": "dp6",
+    "number": "14",
+    "rarity": "Rare Holo",
+    "score": 144.33
+  },
+  {
+    "pokemonTcgId": "sm8-213",
+    "slug": "sm8-213-professor-elm-s-lecture",
+    "name": "Professor Elm's Lecture",
+    "setId": "sm8",
+    "number": "213",
+    "rarity": "Rare Ultra",
+    "score": 144.05
+  },
+  {
+    "pokemonTcgId": "xy10-119",
+    "slug": "xy10-119-umbreon-ex",
+    "name": "Umbreon-EX",
+    "setId": "xy10",
+    "number": "119",
+    "rarity": "Rare Ultra",
+    "score": 143.49
+  },
+  {
+    "pokemonTcgId": "col1-20",
+    "slug": "col1-20-rayquaza",
+    "name": "Rayquaza",
+    "setId": "col1",
+    "number": "20",
+    "rarity": "Rare Holo",
+    "score": 143.32
+  },
+  {
+    "pokemonTcgId": "dp3-14",
+    "slug": "dp3-14-lugia",
+    "name": "Lugia",
+    "setId": "dp3",
+    "number": "14",
+    "rarity": "Rare Holo",
+    "score": 140.67
+  },
+  {
+    "pokemonTcgId": "sma-SV59",
+    "slug": "sma-sv59-mewtwo-gx",
+    "name": "Mewtwo-GX",
+    "setId": "sma",
+    "number": "SV59",
+    "rarity": "Rare Shiny GX",
+    "score": 139.9
+  },
+  {
+    "pokemonTcgId": "hgss4-100",
+    "slug": "hgss4-100-darkrai-and-cresselia-legend",
+    "name": "Darkrai & Cresselia LEGEND",
+    "setId": "hgss4",
+    "number": "100",
+    "rarity": "LEGEND",
+    "score": 139.68
+  },
+  {
+    "pokemonTcgId": "swsh11tg-TG16",
+    "slug": "swsh11tg-tg16-pikachu-v",
+    "name": "Pikachu V",
+    "setId": "swsh11tg",
+    "number": "TG16",
+    "rarity": "Rare Holo V",
+    "score": 138.95
+  },
+  {
+    "pokemonTcgId": "xy5-148",
+    "slug": "xy5-148-kyogre-ex",
+    "name": "Kyogre-EX",
+    "setId": "xy5",
+    "number": "148",
+    "rarity": "Rare Ultra",
+    "score": 136.96
+  },
+  {
+    "pokemonTcgId": "bw1-115",
+    "slug": "bw1-115-pikachu",
+    "name": "Pikachu",
+    "setId": "bw1",
+    "number": "115",
+    "rarity": "Rare Secret",
+    "score": 136.25
+  },
+  {
+    "pokemonTcgId": "bw10-102",
+    "slug": "bw10-102-exeggcute",
+    "name": "Exeggcute",
+    "setId": "bw10",
+    "number": "102",
+    "rarity": "Rare Secret",
+    "score": 135
+  },
+  {
+    "pokemonTcgId": "swsh6-224",
+    "slug": "swsh6-224-snorlax",
+    "name": "Snorlax",
+    "setId": "swsh6",
+    "number": "224",
+    "rarity": "Rare Secret",
+    "score": 134.3
+  },
+  {
+    "pokemonTcgId": "swsh10tg-TG13",
+    "slug": "swsh10tg-tg13-starmie-v",
+    "name": "Starmie V",
+    "setId": "swsh10tg",
+    "number": "TG13",
+    "rarity": "Rare Holo V",
+    "score": 133.56
+  },
+  {
+    "pokemonTcgId": "hgss1-123",
+    "slug": "hgss1-123-gyarados",
+    "name": "Gyarados",
+    "setId": "hgss1",
+    "number": "123",
+    "rarity": "Rare Holo",
+    "score": 132.97
+  },
+  {
+    "pokemonTcgId": "xy7-93",
+    "slug": "xy7-93-giratina-ex",
+    "name": "Giratina-EX",
+    "setId": "xy7",
+    "number": "93",
+    "rarity": "Rare Ultra",
+    "score": 132.9
+  },
+  {
+    "pokemonTcgId": "si1-11",
+    "slug": "si1-11-marill",
+    "name": "Marill",
+    "setId": "si1",
+    "number": "11",
+    "rarity": "",
+    "score": 131.61
+  },
+  {
+    "pokemonTcgId": "xy8-159",
+    "slug": "xy8-159-m-mewtwo-ex",
+    "name": "M Mewtwo-EX",
+    "setId": "xy8",
+    "number": "159",
+    "rarity": "Rare Ultra",
+    "score": 131.46
+  },
+  {
+    "pokemonTcgId": "hgss4-18",
+    "slug": "hgss4-18-dragonite",
+    "name": "Dragonite",
+    "setId": "hgss4",
+    "number": "18",
+    "rarity": "Rare",
+    "score": 131.06
+  },
+  {
+    "pokemonTcgId": "bp-7",
+    "slug": "bp-7-dark-venusaur",
+    "name": "Dark Venusaur",
+    "setId": "bp",
+    "number": "7",
+    "rarity": "Promo",
+    "score": 130.78
+  },
+  {
+    "pokemonTcgId": "bw8-131",
+    "slug": "bw8-131-victini-ex",
+    "name": "Victini-EX",
+    "setId": "bw8",
+    "number": "131",
+    "rarity": "Rare Ultra",
+    "score": 130
+  },
+  {
+    "pokemonTcgId": "col1-94",
+    "slug": "col1-94-darkness-energy",
+    "name": "Darkness Energy",
+    "setId": "col1",
+    "number": "94",
+    "rarity": "Common",
+    "score": 129.24
+  },
+  {
+    "pokemonTcgId": "xy3-108",
+    "slug": "xy3-108-dragonite-ex",
+    "name": "Dragonite-EX",
+    "setId": "xy3",
+    "number": "108",
+    "rarity": "Rare Ultra",
+    "score": 129.02
+  },
+  {
+    "pokemonTcgId": "sm1-154",
+    "slug": "sm1-154-umbreon-gx",
+    "name": "Umbreon-GX",
+    "setId": "sm1",
+    "number": "154",
+    "rarity": "Rare Rainbow",
+    "score": 128.7
+  },
+  {
+    "pokemonTcgId": "swsh11tg-TG17",
+    "slug": "swsh11tg-tg17-pikachu-vmax",
+    "name": "Pikachu VMAX",
+    "setId": "swsh11tg",
+    "number": "TG17",
+    "rarity": "Rare Holo VMAX",
+    "score": 126.8
+  },
+  {
+    "pokemonTcgId": "pl2-113",
+    "slug": "pl2-113-flying-pikachu",
+    "name": "Flying Pikachu",
+    "setId": "pl2",
+    "number": "113",
+    "rarity": "Rare Secret",
+    "score": 126.28
+  },
+  {
+    "pokemonTcgId": "xy5-150",
+    "slug": "xy5-150-groudon-ex",
+    "name": "Groudon-EX",
+    "setId": "xy5",
+    "number": "150",
+    "rarity": "Rare Ultra",
+    "score": 125.63
+  },
+  {
+    "pokemonTcgId": "hgss2-TWO",
+    "slug": "hgss2-two-alph-lithograph",
+    "name": "Alph Lithograph",
+    "setId": "hgss2",
+    "number": "TWO",
+    "rarity": "Rare Secret",
+    "score": 124.56
+  },
+  {
+    "pokemonTcgId": "dpp-DP12",
+    "slug": "dpp-dp12-lucario-lv-x",
+    "name": "Lucario LV.X",
+    "setId": "dpp",
+    "number": "DP12",
+    "rarity": "Promo",
+    "score": 124.49
+  },
+  {
+    "pokemonTcgId": "sm35-56",
+    "slug": "sm35-56-shining-rayquaza",
+    "name": "Shining Rayquaza",
+    "setId": "sm35",
+    "number": "56",
+    "rarity": "Rare Shining",
+    "score": 123.34
+  },
+  {
+    "pokemonTcgId": "svp-132",
+    "slug": "svp-132-greninja-ex",
+    "name": "Greninja ex",
+    "setId": "svp",
+    "number": "132",
+    "rarity": "Promo",
+    "score": 122.78
+  },
+  {
+    "pokemonTcgId": "swsh9tg-TG23",
+    "slug": "swsh9tg-tg23-umbreon-vmax",
+    "name": "Umbreon VMAX",
+    "setId": "swsh9tg",
+    "number": "TG23",
+    "rarity": "Rare Holo VMAX",
+    "score": 121.76
+  },
+  {
+    "pokemonTcgId": "bw1-114",
+    "slug": "bw1-114-zekrom",
+    "name": "Zekrom",
+    "setId": "bw1",
+    "number": "114",
+    "rarity": "Rare Ultra",
+    "score": 120.89
+  },
+  {
+    "pokemonTcgId": "sv2-211",
+    "slug": "sv2-211-raichu",
+    "name": "Raichu",
+    "setId": "sv2",
+    "number": "211",
+    "rarity": "Illustration Rare",
+    "score": 120.85
+  },
+  {
+    "pokemonTcgId": "ex1-3",
+    "slug": "ex1-3-blaziken",
+    "name": "Blaziken",
+    "setId": "ex1",
+    "number": "3",
+    "rarity": "Rare Holo",
+    "score": 120.83
+  },
+  {
+    "pokemonTcgId": "dp7-102",
+    "slug": "dp7-102-charmeleon",
+    "name": "Charmeleon",
+    "setId": "dp7",
+    "number": "102",
+    "rarity": "Rare Secret",
+    "score": 120.36
+  },
+  {
+    "pokemonTcgId": "pop4-9",
+    "slug": "pop4-9-pok-mon-fan-club",
+    "name": "Pokémon Fan Club",
+    "setId": "pop4",
+    "number": "9",
+    "rarity": "Uncommon",
+    "score": 120
+  },
+  {
+    "pokemonTcgId": "g1-RC31",
+    "slug": "g1-rc31-m-gardevoir-ex",
+    "name": "M Gardevoir-EX",
+    "setId": "g1",
+    "number": "RC31",
+    "rarity": "Rare Ultra",
+    "score": 119.15
+  },
+  {
+    "pokemonTcgId": "sv4-199",
+    "slug": "sv4-199-groudon",
+    "name": "Groudon",
+    "setId": "sv4",
+    "number": "199",
+    "rarity": "Illustration Rare",
+    "score": 119.04
+  },
+  {
+    "pokemonTcgId": "sv3-223",
+    "slug": "sv3-223-charizard-ex",
+    "name": "Charizard ex",
+    "setId": "sv3",
+    "number": "223",
+    "rarity": "Special Illustration Rare",
+    "score": 118.59
+  },
+  {
+    "pokemonTcgId": "ex1-99",
+    "slug": "ex1-99-lapras-ex",
+    "name": "Lapras ex",
+    "setId": "ex1",
+    "number": "99",
+    "rarity": "Rare Holo EX",
+    "score": 118.32
+  },
+  {
+    "pokemonTcgId": "dp6-11",
+    "slug": "dp6-11-mewtwo",
+    "name": "Mewtwo",
+    "setId": "dp6",
+    "number": "11",
+    "rarity": "Rare Holo",
+    "score": 118.06
+  },
+  {
+    "pokemonTcgId": "dp7-18",
+    "slug": "dp7-18-gengar",
+    "name": "Gengar",
+    "setId": "dp7",
+    "number": "18",
+    "rarity": "Rare",
+    "score": 117.97
+  },
+  {
+    "pokemonTcgId": "dp2-122",
+    "slug": "dp2-122-lucario-lv-x",
+    "name": "Lucario LV.X",
+    "setId": "dp2",
+    "number": "122",
+    "rarity": "Rare Holo LV.X",
+    "score": 116.82
+  },
+  {
+    "pokemonTcgId": "sm6-135",
+    "slug": "sm6-135-lucario-gx",
+    "name": "Lucario-GX",
+    "setId": "sm6",
+    "number": "135",
+    "rarity": "Rare Rainbow",
+    "score": 115.8
+  },
+  {
+    "pokemonTcgId": "dp3-131",
+    "slug": "dp3-131-gardevoir-lv-x",
+    "name": "Gardevoir LV.X",
+    "setId": "dp3",
+    "number": "131",
+    "rarity": "Rare Holo LV.X",
+    "score": 113.49
+  },
+  {
+    "pokemonTcgId": "xy6-61",
+    "slug": "xy6-61-m-rayquaza-ex",
+    "name": "M Rayquaza-EX",
+    "setId": "xy6",
+    "number": "61",
+    "rarity": "Rare Holo EX",
+    "score": 112.35
+  },
+  {
+    "pokemonTcgId": "xy12-11",
+    "slug": "xy12-11-charizard",
+    "name": "Charizard",
+    "setId": "xy12",
+    "number": "11",
+    "rarity": "Rare Holo",
+    "score": 111.43
+  },
+  {
+    "pokemonTcgId": "bw1-113",
+    "slug": "bw1-113-reshiram",
+    "name": "Reshiram",
+    "setId": "bw1",
+    "number": "113",
+    "rarity": "Rare Ultra",
+    "score": 110.85
+  },
+  {
+    "pokemonTcgId": "pop5-2",
+    "slug": "pop5-2-lugia",
+    "name": "Lugia",
+    "setId": "pop5",
+    "number": "2",
+    "rarity": "Rare",
+    "score": 110
+  },
+  {
+    "pokemonTcgId": "sm6-133",
+    "slug": "sm6-133-greninja-gx",
+    "name": "Greninja-GX",
+    "setId": "sm6",
+    "number": "133",
+    "rarity": "Rare Rainbow",
+    "score": 109.33
+  },
+  {
+    "pokemonTcgId": "sm8-207",
+    "slug": "sm8-207-lugia-gx",
+    "name": "Lugia-GX",
+    "setId": "sm8",
+    "number": "207",
+    "rarity": "Rare Ultra",
+    "score": 109.03
+  },
+  {
+    "pokemonTcgId": "sm75-78",
+    "slug": "sm75-78-ultra-necrozma-gx",
+    "name": "Ultra Necrozma-GX",
+    "setId": "sm75",
+    "number": "78",
+    "rarity": "Rare Secret",
+    "score": 108.93
+  },
+  {
+    "pokemonTcgId": "xy9-115",
+    "slug": "xy9-115-m-gyarados-ex",
+    "name": "M Gyarados-EX",
+    "setId": "xy9",
+    "number": "115",
+    "rarity": "Rare Ultra",
+    "score": 108.81
+  },
+  {
+    "pokemonTcgId": "pl4-17",
+    "slug": "pl4-17-gengar",
+    "name": "Gengar",
+    "setId": "pl4",
+    "number": "17",
+    "rarity": "Rare",
+    "score": 108.49
+  },
+  {
+    "pokemonTcgId": "sv5-177",
+    "slug": "sv5-177-gastly",
+    "name": "Gastly",
+    "setId": "sv5",
+    "number": "177",
+    "rarity": "Illustration Rare",
+    "score": 107.15
+  },
+  {
+    "pokemonTcgId": "sm7-160",
+    "slug": "sm7-160-rayquaza-gx",
+    "name": "Rayquaza-GX",
+    "setId": "sm7",
+    "number": "160",
+    "rarity": "Rare Ultra",
+    "score": 106.2
+  },
+  {
+    "pokemonTcgId": "swsh6-179",
+    "slug": "swsh6-179-galarian-slowking-v",
+    "name": "Galarian Slowking V",
+    "setId": "swsh6",
+    "number": "179",
+    "rarity": "Rare Ultra",
+    "score": 105.5
+  },
+  {
+    "pokemonTcgId": "sm8-223",
+    "slug": "sm8-223-tyranitar-gx",
+    "name": "Tyranitar-GX",
+    "setId": "sm8",
+    "number": "223",
+    "rarity": "Rare Rainbow",
+    "score": 104.98
+  },
+  {
+    "pokemonTcgId": "dp6-141",
+    "slug": "dp6-141-gliscor-lv-x",
+    "name": "Gliscor LV.X",
+    "setId": "dp6",
+    "number": "141",
+    "rarity": "Rare Holo LV.X",
+    "score": 103.32
+  },
+  {
+    "pokemonTcgId": "sv2-226",
+    "slug": "sv2-226-maushold",
+    "name": "Maushold",
+    "setId": "sv2",
+    "number": "226",
+    "rarity": "Illustration Rare",
+    "score": 102.7
+  },
+  {
+    "pokemonTcgId": "ex1-102",
+    "slug": "ex1-102-scyther-ex",
+    "name": "Scyther ex",
+    "setId": "ex1",
+    "number": "102",
+    "rarity": "Rare Holo EX",
+    "score": 101
+  },
+  {
+    "pokemonTcgId": "swsh1-206",
+    "slug": "swsh1-206-snorlax-vmax",
+    "name": "Snorlax VMAX",
+    "setId": "swsh1",
+    "number": "206",
+    "rarity": "Rare Rainbow",
+    "score": 100.71
+  },
+  {
+    "pokemonTcgId": "pop4-2",
+    "slug": "pop4-2-deoxys",
+    "name": "Deoxys δ",
+    "setId": "pop4",
+    "number": "2",
+    "rarity": "Rare",
+    "score": 100.66
+  },
+  {
+    "pokemonTcgId": "hsp-HGSS02",
+    "slug": "hsp-hgss02-lugia",
+    "name": "Lugia",
+    "setId": "hsp",
+    "number": "HGSS02",
+    "rarity": "Promo",
+    "score": 100.3
+  },
+  {
+    "pokemonTcgId": "dp1-50",
+    "slug": "dp1-50-haunter",
+    "name": "Haunter",
+    "setId": "dp1",
+    "number": "50",
+    "rarity": "Uncommon",
+    "score": 100
+  },
+  {
+    "pokemonTcgId": "xy6-102",
+    "slug": "xy6-102-m-latios-ex",
+    "name": "M Latios-EX",
+    "setId": "xy6",
+    "number": "102",
+    "rarity": "Rare Ultra",
+    "score": 99.75
+  },
+  {
+    "pokemonTcgId": "dp7-100",
+    "slug": "dp7-100-regigigas-lv-x",
+    "name": "Regigigas LV.X",
+    "setId": "dp7",
+    "number": "100",
+    "rarity": "Rare Holo LV.X",
+    "score": 99.66
+  },
+  {
+    "pokemonTcgId": "dp1-122",
+    "slug": "dp1-122-torterra-lv-x",
+    "name": "Torterra LV.X",
+    "setId": "dp1",
+    "number": "122",
+    "rarity": "Rare Holo LV.X",
+    "score": 99.21
+  },
+  {
+    "pokemonTcgId": "dp4-82",
+    "slug": "dp4-82-slowpoke",
+    "name": "Slowpoke",
+    "setId": "dp4",
+    "number": "82",
+    "rarity": "Common",
+    "score": 99.01
+  },
+  {
+    "pokemonTcgId": "xy11-116",
+    "slug": "xy11-116-gardevoir-ex",
+    "name": "Gardevoir-EX",
+    "setId": "xy11",
+    "number": "116",
+    "rarity": "Rare Secret",
+    "score": 98.1
+  },
+  {
+    "pokemonTcgId": "dp3-2",
+    "slug": "dp3-2-blastoise",
+    "name": "Blastoise",
+    "setId": "dp3",
+    "number": "2",
+    "rarity": "Rare Holo",
+    "score": 98.02
+  },
+  {
+    "pokemonTcgId": "xy1-146",
+    "slug": "xy1-146-xerneas-ex",
+    "name": "Xerneas-EX",
+    "setId": "xy1",
+    "number": "146",
+    "rarity": "Rare Ultra",
+    "score": 98.01
+  },
+  {
+    "pokemonTcgId": "svp-131",
+    "slug": "svp-131-kingdra-ex",
+    "name": "Kingdra ex",
+    "setId": "svp",
+    "number": "131",
+    "rarity": "Promo",
+    "score": 96.5
+  },
+  {
+    "pokemonTcgId": "xy5-154",
+    "slug": "xy5-154-m-aggron-ex",
+    "name": "M Aggron-EX",
+    "setId": "xy5",
+    "number": "154",
+    "rarity": "Rare Ultra",
+    "score": 94.48
+  },
+  {
+    "pokemonTcgId": "swsh6-166",
+    "slug": "swsh6-166-zeraora-v",
+    "name": "Zeraora V",
+    "setId": "swsh6",
+    "number": "166",
+    "rarity": "Rare Ultra",
+    "score": 94.35
+  },
+  {
+    "pokemonTcgId": "pop3-17",
+    "slug": "pop3-17-ho-oh-ex",
+    "name": "Ho-Oh ex",
+    "setId": "pop3",
+    "number": "17",
+    "rarity": "Rare",
+    "score": 94.33
+  },
+  {
+    "pokemonTcgId": "si1-17",
+    "slug": "si1-17-vileplume",
+    "name": "Vileplume",
+    "setId": "si1",
+    "number": "17",
+    "rarity": "",
+    "score": 93.97
+  },
+  {
+    "pokemonTcgId": "pop6-9",
+    "slug": "pop6-9-pikachu",
+    "name": "Pikachu",
+    "setId": "pop6",
+    "number": "9",
+    "rarity": "Uncommon",
+    "score": 93.5
+  },
+  {
+    "pokemonTcgId": "rsv10pt5-105",
+    "slug": "rsv10pt5-105-oshawott",
+    "name": "Oshawott",
+    "setId": "rsv10pt5",
+    "number": "105",
+    "rarity": "Illustration Rare",
+    "score": 93.46
+  },
+  {
+    "pokemonTcgId": "swsh10-167",
+    "slug": "swsh10-167-origin-forme-palkia-v",
+    "name": "Origin Forme Palkia V",
+    "setId": "swsh10",
+    "number": "167",
+    "rarity": "Rare Ultra",
+    "score": 92.69
+  },
+  {
+    "pokemonTcgId": "dp1-71",
+    "slug": "dp1-71-bonsly",
+    "name": "Bonsly",
+    "setId": "dp1",
+    "number": "71",
+    "rarity": "Common",
+    "score": 92.66
+  },
+  {
+    "pokemonTcgId": "bw3-102",
+    "slug": "bw3-102-meowth",
+    "name": "Meowth",
+    "setId": "bw3",
+    "number": "102",
+    "rarity": "Rare Secret",
+    "score": 92.05
+  },
+  {
+    "pokemonTcgId": "sv6-188",
+    "slug": "sv6-188-eevee",
+    "name": "Eevee",
+    "setId": "sv6",
+    "number": "188",
+    "rarity": "Illustration Rare",
+    "score": 90.68
+  },
+  {
+    "pokemonTcgId": "xy4-34",
+    "slug": "xy4-34-gengar-ex",
+    "name": "Gengar-EX",
+    "setId": "xy4",
+    "number": "34",
+    "rarity": "Rare Holo EX",
+    "score": 90.6
+  },
+  {
+    "pokemonTcgId": "pop5-5",
+    "slug": "pop5-5-charmeleon",
+    "name": "Charmeleon δ",
+    "setId": "pop5",
+    "number": "5",
+    "rarity": "Uncommon",
+    "score": 89.99
+  },
+  {
+    "pokemonTcgId": "rsv10pt5-169",
+    "slug": "rsv10pt5-169-hydreigon-ex",
+    "name": "Hydreigon ex",
+    "setId": "rsv10pt5",
+    "number": "169",
+    "rarity": "Special Illustration Rare",
+    "score": 89.83
+  },
+  {
+    "pokemonTcgId": "xy1-144",
+    "slug": "xy1-144-yveltal-ex",
+    "name": "Yveltal-EX",
+    "setId": "xy1",
+    "number": "144",
+    "rarity": "Rare Ultra",
+    "score": 89.39
+  },
+  {
+    "pokemonTcgId": "dp5-32",
+    "slug": "dp5-32-umbreon",
+    "name": "Umbreon",
+    "setId": "dp5",
+    "number": "32",
+    "rarity": "Rare",
+    "score": 89.33
+  },
+  {
+    "pokemonTcgId": "swsh9tg-TG16",
+    "slug": "swsh9tg-tg16-mimikyu-v",
+    "name": "Mimikyu V",
+    "setId": "swsh9tg",
+    "number": "TG16",
+    "rarity": "Rare Holo V",
+    "score": 89.32
+  },
+  {
+    "pokemonTcgId": "sv4pt5-131",
+    "slug": "sv4pt5-131-pikachu",
+    "name": "Pikachu",
+    "setId": "sv4pt5",
+    "number": "131",
+    "rarity": "Shiny Rare",
+    "score": 88.86
+  },
+  {
+    "pokemonTcgId": "pop1-3",
+    "slug": "pop1-3-rayquaza",
+    "name": "Rayquaza",
+    "setId": "pop1",
+    "number": "3",
+    "rarity": "Rare",
+    "score": 87.91
+  },
+  {
+    "pokemonTcgId": "sv1-245",
+    "slug": "sv1-245-gardevoir-ex",
+    "name": "Gardevoir ex",
+    "setId": "sv1",
+    "number": "245",
+    "rarity": "Special Illustration Rare",
+    "score": 87.64
+  },
+  {
+    "pokemonTcgId": "pl1-126",
+    "slug": "pl1-126-shaymin-lv-x",
+    "name": "Shaymin LV.X",
+    "setId": "pl1",
+    "number": "126",
+    "rarity": "Rare Holo LV.X",
+    "score": 87.04
+  },
+  {
+    "pokemonTcgId": "sm35-76",
+    "slug": "sm35-76-mewtwo-gx",
+    "name": "Mewtwo-GX",
+    "setId": "sm35",
+    "number": "76",
+    "rarity": "Rare Rainbow",
+    "score": 86.6
+  },
+  {
+    "pokemonTcgId": "fut20-1",
+    "slug": "fut20-1-pikachu-on-the-ball",
+    "name": "Pikachu on the Ball",
+    "setId": "fut20",
+    "number": "1",
+    "rarity": "",
+    "score": 86.29
+  },
+  {
+    "pokemonTcgId": "ex1-103",
+    "slug": "ex1-103-sneasel-ex",
+    "name": "Sneasel ex",
+    "setId": "ex1",
+    "number": "103",
+    "rarity": "Rare Holo EX",
+    "score": 85.39
+  },
+  {
+    "pokemonTcgId": "xy1-141",
+    "slug": "xy1-141-venusaur-ex",
+    "name": "Venusaur-EX",
+    "setId": "xy1",
+    "number": "141",
+    "rarity": "Rare Ultra",
+    "score": 85.3
+  },
+  {
+    "pokemonTcgId": "sv6pt5-78",
+    "slug": "sv6pt5-78-persian",
+    "name": "Persian",
+    "setId": "sv6pt5",
+    "number": "78",
+    "rarity": "Illustration Rare",
+    "score": 84.9
+  },
+  {
+    "pokemonTcgId": "sm5-157",
+    "slug": "sm5-157-leafeon-gx",
+    "name": "Leafeon-GX",
+    "setId": "sm5",
+    "number": "157",
+    "rarity": "Rare Rainbow",
+    "score": 84.75
+  },
+  {
+    "pokemonTcgId": "sm3-169",
+    "slug": "sm3-169-fairy-energy",
+    "name": "Fairy Energy",
+    "setId": "sm3",
+    "number": "169",
+    "rarity": "Rare Secret",
+    "score": 84.29
+  },
+  {
+    "pokemonTcgId": "bw11-RC23",
+    "slug": "bw11-rc23-emolga",
+    "name": "Emolga",
+    "setId": "bw11",
+    "number": "RC23",
+    "rarity": "Rare Ultra",
+    "score": 83.39
+  },
+  {
+    "pokemonTcgId": "pop6-6",
+    "slug": "pop6-6-drifloon",
+    "name": "Drifloon",
+    "setId": "pop6",
+    "number": "6",
+    "rarity": "Uncommon",
+    "score": 83.33
+  },
+  {
+    "pokemonTcgId": "swsh9tg-TG17",
+    "slug": "swsh9tg-tg17-mimikyu-vmax",
+    "name": "Mimikyu VMAX",
+    "setId": "swsh9tg",
+    "number": "TG17",
+    "rarity": "Rare Holo VMAX",
+    "score": 82.94
+  },
+  {
+    "pokemonTcgId": "zsv10pt5-165",
+    "slug": "zsv10pt5-165-kyurem-ex",
+    "name": "Kyurem ex",
+    "setId": "zsv10pt5",
+    "number": "165",
+    "rarity": "Special Illustration Rare",
+    "score": 82.89
+  },
+  {
+    "pokemonTcgId": "xy6-76",
+    "slug": "xy6-76-m-rayquaza-ex",
+    "name": "M Rayquaza-EX",
+    "setId": "xy6",
+    "number": "76",
+    "rarity": "Rare Holo EX",
+    "score": 82.79
+  },
+  {
+    "pokemonTcgId": "swsh9tg-TG14",
+    "slug": "swsh9tg-tg14-sylveon-v",
+    "name": "Sylveon V",
+    "setId": "swsh9tg",
+    "number": "TG14",
+    "rarity": "Rare Holo V",
+    "score": 82.45
+  },
+  {
+    "pokemonTcgId": "swsh10tg-TG23",
+    "slug": "swsh10tg-tg23-garchomp-v",
+    "name": "Garchomp V",
+    "setId": "swsh10tg",
+    "number": "TG23",
+    "rarity": "Rare Holo V",
+    "score": 81.16
+  },
+  {
+    "pokemonTcgId": "sm5-159",
+    "slug": "sm5-159-glaceon-gx",
+    "name": "Glaceon-GX",
+    "setId": "sm5",
+    "number": "159",
+    "rarity": "Rare Rainbow",
+    "score": 80.41
+  },
+  {
+    "pokemonTcgId": "xy10-118",
+    "slug": "xy10-118-m-alakazam-ex",
+    "name": "M Alakazam-EX",
+    "setId": "xy10",
+    "number": "118",
+    "rarity": "Rare Ultra",
+    "score": 79.96
+  },
+  {
+    "pokemonTcgId": "swsh9tg-TG15",
+    "slug": "swsh9tg-tg15-sylveon-vmax",
+    "name": "Sylveon VMAX",
+    "setId": "swsh9tg",
+    "number": "TG15",
+    "rarity": "Rare Holo VMAX",
+    "score": 79.82
+  },
+  {
+    "pokemonTcgId": "sm2-150",
+    "slug": "sm2-150-alolan-ninetales-gx",
+    "name": "Alolan Ninetales-GX",
+    "setId": "sm2",
+    "number": "150",
+    "rarity": "Rare Rainbow",
+    "score": 78.82
+  },
+  {
+    "pokemonTcgId": "xy9-114",
+    "slug": "xy9-114-gyarados-ex",
+    "name": "Gyarados-EX",
+    "setId": "xy9",
+    "number": "114",
+    "rarity": "Rare Ultra",
+    "score": 77.96
+  },
+  {
+    "pokemonTcgId": "sm4-112",
+    "slug": "sm4-112-gyarados-gx",
+    "name": "Gyarados-GX",
+    "setId": "sm4",
+    "number": "112",
+    "rarity": "Rare Rainbow",
+    "score": 77.45
+  },
+  {
+    "pokemonTcgId": "swsh5-170",
+    "slug": "swsh5-170-rapid-strike-urshifu-vmax",
+    "name": "Rapid Strike Urshifu VMAX",
+    "setId": "swsh5",
+    "number": "170",
+    "rarity": "Rare Rainbow",
+    "score": 77.45
+  },
+  {
+    "pokemonTcgId": "sv2-222",
+    "slug": "sv2-222-tyranitar",
+    "name": "Tyranitar",
+    "setId": "sv2",
+    "number": "222",
+    "rarity": "Illustration Rare",
+    "score": 77.35
+  },
+  {
+    "pokemonTcgId": "sm7-175",
+    "slug": "sm7-175-scizor-gx",
+    "name": "Scizor-GX",
+    "setId": "sm7",
+    "number": "175",
+    "rarity": "Rare Rainbow",
+    "score": 77.19
+  },
+  {
+    "pokemonTcgId": "swsh10-161",
+    "slug": "swsh10-161-beedrill-v",
+    "name": "Beedrill V",
+    "setId": "swsh10",
+    "number": "161",
+    "rarity": "Rare Ultra",
+    "score": 76.8
+  },
+  {
+    "pokemonTcgId": "sv5-211",
+    "slug": "sv5-211-morty-s-conviction",
+    "name": "Morty's Conviction",
+    "setId": "sv5",
+    "number": "211",
+    "rarity": "Special Illustration Rare",
+    "score": 76.55
+  },
+  {
+    "pokemonTcgId": "pop3-16",
+    "slug": "pop3-16-pichu-bros",
+    "name": "Pichu Bros.",
+    "setId": "pop3",
+    "number": "16",
+    "rarity": "Common",
+    "score": 76.23
+  },
+  {
+    "pokemonTcgId": "sm6-138",
+    "slug": "sm6-138-dialga-gx",
+    "name": "Dialga-GX",
+    "setId": "sm6",
+    "number": "138",
+    "rarity": "Rare Rainbow",
+    "score": 75.63
+  },
+  {
+    "pokemonTcgId": "dp4-80",
+    "slug": "dp4-80-mudkip",
+    "name": "Mudkip",
+    "setId": "dp4",
+    "number": "80",
+    "rarity": "Common",
+    "score": 75
+  },
+  {
+    "pokemonTcgId": "xy8-158",
+    "slug": "xy8-158-mewtwo-ex",
+    "name": "Mewtwo-EX",
+    "setId": "xy8",
+    "number": "158",
+    "rarity": "Rare Ultra",
+    "score": 73.66
+  },
+  {
+    "pokemonTcgId": "dv1-21",
+    "slug": "dv1-21-kyurem",
+    "name": "Kyurem",
+    "setId": "dv1",
+    "number": "21",
+    "rarity": "",
+    "score": 73.25
+  },
+  {
+    "pokemonTcgId": "sv5-208",
+    "slug": "sv5-208-raging-bolt-ex",
+    "name": "Raging Bolt ex",
+    "setId": "sv5",
+    "number": "208",
+    "rarity": "Special Illustration Rare",
+    "score": 72.73
+  },
+  {
+    "pokemonTcgId": "xy9-117",
+    "slug": "xy9-117-espeon-ex",
+    "name": "Espeon-EX",
+    "setId": "xy9",
+    "number": "117",
+    "rarity": "Rare Ultra",
+    "score": 71.86
+  },
+  {
+    "pokemonTcgId": "sm7-170",
+    "slug": "sm7-170-blaziken-gx",
+    "name": "Blaziken-GX",
+    "setId": "sm7",
+    "number": "170",
+    "rarity": "Rare Rainbow",
+    "score": 71.66
+  },
+  {
+    "pokemonTcgId": "sv6-217",
+    "slug": "sv6-217-carmine",
+    "name": "Carmine",
+    "setId": "sv6",
+    "number": "217",
+    "rarity": "Special Illustration Rare",
+    "score": 70.99
+  },
+  {
+    "pokemonTcgId": "sv4pt5-202",
+    "slug": "sv4pt5-202-snorlax",
+    "name": "Snorlax",
+    "setId": "sv4pt5",
+    "number": "202",
+    "rarity": "Shiny Rare",
+    "score": 70.78
+  },
+  {
+    "pokemonTcgId": "swsh5-146",
+    "slug": "swsh5-146-empoleon-v",
+    "name": "Empoleon V",
+    "setId": "swsh5",
+    "number": "146",
+    "rarity": "Rare Ultra",
+    "score": 70.64
+  },
+  {
+    "pokemonTcgId": "hsp-HGSS07",
+    "slug": "hsp-hgss07-feraligatr",
+    "name": "Feraligatr",
+    "setId": "hsp",
+    "number": "HGSS07",
+    "rarity": "Promo",
+    "score": 70.6
+  },
+  {
+    "pokemonTcgId": "sv1-210",
+    "slug": "sv1-210-drowzee",
+    "name": "Drowzee",
+    "setId": "sv1",
+    "number": "210",
+    "rarity": "Illustration Rare",
+    "score": 69.56
+  },
+  {
+    "pokemonTcgId": "sv2-269",
+    "slug": "sv2-269-iono",
+    "name": "Iono",
+    "setId": "sv2",
+    "number": "269",
+    "rarity": "Special Illustration Rare",
+    "score": 69.14
+  },
+  {
+    "pokemonTcgId": "pop9-1",
+    "slug": "pop9-1-garchomp",
+    "name": "Garchomp",
+    "setId": "pop9",
+    "number": "1",
+    "rarity": "Rare",
+    "score": 68.88
+  },
+  {
+    "pokemonTcgId": "swsh2-189",
+    "slug": "swsh2-189-boss-s-orders",
+    "name": "Boss's Orders",
+    "setId": "swsh2",
+    "number": "189",
+    "rarity": "Rare Ultra",
+    "score": 67.41
+  },
+  {
+    "pokemonTcgId": "xy10-55",
+    "slug": "xy10-55-umbreon-ex",
+    "name": "Umbreon-EX",
+    "setId": "xy10",
+    "number": "55",
+    "rarity": "Rare Holo EX",
+    "score": 67.13
+  },
+  {
+    "pokemonTcgId": "sv5-193",
+    "slug": "sv5-193-gengar-ex",
+    "name": "Gengar ex",
+    "setId": "sv5",
+    "number": "193",
+    "rarity": "Ultra Rare",
+    "score": 66.93
+  },
+  {
+    "pokemonTcgId": "sm2-140",
+    "slug": "sm2-140-sylveon-gx",
+    "name": "Sylveon-GX",
+    "setId": "sm2",
+    "number": "140",
+    "rarity": "Rare Ultra",
+    "score": 66.88
+  },
+  {
+    "pokemonTcgId": "dp2-124",
+    "slug": "dp2-124-time-space-distortion",
+    "name": "Time-Space Distortion",
+    "setId": "dp2",
+    "number": "124",
+    "rarity": "Rare Secret",
+    "score": 66.83
+  },
+  {
+    "pokemonTcgId": "sv6pt5-98",
+    "slug": "sv6pt5-98-basic-darkness-energy",
+    "name": "Basic Darkness Energy",
+    "setId": "sv6pt5",
+    "number": "98",
+    "rarity": "Hyper Rare",
+    "score": 66.58
+  },
+  {
+    "pokemonTcgId": "dp2-123",
+    "slug": "dp2-123-magmortar-lv-x",
+    "name": "Magmortar LV.X",
+    "setId": "dp2",
+    "number": "123",
+    "rarity": "Rare Holo LV.X",
+    "score": 66.41
+  },
+  {
+    "pokemonTcgId": "xy2-13",
+    "slug": "xy2-13-m-charizard-ex",
+    "name": "M Charizard-EX",
+    "setId": "xy2",
+    "number": "13",
+    "rarity": "Rare Holo EX",
+    "score": 65.25
+  },
+  {
+    "pokemonTcgId": "xy12-102",
+    "slug": "xy12-102-m-blastoise-ex",
+    "name": "M Blastoise-EX",
+    "setId": "xy12",
+    "number": "102",
+    "rarity": "Rare Ultra",
+    "score": 65.02
+  },
+  {
+    "pokemonTcgId": "pgo-72",
+    "slug": "pgo-72-mewtwo-v",
+    "name": "Mewtwo V",
+    "setId": "pgo",
+    "number": "72",
+    "rarity": "Rare Ultra",
+    "score": 64.93
+  },
+  {
+    "pokemonTcgId": "swsh10-177",
+    "slug": "swsh10-177-origin-forme-dialga-v",
+    "name": "Origin Forme Dialga V",
+    "setId": "swsh10",
+    "number": "177",
+    "rarity": "Rare Ultra",
+    "score": 63.5
+  },
+  {
+    "pokemonTcgId": "sv5-205",
+    "slug": "sv5-205-walking-wake-ex",
+    "name": "Walking Wake ex",
+    "setId": "sv5",
+    "number": "205",
+    "rarity": "Special Illustration Rare",
+    "score": 63.31
+  },
+  {
+    "pokemonTcgId": "dp2-121",
+    "slug": "dp2-121-electivire-lv-x",
+    "name": "Electivire LV.X",
+    "setId": "dp2",
+    "number": "121",
+    "rarity": "Rare Holo LV.X",
+    "score": 63.06
+  },
+  {
+    "pokemonTcgId": "sm75-67",
+    "slug": "sm75-67-dragonite-gx",
+    "name": "Dragonite-GX",
+    "setId": "sm75",
+    "number": "67",
+    "rarity": "Rare Ultra",
+    "score": 62.99
+  },
+  {
+    "pokemonTcgId": "sv4-253",
+    "slug": "sv4-253-altaria-ex",
+    "name": "Altaria ex",
+    "setId": "sv4",
+    "number": "253",
+    "rarity": "Special Illustration Rare",
+    "score": 62.79
+  },
+  {
+    "pokemonTcgId": "sm75-71",
+    "slug": "sm75-71-reshiram-gx",
+    "name": "Reshiram-GX",
+    "setId": "sm75",
+    "number": "71",
+    "rarity": "Rare Rainbow",
+    "score": 62.68
+  },
+  {
+    "pokemonTcgId": "swsh1-142",
+    "slug": "swsh1-142-snorlax-vmax",
+    "name": "Snorlax VMAX",
+    "setId": "swsh1",
+    "number": "142",
+    "rarity": "Rare Holo VMAX",
+    "score": 62.21
+  },
+  {
+    "pokemonTcgId": "sv6pt5-68",
+    "slug": "sv6pt5-68-duskull",
+    "name": "Duskull",
+    "setId": "sv6pt5",
+    "number": "68",
+    "rarity": "Illustration Rare",
+    "score": 61.93
+  },
+  {
+    "pokemonTcgId": "bw3-100",
+    "slug": "bw3-100-cobalion",
+    "name": "Cobalion",
+    "setId": "bw3",
+    "number": "100",
+    "rarity": "Rare Ultra",
+    "score": 61.8
+  },
+  {
+    "pokemonTcgId": "swsh11tg-TG06",
+    "slug": "swsh11tg-tg06-gengar",
+    "name": "Gengar",
+    "setId": "swsh11tg",
+    "number": "TG06",
+    "rarity": "Trainer Gallery Rare Holo",
+    "score": 61.68
+  },
+  {
+    "pokemonTcgId": "sm6-139",
+    "slug": "sm6-139-xerneas-gx",
+    "name": "Xerneas-GX",
+    "setId": "sm6",
+    "number": "139",
+    "rarity": "Rare Rainbow",
+    "score": 60.78
+  },
+  {
+    "pokemonTcgId": "sm75-70",
+    "slug": "sm75-70-zinnia",
+    "name": "Zinnia",
+    "setId": "sm75",
+    "number": "70",
+    "rarity": "Rare Ultra",
+    "score": 60.6
+  },
+  {
+    "pokemonTcgId": "sv6-187",
+    "slug": "sv6-187-chansey",
+    "name": "Chansey",
+    "setId": "sv6",
+    "number": "187",
+    "rarity": "Illustration Rare",
+    "score": 60.53
+  },
+  {
+    "pokemonTcgId": "swsh11tg-TG05",
+    "slug": "swsh11tg-tg05-pikachu",
+    "name": "Pikachu",
+    "setId": "swsh11tg",
+    "number": "TG05",
+    "rarity": "Trainer Gallery Rare Holo",
+    "score": 60.01
+  },
+  {
+    "pokemonTcgId": "pop2-10",
+    "slug": "pop2-10-pok-mon-park",
+    "name": "Pokémon Park",
+    "setId": "pop2",
+    "number": "10",
+    "rarity": "Uncommon",
+    "score": 59.99
+  },
+  {
+    "pokemonTcgId": "hsp-HGSS21",
+    "slug": "hsp-hgss21-suicune",
+    "name": "Suicune",
+    "setId": "hsp",
+    "number": "HGSS21",
+    "rarity": "Promo",
+    "score": 59.79
+  },
+  {
+    "pokemonTcgId": "sm3-147",
+    "slug": "sm3-147-wicke",
+    "name": "Wicke",
+    "setId": "sm3",
+    "number": "147",
+    "rarity": "Rare Ultra",
+    "score": 59.62
+  },
+  {
+    "pokemonTcgId": "xy9-118",
+    "slug": "xy9-118-darkrai-ex",
+    "name": "Darkrai-EX",
+    "setId": "xy9",
+    "number": "118",
+    "rarity": "Rare Ultra",
+    "score": 59.33
+  },
+  {
+    "pokemonTcgId": "pop2-17",
+    "slug": "pop2-17-celebi-ex",
+    "name": "Celebi ex",
+    "setId": "pop2",
+    "number": "17",
+    "rarity": "Rare",
+    "score": 58.6
+  },
+  {
+    "pokemonTcgId": "sm6-120",
+    "slug": "sm6-120-greninja-gx",
+    "name": "Greninja-GX",
+    "setId": "sm6",
+    "number": "120",
+    "rarity": "Rare Ultra",
+    "score": 57.35
+  },
+  {
+    "pokemonTcgId": "sv6pt5-66",
+    "slug": "sv6pt5-66-houndoom",
+    "name": "Houndoom",
+    "setId": "sv6pt5",
+    "number": "66",
+    "rarity": "Illustration Rare",
+    "score": 56.12
+  },
+  {
+    "pokemonTcgId": "hsp-HGSS20",
+    "slug": "hsp-hgss20-entei",
+    "name": "Entei",
+    "setId": "hsp",
+    "number": "HGSS20",
+    "rarity": "Promo",
+    "score": 55.87
+  },
+  {
+    "pokemonTcgId": "pgo-79",
+    "slug": "pgo-79-mewtwo-vstar",
+    "name": "Mewtwo VSTAR",
+    "setId": "pgo",
+    "number": "79",
+    "rarity": "Rare Rainbow",
+    "score": 55.58
+  },
+  {
+    "pokemonTcgId": "fut20-5",
+    "slug": "fut20-5-sobble-on-the-ball",
+    "name": "Sobble on the Ball",
+    "setId": "fut20",
+    "number": "5",
+    "rarity": "",
+    "score": 55.31
+  },
+  {
+    "pokemonTcgId": "xy3-112",
+    "slug": "xy3-112-m-heracross-ex",
+    "name": "M Heracross-EX",
+    "setId": "xy3",
+    "number": "112",
+    "rarity": "Rare Secret",
+    "score": 54.23
+  },
+  {
+    "pokemonTcgId": "dp2-2",
+    "slug": "dp2-2-alakazam",
+    "name": "Alakazam",
+    "setId": "dp2",
+    "number": "2",
+    "rarity": "Rare Holo",
+    "score": 54.22
+  },
+  {
+    "pokemonTcgId": "pop3-12",
+    "slug": "pop3-12-ditto",
+    "name": "Ditto",
+    "setId": "pop3",
+    "number": "12",
+    "rarity": "Common",
+    "score": 54.04
+  },
+  {
+    "pokemonTcgId": "xy11-112",
+    "slug": "xy11-112-m-gardevoir-ex",
+    "name": "M Gardevoir-EX",
+    "setId": "xy11",
+    "number": "112",
+    "rarity": "Rare Ultra",
+    "score": 53.99
+  },
+  {
+    "pokemonTcgId": "sv1-211",
+    "slug": "sv1-211-ralts",
+    "name": "Ralts",
+    "setId": "sv1",
+    "number": "211",
+    "rarity": "Illustration Rare",
+    "score": 53.82
+  },
+  {
+    "pokemonTcgId": "sv1-212",
+    "slug": "sv1-212-kirlia",
+    "name": "Kirlia",
+    "setId": "sv1",
+    "number": "212",
+    "rarity": "Illustration Rare",
+    "score": 53.66
+  },
+  {
+    "pokemonTcgId": "xy1-143",
+    "slug": "xy1-143-emolga-ex",
+    "name": "Emolga-EX",
+    "setId": "xy1",
+    "number": "143",
+    "rarity": "Rare Ultra",
+    "score": 53.54
+  },
+  {
+    "pokemonTcgId": "fut20-2",
+    "slug": "fut20-2-eevee-on-the-ball",
+    "name": "Eevee on the Ball",
+    "setId": "fut20",
+    "number": "2",
+    "rarity": "",
+    "score": 52.38
+  },
+  {
+    "pokemonTcgId": "swsh3-20",
+    "slug": "swsh3-20-charizard-vmax",
+    "name": "Charizard VMAX",
+    "setId": "swsh3",
+    "number": "20",
+    "rarity": "Rare Holo VMAX",
+    "score": 52.31
+  },
+  {
+    "pokemonTcgId": "sm1-142",
+    "slug": "sm1-142-umbreon-gx",
+    "name": "Umbreon-GX",
+    "setId": "sm1",
+    "number": "142",
+    "rarity": "Rare Ultra",
+    "score": 52.27
+  },
+  {
+    "pokemonTcgId": "sm75-74",
+    "slug": "sm75-74-white-kyurem-gx",
+    "name": "White Kyurem-GX",
+    "setId": "sm75",
+    "number": "74",
+    "rarity": "Rare Rainbow",
+    "score": 52.18
+  },
+  {
+    "pokemonTcgId": "sv4-193",
+    "slug": "sv4-193-plusle",
+    "name": "Plusle",
+    "setId": "sv4",
+    "number": "193",
+    "rarity": "Illustration Rare",
+    "score": 51.92
+  },
+  {
+    "pokemonTcgId": "xy12-106",
+    "slug": "xy12-106-dragonite-ex",
+    "name": "Dragonite-EX",
+    "setId": "xy12",
+    "number": "106",
+    "rarity": "Rare Ultra",
+    "score": 51.8
+  },
+  {
+    "pokemonTcgId": "xy12-13",
+    "slug": "xy12-13-m-charizard-ex",
+    "name": "M Charizard-EX",
+    "setId": "xy12",
+    "number": "13",
+    "rarity": "Rare Holo EX",
+    "score": 51.54
+  },
+  {
+    "pokemonTcgId": "swsh5-148",
+    "slug": "swsh5-148-mimikyu-v",
+    "name": "Mimikyu V",
+    "setId": "swsh5",
+    "number": "148",
+    "rarity": "Rare Ultra",
+    "score": 51.52
+  },
+  {
+    "pokemonTcgId": "sm3-168",
+    "slug": "sm3-168-darkness-energy",
+    "name": "Darkness Energy",
+    "setId": "sm3",
+    "number": "168",
+    "rarity": "Rare Secret",
+    "score": 51.37
+  },
+  {
+    "pokemonTcgId": "sv6pt5-67",
+    "slug": "sv6pt5-67-horsea",
+    "name": "Horsea",
+    "setId": "sv6pt5",
+    "number": "67",
+    "rarity": "Illustration Rare",
+    "score": 51.14
+  },
+  {
+    "pokemonTcgId": "sm3-142",
+    "slug": "sm3-142-acerola",
+    "name": "Acerola",
+    "setId": "sm3",
+    "number": "142",
+    "rarity": "Rare Ultra",
+    "score": 50.56
+  },
+  {
+    "pokemonTcgId": "xy3-55",
+    "slug": "xy3-55-m-lucario-ex",
+    "name": "M Lucario-EX",
+    "setId": "xy3",
+    "number": "55",
+    "rarity": "Rare Holo EX",
+    "score": 50.21
+  },
+  {
+    "pokemonTcgId": "pop3-4",
+    "slug": "pop3-4-minun",
+    "name": "Minun",
+    "setId": "pop3",
+    "number": "4",
+    "rarity": "Rare",
+    "score": 50
+  },
+  {
+    "pokemonTcgId": "sm1-152",
+    "slug": "sm1-152-espeon-gx",
+    "name": "Espeon-GX",
+    "setId": "sm1",
+    "number": "152",
+    "rarity": "Rare Rainbow",
+    "score": 49.27
+  },
+  {
+    "pokemonTcgId": "pop7-3",
+    "slug": "pop7-3-latias",
+    "name": "Latias",
+    "setId": "pop7",
+    "number": "3",
+    "rarity": "Rare",
+    "score": 48.69
+  },
+  {
+    "pokemonTcgId": "pgo-81",
+    "slug": "pgo-81-dragonite-vstar",
+    "name": "Dragonite VSTAR",
+    "setId": "pgo",
+    "number": "81",
+    "rarity": "Rare Rainbow",
+    "score": 48.63
+  },
+  {
+    "pokemonTcgId": "sv4-194",
+    "slug": "sv4-194-minun",
+    "name": "Minun",
+    "setId": "sv4",
+    "number": "194",
+    "rarity": "Illustration Rare",
+    "score": 48.57
+  },
+  {
+    "pokemonTcgId": "sm1-147",
+    "slug": "sm1-147-lillie",
+    "name": "Lillie",
+    "setId": "sm1",
+    "number": "147",
+    "rarity": "Rare Ultra",
+    "score": 48.49
+  },
+  {
+    "pokemonTcgId": "pop2-16",
+    "slug": "pop2-16-pikachu",
+    "name": "Pikachu",
+    "setId": "pop2",
+    "number": "16",
+    "rarity": "Common",
+    "score": 48.37
+  },
+  {
+    "pokemonTcgId": "sv4-206",
+    "slug": "sv4-206-morpeko",
+    "name": "Morpeko",
+    "setId": "sv4",
+    "number": "206",
+    "rarity": "Illustration Rare",
+    "score": 48.36
+  },
+  {
+    "pokemonTcgId": "sv1-204",
+    "slug": "sv1-204-slowpoke",
+    "name": "Slowpoke",
+    "setId": "sv1",
+    "number": "204",
+    "rarity": "Illustration Rare",
+    "score": 47.72
+  },
+  {
+    "pokemonTcgId": "swsh2-200",
+    "slug": "swsh2-200-boss-s-orders",
+    "name": "Boss's Orders",
+    "setId": "swsh2",
+    "number": "200",
+    "rarity": "Rare Rainbow",
+    "score": 45.97
+  },
+  {
+    "pokemonTcgId": "pop1-5",
+    "slug": "pop1-5-swampert",
+    "name": "Swampert",
+    "setId": "pop1",
+    "number": "5",
+    "rarity": "Rare",
+    "score": 45.77
+  },
+  {
+    "pokemonTcgId": "pop2-1",
+    "slug": "pop2-1-entei",
+    "name": "Entei",
+    "setId": "pop2",
+    "number": "1",
+    "rarity": "Rare",
+    "score": 45.2
+  },
+  {
+    "pokemonTcgId": "bw3-97",
+    "slug": "bw3-97-virizion",
+    "name": "Virizion",
+    "setId": "bw3",
+    "number": "97",
+    "rarity": "Rare Ultra",
+    "score": 44.68
+  },
+  {
+    "pokemonTcgId": "sv3-199",
+    "slug": "sv3-199-ninetales",
+    "name": "Ninetales",
+    "setId": "sv3",
+    "number": "199",
+    "rarity": "Illustration Rare",
+    "score": 44.67
+  },
+  {
+    "pokemonTcgId": "dv1-11",
+    "slug": "dv1-11-rayquaza",
+    "name": "Rayquaza",
+    "setId": "dv1",
+    "number": "11",
+    "rarity": "Rare Holo",
+    "score": 43.9
+  },
+  {
+    "pokemonTcgId": "sm4-110",
+    "slug": "sm4-110-lusamine",
+    "name": "Lusamine",
+    "setId": "sm4",
+    "number": "110",
+    "rarity": "Rare Ultra",
+    "score": 43.4
+  },
+  {
+    "pokemonTcgId": "sv3-228",
+    "slug": "sv3-228-charizard-ex",
+    "name": "Charizard ex",
+    "setId": "sv3",
+    "number": "228",
+    "rarity": "Hyper Rare",
+    "score": 42.76
+  },
+  {
+    "pokemonTcgId": "sv3-202",
+    "slug": "sv3-202-cleffa",
+    "name": "Cleffa",
+    "setId": "sv3",
+    "number": "202",
+    "rarity": "Illustration Rare",
+    "score": 42.64
+  },
+  {
+    "pokemonTcgId": "sm35-75",
+    "slug": "sm35-75-raichu-gx",
+    "name": "Raichu-GX",
+    "setId": "sm35",
+    "number": "75",
+    "rarity": "Rare Rainbow",
+    "score": 42.21
+  },
+  {
+    "pokemonTcgId": "pop2-12",
+    "slug": "pop2-12-bulbasaur",
+    "name": "Bulbasaur",
+    "setId": "pop2",
+    "number": "12",
+    "rarity": "Common",
+    "score": 41.47
+  },
+  {
+    "pokemonTcgId": "sm2-149",
+    "slug": "sm2-149-primarina-gx",
+    "name": "Primarina-GX",
+    "setId": "sm2",
+    "number": "149",
+    "rarity": "Rare Rainbow",
+    "score": 40.66
+  },
+  {
+    "pokemonTcgId": "pgo-86",
+    "slug": "pgo-86-mewtwo-vstar",
+    "name": "Mewtwo VSTAR",
+    "setId": "pgo",
+    "number": "86",
+    "rarity": "Rare Secret",
+    "score": 40.04
+  },
+  {
+    "pokemonTcgId": "xy11-115",
+    "slug": "xy11-115-volcanion-ex",
+    "name": "Volcanion-EX",
+    "setId": "xy11",
+    "number": "115",
+    "rarity": "Rare Secret",
+    "score": 39.89
+  },
+  {
+    "pokemonTcgId": "swsh12tg-TG29",
+    "slug": "swsh12tg-tg29-rayquaza-vmax",
+    "name": "Rayquaza VMAX",
+    "setId": "swsh12tg",
+    "number": "TG29",
+    "rarity": "Rare Secret",
+    "score": 39.44
+  },
+  {
+    "pokemonTcgId": "swsh12tg-TG15",
+    "slug": "swsh12tg-tg15-blaziken-vmax",
+    "name": "Blaziken VMAX",
+    "setId": "swsh12tg",
+    "number": "TG15",
+    "rarity": "Rare Holo VMAX",
+    "score": 39.06
+  },
+  {
+    "pokemonTcgId": "bp-6",
+    "slug": "bp-6-dark-ivysaur",
+    "name": "Dark Ivysaur",
+    "setId": "bp",
+    "number": "6",
+    "rarity": "Promo",
+    "score": 38.48
+  },
+  {
+    "pokemonTcgId": "swsh1-200",
+    "slug": "swsh1-200-marnie",
+    "name": "Marnie",
+    "setId": "swsh1",
+    "number": "200",
+    "rarity": "Rare Ultra",
+    "score": 38.03
+  },
+  {
+    "pokemonTcgId": "xy0-26",
+    "slug": "xy0-26-snorlax",
+    "name": "Snorlax",
+    "setId": "xy0",
+    "number": "26",
+    "rarity": "",
+    "score": 38.01
+  },
+  {
+    "pokemonTcgId": "bp-2",
+    "slug": "bp-2-hitmonchan",
+    "name": "Hitmonchan",
+    "setId": "bp",
+    "number": "2",
+    "rarity": "Promo",
+    "score": 37.93
+  },
+  {
+    "pokemonTcgId": "swsh10-175",
+    "slug": "swsh10-175-hisuian-sneasler-v",
+    "name": "Hisuian Sneasler V",
+    "setId": "swsh10",
+    "number": "175",
+    "rarity": "Rare Ultra",
+    "score": 37.7
+  },
+  {
+    "pokemonTcgId": "fut20-4",
+    "slug": "fut20-4-scorbunny-on-the-ball",
+    "name": "Scorbunny on the Ball",
+    "setId": "fut20",
+    "number": "4",
+    "rarity": "",
+    "score": 37.08
+  },
+  {
+    "pokemonTcgId": "pop6-12",
+    "slug": "pop6-12-buneary",
+    "name": "Buneary",
+    "setId": "pop6",
+    "number": "12",
+    "rarity": "Common",
+    "score": 36.99
+  },
+  {
+    "pokemonTcgId": "fut20-3",
+    "slug": "fut20-3-grookey-on-the-ball",
+    "name": "Grookey on the Ball",
+    "setId": "fut20",
+    "number": "3",
+    "rarity": "",
+    "score": 36.07
+  },
+  {
+    "pokemonTcgId": "swsh12tg-TG14",
+    "slug": "swsh12tg-tg14-blaziken-v",
+    "name": "Blaziken V",
+    "setId": "swsh12tg",
+    "number": "TG14",
+    "rarity": "Rare Holo V",
+    "score": 35.64
+  },
+  {
+    "pokemonTcgId": "sm2-146",
+    "slug": "sm2-146-decidueye-gx",
+    "name": "Decidueye-GX",
+    "setId": "sm2",
+    "number": "146",
+    "rarity": "Rare Rainbow",
+    "score": 35.53
+  },
+  {
+    "pokemonTcgId": "swsh11tg-TG03",
+    "slug": "swsh11tg-tg03-charizard",
+    "name": "Charizard",
+    "setId": "swsh11tg",
+    "number": "TG03",
+    "rarity": "Trainer Gallery Rare Holo",
+    "score": 35.04
+  },
+  {
+    "pokemonTcgId": "pop8-16",
+    "slug": "pop8-16-riolu",
+    "name": "Riolu",
+    "setId": "pop8",
+    "number": "16",
+    "rarity": "Common",
+    "score": 35
+  },
+  {
+    "pokemonTcgId": "pop8-3",
+    "slug": "pop8-3-luxray",
+    "name": "Luxray",
+    "setId": "pop8",
+    "number": "3",
+    "rarity": "Rare",
+    "score": 34.94
+  },
+  {
+    "pokemonTcgId": "xy10-116",
+    "slug": "xy10-116-glaceon-ex",
+    "name": "Glaceon-EX",
+    "setId": "xy10",
+    "number": "116",
+    "rarity": "Rare Ultra",
+    "score": 34.78
+  },
+  {
+    "pokemonTcgId": "xy11-109",
+    "slug": "xy11-109-m-steelix-ex",
+    "name": "M Steelix-EX",
+    "setId": "xy11",
+    "number": "109",
+    "rarity": "Rare Ultra",
+    "score": 34.5
+  },
+  {
+    "pokemonTcgId": "mcd19-6",
+    "slug": "mcd19-6-pikachu",
+    "name": "Pikachu",
+    "setId": "mcd19",
+    "number": "6",
+    "rarity": "",
+    "score": 33.66
+  },
+  {
+    "pokemonTcgId": "sm1-140",
+    "slug": "sm1-140-espeon-gx",
+    "name": "Espeon-GX",
+    "setId": "sm1",
+    "number": "140",
+    "rarity": "Rare Ultra",
+    "score": 33.39
+  },
+  {
+    "pokemonTcgId": "swsh5-168",
+    "slug": "swsh5-168-single-strike-urshifu-vmax",
+    "name": "Single Strike Urshifu VMAX",
+    "setId": "swsh5",
+    "number": "168",
+    "rarity": "Rare Rainbow",
+    "score": 33.28
+  },
+  {
+    "pokemonTcgId": "swsh1-197",
+    "slug": "swsh1-197-snorlax-v",
+    "name": "Snorlax V",
+    "setId": "swsh1",
+    "number": "197",
+    "rarity": "Rare Ultra",
+    "score": 32.45
+  },
+  {
+    "pokemonTcgId": "pop7-2",
+    "slug": "pop7-2-gallade",
+    "name": "Gallade",
+    "setId": "pop7",
+    "number": "2",
+    "rarity": "Rare",
+    "score": 32
+  },
+  {
+    "pokemonTcgId": "pop6-2",
+    "slug": "pop6-2-lucario",
+    "name": "Lucario",
+    "setId": "pop6",
+    "number": "2",
+    "rarity": "Rare",
+    "score": 31.37
+  },
+  {
+    "pokemonTcgId": "swsh2-177",
+    "slug": "swsh2-177-ninetales-v",
+    "name": "Ninetales V",
+    "setId": "swsh2",
+    "number": "177",
+    "rarity": "Rare Ultra",
+    "score": 30.78
+  },
+  {
+    "pokemonTcgId": "me2-109",
+    "slug": "me2-109-mega-charizard-x-ex",
+    "name": "Mega Charizard X ex",
+    "setId": "me2",
+    "number": "109",
+    "rarity": "Ultra Rare",
+    "score": 30.65
+  },
+  {
+    "pokemonTcgId": "pop6-8",
+    "slug": "pop6-8-riolu",
+    "name": "Riolu",
+    "setId": "pop6",
+    "number": "8",
+    "rarity": "Uncommon",
+    "score": 29.97
+  },
+  {
+    "pokemonTcgId": "dv1-5",
+    "slug": "dv1-5-dragonite",
+    "name": "Dragonite",
+    "setId": "dv1",
+    "number": "5",
+    "rarity": "Rare Holo",
+    "score": 29.3
+  },
+  {
+    "pokemonTcgId": "sv3-198",
+    "slug": "sv3-198-gloom",
+    "name": "Gloom",
+    "setId": "sv3",
+    "number": "198",
+    "rarity": "Illustration Rare",
+    "score": 28.69
+  },
+  {
+    "pokemonTcgId": "pop7-7",
+    "slug": "pop7-7-flaaffy",
+    "name": "Flaaffy",
+    "setId": "pop7",
+    "number": "7",
+    "rarity": "Uncommon",
+    "score": 28.33
+  },
+  {
+    "pokemonTcgId": "pop1-4",
+    "slug": "pop1-4-sceptile",
+    "name": "Sceptile",
+    "setId": "pop1",
+    "number": "4",
+    "rarity": "Rare",
+    "score": 27.68
+  },
+  {
+    "pokemonTcgId": "me2-129",
+    "slug": "me2-129-dawn",
+    "name": "Dawn",
+    "setId": "me2",
+    "number": "129",
+    "rarity": "Special Illustration Rare",
+    "score": 27.23
+  },
+  {
+    "pokemonTcgId": "pop7-4",
+    "slug": "pop7-4-latios",
+    "name": "Latios",
+    "setId": "pop7",
+    "number": "4",
+    "rarity": "Rare",
+    "score": 25.93
+  },
+  {
+    "pokemonTcgId": "sm4-101",
+    "slug": "sm4-101-gyarados-gx",
+    "name": "Gyarados-GX",
+    "setId": "sm4",
+    "number": "101",
+    "rarity": "Rare Ultra",
+    "score": 25.42
+  },
+  {
+    "pokemonTcgId": "dc1-31",
+    "slug": "dc1-31-team-magma-s-great-ball",
+    "name": "Team Magma's Great Ball",
+    "setId": "dc1",
+    "number": "31",
+    "rarity": "Uncommon",
+    "score": 25.02
+  },
+  {
+    "pokemonTcgId": "pop7-6",
+    "slug": "pop7-6-delibird",
+    "name": "Delibird",
+    "setId": "pop7",
+    "number": "6",
+    "rarity": "Uncommon",
+    "score": 24.94
+  },
+  {
+    "pokemonTcgId": "pgo-11",
+    "slug": "pgo-11-radiant-charizard",
+    "name": "Radiant Charizard",
+    "setId": "pgo",
+    "number": "11",
+    "rarity": "Radiant Rare",
+    "score": 24.67
+  },
+  {
+    "pokemonTcgId": "bw2-97",
+    "slug": "bw2-97-thundurus",
+    "name": "Thundurus",
+    "setId": "bw2",
+    "number": "97",
+    "rarity": "Rare Ultra",
+    "score": 24.4
+  },
+  {
+    "pokemonTcgId": "swsh12tg-TG13",
+    "slug": "swsh12tg-tg13-serperior-v",
+    "name": "Serperior V",
+    "setId": "swsh12tg",
+    "number": "TG13",
+    "rarity": "Rare Holo V",
+    "score": 24.01
+  },
+  {
+    "pokemonTcgId": "swsh1-204",
+    "slug": "swsh1-204-morpeko-vmax",
+    "name": "Morpeko VMAX",
+    "setId": "swsh1",
+    "number": "204",
+    "rarity": "Rare Rainbow",
+    "score": 23.92
+  },
+  {
+    "pokemonTcgId": "pop8-2",
+    "slug": "pop8-2-lucario",
+    "name": "Lucario",
+    "setId": "pop8",
+    "number": "2",
+    "rarity": "Rare",
+    "score": 23.63
+  },
+  {
+    "pokemonTcgId": "pop1-16",
+    "slug": "pop1-16-armaldo-ex",
+    "name": "Armaldo ex",
+    "setId": "pop1",
+    "number": "16",
+    "rarity": "Rare",
+    "score": 23.54
+  },
+  {
+    "pokemonTcgId": "xy11-79",
+    "slug": "xy11-79-m-gardevoir-ex",
+    "name": "M Gardevoir-EX",
+    "setId": "xy11",
+    "number": "79",
+    "rarity": "Rare Holo EX",
+    "score": 23.27
+  },
+  {
+    "pokemonTcgId": "mcd21-25",
+    "slug": "mcd21-25-pikachu",
+    "name": "Pikachu",
+    "setId": "mcd21",
+    "number": "25",
+    "rarity": "",
+    "score": 23.08
+  },
+  {
+    "pokemonTcgId": "swsh2-197",
+    "slug": "swsh2-197-dragapult-vmax",
+    "name": "Dragapult VMAX",
+    "setId": "swsh2",
+    "number": "197",
+    "rarity": "Rare Rainbow",
+    "score": 23.02
+  },
+  {
+    "pokemonTcgId": "sm4-111",
+    "slug": "sm4-111-olivia",
+    "name": "Olivia",
+    "setId": "sm4",
+    "number": "111",
+    "rarity": "Rare Ultra",
+    "score": 22.96
+  },
+  {
+    "pokemonTcgId": "bw2-98",
+    "slug": "bw2-98-tornadus",
+    "name": "Tornadus",
+    "setId": "bw2",
+    "number": "98",
+    "rarity": "Rare Ultra",
+    "score": 22.6
+  },
+  {
+    "pokemonTcgId": "swsh10tg-TG21",
+    "slug": "swsh10tg-tg21-zacian-v",
+    "name": "Zacian V",
+    "setId": "swsh10tg",
+    "number": "TG21",
+    "rarity": "Rare Holo V",
+    "score": 22.47
+  },
+  {
+    "pokemonTcgId": "sm4-38",
+    "slug": "sm4-38-gengar",
+    "name": "Gengar",
+    "setId": "sm4",
+    "number": "38",
+    "rarity": "Rare Holo",
+    "score": 22.4
+  },
+  {
+    "pokemonTcgId": "swsh3-190",
+    "slug": "swsh3-190-butterfree-vmax",
+    "name": "Butterfree VMAX",
+    "setId": "swsh3",
+    "number": "190",
+    "rarity": "Rare Rainbow",
+    "score": 22.34
+  },
+  {
+    "pokemonTcgId": "me2-106",
+    "slug": "me2-106-meowth",
+    "name": "Meowth",
+    "setId": "me2",
+    "number": "106",
+    "rarity": "Illustration Rare",
+    "score": 22.14
+  },
+  {
+    "pokemonTcgId": "swsh10tg-TG20",
+    "slug": "swsh10tg-tg20-galarian-moltres-v",
+    "name": "Galarian Moltres V",
+    "setId": "swsh10tg",
+    "number": "TG20",
+    "rarity": "Rare Holo V",
+    "score": 21.21
+  },
+  {
+    "pokemonTcgId": "swsh2-192",
+    "slug": "swsh2-192-sonia",
+    "name": "Sonia",
+    "setId": "swsh2",
+    "number": "192",
+    "rarity": "Rare Ultra",
+    "score": 20.84
+  },
+  {
+    "pokemonTcgId": "pop9-11",
+    "slug": "pop9-11-pichu",
+    "name": "Pichu",
+    "setId": "pop9",
+    "number": "11",
+    "rarity": "Uncommon",
+    "score": 20.06
+  },
+  {
+    "pokemonTcgId": "swsh10tg-TG16",
+    "slug": "swsh10tg-tg16-galarian-articuno-v",
+    "name": "Galarian Articuno V",
+    "setId": "swsh10tg",
+    "number": "TG16",
+    "rarity": "Rare Holo V",
+    "score": 20
+  },
+  {
+    "pokemonTcgId": "dc1-26",
+    "slug": "dc1-26-team-aqua-grunt",
+    "name": "Team Aqua Grunt",
+    "setId": "dc1",
+    "number": "26",
+    "rarity": "Uncommon",
+    "score": 19.49
+  },
+  {
+    "pokemonTcgId": "swsh45sv-SV039",
+    "slug": "swsh45sv-sv039-yamper",
+    "name": "Yamper",
+    "setId": "swsh45sv",
+    "number": "SV039",
+    "rarity": "Rare Shiny",
+    "score": 19.49
+  },
+  {
+    "pokemonTcgId": "pop9-15",
+    "slug": "pop9-15-pikachu",
+    "name": "Pikachu",
+    "setId": "pop9",
+    "number": "15",
+    "rarity": "Common",
+    "score": 19.38
+  },
+  {
+    "pokemonTcgId": "mcd19-12",
+    "slug": "mcd19-12-eevee",
+    "name": "Eevee",
+    "setId": "mcd19",
+    "number": "12",
+    "rarity": "",
+    "score": 18.25
+  },
+  {
+    "pokemonTcgId": "mcd19-5",
+    "slug": "mcd19-5-lapras",
+    "name": "Lapras",
+    "setId": "mcd19",
+    "number": "5",
+    "rarity": "",
+    "score": 17.99
+  },
+  {
+    "pokemonTcgId": "pop8-15",
+    "slug": "pop8-15-piplup",
+    "name": "Piplup",
+    "setId": "pop8",
+    "number": "15",
+    "rarity": "Common",
+    "score": 17.5
+  },
+  {
+    "pokemonTcgId": "dc1-3",
+    "slug": "dc1-3-team-aqua-s-spheal",
+    "name": "Team Aqua's Spheal",
+    "setId": "dc1",
+    "number": "3",
+    "rarity": "Common",
+    "score": 16.49
+  },
+  {
+    "pokemonTcgId": "swsh45sv-SV022",
+    "slug": "swsh45sv-sv022-suicune",
+    "name": "Suicune",
+    "setId": "swsh45sv",
+    "number": "SV022",
+    "rarity": "Rare Shiny",
+    "score": 16.28
+  },
+  {
+    "pokemonTcgId": "swsh45sv-SV047",
+    "slug": "swsh45sv-sv047-galarian-ponyta",
+    "name": "Galarian Ponyta",
+    "setId": "swsh45sv",
+    "number": "SV047",
+    "rarity": "Rare Shiny",
+    "score": 16.02
+  },
+  {
+    "pokemonTcgId": "dv1-9",
+    "slug": "dv1-9-latias",
+    "name": "Latias",
+    "setId": "dv1",
+    "number": "9",
+    "rarity": "Rare Holo",
+    "score": 15.93
+  },
+  {
+    "pokemonTcgId": "pop8-8",
+    "slug": "pop8-8-luxio",
+    "name": "Luxio",
+    "setId": "pop8",
+    "number": "8",
+    "rarity": "Uncommon",
+    "score": 15.89
+  },
+  {
+    "pokemonTcgId": "mcd19-10",
+    "slug": "mcd19-10-alolan-meowth",
+    "name": "Alolan Meowth",
+    "setId": "mcd19",
+    "number": "10",
+    "rarity": "",
+    "score": 15.83
+  },
+  {
+    "pokemonTcgId": "swsh45sv-SV119",
+    "slug": "swsh45sv-sv119-ditto-vmax",
+    "name": "Ditto VMAX",
+    "setId": "swsh45sv",
+    "number": "SV119",
+    "rarity": "Rare Holo VMAX",
+    "score": 15.68
+  },
+  {
+    "pokemonTcgId": "swsh3-194",
+    "slug": "swsh3-194-salamence-vmax",
+    "name": "Salamence VMAX",
+    "setId": "swsh3",
+    "number": "194",
+    "rarity": "Rare Rainbow",
+    "score": 15.51
+  },
+  {
+    "pokemonTcgId": "det1-10",
+    "slug": "det1-10-detective-pikachu",
+    "name": "Detective Pikachu",
+    "setId": "det1",
+    "number": "10",
+    "rarity": "Rare",
+    "score": 15.08
+  },
+  {
+    "pokemonTcgId": "mcd12-10",
+    "slug": "mcd12-10-scraggy",
+    "name": "Scraggy",
+    "setId": "mcd12",
+    "number": "10",
+    "rarity": "",
+    "score": 14.8
+  },
+  {
+    "pokemonTcgId": "swsh3-193",
+    "slug": "swsh3-193-scizor-vmax",
+    "name": "Scizor VMAX",
+    "setId": "swsh3",
+    "number": "193",
+    "rarity": "Rare Rainbow",
+    "score": 14.35
+  },
+  {
+    "pokemonTcgId": "dv1-4",
+    "slug": "dv1-4-dragonair",
+    "name": "Dragonair",
+    "setId": "dv1",
+    "number": "4",
+    "rarity": "Rare Holo",
+    "score": 14.32
+  },
+  {
+    "pokemonTcgId": "mcd12-9",
+    "slug": "mcd12-9-purrloin",
+    "name": "Purrloin",
+    "setId": "mcd12",
+    "number": "9",
+    "rarity": "",
+    "score": 13.65
+  },
+  {
+    "pokemonTcgId": "mcd19-1",
+    "slug": "mcd19-1-caterpie",
+    "name": "Caterpie",
+    "setId": "mcd19",
+    "number": "1",
+    "rarity": "",
+    "score": 13.41
+  },
+  {
+    "pokemonTcgId": "pop9-3",
+    "slug": "pop9-3-raichu",
+    "name": "Raichu",
+    "setId": "pop9",
+    "number": "3",
+    "rarity": "Rare",
+    "score": 12.63
+  },
+  {
+    "pokemonTcgId": "swsh3-192",
+    "slug": "swsh3-192-eternatus-vmax",
+    "name": "Eternatus VMAX",
+    "setId": "swsh3",
+    "number": "192",
+    "rarity": "Rare Rainbow",
+    "score": 12.29
+  },
+  {
+    "pokemonTcgId": "mcd12-4",
+    "slug": "mcd12-4-pignite",
+    "name": "Pignite",
+    "setId": "mcd12",
+    "number": "4",
+    "rarity": "",
+    "score": 12.11
+  },
+  {
+    "pokemonTcgId": "swsh45-72",
+    "slug": "swsh45-72-skyla",
+    "name": "Skyla",
+    "setId": "swsh45",
+    "number": "72",
+    "rarity": "Rare Ultra",
+    "score": 11.99
+  },
+  {
+    "pokemonTcgId": "det1-5",
+    "slug": "det1-5-charizard",
+    "name": "Charizard",
+    "setId": "det1",
+    "number": "5",
+    "rarity": "Rare Ultra",
+    "score": 11.36
+  },
+  {
+    "pokemonTcgId": "det1-17",
+    "slug": "det1-17-ditto",
+    "name": "Ditto",
+    "setId": "det1",
+    "number": "17",
+    "rarity": "Rare Ultra",
+    "score": 11.27
+  },
+  {
+    "pokemonTcgId": "mcd11-4",
+    "slug": "mcd11-4-oshawott",
+    "name": "Oshawott",
+    "setId": "mcd11",
+    "number": "4",
+    "rarity": "",
+    "score": 11.19
+  },
+  {
+    "pokemonTcgId": "swsh45-70",
+    "slug": "swsh45-70-pok-kid",
+    "name": "Poké Kid",
+    "setId": "swsh45",
+    "number": "70",
+    "rarity": "Rare Ultra",
+    "score": 10.45
+  },
+  {
+    "pokemonTcgId": "mcd12-6",
+    "slug": "mcd12-6-emolga",
+    "name": "Emolga",
+    "setId": "mcd12",
+    "number": "6",
+    "rarity": "",
+    "score": 10.33
+  },
+  {
+    "pokemonTcgId": "mcd21-17",
+    "slug": "mcd21-17-squirtle",
+    "name": "Squirtle",
+    "setId": "mcd21",
+    "number": "17",
+    "rarity": "",
+    "score": 9.95
+  },
+  {
+    "pokemonTcgId": "mcd12-3",
+    "slug": "mcd12-3-dwebble",
+    "name": "Dwebble",
+    "setId": "mcd12",
+    "number": "3",
+    "rarity": "",
+    "score": 9.85
+  },
+  {
+    "pokemonTcgId": "mcd11-8",
+    "slug": "mcd11-8-sandile",
+    "name": "Sandile",
+    "setId": "mcd11",
+    "number": "8",
+    "rarity": "",
+    "score": 9.6
+  },
+  {
+    "pokemonTcgId": "det1-12",
+    "slug": "det1-12-mewtwo",
+    "name": "Mewtwo",
+    "setId": "det1",
+    "number": "12",
+    "rarity": "Rare Ultra",
+    "score": 9.13
+  },
+  {
+    "pokemonTcgId": "pop9-16",
+    "slug": "pop9-16-piplup",
+    "name": "Piplup",
+    "setId": "pop9",
+    "number": "16",
+    "rarity": "Common",
+    "score": 9.01
+  },
+  {
+    "pokemonTcgId": "bw1-14",
+    "slug": "bw1-14-sawsbuck",
+    "name": "Sawsbuck",
+    "setId": "bw1",
+    "number": "14",
+    "rarity": "Rare",
+    "score": 8.99
+  },
+  {
+    "pokemonTcgId": "det1-9",
+    "slug": "det1-9-greninja",
+    "name": "Greninja",
+    "setId": "det1",
+    "number": "9",
+    "rarity": "Rare Ultra",
+    "score": 8.88
+  },
+  {
+    "pokemonTcgId": "xy0-27",
+    "slug": "xy0-27-miltank",
+    "name": "Miltank",
+    "setId": "xy0",
+    "number": "27",
+    "rarity": "",
+    "score": 8.83
+  },
+  {
+    "pokemonTcgId": "xy0-14",
+    "slug": "xy0-14-greninja",
+    "name": "Greninja",
+    "setId": "xy0",
+    "number": "14",
+    "rarity": "",
+    "score": 8.79
+  },
+  {
+    "pokemonTcgId": "mcd11-9",
+    "slug": "mcd11-9-zorua",
+    "name": "Zorua",
+    "setId": "mcd11",
+    "number": "9",
+    "rarity": "",
+    "score": 8.42
+  },
+  {
+    "pokemonTcgId": "xy0-29",
+    "slug": "xy0-29-bidoof",
+    "name": "Bidoof",
+    "setId": "xy0",
+    "number": "29",
+    "rarity": "",
+    "score": 8.38
+  },
+  {
+    "pokemonTcgId": "bw1-71",
+    "slug": "bw1-71-zoroark",
+    "name": "Zoroark",
+    "setId": "bw1",
+    "number": "71",
+    "rarity": "Rare Holo",
+    "score": 8.16
+  },
+  {
+    "pokemonTcgId": "mcd21-19",
+    "slug": "mcd21-19-mudkip",
+    "name": "Mudkip",
+    "setId": "mcd21",
+    "number": "19",
+    "rarity": "",
+    "score": 7.43
+  },
+  {
+    "pokemonTcgId": "bw2-33",
+    "slug": "bw2-33-joltik",
+    "name": "Joltik",
+    "setId": "bw2",
+    "number": "33",
+    "rarity": "Common",
+    "score": 7.41
+  },
+  {
+    "pokemonTcgId": "swsh45-64",
+    "slug": "swsh45-64-alcremie-v",
+    "name": "Alcremie V",
+    "setId": "swsh45",
+    "number": "64",
+    "rarity": "Rare Ultra",
+    "score": 7.4
+  },
+  {
+    "pokemonTcgId": "xy0-28",
+    "slug": "xy0-28-skitty",
+    "name": "Skitty",
+    "setId": "xy0",
+    "number": "28",
+    "rarity": "",
+    "score": 7.23
+  },
+  {
+    "pokemonTcgId": "bw2-29",
+    "slug": "bw2-29-cubchoo",
+    "name": "Cubchoo",
+    "setId": "bw2",
+    "number": "29",
+    "rarity": "Common",
+    "score": 6.39
+  },
+  {
+    "pokemonTcgId": "mcd11-2",
+    "slug": "mcd11-2-maractus",
+    "name": "Maractus",
+    "setId": "mcd11",
+    "number": "2",
+    "rarity": "",
+    "score": 6.35
+  },
+  {
+    "pokemonTcgId": "mcd11-3",
+    "slug": "mcd11-3-tepig",
+    "name": "Tepig",
+    "setId": "mcd11",
+    "number": "3",
+    "rarity": "",
+    "score": 6.25
+  },
+  {
+    "pokemonTcgId": "bw2-67",
+    "slug": "bw2-67-zoroark",
+    "name": "Zoroark",
+    "setId": "bw2",
+    "number": "67",
+    "rarity": "Rare Holo",
+    "score": 5.92
+  },
+  {
+    "pokemonTcgId": "mcd21-1",
+    "slug": "mcd21-1-bulbasaur",
+    "name": "Bulbasaur",
+    "setId": "mcd21",
+    "number": "1",
+    "rarity": "",
+    "score": 5.91
+  },
+  {
+    "pokemonTcgId": "mcd22-7",
+    "slug": "mcd22-7-pikachu",
+    "name": "Pikachu",
+    "setId": "mcd22",
+    "number": "7",
+    "rarity": "",
+    "score": 5.46
+  },
+  {
+    "pokemonTcgId": "swsh45-51",
+    "slug": "swsh45-51-ditto-vmax",
+    "name": "Ditto VMAX",
+    "setId": "swsh45",
+    "number": "51",
+    "rarity": "Rare Holo VMAX",
+    "score": 5.38
+  },
+  {
+    "pokemonTcgId": "mcd21-20",
+    "slug": "mcd21-20-piplup",
+    "name": "Piplup",
+    "setId": "mcd21",
+    "number": "20",
+    "rarity": "",
+    "score": 5.37
+  },
+  {
+    "pokemonTcgId": "swsh45-73",
+    "slug": "swsh45-73-alcremie-vmax",
+    "name": "Alcremie VMAX",
+    "setId": "swsh45",
+    "number": "73",
+    "rarity": "Rare Rainbow",
+    "score": 5.2
+  },
+  {
+    "pokemonTcgId": "mcd22-4",
+    "slug": "mcd22-4-growlithe",
+    "name": "Growlithe",
+    "setId": "mcd22",
+    "number": "4",
+    "rarity": "",
+    "score": 1.49
+  },
+  {
+    "pokemonTcgId": "mcd22-15",
+    "slug": "mcd22-15-smeargle",
+    "name": "Smeargle",
+    "setId": "mcd22",
+    "number": "15",
+    "rarity": "",
+    "score": 1.15
+  },
+  {
+    "pokemonTcgId": "mcd22-5",
+    "slug": "mcd22-5-victini",
+    "name": "Victini",
+    "setId": "mcd22",
+    "number": "5",
+    "rarity": "",
+    "score": 1.14
+  },
+  {
+    "pokemonTcgId": "mcd22-2",
+    "slug": "mcd22-2-rowlet",
+    "name": "Rowlet",
+    "setId": "mcd22",
+    "number": "2",
+    "rarity": "",
+    "score": 0.74
+  }
+]

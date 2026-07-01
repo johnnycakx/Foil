@@ -19,6 +19,32 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-07-01
+category: product
+status: captured
+---
+## Japanese-set catalog expansion — the top-5-per-set follow-up (English is done; JP needs a different data source)
+
+The [ADR-088](DECISIONS.md#adr-088--catalog-breadth-expansion-every-english-sets-top-5-by-value-chase-card-coverage) breadth expansion added every **English** set's top-5-by-value cards (catalog 29 → 159 sets, 1,190 → 1,840 cards) — but pokemontcg.io is **English-only**, so Japanese sets (which carry their own chase cards + a real collector market: JP alt arts, SAR/SIR, promo boxes) are entirely uncovered. The follow-up: source a JP catalog + pricing feed (pokemontcg.io has no JP; candidates — TCGplayer's JP product lines if the API exposes them, PriceCharting JP, or a JP-specific catalog API), range the top-5-per-set by value the same way, and reuse the exact same pipeline (`expand-top5-per-set.ts` generalized to a JP source → a second generated file → `bake:cards`). The rendering + tiering + lazy-PokeTrace boundary all carry over unchanged.
+
+**Context:** 2026-07-01 — flagged as explicitly OUT of scope in the top-5-per-set goal ("decide in a follow-up once English top-5 lands"). Decision deferred to a Sunday review: is the JP collector audience worth the extra data-source integration + the ~N more indexable pages, or does the English long tail need to prove SEO/traffic lift first ([R-012](RISKS.md))? Blocked on identifying a reliable JP pricing source (the AGENTS.md "read the docs before asserting" rule applies — no JP source is confirmed yet).
+
+---
+
+---
+date: 2026-06-30
+category: monetization
+status: captured
+---
+## X creator-subscription model (Atikin) — study the FORMAT, reject the persona-sub model for Foil's monetization
+
+John found @Prof_Atikin (19.8K followers, $3/mo X Creator Subscription: "exclusive content + first-hand alpha," subscriber badge on replies) and asked whether an X-sub creator model could be Foil's long-term play, better than Discord/Whop. **Co-CEO take: no on the model, yes on the format.** Atikin's asset is a 4-yr-old PERSONA (181K posts ≈ ~100/day, "Final Boss of Scalping / rage baiter," crypto/web3-native, `atikin.sol`) — a *person*-business on a *rented* platform (X owns the audience + the payment rail + the rules). That conflicts head-on with Foil's thesis: an OWNED email list + an automatable PRODUCT that runs without John. Discord/Whop/X-subs are all the same category (rented, persona/community-dependent monetization) Foil already deprioritized for good reasons — X-subs isn't an upgrade over Discord/Whop, it's the same axis. The DURABLE version of his $3 sub is **Foil's own Pro tier** (faster/instant alerts, multi-marketplace, condition filtering) on owned Stripe + owned data, PLUS **sponsorships** against the 10K-list goal (a newsletter monetizes via sponsors — scales without a daily-alpha persona treadmill). What IS transferable: his winning CONTENT FORMAT — data-chart market-analysis posts (his pinned "the 14k PSA 10 pop that's overlooked," a graded-pop + price-chart post, is *pure Foil data*) + sharp contrarian takes — pipe it into Foil's format-mining/content engine ("steal the container, keep the soul": keep Foil's calm, trustworthy voice; drop the rage-bait). And engage him + his network (he's followed by PokeNotify + other niche accounts) — a high-reach node for reply-based discovery.
+
+**Context:** 2026-06-30 — John, exploring @Prof_Atikin's pink Subscribe button, asked to research his model as a possible long-term direction "beyond just this prompt." Sub-conversion/revenue figures are SPECULATIVE (Chrome dropped mid-research; no live sub-count pulled). Follow-up: a live content teardown (his top posts by engagement, posting cadence, which formats actually convert to subs) when Chrome is stable, to ground the format-borrow.
+
+---
+
+---
 date: 2026-06-29
 category: infra
 status: captured
