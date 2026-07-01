@@ -1,37 +1,38 @@
-# Next-Session Brief — 2026-06-30 (end) — two live funnel bugs FIXED (hero, share cards); OG-cards commit awaits ONE push; next = JOHN POSTS
+# Next-Session Brief — 2026-07-01 (evening) — THROUGH-LINE: the Fable-5 surgical overhaul (audit done; foundation KEEP; 3 Phase-1/2 goals specced)
 
-> Read first: current state + the prioritized plan. (Cowork edits this; commits run on John's machine.)
+> Read first: current state + prioritized plan. (Cowork edits this; commits on John's machine.)
 
-## Headline
-A Cowork + Claude Code session that FIXED live funnel bugs a passing test suite was hiding. Two shipped: the **blank hero + founder image** (eager-load fix — `0f0a306` + live-verify `d3f8206`, PUSHED, verified in prod: all 8 cards + avatar paint on first load) and the **blank OG/Twitter share cards on 14 pages** (`1dc1148`, COMMITTED but **NOT pushed** — John's computer crashed before the push; repo is clean, nothing lost). Also: **@FoilTCG handle canonicalized** across footer + all `twitter:creator` (`5c0cf3c`, live). Ran three read-only audits → a prioritized fix list. Checked GSC (the vending pivot did NOT harm SEO — measured). Checked the X profile (populated; the incognito "no posts" was logged-out gating, not a shadowban). **The bottleneck is unchanged: AUDIENCE. John is posting — that's the needle. The builds were legit funnel/trust hygiene, not the scoreboard.**
+## What just happened
+Fable 5 came back; John upgraded to the $200/mo plan. Full six-branch audit ran (**docs/AUDIT-2026-07-01-FABLE.md** — the canonical findings doc). Grades: live surfaces C+ · SEO D+ · **funnel D** · content C- · code/ops B- · X C+. John proposed a ground-up rebuild; **decision: KEEP the foundation, rebuild surgically** — the audit showed architecture is the strongest layer and every 🔴 is a wiring/content/copy fix. Rebuild-from-the-goal is reserved for the two subsystems that failed at design level: the alert engine and the bake/render data pipeline. The paused `card-page-perf-regression` goal is **SUPERSEDED** (its Part B premise was false: the baked snapshot has had ZERO prices for all cards since ≥May 30 — stale duplicate parseCard in the bake script; tsc never saw it because tsconfig excludes scripts/).
 
-## THE one open item (do first)
-- **`git push origin main`** — local `main` is exactly 1 commit ahead of origin (`1dc1148`, the OG share-cards fix). Committed + safe, just unpushed (crash timing). Pushing takes it live (Vercel auto-deploys) and fixes the blank share cards on every foiltcg.com link John tweets. Low risk (metadata strings only, gates green, `/security-review` clean). **After it deploys, verify** the `og:image`/`twitter:image` tags resolve on a pillar + a blog post + `/start` (Cowork can do this via fetch/Chrome).
+## Headline audit discoveries (full detail in AUDIT-2026-07-01-FABLE.md)
+1. Baked snapshot price-empty 5+ weeks (bake parser drift — 2nd R-015-class incident).
+2. /start funnel is a black hole: newsletter opt-ins write only to Beehiiv (which doesn't send); zero UTM; duplicate re-submit 500s; alert-email unsubscribe stops nothing (CAN-SPAM); no rate limit; blank-target sentinel renders "you wanted ≤ $100,000" alerts by default; alert prices can be live auction bids (no FIXED_PRICE filter).
+3. Live content fabrications: sv3a post (fake set structure/numbers/cards), Moonbreon 12x contradiction across 3 posts, deals-page first-click integrity failure (Poor-condition listing sold as "23% below, condition-matched"). Gates check form, not facts — entity-grounding gate vs the baked catalog is the fix.
+4. Catalog expansion did NOT unblock movers (3 blockers: variants requirement, tier filter, 460 cap). Movers signal dies ~Jul 15 without PokeTrace renewal.
+5. SEO: sitemap omits the 159 fast set pages + /cards hub; lastmod fabricated; cache hierarchy inverted (live-first, baked-fallback). TTFB fix urgency = DAYS (GSC refetch wave from the Jul 1 resubmit).
 
-## What's LIVE now (pushed, prod-verified)
-- Hero + founder eager-load fix (`d3f8206`) — all 8 cards + avatar paint on first load, confirmed live.
-- @FoilTCG handle canonical: footer "Follow on X" + all `twitter:creator` + `OWN_USERNAME` (`5c0cf3c`).
-- (Carried from prior: newsletter `/approve`→editorial→Resend loop; engagement engine v2; format-mining dry-run; Phase-0 UTM attribution.)
+## THE plan (Fable overhaul, surgical — goal files ready in docs/goals/)
+- **Phase 0 — DONE 2026-07-01:** goal cleared ✅ · `pre-fable-overhaul` tag pushed ✅ · **PokeTrace RENEWED + PAID (John, 2026-07-01)** — the pricing spine is secure; movers/newsletter/briefs/deals stay live. Jul-13 reminder can be cancelled.
+- **Phase 1 — `perf-and-data-foundation.md` (RUN FIRST, days-urgent):** timeout guard + bake-parser fix (variant-wipe guarded) + FULL re-bake + baked-first rendering + sitemap hygiene (add hub/set pages, real lastmod) + title/canonical fixes.
+- **Phase 2a — `start-funnel-integrity.md`:** tri-store opt-in from /start + UTM attribution + upsert + working unsubscribe + minimal abuse guard. The conversion counter must work before ANY traffic push.
+- **Phase 2b — `alert-engine-rebuild.md`:** from-the-goal event model (state transitions, hysteresis re-arm, 30d-sold reference floor, FIXED_PRICE/US/USD filters, sentinel killed, sold-comp evidence line). Supersedes watchlist-alert-quality-overhaul; absorbs trust-hardening Bug 1 (trim that goal).
+- **Phase 3 — Fable design/UI/copy overhaul (Cowork specs next):** pull-model hero + /start UX + card/deals pages + emails; folds in homepage-reposition (verdict: good as-is + add /start to nav) and the Pokeball-logo IP refresh (IDEAS #295) — must precede creator traffic.
+- **Phase 4 — content trust:** unpublish/regenerate sv3a, fix 2 stale Moonbreon posts, sweep scanner CTAs from post bodies + seo-strategy template, deals re-verify + "verified Xh ago" stamp, then entity-grounding + price-sanity + cross-post gates.
+- **THEN eve** (reply drafted in prior brief — do NOT send her to the current funnel).
+- **Post-eve wave (unlocked ideas):** buy-signal (#388, partly ships in the alert evidence line), Foil as AI-cited data layer/MCP (#282/#375), Scoreboard series (#111), programmatic 25K-card SEO (#414/#494, crawl-budget-gated).
 
-## Queued (priority order — ALL behind "John posts" + real audience signal)
-1. **`trust-hardening-currency-and-affiliate.md`** (spec written, not run). P0: the wishlist alert fires FALSE "price drop" emails on a currency mismatch (a £/€ listing compared cents-to-cents against a USD target). P1: the affiliate "we earn a commission" claim can render false if `EBAY_CAMPAIGN_ID` ever lapses (no render-path guard; only newsletter HTML is gated). Trust-critical, cheap, ~0 users hit it today.
-2. **`/cards/[slug]` + set-logo CDN self-host** (described, not yet specced as a file). The primary SEO landing surface's hero rides the flaky `images.pokemontcg.io` CDN with no self-hosted fallback — the exact CDN ADR-056 already moved the homepage hero off of. Bigger job (bake catalog images).
-3. **SEO keyword-opportunity pass → content-engine backlog** (`docs/seo-strategy.md`). The leveraged SEO move: feed the autonomous twice-weekly engine better low-competition, high-intent niche targets so it compounds on the right terms. Slow lever; strictly behind posting.
-4. **`fix-blank-og-share-cards.md`** — DONE (`1dc1148`), pending only the push above.
-5. **Repo housekeeping** (optional, cosmetic): archive dated one-offs in `docs/` root (the 4 `CONTEXT-HANDOFF-*`, `PLAN-2026-06-05`, etc.) into `docs/archive/`; tighten the goal-closure contract in AGENTS.md (a goal isn't "done" until the commit WITH the SESSION-LOG lands — the hero goal stranded on this); trim the 55 accumulated `docs/goals/` scratch files. NOT the needle.
-6. **`design-review-loop.md`** — the screenshot-gated approve/try-again design loop John wants; self-learning write-back to DESIGN.md. Motivated by today (structural tests passed while hero + OG cards shipped blank). First job = catch rendered-reality regressions.
+## Other queued-goal verdicts (from the audit)
+`homepage-reposition-watchlist` resume as-is (+nav /start, folds into Phase 3) · `content-engine-market-card-upgrade` AMEND (premise-check value-rank's data source — baked prices were empty; movers wiring gap is the real unblock) · `trust-hardening` AMEND (strip Bug 1, keep affiliate render-guard + add loud-fail on missing EBAY_CAMPAIGN_ID).
 
-## Audit P2s (captured — do NOT act now)
-`siteUrl()` www-vs-apex fallback drift; `aggregateStat` `|| null` numeric edge case; set-logo header flaky CDN + no priority. (Homepage `alternates.canonical` was folded into `1dc1148` — verify it's present after push.)
-
-## X / audience (the ACTUAL bottleneck)
-- @FoilTCG: 20 posts, verified badge, strong original content (pinned sold-prices thread; movers posts; `/deals` link), bio + foiltcg.com link correct. **4 followers / 69 following.**
-- **Reach mechanic at low-follower count: REPLIES are the discovery lever, not own posts.** Own posts reach ~4 people; replies surface under bigger accounts' posts in front of THEIR audiences. So growth = thoughtful, data-cited replies on high-reach posts (engagement engine ranks by reach), spaced out (not bursts).
-- **Stop mass-following** (69:4 is a spam signal that can deepen a new-account throttle) — let followers come from replies.
-- Incognito "no posts" = X's logged-out login-wall gating on a young account, NOT a confirmed shadowban. Can't cleanly diagnose a throttle; the right actions (quality + patience + no spam signals) are identical either way → don't rabbit-hole.
+## Token-allocation doctrine (new, John 2026-07-01)
+Fable = judgment/design/specs/audits, never bulk execution. Claude Code = execution from goal files. Research agents staggered 2–3 max (the six-wide audit burned ~800K tokens in one shot — worked, but don't repeat).
 
 ## Standing
-- PokeTrace renews ~Jul 15 (reminder Jul 13) — load-bearing pricing spine. `AUTO_PUBLISH_WEEKLY_POSTS` ON. `FORMAT_MINING_ENABLED` dry-run ON. `ENGAGEMENT_BRIEF_ENABLED` ON. Cowork CANNOT commit/push — hand John `docs:` one-liners + `/goal` pastes.
+PokeTrace renews ~Jul 15 (**decision now dated, on John**). AUTO_PUBLISH reconciliation needed (docs say ON; Jun 25 draft landed in _pending — behavior says OFF). @FoilTCG 4 followers; replies = the lever; verify bio link carries UTM params (30-sec check). Cowork cannot commit/push — hand-offs below.
 
-## Uncommitted at session end
-This brief + the COWORK-CONTEXT learnings are Cowork edits in the working tree. Code: `1dc1148` committed-unpushed (the ONE push); `d3f8206` live. Hand John TWO things: (1) `git push origin main` (ships the OG fix), (2) one `docs:` commit for this brief + COWORK-CONTEXT.
+## Hand-offs for John (in order)
+1. Claude Code: `clear the goal`
+2. `git tag pre-fable-overhaul && git push origin pre-fable-overhaul`
+3. `git add docs/NEXT-SESSION-BRIEF.md docs/AUDIT-2026-07-01-FABLE.md docs/COWORK-CONTEXT.md && git commit -m "docs: fable-5 six-branch audit + surgical overhaul plan" && git push`
+4. `/goal Read docs/goals/perf-and-data-foundation.md and execute it, closing all gates before commit.`
