@@ -82,7 +82,11 @@ test("/cards/[slug]: server JSON-LD always uses the baked AggregateOffer (no vol
   // curated both carry the STABLE baked TCGplayer AggregateOffer (design §4).
   assert.match(src, /if \(tier === "longtail" \|\| tier === "curated"\)/);
   assert.match(src, /aggregateOfferFromTcgplayer/);
-  assert.match(src, /"@type": "AggregateOffer"/);
+  // The builder itself moved to lib/cards/aggregate-offer.ts (2026-07-01,
+  // perf-and-data-foundation) so it's unit-testable against the committed
+  // snapshot; the page imports it.
+  assert.match(src, /import \{ aggregateOfferFromTcgplayer \} from "@\/lib\/cards\/aggregate-offer"/);
+  assert.match(read("lib/cards/aggregate-offer.ts"), /"@type": "AggregateOffer"/);
   // No live eBay Offer in the server-rendered JSON-LD anymore.
   assert.doesNotMatch(src, /availability: "https:\/\/schema\.org\/InStock"/, "the volatile live Offer left the crawled DOM");
 });

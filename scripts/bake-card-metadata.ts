@@ -31,7 +31,13 @@
 import { writeFileSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { CARD_CATALOG } from "../lib/cards/catalog.ts";
-import type { CardMetadata, SetMetadata } from "../lib/cards/sdk.ts";
+// parseCard comes from the SDK — the ONE card parser (perf-and-data-foundation,
+// 2026-07-01). This script previously carried a stale 8-field duplicate that
+// silently dropped tcgplayerPrices + every reference-data field from every
+// snapshot ever committed (tsconfig excluded scripts/, so tsc never saw the
+// shape mismatch). Do not re-inline a parser here.
+import { parseCard, type CardMetadata, type RawCard, type SetMetadata } from "../lib/cards/sdk.ts";
+import { overlayFreshMetadata } from "../lib/cards/bake-merge.ts";
 import { createBakeCheckpoint } from "./bake-checkpoint.ts";
 
 const STATE_PATH = ".bake-cards-state.json";
@@ -73,15 +79,6 @@ async function sleep(ms: number): Promise<void> {
   await new Promise((r) => setTimeout(r, ms));
 }
 
-type RawCard = {
-  id?: string;
-  name?: string;
-  number?: string;
-  rarity?: string | null;
-  set?: { id?: string; name?: string; releaseDate?: string | null };
-  images?: { small?: string; large?: string };
-};
-
 type RawSet = {
   id?: string;
   name?: string;
@@ -91,26 +88,6 @@ type RawSet = {
   releaseDate?: string | null;
   images?: { symbol?: string; logo?: string };
 };
-
-function parseCard(raw: RawCard): CardMetadata | null {
-  if (typeof raw.id !== "string" || !raw.id) return null;
-  const id = raw.id;
-  const setId = typeof raw.set?.id === "string" ? raw.set.id : id.split("-")[0];
-  const image =
-    (typeof raw.images?.large === "string" && raw.images.large) ||
-    (typeof raw.images?.small === "string" && raw.images.small) ||
-    "";
-  return {
-    id,
-    name: typeof raw.name === "string" ? raw.name : id,
-    setName: typeof raw.set?.name === "string" ? raw.set.name : setId,
-    setId,
-    number: typeof raw.number === "string" ? raw.number : id.split("-").slice(1).join("-"),
-    image,
-    rarity: typeof raw.rarity === "string" ? raw.rarity : null,
-    releaseDate: typeof raw.set?.releaseDate === "string" ? raw.set.releaseDate : null,
-  };
-}
 
 function parseSet(raw: RawSet): SetMetadata | null {
   if (typeof raw.id !== "string" || !raw.id) return null;
@@ -164,7 +141,7 @@ async function bakeCard(id: string): Promise<CardMetadata | null> {
   try {
     const body = (await r.json()) as { data?: RawCard };
     if (!body?.data) return null;
-    return parseCard(body.data);
+    return parseCard(body.data, id);
   } catch {
     return null;
   }
@@ -225,6 +202,10 @@ async function main(): Promise<void> {
   let preserved = 0;
   let stillMissing = 0;
   let completed = 0;
+  // IDs whose fresh fetch failed in the concurrent pass — retried
+  // sequentially afterwards (same self-heal discipline as
+  // scripts/expand-top5-per-set.ts; pokemontcg.io flaps under load).
+  const failedIds: string[] = [];
 
   function saveSnapshot(): void {
     const snapshot: BakedSnapshot = {
@@ -264,22 +245,23 @@ async function main(): Promise<void> {
     completed++;
     if (card) {
       // Preserve the baked-ONLY PokeTrace `variants` (Session 49 / ADR-042).
-      // This script fetches SDK metadata, which has no PokeTrace UUIDs, so a
-      // naive overwrite would DROP the variants that `bake:poketrace-uuids`
-      // layered on — silently regressing every card's sold-history panel to
-      // "not yet available" and forcing a full (rate-limited) PokeTrace re-bake
-      // to restore. Overlay the fresh metadata onto the prior entry instead so
-      // `variants` survives; net-new cards (no prior entry) get none, which is
-      // correct — PokeTrace enrichment stays lazy.
-      const prior = existing.cards[id];
-      mergedCards[id] = prior ? { ...prior, ...card } : card;
+      // The fresh SDK record has no PokeTrace UUIDs (parseCard sets
+      // `variants: []`), so a naive `{...prior, ...card}` overlay would DROP
+      // the variants that `bake:poketrace-uuids` layered on — silently
+      // regressing every card's sold-history panel to "not yet available".
+      // overlayFreshMetadata strips the baked-only fields from the fresh
+      // record before merging; the invariant is unit-tested in
+      // lib/__tests__/bake-snapshot-invariants.test.ts.
+      mergedCards[id] = overlayFreshMetadata(existing.cards[id], card);
       baked++;
       console.log(`  [${completed}/${CARD_CATALOG.length}] ${id} -> baked: ${card.name}`);
     } else if (existing.cards[id]) {
       preserved++;
+      failedIds.push(id);
       console.log(`  [${completed}/${CARD_CATALOG.length}] ${id} -> upstream failed, preserving prior bake (${existing.cards[id].name})`);
     } else {
       stillMissing++;
+      failedIds.push(id);
       console.log(`  [${completed}/${CARD_CATALOG.length}] ${id} -> NO COVERAGE`);
     }
     // mark AFTER mergedCards[id] is set, so a flush here always includes this
@@ -301,22 +283,62 @@ async function main(): Promise<void> {
   }
   await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
 
+  // Sequential retry-failed pass (perf-and-data-foundation, 2026-07-01):
+  // pokemontcg.io flaps under concurrent load; a slow one-at-a-time second
+  // pass recovers most transient failures within the same run (the same
+  // discipline that let expand-top5-per-set.ts self-heal to 173/173 sets).
+  if (failedIds.length > 0) {
+    console.log("");
+    console.log(`Retrying ${failedIds.length} failed card(s) sequentially...`);
+    for (const id of failedIds.splice(0)) {
+      const card = await bakeCard(id);
+      if (card) {
+        const hadPrior = Boolean(existing.cards[id]);
+        mergedCards[id] = overlayFreshMetadata(existing.cards[id], card);
+        baked++;
+        if (hadPrior) preserved--;
+        else stillMissing--;
+        console.log(`  retry ${id} -> baked: ${card.name}`);
+      } else {
+        failedIds.push(id);
+        console.log(`  retry ${id} -> still failing`);
+      }
+    }
+    saveSnapshot();
+  }
+
   checkpoint.finalize();
   if (RESUME && resumeSkipped > 0) console.log(`  resumed: skipped ${resumeSkipped} already-baked cards`);
   const outputJson = JSON.stringify({ bakedAt: new Date().toISOString(), cards: mergedCards, sets: mergedSets }, null, 2);
 
+  const pricedCount = Object.values(mergedCards).filter(
+    (c) => c.tcgplayerPrices && Object.keys(c.tcgplayerPrices).length > 0,
+  ).length;
   console.log("");
   console.log(`Wrote ${OUTPUT_PATH} (${outputJson.length.toLocaleString()} bytes).`);
   console.log(`  fresh bakes this run:   ${baked}`);
   console.log(`  preserved prior bakes:  ${preserved}`);
   console.log(`  still uncovered:        ${stillMissing}`);
   console.log(`  total card coverage:    ${Object.keys(mergedCards).length}/${CARD_CATALOG.length}`);
+  console.log(`  cards with tcgplayerPrices: ${pricedCount}/${Object.keys(mergedCards).length}`);
   console.log(`  total set coverage:     ${Object.keys(mergedSets).length}`);
   if (stillMissing > 0) {
     console.log("");
     console.log(`  ${stillMissing} card(s) still uncovered. Re-run when upstream is healthier`);
     console.log("  to fill those in. The SDK will continue to soft-fail to a minimal record");
     console.log("  for any uncovered ID — same behavior as before this script existed.");
+  }
+  // Full-bake abort-guard: on a full re-bake (not --only-missing / --resume),
+  // any card that never got a FRESH record this run means the snapshot on
+  // disk still carries its stale prior entry. The file itself stays safe
+  // (prior entries preserved), but a partial refresh must not be committed
+  // as if complete — exit non-zero so the operator (or goal-runner) sees it.
+  if (!ONLY_MISSING && !RESUME && failedIds.length > 0) {
+    console.error("");
+    console.error(`FULL BAKE INCOMPLETE: ${failedIds.length} card(s) failed both passes:`);
+    console.error(`  ${failedIds.join(", ")}`);
+    console.error("  Do NOT commit this snapshot as a completed full re-bake. Re-run to fill in.");
+    process.exitCode = 3;
   }
 }
 

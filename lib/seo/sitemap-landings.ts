@@ -46,6 +46,10 @@ export const LANDING_PATHS: readonly LandingPath[] = [
   { path: "/pokemon-card-value-calculator", priority: 0.9, changeFrequency: "monthly" },
   { path: "/pokemon-card-condition-guide", priority: 0.9, changeFrequency: "monthly" },
   { path: "/blog", priority: 0.7, changeFrequency: "weekly" },
+  // /cards — the browse hub linking every set page + card page. Was omitted
+  // from the sitemap entirely until 2026-07-01 (perf-and-data-foundation);
+  // app/sitemap.ts layers the /cards/sets/[set-id] hubs + the card long tail.
+  { path: "/cards", priority: 0.8, changeFrequency: "weekly" },
   { path: "/newsletter", priority: 0.8, changeFrequency: "monthly" },
   { path: "/start", priority: 0.95, changeFrequency: "weekly" },
   { path: "/deals", priority: 0.9, changeFrequency: "daily" },

@@ -102,6 +102,20 @@ const BAKED: BakedSnapshot = loadBakedSnapshot();
 // imperceptible at /api/cards/search runtime cost.
 const RETRY_DELAYS_MS = [200, 600, 1800];
 
+// Per-attempt timeout ceiling (perf-and-data-foundation, 2026-07-01).
+// pokemontcg.io flaps between healthy and hanging-the-connection under
+// load; without an abort, a stalled attempt rides undici's ~300s default
+// and the Server Component render blocks with it (measured 32–52s TTFB
+// on card pages during a flap). Every attempt now aborts at this bound.
+const DEFAULT_FETCH_TIMEOUT_MS = 15_000;
+
+// Render-path budget: 2 attempts × 2.4s + 200ms backoff ≈ 5s worst case.
+// getCardMetadata / getSetMetadata run inside force-dynamic page renders
+// (crawlers included) — they get this tight schedule. Build/bake/API
+// callers keep the longer default schedule above.
+const RENDER_FETCH_TIMEOUT_MS = 2_400;
+const RENDER_RETRY_DELAYS_MS = [200];
+
 async function sleep(ms: number): Promise<void> {
   await new Promise((r) => setTimeout(r, ms));
 }
@@ -111,13 +125,20 @@ type FetchRetryOptions = {
    *  for ID-based lookups against catalog-controlled IDs (a 4xx means
    *  upstream is flaky, not that the resource is missing). */
   retryOn4xx?: boolean;
+  /** Per-attempt abort bound. Default DEFAULT_FETCH_TIMEOUT_MS. Render
+   *  paths pass RENDER_FETCH_TIMEOUT_MS to keep TTFB bounded. */
+  timeoutMs?: number;
+  /** Backoff schedule override (attempts = length + 1). Default
+   *  RETRY_DELAYS_MS; render paths pass RENDER_RETRY_DELAYS_MS. */
+  retryDelaysMs?: readonly number[];
 };
 
 /**
  * Wrapper around fetch that retries on 5xx + network errors (always)
- * and 4xx (when `retryOn4xx` is set) with a backoff schedule. Caller-
- * supplied `fetchImpl` lets tests inject stubs. Returns the final
- * Response or null if every attempt threw.
+ * and 4xx (when `retryOn4xx` is set) with a backoff schedule, aborting
+ * each attempt at `timeoutMs` so a stalled upstream connection can never
+ * hang the caller. Caller-supplied `fetchImpl` lets tests inject stubs.
+ * Returns the final Response or null if every attempt threw.
  */
 async function fetchWithRetry(
   url: string,
@@ -125,25 +146,33 @@ async function fetchWithRetry(
   fetchImpl: typeof fetch = fetch,
   options: FetchRetryOptions = {},
 ): Promise<Response | null> {
-  const { retryOn4xx = false } = options;
-  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+  const {
+    retryOn4xx = false,
+    timeoutMs = DEFAULT_FETCH_TIMEOUT_MS,
+    retryDelaysMs = RETRY_DELAYS_MS,
+  } = options;
+  for (let attempt = 0; attempt <= retryDelaysMs.length; attempt++) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
-      const response = await fetchImpl(url, init);
+      const response = await fetchImpl(url, { ...init, signal: ctrl.signal });
       const isTransient =
         response.status >= 500 || (retryOn4xx && response.status >= 400 && response.status < 500);
-      if (isTransient && attempt < RETRY_DELAYS_MS.length) {
-        await sleep(RETRY_DELAYS_MS[attempt]);
+      if (isTransient && attempt < retryDelaysMs.length) {
+        await sleep(retryDelaysMs[attempt]);
         continue;
       }
       return response;
     } catch (err) {
-      // Network error / timeout. Retry if we have budget left.
-      if (attempt < RETRY_DELAYS_MS.length) {
-        await sleep(RETRY_DELAYS_MS[attempt]);
+      // Network error / abort timeout. Retry if we have budget left.
+      if (attempt < retryDelaysMs.length) {
+        await sleep(retryDelaysMs[attempt]);
         continue;
       }
       void err;
       return null;
+    } finally {
+      clearTimeout(timer);
     }
   }
   return null;
@@ -230,18 +259,25 @@ export type GetCardMetadataInput = {
 };
 
 /**
- * Fetch metadata for a single card by SDK id. Returns a minimal fallback
- * record on any failure — never throws into the Server Component render.
+ * Card metadata by SDK id — BAKED-FIRST (perf-and-data-foundation ADR):
+ * if the id exists in the committed snapshot, return it immediately with
+ * zero network. The live pokemontcg.io fetch (timeout-bounded, ≤5s) runs
+ * only for ids absent from the snapshot — which, for page renders, means
+ * catalog entries added since the last `npm run bake:cards`. Returns a
+ * minimal fallback record on any failure — never throws into the Server
+ * Component render.
  */
 export async function getCardMetadata(input: GetCardMetadataInput): Promise<CardMetadata> {
   const { id } = input;
   if (!id) return minimalRecord("");
 
-  // Production callers (no custom fetchImpl) get the baked-snapshot
-  // fallback layer; test callers (with stubbed fetchImpl) get the original
-  // soft-fail-to-minimal-record path so their assertions about failure
-  // modes still hold. See `lib/cards/baked-metadata.json`.
+  // Production callers (no custom fetchImpl) read the baked snapshot FIRST
+  // — the render must not block on pokemontcg.io's health for data we
+  // already committed. Test callers (with stubbed fetchImpl) keep the
+  // live-first path so their assertions about failure modes still hold.
   const usingDefaultFetch = !input.fetchImpl;
+  if (usingDefaultFetch && BAKED.cards[id]) return BAKED.cards[id];
+
   const fetchFn = input.fetchImpl ?? fetch;
   const response = await fetchWithRetry(
     `${POKEMON_TCG_API_BASE}/${encodeURIComponent(id)}`,
@@ -255,8 +291,9 @@ export async function getCardMetadata(input: GetCardMetadataInput): Promise<Card
     fetchFn,
     // Our card IDs come from CARD_CATALOG (server-controlled); a 4xx
     // from pokemontcg.io means upstream is flaky, not that the card
-    // is missing. Retry on 4xx in addition to 5xx.
-    { retryOn4xx: true },
+    // is missing. Retry on 4xx in addition to 5xx. Render-path budget:
+    // 2 timeout-bounded attempts, ≤5s worst case (Phase A).
+    { retryOn4xx: true, timeoutMs: RENDER_FETCH_TIMEOUT_MS, retryDelaysMs: RENDER_RETRY_DELAYS_MS },
   );
 
   if (!response || !response.ok) {
@@ -298,7 +335,14 @@ export function getBakedCardMetadata(id: string): CardMetadata | null {
   return BAKED.cards[id] ?? null;
 }
 
-type RawCard = {
+/** ISO timestamp of the committed snapshot's last bake. Empty string when
+ *  the snapshot is missing/unparseable. Used by app/sitemap.ts as the real
+ *  lastModified for card/set URLs (no fabricated `new Date()`). */
+export function getBakedSnapshotTimestamp(): string {
+  return BAKED.bakedAt;
+}
+
+export type RawCard = {
   id?: string;
   name?: string;
   number?: string;
@@ -343,7 +387,17 @@ type RawCard = {
   };
 };
 
-function parseCard(raw: RawCard, requestedId: string): CardMetadata {
+/**
+ * Parse a raw pokemontcg.io card payload into CardMetadata. Exported so
+ * `scripts/bake-card-metadata.ts` uses THIS parser — the bake script
+ * previously carried a stale 8-field duplicate that silently dropped
+ * `tcgplayerPrices` (and every reference-data field) from every snapshot
+ * ever committed (perf-and-data-foundation P0 finding, 2026-07-01).
+ * Note: sets `variants: []` — PokeTrace variants are a baked-only field
+ * that callers must overlay from the prior snapshot entry (see
+ * lib/cards/bake-merge.ts).
+ */
+export function parseCard(raw: RawCard, requestedId: string): CardMetadata {
   const id = (typeof raw.id === "string" && raw.id) || requestedId;
   const name = typeof raw.name === "string" && raw.name.trim() ? raw.name.trim() : derivedNameFromId(id);
   const setName = typeof raw.set?.name === "string" ? raw.set.name : derivedSetIdFromId(id);
@@ -494,8 +548,9 @@ export async function getSetMetadata(input: GetSetMetadataInput): Promise<SetMet
     } as RequestInit,
     fetchFn,
     // Same reasoning as getCardMetadata — set IDs come from the
-    // catalog, so a 4xx is upstream flake.
-    { retryOn4xx: true },
+    // catalog, so a 4xx is upstream flake. Same render budget too:
+    // this runs inside page renders/builds and must stay bounded.
+    { retryOn4xx: true, timeoutMs: RENDER_FETCH_TIMEOUT_MS, retryDelaysMs: RENDER_RETRY_DELAYS_MS },
   );
   if (!response || !response.ok) {
     if (usingDefaultFetch && BAKED.sets[id]) return BAKED.sets[id];

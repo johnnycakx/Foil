@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LeadMagnetCTA } from "@/components/lead-magnet-cta";
 
-const TITLE = "Japanese Pokémon Cards Value: 2026 Guide | Foil";
+const TITLE = "Japanese Pokémon Cards Value: 2026 Guide";
 const DESCRIPTION =
   "See what Japanese Pokémon cards are actually worth in USD — sv3a, s4 set codes, SAR rarity, and when Japanese prints out-price English.";
 const URL_PATH = "/japanese-pokemon-cards-value";

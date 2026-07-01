@@ -263,7 +263,7 @@ async function main(): Promise<void> {
 
     let addedThisSet = 0;
     for (const { c, score } of ranked) {
-      if (existingIds.has(c.id) || existingSlugs.has(c.slug ?? "")) continue;
+      if (existingIds.has(c.id)) continue;
       const cand = toCandidate(c, setId, score);
       if (!cand) continue;
       if (existingSlugs.has(cand.slug) || existingIds.has(cand.pokemonTcgId)) continue;

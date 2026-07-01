@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LeadMagnetCTA } from "@/components/lead-magnet-cta";
 
-const TITLE = "Pokémon Card Value Calculator: Price Any Card (2026) | Foil";
+const TITLE = "Pokémon Card Value Calculator: Price Any Card (2026)";
 const DESCRIPTION =
   "How to find what a Pokémon card is really worth: eBay sold averages vs TCGplayer market, condition adjustments, and graded comps.";
 const URL_PATH = "/pokemon-card-value-calculator";

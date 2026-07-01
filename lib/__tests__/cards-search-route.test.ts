@@ -200,12 +200,15 @@ test("getCardMetadata: ALSO retries on 4xx (catalog IDs are known-valid; 4xx == 
   // Session 40 verified upstream pokemontcg.io intermittently returns
   // 404 for cards that exist. Since our IDs come from CARD_CATALOG,
   // a 4xx response means upstream is flaky, not that the card is gone.
-  // getCardMetadata opts into retryOn4xx; the retry recovers.
+  // getCardMetadata opts into retryOn4xx; the retry recovers. Render-path
+  // budget (perf-and-data-foundation, 2026-07-01): 2 timeout-bounded
+  // attempts total (1 retry), ≤5s worst case — the page render must never
+  // ride the long backoff schedule.
   const { getCardMetadata } = await import("../cards/sdk.ts");
   let calls = 0;
   const flaky404 = (async () => {
     calls++;
-    if (calls < 3) return new Response("Not Found", { status: 404 });
+    if (calls < 2) return new Response("Not Found", { status: 404 });
     return new Response(
       JSON.stringify({
         data: {
@@ -220,9 +223,21 @@ test("getCardMetadata: ALSO retries on 4xx (catalog IDs are known-valid; 4xx == 
     );
   }) as unknown as typeof fetch;
   const out = await getCardMetadata({ id: "base1-12", fetchImpl: flaky404 });
-  assert.equal(calls, 3, "expected 2 retries on 404 before recovery");
+  assert.equal(calls, 2, "expected exactly 1 retry (the render-path 2-attempt budget)");
   assert.equal(out.name, "Ninetales");
   assert.equal(out.fallback, undefined);
+});
+
+test("getCardMetadata: render path is capped at 2 attempts — no long backoff on a page render", async () => {
+  const { getCardMetadata } = await import("../cards/sdk.ts");
+  let calls = 0;
+  const always404 = (async () => {
+    calls++;
+    return new Response("Not Found", { status: 404 });
+  }) as unknown as typeof fetch;
+  const out = await getCardMetadata({ id: "base1-12", fetchImpl: always404 });
+  assert.equal(calls, 2, "render path must stop after 2 attempts (Phase A budget)");
+  assert.equal(out.fallback, true, "soft-fail to minimal record");
 });
 
 // ---------------------------------------------------------------------------

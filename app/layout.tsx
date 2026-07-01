@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Fraunces, Fredoka } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { siteUrl } from "@/lib/seo/site-url";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -39,7 +40,9 @@ const fredoka = Fredoka({
 // app/opengraph-image.tsx + app/twitter-image.tsx (Next auto-discovers them),
 // so the static /og-image.png is retired and not referenced here.
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://foiltcg.com"),
+  // ONE canonical-origin constant across layout, card pages, and the sitemap
+  // (lib/seo/site-url.ts) — the fallbacks had drifted www vs non-www.
+  metadataBase: new URL(siteUrl()),
   title: {
     default: "Foil: the best price on any Pokémon card",
     template: "%s · Foil",

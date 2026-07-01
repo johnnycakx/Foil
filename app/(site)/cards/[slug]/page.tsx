@@ -5,11 +5,16 @@
 //
 // Compliance posture (R-008): the live eBay listing is fetched client-side from
 // /api/listing/[slug] (force-dynamic + `cache: "no-store"`), NOT in this
-// server render. Pokemon TCG SDK catalog metadata is read from a baked in-memory
-// snapshot (no network). So this page serves fast, evergreen, crawlable HTML and
-// the volatile affiliate listing hydrates per-visitor (SEO crawlability fix,
-// ADR-047 v2 amendment) — never cached, never in the crawled DOM.
+// server render. Pokemon TCG SDK catalog metadata is BAKED-FIRST as of the
+// perf-and-data-foundation goal (2026-07-01): getCardMetadata returns the
+// committed snapshot entry with zero network for any baked id (all catalog
+// entries after a full bake); the timeout-bounded live fetch (≤5s) runs only
+// for ids missing from the snapshot. So this page serves fast, evergreen,
+// crawlable HTML regardless of pokemontcg.io's health, and the volatile
+// affiliate listing hydrates per-visitor (SEO crawlability fix, ADR-047 v2
+// amendment) — never cached, never in the crawled DOM.
 
+import { cache } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -20,6 +25,8 @@ import { LongTailListingFallback } from "@/components/cards/long-tail-listing-fa
 import { MetadataOnlyListing } from "@/components/cards/metadata-only-listing";
 import { LiveListingSection } from "@/components/cards/live-listing-section";
 import { getCardMetadata, type CardMetadata } from "@/lib/cards/sdk";
+import { aggregateOfferFromTcgplayer } from "@/lib/cards/aggregate-offer";
+import { siteUrl } from "@/lib/seo/site-url";
 import { breadcrumbListSchema, schemaGraph, serializeJsonLd } from "@/lib/seo/schema-helpers";
 import { Breadcrumb, type BreadcrumbItem } from "@/components/breadcrumb";
 import { CardMetadataBlock } from "@/components/card-metadata-block";
@@ -47,41 +54,18 @@ export const runtime = "nodejs";
 // selection moves client-side and the server-side searchParams read is gone
 // (ADR-047 "What shipped" + RISKS R-013).
 
-function siteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.foiltcg.com";
-}
-
-// Build an AggregateOffer from the baked TCGplayer price ranges (ADR-046).
-// Long-tail pages have no live eBay Offer, but the baked TCGplayer low/high
-// (no network, R-008-safe — not eBay listing data) still gives a price signal
-// for Product rich results. Returns null when no usable price range exists.
-function aggregateOfferFromTcgplayer(
-  prices: Record<string, { low: number | null; high: number | null }> | undefined,
-  url: string,
-): Record<string, unknown> | null {
-  const lows: number[] = [];
-  const highs: number[] = [];
-  for (const p of Object.values(prices ?? {})) {
-    if (typeof p.low === "number" && p.low > 0) lows.push(p.low);
-    if (typeof p.high === "number" && p.high > 0) highs.push(p.high);
-  }
-  if (lows.length === 0 && highs.length === 0) return null;
-  const low = lows.length ? Math.min(...lows) : Math.min(...highs);
-  const high = highs.length ? Math.max(...highs) : Math.max(...lows);
-  return {
-    "@type": "AggregateOffer",
-    priceCurrency: "USD",
-    lowPrice: low.toFixed(2),
-    highPrice: high.toFixed(2),
-    offerCount: lows.length + highs.length,
-    url,
-  };
-}
+// Both generateMetadata and the page body need the card record. For baked ids
+// the call is a synchronous in-memory map hit, but for a snapshot-missing id
+// it's a live (timeout-bounded) fetch — React cache() dedupes the pair to ONE
+// lookup per request on both paths.
+const getCard = cache(async (id: string) => getCardMetadata({ id }));
 
 function titleFor(card: CardMetadata): string {
   // Lead with the card name + set (the actual query), then the two highest-volume
-  // per-card buyer terms (price, deals). No em dash (brand voice).
-  return `${card.name} (${card.setName}) price & deals | Foil`;
+  // per-card buyer terms (price, deals). No em dash (brand voice). NO brand
+  // suffix here — the root layout's title template appends "· Foil" (the old
+  // "| Foil" suffix rendered a double brand: "… | Foil · Foil").
+  return `${card.name} (${card.setName}) price & deals`;
 }
 
 function descriptionFor(card: CardMetadata): string {
@@ -96,7 +80,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const entry = getCatalogEntry(slug);
   if (!entry) return {};
-  const card = await getCardMetadata({ id: entry.pokemonTcgId });
+  const card = await getCard(entry.pokemonTcgId);
   return {
     title: titleFor(card),
     description: descriptionFor(card),
@@ -105,9 +89,12 @@ export async function generateMetadata({
     // no-pricing render (never a 500) if POKETRACE/eBay keys are missing or
     // invalid, so a lapsed key never costs us the index entry.
     alternates: { canonical: `/cards/${slug}` },
+    // og:title / twitter:title deliberately OMITTED — they inherit the resolved
+    // page title, so <title>, og:title, and twitter:title can never drift
+    // apart again (the old hand-written twitter:title used a different string
+    // AND an em dash, both against the metadata contract).
     openGraph: {
       type: "website",
-      title: titleFor(card),
       description: `Live ${card.name} listings sorted by price. Set a target and we'll email you when one drops.`,
       siteName: "Foil",
       url: `/cards/${slug}`,
@@ -115,7 +102,6 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${card.name} (${card.setName}) — Best deals on eBay`,
       description: `Live ${card.name} listings sorted by price.`,
       images: card.image ? [card.image] : ["/opengraph-image"],
     },
@@ -134,7 +120,7 @@ export default async function CardPage({
   const entry = getCatalogEntry(slug);
   if (!entry) notFound();
 
-  const card = await getCardMetadata({ id: entry.pokemonTcgId });
+  const card = await getCard(entry.pokemonTcgId);
   const tier = cardTier(slug);
 
   // The curated-tier LIVE listing + buy-signal are NO LONGER fetched in this
@@ -171,7 +157,7 @@ export default async function CardPage({
   // The visual <Breadcrumb> consumes the same `items` array fed into
   // `breadcrumbListSchema`, so a drift between the two surfaces is
   // visible to a human reader, not just to Googlebot.
-  const siteRoot = siteUrl().replace(/\/$/, "");
+  const siteRoot = siteUrl(); // trailing slash already stripped by the shared helper
   const breadcrumbItems: BreadcrumbItem[] = [
     { label: "Home", href: "/" },
     { label: "Cards", href: "/cards" },

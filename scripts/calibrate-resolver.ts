@@ -86,7 +86,7 @@ async function main() {
       }
       if (c.verdict === "rejected") {
         const failing = c.gates.find((g) => !g.pass && g.hard);
-        rejects.push({ slug: r.slug, era: r.era, title: c.title ?? "", gate: failing?.gate ?? "?", reason: failing?.reason ?? c.reason });
+        rejects.push({ slug: r.slug, era: r.era, title: c.itemId, gate: failing?.gate ?? "?", reason: failing?.reason ?? c.reason });
       }
     }
   }

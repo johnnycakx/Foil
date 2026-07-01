@@ -21,7 +21,7 @@ import { CARD_CATALOG } from "@/lib/cards/catalog";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const TITLE = "Pokémon card deals & good buys this week | Foil";
+const TITLE = "Pokémon card deals & good buys this week";
 const DESCRIPTION =
   "Pokémon cards trading below their 30-day sold average, computed from recent market data and ranked weekly. Plus live below-sold listings. Free to use.";
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LeadMagnetCTA } from "@/components/lead-magnet-cta";
 
-const TITLE = "Pokémon Card Condition Guide: NM, LP, MP, HP & Graded | Foil";
+const TITLE = "Pokémon Card Condition Guide: NM, LP, MP, HP & Graded";
 const DESCRIPTION =
   "How TCGplayer condition tiers work, the defects that drop a card's value, and when a card is a grading candidate vs a raw sell.";
 const URL_PATH = "/pokemon-card-condition-guide";

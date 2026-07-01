@@ -31,7 +31,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { "set-id": setId } = await params;
   if (!setIdsInCatalog().includes(setId)) return {};
   const set = await getSetMetadata({ id: setId });
-  const title = `${set.name} card prices & deals | Foil`;
+  // No brand suffix — the root layout's title template appends "· Foil"
+  // (the old "| Foil" suffix double-branded the tab title). og:title inherits
+  // the resolved title.
+  const title = `${set.name} card prices & deals`;
   const description = `Browse every ${set.name} card Foil tracks: the best live eBay deal on each, plus watchlist alerts when a price drops to your target.`;
   return {
     title,
@@ -39,7 +42,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     alternates: { canonical: `/cards/sets/${setId}` },
     openGraph: {
       type: "website",
-      title,
       description,
       siteName: "Foil",
       url: `/cards/sets/${setId}`,

@@ -128,7 +128,7 @@ if (detected.count <= 1) {
   console.log(`[result] overallConfidence=${payload.overallConfidence} unidentified=${payload.unidentifiedCount}`);
   for (const c of payload.cards) {
     console.log(
-      `  - ${c.name} | ${c.set} #${c.cardNumber} | ${c.rarity} | ${c.conditionEstimate} | ${c.confidence}%`,
+      `  - ${c.name} | ${c.setCode} #${c.collectorNumber} | ${c.rarity} | ${c.conditionEstimate} | ${c.confidence}%`,
     );
   }
 } else {
@@ -155,10 +155,10 @@ if (detected.count <= 1) {
     const card = o.payload.cards[0];
     if (card) {
       identified++;
-      confSum += card.confidence;
+      confSum += card.confidence ?? 0;
       confN++;
       console.log(
-        `  [${i + 1}] ${o.ms}ms · ${card.name} | ${card.set} #${card.cardNumber} | ${card.rarity} | ${card.confidence}%`,
+        `  [${i + 1}] ${o.ms}ms · ${card.name} | ${card.setCode} #${card.collectorNumber} | ${card.rarity} | ${card.confidence}%`,
       );
     } else {
       unidentified++;

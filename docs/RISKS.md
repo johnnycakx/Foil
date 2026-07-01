@@ -323,6 +323,37 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 ---
 
+## R-060 — Server renders that block on third-party API health (the class, not one instance)
+
+**Severity:** High
+**Status:** `mitigating` (2026-07-01, [ADR-089](DECISIONS.md#adr-089--baked-first-card-rendering--the-one-parser-bake-fix-perf-and-data-foundation)). The worst instance — `/cards/[slug]` live-first metadata with unbounded per-attempt hangs (32–52s TTFB during a pokemontcg.io flap, on the pages the Jul-1 GSC resubmit invited Googlebot into) — is closed: baked-first rendering + a ≤5s timeout-bounded live fallback. The CLASS remains open wherever a render awaits an external API without both (a) a per-attempt abort and (b) a local-data-first path.
+
+**The risk.** force-dynamic pages re-run their data fetches on EVERY request, including every crawl. Any await on a third-party API without a timeout inherits that API's worst behavior — undici's default gives a hung connection ~300s. Googlebot measures what it gets; a flap-window crawl reads as a site-wide performance collapse and throttles crawl budget exactly when we're asking for indexing.
+
+**Trigger to escalate.** Any new render-path fetch to an external API (PokeTrace, eBay, pokemontcg.io, anything) added without an AbortController budget — or a TTFB measurement > 5s on any indexable page.
+
+**Mitigation playbook.** Baked/committed data first; timeout-bounded fetch only for what local data can't answer; client-side hydration for volatile blocks (the ADR-047 v2 pattern).
+
+## R-061 — Silently price-empty baked snapshot shipped for ~5 weeks (incident record)
+
+**Severity:** Medium (was invisible-High: structured data emitted nothing on 1,840 pages)
+**Status:** `resolved` (2026-07-01, [ADR-089](DECISIONS.md#adr-089--baked-first-card-rendering--the-one-parser-bake-fix-perf-and-data-foundation)). Root cause: `scripts/bake-card-metadata.ts` carried a stale 8-field duplicate of `parseCard` that dropped `tcgplayerPrices` + all reference-data fields; `tsconfig.json` excluded `scripts/`, so the shape mismatch never surfaced. Every snapshot ever committed had 0/1,840 priced cards; the per-card AggregateOffer JSON-LD was null everywhere; no test looked at the DATA, only at code structure.
+
+**What changed.** One parser (the script imports the SDK's `parseCard`; a test forbids a local duplicate); `scripts/` typechecked in the root tsconfig (8 latent errors fixed); full re-bake through the fixed parser; data-level invariant tests on the COMMITTED snapshot (variant-count floor 1,752, base1-4 priced, ≥1,500 cards priced) so a regressed bake fails `npm test` instead of shipping.
+
+**The durable lesson (kept for posterity).** A committed data artifact needs data-level tests, not just tests on the code that produces it — and any duplicated parser WILL drift. Same family as R-015 (writer ≠ reader path): the artifact everyone assumed was full was empty, and a 200-OK page rendered confidently from nothing.
+
+## R-062 — PokeTrace key renewal (~Jul 15) is a single point of failure for sold-history + movers
+
+**Severity:** Medium
+**Status:** `monitoring`
+
+**The risk.** The PokeTrace Pro key (restored 2026-06-28) is valid ~until **July 15, 2026**. If it lapses: the movers cron (`market_movers`, the /deals "good buys" lead signal + newsletter digest source), `SoldHistoryPanel` refreshes, and the deals-refresh `buy_signals` path all soft-fail to empty — no 500s (the soft-fail chain is tested), but the insight-led surfaces quietly go stale, and the newsletter's data spine with them. The baked per-card `variants` keep rendering (committed data), so the failure is degradation, not breakage — which is exactly why it could go unnoticed.
+
+**Trigger to escalate.** Jul 10 (5 days before renewal): confirm the renewal decision with John. OR: any `market_movers` daily run producing 0 rows while the key is supposedly valid.
+
+**Mitigation playbook.** (1) Renew (money decision — John's). (2) If lapsing intentionally: announce the degradation in the newsletter copy pipeline so gates don't cite stale movers, and let the baked variants + SDK prices carry the pages. (3) Longer term: the `market_snapshots` time-series accumulates history that softens a gap.
+
 ## How to log a new risk
 
 1. Next available ID (`R-NNN`, monotonically increasing).

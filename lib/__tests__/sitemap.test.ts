@@ -28,7 +28,7 @@ test("both tracks' fixed surfaces are in the sitemap (dual-track, ADR-064)", () 
   // layer; this just pins the fixed landing set.
   for (const path of [
     // deal-finder primary
-    "/", "/blog", "/deals", "/start", "/newsletter", "/pricing-methodology",
+    "/", "/blog", "/cards", "/deals", "/start", "/newsletter", "/pricing-methodology",
     "/japanese-pokemon-cards-value", "/pokemon-card-value-calculator",
     "/pokemon-card-condition-guide",
     // vending lead-gen
@@ -93,17 +93,46 @@ test("sitemap covers the programmatic long tail (URL count well over 1,000)", ()
 test("sitemap builder emits ABSOLUTE urls (base-prefixed) for the card long tail", () => {
   // A relative or wrong-host <loc> breaks crawling. The builder prefixes every
   // url with the resolved base (NEXT_PUBLIC_SITE_URL → https://foiltcg.com in
-  // prod), incl. the programmatic /cards/[slug] set. Source-assert it (the
-  // builder pulls Next + MDX + the catalog, so it's pinned structurally like the
-  // page tests; the live sitemap.xml was separately verified all-https at audit).
+  // prod, via the shared lib/seo/site-url.ts constant), incl. the programmatic
+  // /cards/[slug] set. Source-assert it (the builder pulls Next + MDX + the
+  // catalog, so it's pinned structurally like the page tests; the live
+  // sitemap.xml was separately verified all-https at audit).
   const src = readFileSync(join(ROOT, "app/sitemap.ts"), "utf8");
-  // base is the resolved site URL, stripped of a trailing slash.
-  assert.match(src, /process\.env\.NEXT_PUBLIC_SITE_URL/);
+  // base is the SHARED resolved site URL (lib/seo/site-url.ts — one canonical
+  // origin across layout, card pages, and the sitemap).
+  assert.match(src, /from "@\/lib\/seo\/site-url"/);
   assert.match(src, /const base = siteUrl\(\)/);
   // every section builds `${base}...` urls — no bare relative paths.
   assert.match(src, /url: `\$\{base\}\$\{entry\.path\}`/, "landings are base-prefixed");
   assert.match(src, /url: `\$\{base\}\/cards\/\$\{entry\.slug\}`/, "card long tail is base-prefixed");
   assert.match(src, /CARD_CATALOG\.map/, "the full catalog is layered into the sitemap");
+});
+
+test("shared site-url constant: non-www fallback, env override, trailing slash stripped", async () => {
+  const { siteUrl, DEFAULT_SITE_URL } = await import("../seo/site-url.ts");
+  assert.equal(DEFAULT_SITE_URL, "https://foiltcg.com", "canonical fallback must be the non-www apex");
+  const prev = process.env.NEXT_PUBLIC_SITE_URL;
+  try {
+    delete process.env.NEXT_PUBLIC_SITE_URL;
+    assert.equal(siteUrl(), "https://foiltcg.com");
+    process.env.NEXT_PUBLIC_SITE_URL = "https://example.com/";
+    assert.equal(siteUrl(), "https://example.com", "trailing slash stripped");
+  } finally {
+    if (prev === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
+    else process.env.NEXT_PUBLIC_SITE_URL = prev;
+  }
+});
+
+test("sitemap layers the /cards/sets/[set-id] hub pages and uses REAL lastmod dates", () => {
+  // The set hubs are the crawl path INTO the card long tail — they were
+  // omitted from the sitemap entirely until 2026-07-01. And lastModified must
+  // come from real data (snapshot bakedAt / post dates), never a fabricated
+  // `new Date()` per request ("everything changed today" on every crawl).
+  const src = readFileSync(join(ROOT, "app/sitemap.ts"), "utf8");
+  assert.match(src, /setIdsInCatalog\(\)\.map/, "set hub pages are layered into the sitemap");
+  assert.match(src, /url: `\$\{base\}\/cards\/sets\/\$\{id\}`/, "set hub URLs are base-prefixed");
+  assert.match(src, /getBakedSnapshotTimestamp/, "card/set lastmod comes from the snapshot bakedAt");
+  assert.doesNotMatch(src, /const now = new Date\(\)/, "no fabricated uniform lastModified");
 });
 
 test("landing paths are unique and well-formed", () => {

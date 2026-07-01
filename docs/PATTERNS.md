@@ -6,6 +6,18 @@ Append new entries at the top. When an entry is promoted, leave it here with a `
 
 ---
 
+## I-010 — Committed data artifacts need DATA-level tests; duplicated parsers WILL drift
+
+**Spotted:** perf-and-data-foundation goal, 2026-07-01 ([ADR-089](DECISIONS.md#adr-089--baked-first-card-rendering--the-one-parser-bake-fix-perf-and-data-foundation), incident record [R-061](RISKS.md)).
+
+**Shape.** A repo-committed data artifact (`lib/cards/baked-metadata.json`) was produced by a script carrying a stale duplicate of the SDK's parser. The duplicate captured 8 of ~17 fields, so every snapshot ever committed had `tcgplayerPrices` empty on all 1,840 cards — the AggregateOffer JSON-LD silently emitted nothing on every card page for ~5 weeks. THREE blindness layers stacked: (1) the producer script lived outside the typecheck (`tsconfig exclude: scripts/`), so the shape mismatch never errored; (2) every test asserted on CODE (the page uses the builder; the SDK parses fields) — none opened the committed JSON and asserted on the DATA; (3) the consumer soft-failed by design (null offer, skip render), so the absence looked intentional. Sibling of I-008 (writer ≠ reader): here the writer and reader agreed on the path but disagreed on the SHAPE, and nothing arbitrated.
+
+**The general fix.** For any committed artifact a page/pipeline consumes: (a) **one parser** — the producer script imports the consumer's parser, never re-inlines it (pin structurally: a test that forbids the local duplicate); (b) **producer code inside the typecheck** — an excluded `scripts/` dir is a drift incubator; (c) **data-level invariant tests on the committed artifact itself** (floors on counts/coverage, a known-good record's load-bearing fields non-empty) so a regressed regeneration fails the suite before commit; (d) when regenerating, guard merge-overlays against clobbering fields only the artifact carries (the variant-wipe class — `overlayFreshMetadata`).
+
+**Promotion trigger.** Second committed artifact that adopts the one-parser + data-invariant-test recipe (candidates: `catalog-top5-per-set.generated.ts`, the OG card-art manifest) → promote to a dedicated ADR.
+
+---
+
 ## I-009 — External-source context needs attribution discipline baked in, not bolted on
 
 **Spotted:** Goal C.1, feeding curated-creator YouTube commentary into the content engine.
