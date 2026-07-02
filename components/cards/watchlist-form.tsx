@@ -59,9 +59,9 @@ export function WatchlistForm({
 
   if (state.status === "success") {
     return (
-      <div className="mt-4 rounded-xl border border-foil-gold/40 bg-foil-gold/10 p-4 text-sm text-foil-navy">
-        <p className="font-medium text-foil-navy">You&apos;re on the list.</p>
-        <p className="mt-1 text-foil-slate">
+      <div className="mt-4 rounded-xl border border-foil-accent/40 bg-foil-accent/10 p-4 text-sm text-foil-cream">
+        <p className="font-medium text-foil-cream">You&apos;re on the list.</p>
+        <p className="mt-1 text-foil-cream/70">
           We&apos;ll email you the moment {cardName}
           {targeting ? ` (${targeting})` : ""} hits your target price.
         </p>
@@ -69,14 +69,14 @@ export function WatchlistForm({
           <p className="mt-2">
             <a
               href={state.vaultUrl}
-              className="font-medium text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
+              className="font-medium text-foil-cream underline decoration-foil-cream/25 underline-offset-4 transition hover:decoration-foil-accent"
             >
               Open your vault →
             </a>{" "}
-            <span className="text-foil-slate">— every card you track, on one private page.</span>
+            <span className="text-foil-cream/70">— every card you track, on one private page.</span>
           </p>
         ) : state.vaultLinkEmailed ? (
-          <p className="mt-2 text-foil-slate">
+          <p className="mt-2 text-foil-cream/70">
             Your private vault link is in your inbox — it&apos;s the one page with everything you track.
           </p>
         ) : null}
@@ -97,7 +97,7 @@ export function WatchlistForm({
           name="email"
           required
           placeholder="you@example.com"
-          className="flex-1 rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-sm text-foil-navy placeholder-foil-slate/60 outline-none focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30"
+          className="flex-1 rounded-xl border border-foil-cream/15 bg-foil-night px-4 py-3 text-sm text-foil-cream placeholder-foil-cream/40 outline-none focus:border-foil-accent focus:ring-2 focus:ring-foil-accent/30"
         />
         <input
           type="number"
@@ -106,29 +106,29 @@ export function WatchlistForm({
           min={1}
           step={1}
           placeholder="Target ($)"
-          className="w-full rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-sm text-foil-navy placeholder-foil-slate/60 outline-none focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30 sm:w-32"
+          className="w-full rounded-xl border border-foil-cream/15 bg-foil-night px-4 py-3 text-sm text-foil-cream placeholder-foil-cream/40 outline-none focus:border-foil-accent focus:ring-2 focus:ring-foil-accent/30 sm:w-32"
         />
         <button
           type="submit"
           disabled={pending}
-          className="rounded-xl bg-foil-navy px-6 py-3 text-sm font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40 disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:bg-foil-navy"
+          className="rounded-xl bg-foil-cream px-6 py-3 text-sm font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-accent/60 disabled:opacity-60 disabled:hover:translate-y-0"
         >
           {pending ? "Saving…" : "Notify me"}
         </button>
       </div>
 
       {targeting && (
-        <p className="text-[11px] uppercase tracking-wider text-foil-slate">
-          Tracking: <span className="font-medium text-foil-navy">{targeting}</span>
+        <p className="text-[11px] uppercase tracking-wider text-foil-cream/60">
+          Tracking: <span className="font-medium text-foil-cream">{targeting}</span>
         </p>
       )}
 
-      <label className="flex items-start gap-3 text-xs text-foil-slate">
+      <label className="flex items-start gap-3 text-xs text-foil-cream/60">
         <input
           type="checkbox"
           name="opt_in_newsletter"
           defaultChecked
-          className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-foil-navy/20 bg-foil-cream text-foil-gold focus:ring-foil-gold focus:ring-offset-0"
+          className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-foil-cream/20 bg-foil-night text-foil-accent focus:ring-foil-accent focus:ring-offset-0"
         />
         <span>Also send me Foil&apos;s weekly deals newsletter (~1 email/week, unsubscribe anytime)</span>
       </label>

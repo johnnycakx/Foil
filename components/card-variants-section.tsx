@@ -58,21 +58,21 @@ export function CardVariantsSection({ card, currentBestPriceUsd, currentBestVari
 
   return (
     <section
-      className="mt-10 rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-8"
+      className="mt-10 rounded-2xl border border-foil-cream/10 bg-foil-night-2 p-6 sm:p-8"
       aria-labelledby="card-variants-heading"
     >
       <div className="flex items-baseline justify-between gap-3">
         <h2
           id="card-variants-heading"
-          className="text-sm font-semibold uppercase tracking-wider text-foil-gold"
+          className="text-sm font-semibold uppercase tracking-wider text-foil-accent"
         >
           Variants &amp; market range
         </h2>
-        <span className="font-mono text-[10px] uppercase tracking-wider text-foil-slate">
+        <span className="font-mono text-[10px] uppercase tracking-wider text-foil-cream/60">
           Source: TCGplayer
         </span>
       </div>
-      <p className="mt-2 text-sm text-foil-slate">
+      <p className="mt-2 text-sm text-foil-cream/70">
         The TCGplayer low / mid / high range per printing.
         {currentBestVariantKey && currentBestPriceUsd != null
           ? " The dark marker shows the verified live eBay listing on its matching printing."
@@ -85,18 +85,18 @@ export function CardVariantsSection({ card, currentBestPriceUsd, currentBestVari
           return (
             <li
               key={variant}
-              className="rounded-xl border border-foil-navy/10 bg-foil-cream p-4 shadow-sm shadow-foil-navy/5"
+              className="rounded-xl border border-foil-cream/10 bg-foil-night p-4"
             >
               <div className="flex items-baseline justify-between gap-3">
-                <p className="font-semibold text-foil-navy">{humanize(variant)}</p>
+                <p className="font-semibold text-foil-cream">{humanize(variant)}</p>
                 <div className="flex items-baseline gap-2">
                   {isHighest && highestVariant && (
-                    <span className="rounded-full border border-foil-gold/40 bg-foil-gold/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-foil-navy">
+                    <span className="rounded-full border border-foil-accent/40 bg-foil-accent/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-foil-accent">
                       Highest value
                     </span>
                   )}
                   {price.market !== null && Number.isFinite(price.market) && (
-                    <span className="font-mono text-sm tabular-nums text-foil-navy">
+                    <span className="font-mono text-sm tabular-nums text-foil-cream">
                       market{" "}
                       <span className="ml-1 font-semibold">
                         {new Intl.NumberFormat("en-US", {

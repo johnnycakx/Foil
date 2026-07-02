@@ -6,8 +6,8 @@
 // load. Updates every 10 seconds while the page is open.
 //
 // Aria-live="polite" so a screen reader announces the freshness when it
-// changes, without being interruptive. Foil-gold pulse dot reuses the
-// "live" affordance used elsewhere (header wordmark, best-listing block).
+// changes, without being interruptive. Foil-accent pulse dot reuses the
+// "live" affordance used elsewhere (homepage hero, best-listing block).
 //
 // Session 41 / ADR-030.
 
@@ -46,15 +46,15 @@ export function LiveTimestamp({ label = "Live" }: Props) {
   return (
     <p
       aria-live="polite"
-      className="inline-flex items-center gap-2 rounded-full border border-foil-gold/40 bg-foil-cream px-3 py-1 text-xs font-medium text-foil-navy shadow-sm shadow-foil-navy/5"
+      className="inline-flex items-center gap-2 rounded-full border border-foil-accent/40 bg-foil-night-2 px-3 py-1 text-xs font-medium text-foil-cream"
     >
       <span className="relative inline-flex h-1.5 w-1.5" aria-hidden>
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foil-gold opacity-60" />
-        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-gold" />
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foil-accent opacity-60" />
+        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-accent" />
       </span>
       <span>{label}</span>
-      <span className="text-foil-slate">·</span>
-      <span className="font-mono tabular-nums text-foil-slate">{formatRelative(secondsAgo)}</span>
+      <span className="text-foil-cream/60">·</span>
+      <span className="font-mono tabular-nums text-foil-cream/60">{formatRelative(secondsAgo)}</span>
     </p>
   );
 }

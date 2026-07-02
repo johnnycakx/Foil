@@ -302,21 +302,24 @@ test("/cards browse: catalog label uses gold accent (ADR-029)", () => {
   assert.match(src, /text-foil-gold/);
 });
 
-test("/cards/[slug]: best-listing block uses gold border + cream surface (ADR-029)", () => {
-  // The best-listing block moved into the client-hydrated section (ADR-047 v2),
-  // but the gold-border + cream-surface premium treatment is preserved there.
+test("/cards/[slug]: best-listing block uses accent border + night panel (design-loop-round2 §3 night register)", () => {
+  // The best-listing block moved into the client-hydrated section (ADR-047 v2).
+  // Assertions repinned for the night register: accent border + night-2 panel;
+  // bg-foil-cream survives only as the light Buy CTA button on dark.
   const src = readFile("components/cards/live-listing-section.tsx");
-  assert.match(src, /border-foil-gold\/40/);
-  assert.match(src, /bg-foil-cream/);
-  // The page still uses cream surfaces on its remaining sections.
-  assert.match(readFile("app/(site)/cards/[slug]/page.tsx"), /bg-foil-cream/);
+  assert.match(src, /border-foil-accent\/40/); // design-loop-round2 §3 (night register)
+  assert.match(src, /bg-foil-night-2/); // design-loop-round2 §3 (night register)
+  // The page's top-level element opts into the night tone.
+  assert.match(readFile("app/(site)/cards/[slug]/page.tsx"), /data-tone="night"/); // design-loop-round2 §3 (night register)
+  assert.match(readFile("app/(site)/cards/[slug]/page.tsx"), /bg-foil-night/); // design-loop-round2 §3 (night register)
 });
 
-test("/cards/[slug]: Buy CTA uses navy bg with gold hover-ring (ADR-029)", () => {
-  // The Buy CTA moved into the client live-listing section (ADR-047 v2); the
-  // navy-default + gold-hover-ring niche signal is preserved.
+test("/cards/[slug]: Buy CTA is the light cream button with accent hover-ring (design-loop-round2 §3 night register)", () => {
+  // The Buy CTA moved into the client live-listing section (ADR-047 v2); on the
+  // night register the primary button is cream-on-night (homepage hero pattern)
+  // with the accent hover-ring replacing the gold one.
   const src = readFile("components/cards/live-listing-section.tsx");
-  assert.match(src, /bg-foil-navy[^"']*hover:[^"']*ring-foil-gold/);
+  assert.match(src, /bg-foil-cream[^"']*hover:[^"']*ring-foil-accent/); // design-loop-round2 §3 (night register)
 });
 
 // ---------------------------------------------------------------------------

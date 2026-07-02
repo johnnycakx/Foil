@@ -46,18 +46,18 @@ export function PriceRangeBar({ price, currentPriceUsd, updatedAt }: Props) {
 
   return (
     <div className="mt-3">
-      <div className="relative h-2 rounded-full bg-foil-navy/10">
-        {/* The actual track gradient — gold/cream so the bar reads as
+      <div className="relative h-2 rounded-full bg-foil-cream/10">
+        {/* The actual track gradient — accent-on-night so the bar reads as
             "value spectrum" rather than "progress bar." */}
         <div
           aria-hidden
-          className="absolute inset-0 rounded-full bg-gradient-to-r from-foil-gold/30 via-foil-gold/50 to-foil-gold/70"
+          className="absolute inset-0 rounded-full bg-gradient-to-r from-foil-accent/30 via-foil-accent/50 to-foil-accent/70"
         />
         {/* Mid point dash, if any. */}
         {midPercent !== null && (
           <div
             aria-hidden
-            className="absolute top-1/2 h-3 w-px -translate-x-1/2 -translate-y-1/2 bg-foil-navy/40"
+            className="absolute top-1/2 h-3 w-px -translate-x-1/2 -translate-y-1/2 bg-foil-cream/40"
             style={{ left: `${midPercent}%` }}
           />
         )}
@@ -65,30 +65,30 @@ export function PriceRangeBar({ price, currentPriceUsd, updatedAt }: Props) {
         {markerPercent !== null && (
           <div
             aria-hidden
-            className="absolute top-1/2 h-4 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-foil-navy"
+            className="absolute top-1/2 h-4 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-foil-cream"
             style={{ left: `${markerPercent}%` }}
           />
         )}
       </div>
 
-      <div className="mt-2 flex items-baseline justify-between font-mono text-[11px] uppercase tracking-wider text-foil-slate">
+      <div className="mt-2 flex items-baseline justify-between font-mono text-[11px] uppercase tracking-wider text-foil-cream/60">
         <span>
-          Low <span className="ml-1 tabular-nums text-foil-navy">{formatPrice(price.low)}</span>
+          Low <span className="ml-1 tabular-nums text-foil-cream">{formatPrice(price.low)}</span>
         </span>
         {price.mid !== null && (
           <span>
-            Mid <span className="ml-1 tabular-nums text-foil-navy">{formatPrice(price.mid)}</span>
+            Mid <span className="ml-1 tabular-nums text-foil-cream">{formatPrice(price.mid)}</span>
           </span>
         )}
         <span>
-          High <span className="ml-1 tabular-nums text-foil-navy">{formatPrice(price.high)}</span>
+          High <span className="ml-1 tabular-nums text-foil-cream">{formatPrice(price.high)}</span>
         </span>
       </div>
 
       {currentPriceUsd !== undefined && currentPriceUsd !== null && Number.isFinite(currentPriceUsd) && (
-        <p className="mt-2 text-xs text-foil-slate">
+        <p className="mt-2 text-xs text-foil-cream/60">
           Current eBay listing:{" "}
-          <span className="font-semibold text-foil-navy">{formatPrice(currentPriceUsd)}</span>
+          <span className="font-semibold text-foil-cream">{formatPrice(currentPriceUsd)}</span>
           {price.high > price.low ? (
             <>
               {" "}
@@ -107,7 +107,7 @@ export function PriceRangeBar({ price, currentPriceUsd, updatedAt }: Props) {
       )}
 
       {updatedAt && (
-        <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-foil-slate">
+        <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-foil-cream/60">
           Range refreshed {updatedAt}
         </p>
       )}

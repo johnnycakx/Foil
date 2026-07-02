@@ -43,8 +43,8 @@ test("ConditionPicker: radiogroup a11y + default selection", () => {
 
 test("ConditionPicker: palette discipline — foil tokens, no raw hex", () => {
   const src = read("components/cards/condition-picker.tsx");
-  assert.match(src, /text-foil-navy/);
-  assert.match(src, /foil-gold/);
+  assert.match(src, /text-foil-cream/); // design-loop-round2 §3 (night register)
+  assert.match(src, /foil-accent/); // design-loop-round2 §3 (night register)
   assert.doesNotMatch(src, /#[0-9a-fA-F]{6}/, "no raw hex — DESIGN.md tokens only");
 });
 

@@ -108,10 +108,10 @@ export function SoldHistoryChart({ series }: { series: PriceHistoryRow[] | null 
             onClick={() => enabled && selectRange(r.key)}
             className={`rounded-full border px-2.5 py-1 text-[11px] font-medium tabular-nums transition ${
               isActive
-                ? "border-foil-gold/60 bg-foil-gold/10 text-foil-navy"
+                ? "border-foil-accent/60 bg-foil-accent/10 text-foil-cream"
                 : enabled
-                  ? "border-foil-navy/15 bg-foil-cream text-foil-slate hover:border-foil-gold/40 hover:text-foil-navy"
-                  : "cursor-not-allowed border-foil-navy/10 bg-foil-cream text-foil-slate/40"
+                  ? "border-foil-cream/15 bg-foil-night text-foil-cream/60 hover:border-foil-accent/40 hover:text-foil-cream"
+                  : "cursor-not-allowed border-foil-cream/10 bg-foil-night text-foil-cream/30"
             }`}
           >
             {r.key}
@@ -127,10 +127,10 @@ export function SoldHistoryChart({ series }: { series: PriceHistoryRow[] | null 
     return (
       <div className="mt-6">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xs uppercase tracking-wide text-foil-slate">Sold price history</p>
+          <p className="text-xs uppercase tracking-wide text-foil-cream/60">Sold price history</p>
           {rangePills}
         </div>
-        <p className="mt-3 rounded-xl border border-foil-navy/10 bg-foil-cream/60 px-4 py-8 text-center text-sm text-foil-slate">
+        <p className="mt-3 rounded-xl border border-foil-cream/10 bg-foil-night/60 px-4 py-8 text-center text-sm text-foil-cream/60">
           Price history accumulating — not enough recorded sales to chart yet.
         </p>
       </div>
@@ -157,7 +157,7 @@ export function SoldHistoryChart({ series }: { series: PriceHistoryRow[] | null 
   const first = plotValue(pts[0]);
   const last = plotValue(pts[pts.length - 1]);
   const up = last >= first;
-  const endColor = up ? "var(--color-foil-gold)" : "var(--color-foil-coral)";
+  const endColor = up ? "var(--color-foil-accent)" : "var(--color-foil-coral)";
 
   const hiIdx = vals.reduce((m, v, i) => (v > vals[m] ? i : m), 0);
   const loIdx = vals.reduce((m, v, i) => (v < vals[m] ? i : m), 0);
@@ -180,7 +180,7 @@ export function SoldHistoryChart({ series }: { series: PriceHistoryRow[] | null 
   return (
     <div className="mt-6">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs uppercase tracking-wide text-foil-slate">Sold price history</p>
+        <p className="text-xs uppercase tracking-wide text-foil-cream/60">Sold price history</p>
         {rangePills}
       </div>
 
@@ -199,18 +199,18 @@ export function SoldHistoryChart({ series }: { series: PriceHistoryRow[] | null 
         >
           <defs>
             <linearGradient id="foil-chart-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--color-foil-navy)" stopOpacity="0.12" />
-              <stop offset="100%" stopColor="var(--color-foil-navy)" stopOpacity="0" />
+              <stop offset="0%" stopColor="var(--color-foil-cream)" stopOpacity="0.12" />
+              <stop offset="100%" stopColor="var(--color-foil-cream)" stopOpacity="0" />
             </linearGradient>
           </defs>
 
           <path d={areaPath} fill="url(#foil-chart-fill)" />
-          <path d={linePath} fill="none" stroke="var(--color-foil-navy)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+          <path d={linePath} fill="none" stroke="var(--color-foil-cream)" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
 
           {/* Right-side floating y labels: max + min. */}
-          <text x={VB_W - PAD.right + 6} y={y(max) + 3} className="fill-foil-slate" fontSize="9">{usd(max)}</text>
+          <text x={VB_W - PAD.right + 6} y={y(max) + 3} className="fill-foil-cream/60" fontSize="9">{usd(max)}</text>
           {loIdx !== hiIdx && (
-            <text x={VB_W - PAD.right + 6} y={y(min) + 3} className="fill-foil-slate" fontSize="9">{usd(min)}</text>
+            <text x={VB_W - PAD.right + 6} y={y(min) + 3} className="fill-foil-cream/60" fontSize="9">{usd(min)}</text>
           )}
 
           {/* Endpoint dot — gold if up over the range, coral if down. */}
@@ -218,25 +218,25 @@ export function SoldHistoryChart({ series }: { series: PriceHistoryRow[] | null 
 
           {/* Hover guide. */}
           {hover != null && (
-            <line x1={x(hover)} y1={PAD.top} x2={x(hover)} y2={PAD.top + innerH} stroke="var(--color-foil-gold)" strokeWidth={1} strokeDasharray="3 3" opacity={0.6} />
+            <line x1={x(hover)} y1={PAD.top} x2={x(hover)} y2={PAD.top + innerH} stroke="var(--color-foil-accent)" strokeWidth={1} strokeDasharray="3 3" opacity={0.6} />
           )}
 
           {/* X-axis date labels at start / middle / end. */}
-          <text x={x(0)} y={VB_H - 6} textAnchor="start" className="fill-foil-slate" fontSize="8.5">{shortDate(pts[0].date)}</text>
+          <text x={x(0)} y={VB_H - 6} textAnchor="start" className="fill-foil-cream/60" fontSize="8.5">{shortDate(pts[0].date)}</text>
           {pts.length > 2 && (
-            <text x={x(midIdx)} y={VB_H - 6} textAnchor="middle" className="fill-foil-slate" fontSize="8.5">{shortDate(pts[midIdx].date)}</text>
+            <text x={x(midIdx)} y={VB_H - 6} textAnchor="middle" className="fill-foil-cream/60" fontSize="8.5">{shortDate(pts[midIdx].date)}</text>
           )}
-          <text x={x(pts.length - 1)} y={VB_H - 6} textAnchor="end" className="fill-foil-slate" fontSize="8.5">{shortDate(pts[pts.length - 1].date)}</text>
+          <text x={x(pts.length - 1)} y={VB_H - 6} textAnchor="end" className="fill-foil-cream/60" fontSize="8.5">{shortDate(pts[pts.length - 1].date)}</text>
         </svg>
 
         {/* Hover tooltip (HTML overlay; Fraunces display for the price). */}
         {hp && (
           <div
-            className="pointer-events-none absolute top-0 rounded-lg border border-foil-navy/10 bg-foil-cream px-2.5 py-1.5 text-center shadow-sm shadow-foil-navy/10"
+            className="pointer-events-none absolute top-0 rounded-lg border border-foil-cream/15 bg-foil-night-2 px-2.5 py-1.5 text-center shadow-[0_8px_24px_-8px_rgba(4,9,18,0.6)]"
             style={{ left: `${(x(hover!) / VB_W) * 100}%`, transform: "translateX(-50%)" }}
           >
-            <p className="font-display text-sm font-semibold tabular-nums text-foil-navy">{usd(plotValue(hp))}</p>
-            <p className="text-[10px] text-foil-slate">
+            <p className="font-display text-sm font-semibold tabular-nums text-foil-cream">{usd(plotValue(hp))}</p>
+            <p className="text-[10px] text-foil-cream/60">
               {shortDate(hp.date)}
               {hp.saleCount != null ? ` · ${hp.saleCount} ${hp.saleCount === 1 ? "sale" : "sales"}` : ""}
             </p>
@@ -244,7 +244,7 @@ export function SoldHistoryChart({ series }: { series: PriceHistoryRow[] | null 
         )}
       </div>
 
-      <p className="mt-1 text-[10px] uppercase tracking-wider text-foil-slate/80">
+      <p className="mt-1 text-[10px] uppercase tracking-wider text-foil-cream/60">
         7-day median · PokeTrace daily sold history
       </p>
     </div>

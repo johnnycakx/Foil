@@ -196,7 +196,7 @@ export default async function CardPage({
   // unchanged Tranche B #5 work.
 
   return (
-    <main className="mx-auto w-full max-w-4xl flex-1 px-5 pt-10 pb-20 sm:px-8 sm:pt-16">
+    <main data-tone="night" className="mx-auto w-full max-w-4xl flex-1 bg-foil-night px-5 pt-10 pb-20 text-foil-cream sm:px-8 sm:pt-16">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
@@ -215,22 +215,22 @@ export default async function CardPage({
                 height={558}
                 priority
                 sizes="(min-width: 640px) 16rem, 14rem"
-                className="w-56 rounded-2xl border border-foil-navy/10 shadow-2xl shadow-foil-navy/20 sm:w-64"
+                className="w-56 rounded-2xl border border-foil-cream/10 shadow-[0_24px_60px_-28px_rgba(4,9,18,0.85)] sm:w-64"
               />
             ) : (
               <div
                 aria-hidden
-                className="w-56 rounded-2xl border border-foil-navy/10 bg-foil-cream sm:w-64"
+                className="w-56 rounded-2xl border border-foil-cream/10 bg-foil-night-2 sm:w-64"
                 style={{ aspectRatio: "245 / 342" }}
               />
             )}
           </div>
           <div>
-            <p className="font-mono text-xs uppercase tracking-wider text-foil-slate">
+            <p className="font-mono text-xs uppercase tracking-wider text-foil-cream/60">
               {card.setName} · #{card.number}
               {card.rarity ? <> · {card.rarity}</> : null}
             </p>
-            <h1 className="font-display mt-2 text-4xl font-bold leading-tight tracking-[-0.02em] text-foil-navy sm:text-5xl">
+            <h1 className="font-display mt-2 text-4xl font-bold leading-tight tracking-[-0.02em] text-foil-cream sm:text-5xl">
               {card.name}
             </h1>
             {/* Variant badges — types + subtypes — render adjacent to the
@@ -240,7 +240,7 @@ export default async function CardPage({
                 {card.types.map((t) => (
                   <span
                     key={`type-${t}`}
-                    className="inline-flex items-center rounded-full border border-foil-gold/40 bg-foil-gold/10 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-foil-navy"
+                    className="inline-flex items-center rounded-full border border-foil-accent/40 bg-foil-accent/10 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-foil-cream"
                   >
                     {t}
                   </span>
@@ -248,14 +248,14 @@ export default async function CardPage({
                 {card.subtypes.map((s) => (
                   <span
                     key={`subtype-${s}`}
-                    className="inline-flex items-center rounded-full border border-foil-navy/15 bg-foil-cream px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-foil-slate"
+                    className="inline-flex items-center rounded-full border border-foil-cream/15 bg-foil-night-2 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-foil-cream/60"
                   >
                     {s}
                   </span>
                 ))}
               </div>
             )}
-            <p className="mt-4 text-base text-foil-slate sm:text-lg">
+            <p className="mt-4 text-base text-foil-cream/70 sm:text-lg">
               Live listings on eBay, sorted to surface the best current deal.
               Set a target price and we&apos;ll email you when one drops.
             </p>
@@ -314,18 +314,18 @@ export default async function CardPage({
         {/* Trust line near the buy CTA (F3): the LLC + a plain founder credit,
             the authority a cold creator-driven visitor needs before entering an
             email or clicking an affiliate link (email-ask-cleanup, ADR-066). */}
-        <p className="mt-4 text-center text-[11px] text-foil-slate sm:text-left">
+        <p className="mt-4 text-center text-[11px] text-foil-cream/60 sm:text-left">
           Foil TCG, LLC · Built by John Craig
         </p>
 
         <section
-          className="mt-10 rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-8"
+          className="mt-10 rounded-2xl border border-foil-cream/10 bg-foil-night-2 p-6 sm:p-8"
           aria-labelledby="watchlist-heading"
         >
-          <h2 id="watchlist-heading" className="text-sm font-semibold uppercase tracking-wider text-foil-gold">
+          <h2 id="watchlist-heading" className="text-sm font-semibold uppercase tracking-wider text-foil-accent">
             Email me when it drops
           </h2>
-          <p className="mt-3 text-sm text-foil-slate">
+          <p className="mt-3 text-sm text-foil-cream/70">
             Set a target price; we&apos;ll email you the moment a {card.name}{" "}
             listing meets it. No account required.
           </p>
@@ -334,7 +334,7 @@ export default async function CardPage({
             cardName={card.name}
             availableVariantKeys={deriveAvailableVariants({ variants })}
           />
-          <p className="mt-3 text-[11px] uppercase tracking-wider text-foil-slate">
+          <p className="mt-3 text-[11px] uppercase tracking-wider text-foil-cream/60">
             One-shot email · No spam · Unsubscribe by clicking the link in any email we send.
           </p>
         </section>
@@ -343,8 +343,8 @@ export default async function CardPage({
             fields the SDK exposes; gracefully skips rows it doesn't have. */}
         <CardMetadataBlock card={card} />
 
-        <section className="mt-12 border-t border-foil-navy/10 pt-8 text-sm text-foil-slate">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-foil-gold">
+        <section className="mt-12 border-t border-foil-cream/10 pt-8 text-sm text-foil-cream/70">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-foil-accent">
             About this card
           </h2>
           <div className="mt-3 space-y-4 leading-relaxed">
@@ -370,14 +370,14 @@ export default async function CardPage({
         </section>
 
         {related.length > 0 && (
-          <aside className="mt-12 border-t border-foil-navy/10 pt-8" aria-labelledby="related-heading">
+          <aside className="mt-12 border-t border-foil-cream/10 pt-8" aria-labelledby="related-heading">
             <div className="flex items-baseline justify-between gap-4">
-              <h2 id="related-heading" className="text-sm font-semibold uppercase tracking-wider text-foil-gold">
+              <h2 id="related-heading" className="text-sm font-semibold uppercase tracking-wider text-foil-accent">
                 More from {card.setName}
               </h2>
               <Link
                 href={`/cards/sets/${card.setId}`}
-                className="text-xs font-medium text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold hover:text-foil-coral"
+                className="text-xs font-medium text-foil-cream underline decoration-foil-cream/25 underline-offset-4 transition hover:decoration-foil-accent hover:text-foil-accent"
               >
                 See all in {card.setName} →
               </Link>
@@ -390,12 +390,12 @@ export default async function CardPage({
                   <li key={r.slug}>
                     <Link
                       href={`/cards/${r.slug}`}
-                      className="block rounded-xl border border-foil-navy/10 bg-foil-cream p-4 shadow-sm shadow-foil-navy/5 transition hover:-translate-y-0.5 hover:border-foil-gold/40 hover:shadow-md hover:shadow-foil-navy/10"
+                      className="block rounded-xl border border-foil-cream/10 bg-foil-night-2 p-4 transition hover:-translate-y-0.5 hover:border-foil-accent/40"
                     >
-                      <p className="font-mono text-[11px] uppercase tracking-wider text-foil-slate">
+                      <p className="font-mono text-[11px] uppercase tracking-wider text-foil-cream/60">
                         #{number}
                       </p>
-                      <p className="mt-1 font-semibold text-foil-navy">{display}</p>
+                      <p className="mt-1 font-semibold text-foil-cream">{display}</p>
                     </Link>
                   </li>
                 );

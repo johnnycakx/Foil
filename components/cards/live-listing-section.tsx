@@ -96,25 +96,25 @@ export function LiveListingSection({
       </div>
 
       <section
-        className="mt-10 rounded-2xl border border-foil-gold/40 bg-foil-cream p-6 shadow-xl shadow-foil-navy/10 sm:p-8"
+        className="mt-10 rounded-2xl border border-foil-accent/40 bg-foil-night-2 p-6 shadow-[0_16px_48px_-24px_rgba(4,9,18,0.8)] sm:p-8"
         aria-labelledby="best-deal-heading"
         aria-busy={loading}
       >
         <div className="flex items-start justify-between gap-3">
           <h2
             id="best-deal-heading"
-            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-foil-gold"
+            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-foil-accent"
           >
             <span className="relative inline-flex h-1.5 w-1.5" aria-hidden>
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foil-gold opacity-60" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-gold" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foil-accent opacity-60" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-accent" />
             </span>
             Best current listing
           </h2>
           {cond ? (
             <span
               className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${
-                cond.tone === "grade" ? "bg-foil-gold/20 text-foil-navy" : "bg-foil-navy/10 text-foil-navy"
+                cond.tone === "grade" ? "bg-foil-accent/15 text-foil-accent" : "bg-foil-cream/10 text-foil-cream"
               }`}
             >
               {cond.label}
@@ -125,29 +125,29 @@ export function LiveListingSection({
         {loading ? (
           // Lightweight skeleton while the live listing loads (no layout shift).
           <div className="mt-4" aria-hidden>
-            <div className="h-11 w-40 animate-pulse rounded-lg bg-foil-navy/10" />
-            <div className="mt-3 h-4 w-3/4 animate-pulse rounded bg-foil-navy/10" />
-            <p className="mt-5 text-[11px] uppercase tracking-wider text-foil-slate">Checking live eBay listings…</p>
+            <div className="h-11 w-40 animate-pulse rounded-lg bg-foil-cream/10" />
+            <div className="mt-3 h-4 w-3/4 animate-pulse rounded bg-foil-cream/10" />
+            <p className="mt-5 text-[11px] uppercase tracking-wider text-foil-cream/60">Checking live eBay listings…</p>
           </div>
         ) : verified ? (
           <>
             <div className="mt-4 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div className="min-w-0">
-                <p className="font-display text-4xl font-bold tabular-nums text-foil-navy sm:text-5xl">
+                <p className="font-display text-4xl font-bold tabular-nums text-foil-cream sm:text-5xl">
                   {formatPrice(verified.price, verified.currency)}
                 </p>
-                <p className="mt-2 line-clamp-2 text-sm text-foil-slate">{verified.title}</p>
+                <p className="mt-2 line-clamp-2 text-sm text-foil-cream/70">{verified.title}</p>
               </div>
               <a
                 href={verified.affiliateUrl}
                 target="_blank"
                 rel="sponsored noopener noreferrer"
-                className="inline-flex shrink-0 items-center justify-center rounded-full bg-foil-navy px-6 py-3 text-sm font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40"
+                className="inline-flex shrink-0 items-center justify-center rounded-full bg-foil-cream px-6 py-3 text-sm font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-accent/60"
               >
                 Buy on eBay →
               </a>
             </div>
-            <p className="mt-5 text-[11px] uppercase tracking-wider text-foil-slate">
+            <p className="mt-5 text-[11px] uppercase tracking-wider text-foil-cream/60">
               Live listing · Identity-verified against the listing&apos;s own item specifics · Prices update on every page load · Affiliate-tracked — Foil earns a commission on eBay purchases that originate from this link.
             </p>
           </>
@@ -156,7 +156,7 @@ export function LiveListingSection({
             {/* Honest null (the design's core promise): no verified listing beats
                 showing the unverified cheapest. */}
             <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-foil-slate">
+              <p className="text-sm text-foil-cream/70">
                 No verified listing right now. We checked the cheapest live eBay
                 listings and couldn&apos;t confirm an exact match for this card —
                 rather than show you a maybe-wrong one, browse the live search yourself.
@@ -165,12 +165,12 @@ export function LiveListingSection({
                 href={resolvedFallback}
                 target="_blank"
                 rel="sponsored noopener noreferrer"
-                className="inline-flex shrink-0 items-center justify-center rounded-full border border-foil-navy/20 bg-foil-cream px-6 py-3 text-sm font-semibold text-foil-navy transition hover:border-foil-gold/40 hover:bg-foil-gold/5"
+                className="inline-flex shrink-0 items-center justify-center rounded-full border border-foil-cream/20 bg-foil-night px-6 py-3 text-sm font-semibold text-foil-cream transition hover:border-foil-accent/40 hover:bg-foil-accent/5"
               >
                 Browse on eBay →
               </a>
             </div>
-            <p className="mt-5 text-[11px] uppercase tracking-wider text-foil-slate">
+            <p className="mt-5 text-[11px] uppercase tracking-wider text-foil-cream/60">
               Affiliate-tracked search · Foil earns a commission on eBay purchases that originate from this link.
             </p>
           </>

@@ -11,15 +11,15 @@ import { join } from "node:path";
 const ROOT = new URL("../..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
 const read = (rel: string) => readFileSync(join(ROOT, rel), "utf8");
 
-test("SoldHistoryPanel: server component on the cream/navy palette with the seal-mark bullet", () => {
+test("SoldHistoryPanel: server component on the night-register palette with the seal-mark bullet", () => {
   const src = read("components/cards/sold-history-panel.tsx");
   assert.doesNotMatch(src, /^"use client"/m, "must remain a Server Component (SSR-only)");
   assert.match(src, /SealMark/, "uses the hanko seal-mark bullet (ADR-094)");
   assert.doesNotMatch(src, /PokeballMark/, "the Pokeball bullet is retired (ADR-055)");
   assert.match(src, /getSoldHistory/, "reads sold history via the by-uuid module");
   // Palette discipline — foil tokens only, no raw hex colors in the panel.
-  assert.match(src, /text-foil-navy/);
-  assert.match(src, /text-foil-gold/);
+  assert.match(src, /text-foil-cream/); // design-loop-round2 §3 (night register)
+  assert.match(src, /text-foil-accent/); // design-loop-round2 §3 (night register)
   assert.doesNotMatch(src, /#[0-9a-fA-F]{6}/, "no raw hex colors — DESIGN.md tokens only");
 });
 

@@ -20,13 +20,13 @@ export function MetadataOnlyListing({
 }) {
   return (
     <section
-      className="mt-10 rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-8"
+      className="mt-10 rounded-2xl border border-foil-cream/10 bg-foil-night-2 p-6 sm:p-8"
       aria-labelledby="find-card-heading"
     >
-      <h2 id="find-card-heading" className="text-xs font-semibold uppercase tracking-wider text-foil-gold">
+      <h2 id="find-card-heading" className="text-xs font-semibold uppercase tracking-wider text-foil-accent">
         Find this card
       </h2>
-      <p className="mt-3 text-sm text-foil-slate">
+      <p className="mt-3 text-sm text-foil-cream/70">
         We don&apos;t have live deal data for {cardName} yet — it&apos;s a lower-volume
         printing. Check current listings on the major marketplaces:
       </p>
@@ -35,7 +35,7 @@ export function MetadataOnlyListing({
           href={ebaySearchUrl}
           target="_blank"
           rel="sponsored noopener noreferrer"
-          className="inline-flex shrink-0 items-center justify-center rounded-full bg-foil-navy px-6 py-3 text-sm font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40"
+          className="inline-flex shrink-0 items-center justify-center rounded-full bg-foil-cream px-6 py-3 text-sm font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-accent/60"
         >
           Browse {cardName} on eBay →
         </a>
@@ -43,12 +43,12 @@ export function MetadataOnlyListing({
           href={tcgplayerUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex shrink-0 items-center justify-center rounded-full border border-foil-navy/20 bg-foil-cream px-6 py-3 text-sm font-semibold text-foil-navy transition hover:-translate-y-0.5 hover:border-foil-gold/40 hover:bg-foil-gold/5"
+          className="inline-flex shrink-0 items-center justify-center rounded-full border border-foil-cream/20 bg-foil-night px-6 py-3 text-sm font-semibold text-foil-cream transition hover:-translate-y-0.5 hover:border-foil-accent/40 hover:bg-foil-accent/5"
         >
           See on TCGplayer →
         </a>
       </div>
-      <p className="mt-5 text-[11px] uppercase tracking-wider text-foil-slate">
+      <p className="mt-5 text-[11px] uppercase tracking-wider text-foil-cream/60">
         eBay link is affiliate-tracked — Foil earns a commission on purchases that originate from it.
       </p>
     </section>
