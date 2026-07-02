@@ -5,8 +5,8 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { join, dirname } from "node:path";
 import { OG_CARD_ART } from "../../app/og-card-art.generated.ts";
 
 const ROOT = new URL("../..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
@@ -83,12 +83,21 @@ function metadataBlock(src: string, key: "openGraph" | "twitter"): string | null
 }
 
 /** A block "has an OG image" if it names the dynamic file OG or a real per-
- *  entity image binding (card image / set logo). The OG path may be the exact
- *  root ("/opengraph-image") OR a per-route dynamic OG in a template literal
- *  (e.g. `/lines/${pokemon}/opengraph-image`, ADR-095) — both are real images;
- *  what the guard forbids is an openGraph override with NO image at all. */
+ *  entity image binding (card image / set logo). What the guard forbids is an
+ *  openGraph override with NO image at all — on a route WITHOUT a sibling
+ *  opengraph-image.tsx (see hasSiblingOgFile below). */
 const referencesOgImage = (block: string) =>
   /\/opengraph-image[`"']/.test(block) || /(card\.image|set\.logoUrl)/.test(block);
+
+/** Routes with a SAME-SEGMENT opengraph-image.tsx are covered by the file
+ *  convention: Next serves it at a HASHED url and auto-injects the correct
+ *  og:image/twitter:image tags even when the page overrides openGraph
+ *  (verified live + on dev, lines-petals-and-type 2026-07-02 — the hashed
+ *  injection is exactly why a HAND-WRITTEN `/lines/x/opengraph-image` path
+ *  404'd in prod: the real url is `/lines/x/opengraph-image-<hash>`). Such
+ *  pages must NOT hand-reference the OG path; they're exempt here. */
+const hasSiblingOgFile = (pageFile: string) =>
+  existsSync(join(dirname(pageFile), "opengraph-image.tsx"));
 
 test("Metadata completeness: every (site) openGraph/twitter block references an OG image (blank-share-card regression)", () => {
   const siteDir = join(ROOT, "app", "(site)");
@@ -106,6 +115,16 @@ test("Metadata completeness: every (site) openGraph/twitter block references an 
   for (const full of pages) {
     const src = readFileSync(full, "utf8");
     const rel = full.slice(ROOT.length + 1).replace(/\\/g, "/");
+    if (hasSiblingOgFile(full)) {
+      // File-convention route: the hashed OG is auto-injected. A hand-written
+      // unhashed path here IS the blank-card bug (it 404s) — pin its absence.
+      const og = metadataBlock(src, "openGraph") ?? "";
+      const tw = metadataBlock(src, "twitter") ?? "";
+      if (/\/opengraph-image[`"']/.test(og + tw)) {
+        offenders.push(`${rel} (hand-written OG path on a file-convention route — 404s; let Next inject the hashed url)`);
+      }
+      continue;
+    }
     const og = metadataBlock(src, "openGraph");
     if (og && !referencesOgImage(og)) offenders.push(`${rel} (openGraph)`);
     const tw = metadataBlock(src, "twitter");

@@ -47,13 +47,15 @@ export async function generateMetadata({ params }: { params: Promise<{ pokemon: 
       description: config.description,
       siteName: "Foil",
       url: `/lines/${pokemon}`,
-      images: [`/lines/${pokemon}/opengraph-image`],
+      // NO manual images entry: Next 16 serves the sibling opengraph-image.tsx
+      // at a HASHED url (/lines/<p>/opengraph-image-<hash>) and auto-injects
+      // the correct tag. The old hand-written unhashed path 404'd in prod —
+      // the blank-share-card class, caught in the pre-eve live OG check.
     },
     twitter: {
       card: "summary_large_image",
       title: config.title,
       description: config.description,
-      images: [`/lines/${pokemon}/opengraph-image`],
     },
   };
 }
