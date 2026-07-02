@@ -13,7 +13,7 @@ Fable 5 came back; John upgraded to the $200/mo plan. Full six-branch audit ran 
 5. SEO: sitemap omits the 159 fast set pages + /cards hub; lastmod fabricated; cache hierarchy inverted (live-first, baked-fallback). TTFB fix urgency = DAYS (GSC refetch wave from the Jul 1 resubmit).
 
 ## THE plan (Fable overhaul, surgical — goal files ready in docs/goals/)
-- **Phase 0 — DONE 2026-07-01:** goal cleared ✅ · `pre-fable-overhaul` tag pushed ✅ · **PokeTrace RENEWED + PAID (John, 2026-07-01)** — the pricing spine is secure; movers/newsletter/briefs/deals stay live. Jul-13 reminder can be cancelled.
+- **Phase 0 — DONE 2026-07-01:** goal cleared ✅ · `pre-fable-overhaul` tag pushed ✅ · **PokeTrace: "Don't cancel" clicked (CORRECTED — not a fresh renewal payment; it was scheduled to cancel Jul 16 at $98/mo and now continues)**. Spine secure short-term; benchmark decision ~Aug 10 (R-062): Scrydex $99/mo (owns pokemontcg.io now) vs PriceCharting cross-check vs eBay MI application.
 - **Phase 1 — `perf-and-data-foundation.md` (RUN FIRST, days-urgent):** timeout guard + bake-parser fix (variant-wipe guarded) + FULL re-bake + baked-first rendering + sitemap hygiene (add hub/set pages, real lastmod) + title/canonical fixes.
 - **Phase 2a — `start-funnel-integrity.md`:** tri-store opt-in from /start + UTM attribution + upsert + working unsubscribe + minimal abuse guard. The conversion counter must work before ANY traffic push.
 - **Phase 2b — `alert-engine-rebuild.md`:** from-the-goal event model (state transitions, hysteresis re-arm, 30d-sold reference floor, FIXED_PRICE/US/USD filters, sentinel killed, sold-comp evidence line). Supersedes watchlist-alert-quality-overhaul; absorbs trust-hardening Bug 1 (trim that goal).

@@ -346,13 +346,15 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 ## R-062 — PokeTrace key renewal (~Jul 15) is a single point of failure for sold-history + movers
 
 **Severity:** Medium
-**Status:** `monitoring`
+**Status:** `mitigating` (lapse averted 2026-07-01; cost decision open)
 
-**The risk.** The PokeTrace Pro key (restored 2026-06-28) is valid ~until **July 15, 2026**. If it lapses: the movers cron (`market_movers`, the /deals "good buys" lead signal + newsletter digest source), `SoldHistoryPanel` refreshes, and the deals-refresh `buy_signals` path all soft-fail to empty — no 500s (the soft-fail chain is tested), but the insight-led surfaces quietly go stale, and the newsletter's data spine with them. The baked per-card `variants` keep rendering (committed data), so the failure is degradation, not breakage — which is exactly why it could go unnoticed.
+**The risk.** The PokeTrace Pro key is the pricing spine. If it lapses: the movers cron (`market_movers`, the /deals "good buys" lead signal + newsletter digest source), `SoldHistoryPanel` refreshes, the demand-driven hydration worker (ADR-092), the alert engine's evidence lines/market floor (ADR-091), and the deals-refresh `buy_signals` path all soft-fail to empty — degradation, not breakage, which is exactly why it could go unnoticed.
 
-**Trigger to escalate.** Jul 10 (5 days before renewal): confirm the renewal decision with John. OR: any `market_movers` daily run producing 0 rows while the key is supposedly valid.
+**State (verified in the Paddle portal, 2026-07-01).** Subscription = **$98/month** ("Developer API"), active since May 16. It was SCHEDULED TO CANCEL Jul 16; John clicked **"Don't cancel"** on 2026-07-01, so it now continues month-to-month. NOTE: an earlier doc note claiming "renewed + paid 2026-07-01" was WRONG (the payment observed was the routine Jun 16 charge) — corrected here; do not re-propagate it.
 
-**Mitigation playbook.** (1) Renew (money decision — John's). (2) If lapsing intentionally: announce the degradation in the newsletter copy pipeline so gates don't cite stale movers, and let the baked variants + SDK prices carry the pages. (3) Longer term: the `market_snapshots` time-series accumulates history that softens a gap.
+**Trigger to escalate.** ~Aug 10: the **data-source benchmark decision** (IDEAS: Scrydex Growth $99/mo incl. graded + pop reports — note pokemontcg.io is now owned by Scrydex; PriceCharting as cross-check, key already in env; eBay Marketplace Insights application submitted as the long-shot $0 source). Benchmark 25 cards for sold-accuracy before the next $98 renewal after that date. OR: any `market_movers` daily run producing 0 rows while the key is supposedly valid.
+
+**Mitigation playbook.** (1) Keep paying $98/mo until a benchmark proves an equal-or-better sold-data source (the moat claim is sold-backed data — never migrate the spine on price alone). (2) If ever lapsing intentionally: announce the degradation in the newsletter copy pipeline so gates don't cite stale movers; baked variants + SDK prices carry the pages. (3) The `market_snapshots` time-series accumulates history that softens any gap.
 
 ## R-063 — Alert engine dishonesty: repeat-alert noise + cross-currency false alerts
 
