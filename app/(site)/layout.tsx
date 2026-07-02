@@ -35,7 +35,7 @@ function SiteHeader() {
           aria-label="Foil home"
           className="inline-flex items-center transition hover:opacity-80"
         >
-          <Logo size="md" tone="chrome" face="soft" />
+          <Logo size="md" tone="chrome" face="bubble" withMark={false} />
         </Link>
         <nav className="flex items-center gap-5 text-sm">
           <Link
@@ -64,7 +64,7 @@ function SiteHeader() {
             href="/start"
             className="font-medium text-[var(--chrome-ink)] underline decoration-foil-vermillion/50 underline-offset-4 transition hover:decoration-foil-vermillion"
           >
-            Your watchlist
+            Your vault
           </Link>
           {/* F6: no "Sign in" in the main nav — watchlists work with no account,
               so a sign-in CTA up top only confuses cold visitors. The route +
@@ -80,10 +80,12 @@ function SiteFooter() {
   return (
     <footer className="border-t border-[var(--chrome-border)] bg-[var(--chrome-surface)]">
       <div className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
-        {/* Brand wordmark lockup — the hanko seal + "Foil" (soft cut, chrome tone). */}
+        {/* Brand wordmark lockup — wordmark-first "Foil" in the bubble cut
+            (round-2: hanko demoted from chrome; survives as favicon + the
+            hero pill glyph pending John's morning call). */}
         <div className="mb-6">
           <Link href="/" aria-label="Foil home" className="inline-flex transition hover:opacity-80">
-            <Logo size="md" tone="chrome" face="soft" />
+            <Logo size="md" tone="chrome" face="bubble" withMark={false} />
           </Link>
         </div>
         {/* Footer is nav / legal / trust only (email-ask-cleanup, ADR-066) — the

@@ -1,5 +1,17 @@
 # ITERATION-LOG.md — overnight-design-loop, 2026-07-02
 
+> **ROUND 2 (design-loop-round2.md, John's ~1am verdicts) runs iters 09+ at the
+> BOTTOM of this file.** Budget 10 iterations. Verdicts: bubbly wordmark
+> (hanko demoted — wordmark-first chrome), vermillion OUT (bake-off: moon-teal
+> vs holo-iridescent vs sakura, on-dark AA), dark extends to /deals + /blog
+> index + /w + /cards/[slug] (styling only; /lines keeps cream default,
+> night-sakura variant gallery-only), vault designed + nav renamed "Your
+> vault", blog vending split + sv3a unpublish, type scale UP (marketing body
+> 18–20px), Linear restraint (matte dark gallery, cards glow / page doesn't),
+> cream-header variation galleried. Skylens Italic is John's fave but
+> PERSONAL-USE-ONLY — never ship/commit; trial licensed lookalikes
+> (Shrikhand etc.); license note goes in SUMMARY.
+
 Scored per design-loop/RUBRIC.md, from the screenshots in
 design-loop/gallery/iter-NN/, as a hostile critic. Dimensions:
 (a) pull-clarity · (b) craft · (c) depth · (d) ICP · (e) mobile ·
@@ -251,3 +263,38 @@ weight) · (h) 7.8 (thumbs only — art density is the card pages' job) —
 yesterday at its own bar (ADR-095) and the card page's tiered-render surface
 is too load-bearing for an unattended overnight restyle; both are morning-
 scope with John (see SUMMARY).
+
+
+---
+
+## iter-09 â€” ROUND 2: "the dark gallery" (restraint + type crank + balloon wordmark)
+
+**Thesis (John's verdicts 6+7+1+4):** Linear register â€” glows pulled way back
+(hero spill 0.16â†’0.07 + vermillion tint gone, floor pool 0.035, card glows
+dimmed/tightened, binder panel glow â†’ dark drop shadow, alert halo 0.04):
+matte walls, art lit, chrome silent. Type scale cranked (hero sub 20â†’24px,
+section H2s 4xlâ†’5xl, marketing body â†’18px, steps/bullets â†’16px). Wordmark:
+**Shrikhand** won the ten-face bubbly bake-off (closest OFL match to John's
+personal-use-only Skylens Italic ref; survives 20px nav) â€” chrome is now
+wordmark-FIRST (seal demoted out of chrome; survives in favicon + hero pill
+pending the morning call). Nav renamed "Your vault".
+
+**Face-off evidence:** design-loop/reference/wordmark-compare-2.png (Modak /
+Titan One / Bagel Fat One / Chewy / Shrikhand / Luckiest Guy / Lilita One /
+Fredoka 700 / Lobster Two BoldItalic / Baloo 2 oblique, hero + nav, dark +
+cream chrome) + the four fontspace taste-ref shots (ref-*.png, view-only).
+Runner-ups for the morning list: Modak (maximal balloon, weak at nav size),
+Titan One (cleanest small-size survivor).
+
+**Scores:** (a) 8.5 Â· (b) 8.7 (restraint + scale + the wordmark charm) Â·
+(c) 8.3 (layering does the depth now â€” quieter per directive) Â· (d) 8.7
+(sticker test: "Foil" in Shrikhand is an ownable mark) Â· (e) 8.3 Â·
+(f) 9.0 Â· (g) 8.5 (font swap net-zero: Baloo out, Shrikhand in, one weight) Â·
+(h) 8.7 (cards are now the ONLY glow) â€” **avg 8.59 Â· min 8.3.**
+
+**Next (iters 10â€“12):** the accent bake-off on this restrained base â€” one
+iteration per candidate, token-swapped so the legs differ ONLY in accent:
+(10) moon-teal from Moonbreon's palette Â· (11) holo-iridescent interactive
+accents Â· (12) sakura. Two-tone token pair (--color-foil-accent on night,
+--color-foil-accent-deep on cream) so AA holds on both surfaces.
+

@@ -95,16 +95,17 @@ function Hero() {
       {/* The light spill — a warm glow rising from behind the card fan, as if
           the cards themselves light the room. Pure CSS, aria-hidden, zero
           critical-path cost. */}
+      {/* Round-2 restraint (John: Linear register — matte, deep, quiet; the
+          CARDS may glow, the PAGE may not). The spill is a whisper now, the
+          vermillion tint is gone, and depth comes from layering. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[560px] bg-[radial-gradient(ellipse_58%_46%_at_50%_16%,rgba(248,245,240,0.16),rgba(216,90,48,0.06)_45%,transparent_72%)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[560px] bg-[radial-gradient(ellipse_58%_46%_at_50%_16%,rgba(248,245,240,0.07),transparent_62%)]"
       />
-      {/* The floor — a thin pool of reflected light directly under the fan,
-          so the cards stand IN a room (glossy surface) instead of floating on
-          a void. */}
+      {/* The floor — barely-there reflected light under the fan. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-[230px] h-24 bg-[radial-gradient(ellipse_42%_100%_at_50%_0%,rgba(248,245,240,0.07),transparent_75%)] sm:top-[300px] md:top-[330px] lg:top-[380px]"
+        className="pointer-events-none absolute inset-x-0 top-[230px] h-24 bg-[radial-gradient(ellipse_42%_100%_at_50%_0%,rgba(248,245,240,0.035),transparent_75%)] sm:top-[300px] md:top-[330px] lg:top-[380px]"
       />
 
       {/* The grail fan — full-opacity card art, arced like a hand of cards,
@@ -130,8 +131,8 @@ function Hero() {
               eager
               className={`aspect-[5/7] w-[6.75rem] overflow-hidden rounded-lg ring-1 sm:w-32 md:w-36 lg:w-44 ${
                 c.focal
-                  ? "shadow-[0_10px_70px_-8px_rgba(248,245,240,0.55)] ring-foil-cream/30"
-                  : "shadow-[0_10px_50px_-12px_rgba(248,245,240,0.35)] ring-foil-cream/15"
+                  ? "shadow-[0_12px_50px_-10px_rgba(248,245,240,0.38)] ring-foil-cream/25"
+                  : "shadow-[0_10px_36px_-14px_rgba(248,245,240,0.22)] ring-foil-cream/12"
               }`}
             />
           </div>
@@ -155,7 +156,7 @@ function Hero() {
           Tell us the cards you&apos;re hunting.
         </h1>
 
-        <p className="mx-auto mt-6 max-w-xl text-lg text-foil-cream/70 sm:text-xl">
+        <p className="mx-auto mt-6 max-w-xl text-xl text-foil-cream/70 sm:text-2xl sm:leading-snug">
           Foil watches the market and emails you the moment one drops to your
           price — judged against what cards really sell for, not asking prices.
         </p>
@@ -169,13 +170,13 @@ function Hero() {
           </Link>
           <Link
             href="/deals?src=home-hero"
-            className="text-sm text-foil-cream/60 underline decoration-foil-cream/25 underline-offset-4 transition hover:text-foil-cream hover:decoration-foil-vermillion"
+            className="text-base text-foil-cream/60 underline decoration-foil-cream/25 underline-offset-4 transition hover:text-foil-cream hover:decoration-foil-vermillion"
           >
             or see today&apos;s best drops →
           </Link>
         </div>
 
-        <p className="mt-5 text-xs text-foil-cream/45">
+        <p className="mt-5 text-sm text-foil-cream/45">
           Free · no account needed · one email when it matters, not a feed to check
         </p>
 
@@ -193,7 +194,7 @@ function Hero() {
             loading="eager"
             fetchPriority="high"
           />
-          <p className="text-sm text-foil-cream/60">
+          <p className="text-base text-foil-cream/60">
             <span className="font-medium text-foil-cream">Built by John Craig.</span>{" "}
             I run a Pokémon card store and got tired of digging through eBay junk
             to find the real deals, so I built Foil to do it for me.
@@ -222,27 +223,24 @@ const VAULT_POCKETS: { id: string; name: string; target: string }[] = [
 function VaultMoment() {
   return (
     <section className="relative border-t border-foil-cream/10">
-      {/* Light spill from the binder — the section's light source sits behind
-          its artifact, same physics as the hero. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 w-2/3 bg-[radial-gradient(ellipse_60%_55%_at_70%_50%,rgba(248,245,240,0.06),transparent_70%)]"
-      />
+      {/* Round-2 restraint: the section glow is gone — the raised night-2
+          panel + its dark drop shadow do the depth work (layering, not
+          luminescence). */}
       <div className="reveal-rise relative mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
         <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.2fr]">
           <div>
             <p className="text-xs font-medium tracking-[0.08em] text-foil-vermillion uppercase">
               The vault
             </p>
-            <h2 className="font-display mt-3 text-3xl font-semibold tracking-[-0.01em] text-foil-cream sm:text-4xl">
+            <h2 className="font-display mt-3 text-4xl font-semibold tracking-[-0.01em] text-foil-cream sm:text-5xl">
               Your binder, with a market brain.
             </h2>
-            <p className="mt-4 max-w-md text-foil-cream/70">
+            <p className="mt-4 max-w-md text-lg leading-relaxed text-foil-cream/70">
               Every card you track gets a pocket. Foil fills in what each one
               really sells for, watches every live listing, and emails you when
               one lands under your number.
             </p>
-            <ul className="mt-6 max-w-md space-y-2 text-sm text-foil-cream/60">
+            <ul className="mt-6 max-w-md space-y-2.5 text-base text-foil-cream/60">
               <li className="flex items-start gap-2.5">
                 <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foil-vermillion" />
                 Every pocket shows what the card really sells for.
@@ -261,7 +259,7 @@ function VaultMoment() {
           </div>
 
           {/* The binder spread — a 3×3 pocket page, plastic-sleeve insets. */}
-          <div className="rounded-3xl border border-foil-cream/10 bg-foil-night-2 p-4 shadow-[0_30px_80px_-30px_rgba(248,245,240,0.12)] sm:p-6">
+          <div className="rounded-3xl border border-foil-cream/10 bg-foil-night-2 p-4 shadow-[0_24px_60px_-28px_rgba(4,9,18,0.85)] sm:p-6">
             <ul className="grid grid-cols-3 gap-3 sm:gap-4">
               {VAULT_POCKETS.map((p) => (
                 <li key={p.id} className="group">
@@ -371,10 +369,10 @@ function PullLoop() {
   return (
     <section className="border-t border-foil-cream/10">
       <div className="reveal-rise mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
-        <h2 className="font-display text-3xl font-semibold tracking-[-0.01em] text-foil-cream sm:text-4xl">
+        <h2 className="font-display text-4xl font-semibold tracking-[-0.01em] text-foil-cream sm:text-5xl">
           How the hunt works
         </h2>
-        <p className="mt-3 max-w-2xl text-foil-cream/60">
+        <p className="mt-3 max-w-2xl text-lg text-foil-cream/60">
           One hunt, start to finish — here&apos;s Moonbreon&apos;s.
         </p>
         <ol className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
@@ -383,10 +381,10 @@ function PullLoop() {
               <span className="font-display text-sm font-semibold text-foil-vermillion">
                 {s.num.padStart(2, "0")}
               </span>
-              <h3 className="font-display mt-2 text-lg font-semibold text-foil-cream">
+              <h3 className="font-display mt-2 text-xl font-semibold text-foil-cream">
                 {s.title}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-foil-cream/60">{s.body}</p>
+              <p className="mt-2 text-base leading-relaxed text-foil-cream/60">{s.body}</p>
               <div className="mt-4 sm:mt-auto sm:pt-4">{s.artifact}</div>
             </li>
           ))}
@@ -402,26 +400,26 @@ function PullLoop() {
 function SampleAlert() {
   return (
     <section className="relative border-t border-foil-cream/10">
-      {/* The cream email is this section's light source — its glow spills
-          onto the night surface around it. */}
+      {/* The cream email is the one light object in this section — a faint
+          halo only (round-2 restraint), no section-wide glow. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 w-2/3 bg-[radial-gradient(ellipse_55%_60%_at_65%_50%,rgba(248,245,240,0.08),transparent_70%)]"
+        className="pointer-events-none absolute inset-y-0 right-0 w-2/3 bg-[radial-gradient(ellipse_45%_45%_at_65%_50%,rgba(248,245,240,0.04),transparent_65%)]"
       />
       <div className="reveal-rise relative mx-auto grid w-full max-w-6xl items-center gap-12 px-5 py-20 sm:px-8 sm:py-24 lg:grid-cols-[1fr_1.1fr]">
         <div>
           <p className="text-xs font-medium tracking-[0.08em] text-foil-vermillion uppercase">
             The alert
           </p>
-          <h2 className="font-display mt-3 text-3xl font-semibold tracking-[-0.01em] text-foil-cream sm:text-4xl">
+          <h2 className="font-display mt-3 text-4xl font-semibold tracking-[-0.01em] text-foil-cream sm:text-5xl">
             One email, when it matters.
           </h2>
-          <p className="mt-4 max-w-md text-foil-cream/70">
+          <p className="mt-4 max-w-md text-lg leading-relaxed text-foil-cream/70">
             No dashboard to babysit. When a live listing for one of your cards
             drops under your price, this lands in your inbox — with the sold
             data to prove the deal is real.
           </p>
-          <ul className="mt-6 max-w-md space-y-2 text-sm text-foil-cream/60">
+          <ul className="mt-6 max-w-md space-y-2.5 text-base text-foil-cream/60">
             <li className="flex items-start gap-2.5">
               <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foil-vermillion" />
               Real listings only — seller, condition, and sold history checked
@@ -435,7 +433,7 @@ function SampleAlert() {
         </div>
 
         {/* The sample alert, styled as the artifact it is. */}
-        <div aria-label="A sample Foil price alert email" className="rounded-2xl border border-foil-cream/12 bg-foil-cream p-1 shadow-[0_20px_60px_-20px_rgba(248,245,240,0.15)]">
+        <div aria-label="A sample Foil price alert email" className="rounded-2xl border border-foil-cream/12 bg-foil-cream p-1 shadow-[0_20px_60px_-20px_rgba(248,245,240,0.10)]">
           <div className="rounded-xl p-5 sm:p-6">
             <div className="flex items-center gap-2 border-b border-foil-navy/10 pb-3">
               <SealMark px={16} />

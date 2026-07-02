@@ -24,10 +24,10 @@ type Size = "sm" | "md" | "lg";
  *  lockup flips with the chrome on night-toned pages (overnight-design-loop). */
 type Tone = "onCream" | "onNavy" | "chrome";
 type MarkVariant = "vermillion" | "mono";
-/** "carved" (default): Bricolage Grotesque (ADR-094). "soft": Baloo 2 — the
- *  cloudy/bubbly rounded cut from John's 2026-07-02 wordmark brief, explored
- *  in-page as live text. */
-type Face = "carved" | "soft";
+/** "carved" (default): Bricolage Grotesque (ADR-094). "bubble": Shrikhand —
+ *  the balloon-letter identity cut from John's round-2 verdict (closest OFL
+ *  match to the personal-use-only Skylens Italic taste ref), live text only. */
+type Face = "carved" | "bubble";
 
 const MARK_PX: Record<Size, number> = { sm: 18, md: 22, lg: 32 };
 const WORDMARK_CLASS: Record<Size, string> = { sm: "text-base", md: "text-xl", lg: "text-3xl" };
@@ -115,7 +115,7 @@ export function Logo({
       : tone === "onNavy"
         ? "text-foil-cream"
         : "text-foil-navy";
-  const faceClass = face === "soft" ? "font-wordmark-soft" : "font-wordmark";
+  const faceClass = face === "bubble" ? "font-wordmark-bubble font-normal" : "font-wordmark";
   return (
     <span
       aria-label="Foil home"

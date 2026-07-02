@@ -53,10 +53,11 @@
      next/font `--font-wordmark` var; this exposes the `font-wordmark` utility
      used by the FoilTCG lockup in components/brand/logo.tsx. */
   --font-wordmark: var(--font-wordmark);
-  /* Soft wordmark cut — Baloo 2 (overnight-design-loop wordmark exploration,
-     John's brief: "Foil" in a cloudy/bubbly rounded display face). Rendered as
-     live text via Logo face="soft"; the carved Bricolage cut stays available. */
-  --font-wordmark-soft: var(--font-wordmark-soft);
+  /* Bubble wordmark cut — Shrikhand (design-loop-round2: John's balloon-letter
+     identity verdict; closest OFL match to the personal-use-only Skylens
+     Italic taste ref). Rendered as live text via Logo face="bubble"; the
+     carved Bricolage cut stays available for OG/favicon surfaces. */
+  --font-wordmark-bubble: var(--font-wordmark-bubble);
 }
 
 /*
