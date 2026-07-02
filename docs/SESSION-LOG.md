@@ -8,6 +8,10 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-07-02 (send-gate) — eve-clean-links: vanity 302s `/umbreon` + `/espeon` → the UTM'd line pages (clean tweet, attribution intact). Web-standard `Response.redirect` route handlers (302 by design — temporary, never cached-permanent); PUBLIC_ROUTES exact entries; proxy guard pins allowlist + status + exact Location (a dead tweet link is permanent public breakage). Verified 302 + query intact unauthenticated on dev. Gates: 1,429/0 · build clean. **FOLLOW-UP: re-point both paths to the clean /lines/* URLs as permanent shortcuts after the eve event.** Awaits John's push; post-deploy: `curl -I https://foiltcg.com/umbreon` then the X card validator through the redirect.
+
+---
+
 ## 2026-07-02 (pre-belt) — binder-aesthetic-pass: the vault demo is now a real curated binder page (SV-151 Gen-1 starter evolution lines in order, IR/SIR painterly register, targets from the real baked market data, art self-hosted under public/binder/) and the hanami motif goes site-ambient (components/sakura-ambience.tsx — /lines' petal physics at a 28 → 16 → 9 density ladder: /lines flagship, homepage night, /deals + vault headers far-layer-only). Skills traced in ITERATION-LOG iter-21. Guards: pocket evolution order + binder art + ambience determinism/mounts/densities pinned. Gates: 1,428 tests/0 fail · build 208/208 · lint clean. Shots: design-loop/gallery/iter-21-binder/. NO PUSH — rides John's next deploy. Bar hit in iteration 1 of 2.
 
 ---
@@ -3693,3 +3697,4 @@ Run at the end of any non-trivial goal:
 5. **Key decisions:** link to the ADRs added or amended in [DECISIONS.md](DECISIONS.md). If no ADR was needed, omit this section.
 6. **Follow-ups:** list any items added to [ROADMAP.md](ROADMAP.md) during the session.
 7. **State at session end:** one sentence on the working-tree state, what's pushed, what's blocking the next ship.
+
