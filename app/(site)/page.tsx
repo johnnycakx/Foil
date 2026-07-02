@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { EmailCapture } from "@/components/email-capture";
 import { CARD_CATALOG, setIdsInCatalog } from "@/lib/cards/catalog";
-import { FoilCornerMark } from "@/components/brand/logo";
+import { SealMark } from "@/components/brand/logo";
 
 const SITE_TITLE = "Foil: the best price on any Pokémon card";
 const SITE_DESCRIPTION =
@@ -127,7 +127,7 @@ function Hero() {
           pipeline. No scrim needed: the cards no longer overlap the text. */}
       <div className="relative mx-auto w-full max-w-3xl px-5 pt-10 pb-20 text-center sm:px-8 sm:pt-12 sm:pb-28">
         <p className="inline-flex items-center gap-2 rounded-full border border-foil-gold/40 bg-foil-cream/80 px-3 py-1 text-xs font-medium text-foil-navy backdrop-blur-sm">
-          <FoilCornerMark px={13} />
+          <SealMark px={13} />
           Live · tracking {cardCount} cards across {setCount} sets
         </p>
 
@@ -218,14 +218,11 @@ function FoilCornerPattern() {
       className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.06] sm:opacity-[0.08]"
     >
       <defs>
-        {/* One foil-corner card glyph on a 32-unit grid (matches FoilCornerMark). */}
+        {/* The hanko seal glyph on a 24-unit grid (matches SealMark; ADR-094). */}
         <g id="foil-card">
-          <path
-            d="M 9.5 4 H 17 L 26 13 V 24.5 A 3.5 3.5 0 0 1 22.5 28 H 9.5 A 3.5 3.5 0 0 1 6 24.5 V 7.5 A 3.5 3.5 0 0 1 9.5 4 Z"
-            fill="#0f1e3a"
-          />
-          <path d="M 17 4 H 26 V 13 Z" fill="#a8842f" />
-          <path d="M 17 4 L 26 13 H 17 Z" fill="#c9a24b" />
+          <rect x="3.2" y="3.2" width="17.6" height="17.6" rx="4.6" fill="#D85A30" />
+          <rect x="8.9" y="5.4" width="6.2" height="9.6" rx="1.1" fill="none" stroke="#f8f5f0" strokeWidth="1.5" />
+          <path d="M6 14.4h12v1.5a2.9 2.9 0 0 1-2.9 2.9H8.9A2.9 2.9 0 0 1 6 15.9z" fill="#f8f5f0" />
         </g>
         {/* Half-drop stagger: card ~32 units on a 72px pitch so the marks breathe. */}
         <pattern id="foil-card-pattern" patternUnits="userSpaceOnUse" width="72" height="144">

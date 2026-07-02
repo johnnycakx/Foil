@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces, Fredoka } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces, Bricolage_Grotesque } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { siteUrl } from "@/lib/seo/site-url";
 import "./globals.css";
@@ -26,16 +26,19 @@ const fraunces = Fraunces({
   axes: ["opsz", "SOFT"],
 });
 
-// Brand wordmark font (ADR-055). Fredoka — bold, rounded, confident — sets the
-// "FoilTCG" lockup. Exposed as the `font-wordmark` utility via globals.css.
-const fredoka = Fredoka({
+// Brand wordmark font (ADR-094). Bricolage Grotesque 600 — a carved, slightly
+// idiosyncratic grotesque that pairs with the hanko seal mark; it replaces
+// Fredoka's rounded playfulness, which clashed with the carved-seal aesthetic.
+// Sets the "Foil" lockup ("TCG" dropped from the display wordmark). Exposed as
+// the `font-wordmark` utility via globals.css.
+const bricolage = Bricolage_Grotesque({
   variable: "--font-wordmark",
   subsets: ["latin"],
   weight: ["600", "700"],
 });
 
 // Brand metadata aligned with the deal-finder positioning (ADR-020) + the
-// FoilTCG wordmark (ADR-055). The favicon is the foil-corner card mark
+// hanko seal mark + "Foil" wordmark (ADR-094). The favicon is the seal
 // (public/favicon.svg). OG + Twitter images are generated dynamically by
 // app/opengraph-image.tsx + app/twitter-image.tsx (Next auto-discovers them),
 // so the static /og-image.png is retired and not referenced here.
@@ -82,7 +85,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${fredoka.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${bricolage.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {/* Impact.com affiliate program site verification - see ADR-020 once landed. */}

@@ -34,15 +34,17 @@ test("opengraph-image.tsx: renders the card-art fan, the wordmark, and the text-
   // Inlined card art (no fs/sharp/fetch at edge request time).
   assert.match(src, /import \{ OG_CARD_ART \} from "\.\/og-card-art\.generated"/);
   assert.match(src, /src=\{c\.dataUrl\}/, "the fan renders the card-art data-URLs");
-  // Wordmark lockup (the brand) stays.
+  // Wordmark lockup (the brand) stays — the hanko seal + "Foil" (ADR-094);
+  // "TCG" is dropped from the display wordmark.
   assert.match(src, /MARK_DATA_URL/);
-  assert.match(src, /<span style=\{\{ color: GOLD \}\}>TCG<\/span>/);
+  assert.doesNotMatch(src, />TCG<\/span>/, "no gold 'TCG' in the OG wordmark (ADR-094)");
+  assert.match(src, /fontSize: 56[^}]*color: CREAM \}\}>\s*Foil/, "cream 'Foil' wordmark");
   // Never-500 soft-fall: empty art -> text-only (left column goes full width,
   // the fan block is omitted) + the font still falls back to sans-serif.
   assert.match(src, /const hasArt = art\.length > 0/);
   assert.match(src, /width: hasArt \? 660 : "100%"/, "left column goes full-width when there's no art");
   assert.match(src, /hasArt \? \(/, "the fan block is gated on hasArt");
-  assert.match(src, /fredoka \? "Fredoka" : "sans-serif"/, "font soft-fall retained");
+  assert.match(src, /wordmark \? "Bricolage Grotesque" : "sans-serif"/, "font soft-fall retained");
   // Edge config unchanged.
   assert.match(src, /export const runtime = "edge"/);
   assert.match(src, /width: 1200, height: 630/);

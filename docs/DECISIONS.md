@@ -2624,6 +2624,27 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 
 **Cross-refs.** `lib/vault-token.ts`, `app/(site)/w/[token]/page.tsx`, `app/(site)/w/page.tsx`, `app/actions/vault.ts`, `lib/wishlist/{pause,upsert,vault-email,alert-email,scan-batch}.ts`, `components/cards/card-typeahead.tsx`, `components/vault/*`, `supabase/migrations/20260702030000_watchlists_paused_source.sql`, `lib/__tests__/vault.test.ts`, [ADR-090](#adr-090--start-funnel-integrity-tri-store-opt-in-idempotent-watches-attribution-and-an-unsubscribe-that-stops-alerts), [ADR-091](#adr-091--alert-engine-rebuilt-as-an-honest-event-model-armedfired-state-market-floor-evidence-line-emails), [ADR-092](#adr-092--demand-driven-poketrace-hydration-watches-allocate-the-data-budget), [R-064](RISKS.md).
 
+## ADR-094 — Brand mark refresh: the hanko seal + "Foil" wordmark (supersedes ADR-055; gold retired)
+
+**Date:** 2026-07-01
+**Status:** Accepted. Stage 2 of the `brand-mark-refresh` goal (Stage 1 = John's direction pick). Supersedes [ADR-055](#adr-055--fredoka-foiltcg-wordmark--foil-corner-card-mark-pokeball-retired) (the foil-corner card + gold "FoilTCG" wordmark). Coordinates with the fable-design-overhaul palette revision.
+
+**Context.** Two forcing functions (John, 2026-07-01). (1) The gold accent is being retired, which kills the gold-sheen "TCG" wordmark treatment — the mark and the palette succession had to land coherently. (2) The brand needed a single owned mark that IS *also* the accent-color decision. **P0 premise reconciliation:** the goal's framing ("the live mark is a literal Pokéball") was already STALE — ADR-055 retired the Pokéball on 2026-06-05 (the live mark was the foil-corner card, IDEAS #295 marked SHIPPED). So this refresh is driven by forcing-function #2 (gold retirement), not a live IP exposure; the deliverable — implement John's Stage-1 pick everywhere — is unaffected. Recorded honestly rather than restating a resolved risk as open.
+
+**Decision — implement "C1, the hanko, carved straight" (John's Stage-1 pick).**
+1. **The mark (`SealMark`, `components/brand/logo.tsx`):** a vermillion (`#D85A30`) carved seal square with a card slotting into a pocket, knocked out in cream (`#f8f5f0`) in negative space. The **seal square IS the mark** — favicons/avatars render it full-bleed (rounded square, not circle-cropped). A single-ink navy monochrome variant exists for one-color contexts; at ≤16px the card stroke thickens (~1.8) for legibility. Master geometry is John's canonical 24×24 SVG, refined optically.
+2. **The wordmark:** "Foil" in **Bricolage Grotesque 600** (replaces Fredoka, whose rounded playfulness clashed with the carved seal), navy on cream / cream on navy. **"TCG" is dropped from the display wordmark** (the domain keeps the longer form); the gold-sheen treatment is gone.
+3. **The hanko vermillion `#D85A30` is the accent color that succeeds gold.** But this mark ships **palette-agnostic** (the goal's explicit constraint): the seal carries its own vermillion everywhere; the broader gold→vermillion *UI accent* migration (buttons, links, badges) is the separate fable-design-overhaul goal's work. A brief transitional state (vermillion mark next to still-gold UI accents) is sanctioned by the goal's "mark-first is fine" note.
+4. **Rolled across every surface in ONE commit** so no surface lags: favicon.svg (full-bleed seal), icon.svg (seal + "Foil"), apple-touch + `icon-192/512.png` (sharp-rasterized from the seal), the new `app/manifest.ts` metadata route, the OG/Twitter share card (seal mark + "Foil" + vermillion accent + Bricolage font load), the site header/footer `<Logo>`, and the two email mastheads (text-forward "Foil", no image — ADR-079 Primary rule). The "How it works" homepage watermark tiles the seal glyph.
+
+**Consequences.**
+- Every brand touchpoint reads as the seal; the gold-"TCG" treatment is fully retired. The `FoilCornerMark` export is kept as a deprecated alias → `SealMark` so no call site breaks.
+- A transitional palette state exists until fable-design-overhaul migrates the UI gold accents to vermillion — accepted, documented.
+- Off-repo surfaces (X avatar/banner, Discord icon, Beehiiv logo) can't be bot-swapped — a 3-line checklist for John lives at `docs/brand-mark-offrepo-checklist.md` (use `public/icon-512.png`).
+- The IP-exposure risk (R-... / IDEAS #295) was already resolved by ADR-055; ADR-094 does not re-open it — it changes the *owned* mark, not the trade-dress posture.
+
+**Cross-refs.** `components/brand/logo.tsx`, `app/layout.tsx`, `app/globals.css`, `public/favicon.svg`, `public/icon.svg`, `public/apple-touch-icon.png`, `public/icon-{192,512}.png`, `app/manifest.ts`, `app/opengraph-image.tsx`, `app/(site)/layout.tsx`, `app/(site)/page.tsx`, `emails/{editorial,movers}-digest-email.tsx`, `DESIGN.md` §5, `lib/__tests__/visual-regression.test.ts`, `docs/brand-mark-offrepo-checklist.md`, [ADR-055](#adr-055--fredoka-foiltcg-wordmark--foil-corner-card-mark-pokeball-retired), [ADR-079](#adr-079--branded-newsletter-email-react-email-text-forward-to-hold-gmail-primary).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

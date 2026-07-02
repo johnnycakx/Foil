@@ -283,39 +283,45 @@ already lifted before you point at it, drop it back down.
 - **Numeric (price) fields:** Right-aligned, narrow, prefixed with a slate `$`.
 
 ### Navigation
-- **Brand:** The Logo — foil-corner card mark + "FoilTCG" wordmark — in the
-  Fredoka wordmark font. "Foil" navy (or cream on dark), "TCG" gold.
+- **Brand:** The Logo — the hanko seal mark + "Foil" wordmark — in the Bricolage
+  Grotesque wordmark font. "Foil" navy (or cream on dark). No "TCG" in the
+  display wordmark (the domain keeps the longer form).
 - **Links:** Body/label scale, navy, gold-underline on hover, matching the text
   link pattern above.
 
-### Signature Component: The FoilTCG wordmark + foil-corner mark
-The brand lockup (`components/brand/logo.tsx`, **ADR-055**) is a wordmark plus a
+### Signature Component: The hanko seal mark + "Foil" wordmark
+The brand lockup (`components/brand/logo.tsx`, **ADR-094**) is a wordmark plus a
 small mark, laddering sm/md/lg for footer / header / hero:
 
-- **Wordmark:** "FoilTCG" set in **Fredoka 700** (pinned via `next/font/google`,
-  exposed as the `font-wordmark` utility). "Foil" is navy (`onCream`, the default
-  header tone) or cream (`onNavy`, for footer / OG / dark surfaces); "TCG" is gold
-  with a restrained vertical sheen gradient (Gold → Gold Light → Gold) clipped to
-  the text — a nod to the brand name, not a glossy-toy 3D effect. Accessible name:
-  `"FoilTCG home"` (no em dash, Gate 12).
-- **Mark (`FoilCornerMark`):** an abstract foil-corner card — a navy rounded-rect
-  card tile with a folded top-right corner revealing a two-tone gold foil back
-  (bright flap `#c9a24b` with sheen over a darker underside `#a8842f`). It is the
-  favicon (`public/favicon.svg`, legible at 16px), the lockup icon, and tiles as
-  the faint "How it works" section watermark (`FoilCornerPattern`). Geometry-only
-  and isolated so it can be swapped without touching the wordmark.
+- **Mark (`SealMark`):** the Foil hanko — a vermillion (`#D85A30`) carved seal
+  square with a card slotting into a pocket, knocked out in cream (`#f8f5f0`) in
+  negative space, centered on the seal's vertical axis. The seal square IS the
+  mark: favicons/avatars render it full-bleed (rounded square, not circle-
+  cropped). A single-ink navy monochrome variant exists for print / one-color
+  embeds. It is the favicon (`public/favicon.svg`, legible at 16px — the card
+  stroke thickens there), the lockup icon, the OG-card mark, and tiles as the
+  faint "How it works" section watermark. Geometry-only and isolated so it can be
+  swapped without touching the wordmark.
+- **Wordmark:** "Foil" set in **Bricolage Grotesque 600** (pinned via
+  `next/font/google`, exposed as the `font-wordmark` utility). Navy (`onCream`,
+  the default header tone) or cream (`onNavy`, for footer / OG / dark surfaces).
+  Accessible name: `"Foil home"` (no em dash, Gate 12).
 
-**No Pokémon trade dress.** The mark uses no Pokeball or other Pokémon-trademark
-shape, and avoids the Pokémon yellow+blue trade dress — it is fully in the
-cream/navy/gold system. The holofoil gradient on "TCG" + the fold flap is the
-*only* sanctioned gradient in the system (see Don'ts).
+**The hanko vermillion (`#D85A30`) is the accent color that succeeds gold.** The
+mark pick *was* the accent-color decision (ADR-094 coordinates with the
+fable-design-overhaul palette revision): the broader gold→vermillion UI accent
+migration is that separate goal's work; this mark ships palette-agnostic (the
+seal carries its own vermillion regardless of when the UI palette catches up).
 
-**History:** the lineage was "Foil Spark" (ADR-036, Session 46) → navy Pokeball
-(ADR-038, 47.1) → classic red/white Pokeball (ADR-040, 47.3). The Pokeball was a
-registered Nintendo/Pokémon trademark in the brand position of a buyer-side
-affiliate business — an IP exposure. **ADR-055 (2026-06-05) retired it entirely**
-for the owned Fredoka wordmark + foil-corner mark, pre-PokeBeard-launch. Do not
-reintroduce the Pokeball or any Pokémon-trademark shape.
+**No Pokémon trade dress.** The mark uses no Pokéball or other Pokémon-trademark
+shape and avoids the Pokémon yellow+blue trade dress.
+
+**History:** the lineage was "Foil Spark" (ADR-036) → navy Pokéball (ADR-038) →
+red/white Pokéball (ADR-040) → **ADR-055 (2026-06-05)** retired the Pokéball for
+an owned Fredoka "FoilTCG" wordmark + foil-corner card mark → **ADR-094
+(2026-07-01)** replaced that with the hanko seal + "Foil" (Bricolage), driven by
+the gold retirement. Do not reintroduce the Pokéball, the gold-"TCG" treatment,
+or any Pokémon-trademark shape.
 
 ## 6. Do's and Don'ts
 

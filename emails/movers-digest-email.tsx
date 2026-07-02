@@ -115,11 +115,12 @@ export function MoversDigestEmail({ model }: { model: DigestModel }) {
       <Preview>{model.previewText}</Preview>
       <Body style={{ backgroundColor: CREAM, margin: 0, padding: "24px 0", fontFamily: SANS }}>
         <Container style={{ maxWidth: "600px", margin: "0 auto", backgroundColor: PANEL, borderRadius: "12px", padding: "32px 28px" }}>
-          {/* Header — text wordmark, no image (Primary-safe + degrades perfectly). */}
+          {/* Header — text wordmark, no image (Primary-safe + degrades
+              perfectly; hanko seal stays text-forward in email, ADR-094).
+              "TCG" dropped from the display wordmark. */}
           <Section style={{ paddingBottom: "8px" }}>
-            <Text style={{ margin: 0, fontFamily: SANS, fontSize: "20px", fontWeight: 800, letterSpacing: "-0.01em" }}>
-              <span style={{ color: NAVY }}>Foil</span>
-              <span style={{ color: GOLD }}>TCG</span>
+            <Text style={{ margin: 0, fontFamily: SANS, fontSize: "20px", fontWeight: 800, letterSpacing: "-0.01em", color: NAVY }}>
+              Foil
             </Text>
             {/* A single short gold hairline — the one scarce-gold structural accent up top. */}
             <div style={{ height: "2px", width: "40px", backgroundColor: GOLD, borderRadius: "2px", marginTop: "10px" }} />

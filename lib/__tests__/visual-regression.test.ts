@@ -421,50 +421,55 @@ test("CardScannerEmbed + TopicLink: cream palette, no pre-cream coral defaults",
 });
 
 // ---------------------------------------------------------------------------
-// Session 43 / ADR-032 — Brand mark: gold rhombus glyph + Foil wordmark.
+// ADR-094 — Brand mark: the hanko seal + "Foil" wordmark (Bricolage).
 // ---------------------------------------------------------------------------
 
-test("Logo component: foil-corner card mark, zero Pokeball geometry (ADR-055)", () => {
+test("Logo component: hanko seal mark, vermillion + cream knockout, zero Pokéball/foil-corner geometry (ADR-094)", () => {
   const src = readFile("components/brand/logo.tsx");
-  // ADR-055 retired the Pokeball (trade-dress exposure). The mark is now an
-  // abstract foil-corner card: navy body + two-tone gold folded corner.
-  assert.match(src, /function FoilCornerMark/, "FoilCornerMark must exist");
+  // ADR-094 supersedes the foil-corner card (ADR-055) with the vermillion
+  // carved seal: a card slotting into a pocket, knocked out in cream.
+  assert.match(src, /function SealMark/, "SealMark must exist");
   assert.doesNotMatch(src, /function PokeballMark/, "PokeballMark must be gone");
   assert.doesNotMatch(src, /#e63946/i, "the Pokémon red must be gone");
-  assert.match(src, /#0f1e3a/i, "navy card body");
-  assert.match(src, /#c9a24b/i, "gold foil corner");
-  assert.match(src, /#a8842f/i, "darker gold fold underside");
+  assert.doesNotMatch(src, /M 17 4 L 26 13/, "the retired foil-corner fold path must be gone");
+  assert.match(src, /#D85A30/i, "hanko vermillion seal");
+  assert.match(src, /#f8f5f0/i, "cream knockout");
+  assert.match(src, /variant === "mono"/, "a single-ink navy monochrome variant exists");
+  assert.doesNotMatch(src, /#c9a24b/i, "the retired gold must be gone from the mark");
 });
 
-test("Logo component: FoilTCG wordmark — Fredoka, navy 'Foil' + gold 'TCG', accessible name (ADR-055)", () => {
+test("Logo component: 'Foil' wordmark — Bricolage font-wordmark, navy/cream tones, no 'TCG' (ADR-094)", () => {
   const src = readFile("components/brand/logo.tsx");
-  assert.match(src, /font-wordmark/, "wordmark uses the Fredoka font-wordmark utility");
-  assert.match(src, /aria-label="FoilTCG home"/, "accessible name (no em dash — Gate 12)");
+  assert.match(src, /font-wordmark/, "wordmark uses the font-wordmark utility");
+  assert.match(src, /aria-label="Foil home"/, "accessible name (no em dash — Gate 12)");
   assert.match(src, /text-foil-navy/, "onCream tone: navy 'Foil'");
   assert.match(src, /text-foil-cream/, "onNavy tone: cream 'Foil'");
-  assert.match(src, />Foil</, "'Foil' word");
-  assert.match(src, />\s*TCG\s*</, "'TCG' word");
+  assert.match(src, />\s*Foil\s*<\/span>/, "'Foil' word");
+  assert.doesNotMatch(src, />\s*TCG\s*</, "'TCG' dropped from the display wordmark");
 });
 
-test("Wordmark font Fredoka is pinned + exposed as font-wordmark (ADR-055)", () => {
+test("Wordmark font Bricolage Grotesque is pinned + exposed as font-wordmark (ADR-094)", () => {
   const layout = readFile("app/layout.tsx");
-  assert.match(layout, /Fredoka/, "layout imports Fredoka");
-  assert.match(layout, /variable:\s*["']--font-wordmark["']/, "Fredoka backs the --font-wordmark var");
+  assert.match(layout, /Bricolage_Grotesque/, "layout imports Bricolage Grotesque");
+  assert.doesNotMatch(layout, /Fredoka\(/, "Fredoka is no longer loaded");
+  assert.match(layout, /variable:\s*["']--font-wordmark["']/, "Bricolage backs the --font-wordmark var");
   const css = readFile("app/globals.css");
   assert.match(css, /--font-wordmark:\s*var\(--font-wordmark\)/, "the font-wordmark utility token exists");
 });
 
-test("Brand assets: favicon + icon + OG carry the foil-corner mark / wordmark, no Pokeball (ADR-055)", () => {
+test("Brand assets: favicon + icon + OG carry the seal mark / 'Foil' wordmark, no Pokéball or gold TCG (ADR-094)", () => {
   const fav = readFile("public/favicon.svg");
-  assert.doesNotMatch(fav, /#e63946/i, "favicon must not be the red Pokeball");
-  assert.match(fav, /M 17 4 L 26 13/, "favicon carries the foil-corner fold path");
+  assert.doesNotMatch(fav, /#e63946/i, "favicon must not be the red Pokéball");
+  assert.match(fav, /#D85A30/i, "favicon is the vermillion seal");
+  assert.doesNotMatch(fav, /M 17 4 L 26 13/, "the retired foil-corner fold path is gone");
   const icon = readFile("public/icon.svg");
-  assert.doesNotMatch(icon, /#e63946/i, "icon.svg must not be the Pokeball");
-  assert.match(icon, /Foil<\/tspan>/, "icon.svg carries the 'Foil' wordmark");
-  assert.match(icon, /TCG<\/tspan>/, "icon.svg carries the 'TCG' wordmark");
+  assert.match(icon, /#D85A30/i, "icon.svg carries the vermillion seal");
+  assert.match(icon, />Foil<\/text>/, "icon.svg carries the 'Foil' wordmark");
+  assert.doesNotMatch(icon, /TCG<\/(?:text|tspan)>/, "no 'TCG' rendered in the icon wordmark");
   const og = readFile("app/opengraph-image.tsx");
   assert.doesNotMatch(og, /#FF6B5C/i, "OG must not use the retired coral");
-  assert.match(og, /FoilTCG|Fredoka/, "OG carries the FoilTCG wordmark");
+  assert.match(og, /Bricolage Grotesque/, "OG loads the Bricolage wordmark cut");
+  assert.match(og, /#D85A30/i, "OG mark is the vermillion seal");
 });
 
 test("Site header: uses the <Logo /> brand component (ADR-032)", () => {
@@ -542,23 +547,24 @@ test("Home page: orphan CardPeek decorations removed (ADR-038)", () => {
   assert.doesNotMatch(src, /CardPeek/, "CardPeek (component + invocations) should be gone");
 });
 
-test("Hero pills: bullets use the foil-corner mark, no Pokeball (ADR-055)", () => {
+test("Hero pills: bullets use the seal mark, no Pokéball (ADR-094)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // The Live pill uses <FoilCornerMark /> as its bullet (the navy Pokeball
-  // bullet is retired). Homepage-v2 (ADR-065) removed the second "Verified
-  // Seller" pill — its trust function moved to the founder credit (headshot +
-  // byline) — so the bar is now >=1 mark, not >=2.
-  const marks = (src.match(/<FoilCornerMark\b/g) ?? []).length;
-  assert.ok(marks >= 1, "expected >=1 FoilCornerMark bullet (the Live pill)");
-  assert.match(src, /import \{ FoilCornerMark \} from "@\/components\/brand\/logo"/);
+  // The Live pill uses <SealMark /> as its bullet (the retired foil-corner /
+  // Pokéball bullets are gone). Homepage-v2 (ADR-065) removed the second
+  // "Verified Seller" pill, so the bar is >=1 mark.
+  const marks = (src.match(/<SealMark\b/g) ?? []).length;
+  assert.ok(marks >= 1, "expected >=1 SealMark bullet (the Live pill)");
+  assert.match(src, /import \{ SealMark \} from "@\/components\/brand\/logo"/);
   assert.doesNotMatch(src, /<PokeballMark\b/, "no PokeballMark bullets remain");
 });
 
-test("Display font is Fraunces with the SOFT warmth axis (ADR-036)", () => {
+test("Display font is Fraunces with the SOFT warmth axis; Bricolage is the wordmark cut (ADR-036/094)", () => {
   const layout = readFile("app/layout.tsx");
   assert.match(layout, /Fraunces/, "layout must import Fraunces");
-  assert.doesNotMatch(layout, /Bricolage_Grotesque/, "Bricolage import should be gone");
-  assert.match(layout, /variable:\s*["']--font-display["']/, "Fraunces must back the --font-display token");
+  // Bricolage is back (ADR-094) but as the WORDMARK cut, not the display font —
+  // Fraunces still backs --font-display, Bricolage backs --font-wordmark.
+  assert.match(layout, /Fraunces\([\s\S]*?variable:\s*["']--font-display["']/, "Fraunces backs --font-display");
+  assert.match(layout, /Bricolage_Grotesque\([\s\S]*?variable:\s*["']--font-wordmark["']/, "Bricolage backs --font-wordmark");
   const css = readFile("app/globals.css");
   // The SOFT axis (no wght set, so font-weight utilities still compose).
   assert.match(css, /font-variation-settings:\s*["']SOFT["']\s+30/);
@@ -576,19 +582,20 @@ test("Hero: the grail showcase renders ABOVE the H1 (ADR-037)", () => {
   assert.ok(cardsIdx < h1Idx, "the HERO_CARDS showcase must render before the H1");
 });
 
-test("How it works: foil-corner card watermark, that section only, no Pokeball (ADR-055)", () => {
+test("How it works: hanko-seal watermark, that section only, no Pokéball or gold (ADR-094)", () => {
   const src = readFile("app/(site)/page.tsx");
   assert.doesNotMatch(src, /function PokeballPattern/, "PokeballPattern should be gone");
   assert.doesNotMatch(src, /foil-pokeball/, "the Pokeball pattern id should be gone");
   assert.doesNotMatch(src, /#e63946/i, "no Pokémon red in the pattern");
-  assert.match(src, /function FoilCornerPattern/, "FoilCornerPattern component must exist");
-  assert.match(src, /<pattern id="foil-card-pattern"/, "the foil-corner <pattern> tile must exist");
+  assert.match(src, /function FoilCornerPattern/, "the watermark pattern component must exist");
+  assert.match(src, /<pattern id="foil-card-pattern"/, "the seal <pattern> tile must exist");
   // Rendered exactly once — How it works is the only textured section.
   const uses = (src.match(/<FoilCornerPattern\s*\/>/g) ?? []).length;
-  assert.equal(uses, 1, "FoilCornerPattern should render exactly once (How it works only)");
-  // In-brand two-tone: navy card body + gold folded corner.
-  assert.match(src, /fill="#0f1e3a"/i, "navy card body");
-  assert.match(src, /fill="#c9a24b"/i, "gold folded corner");
+  assert.equal(uses, 1, "the watermark should render exactly once (How it works only)");
+  // The hanko seal glyph: vermillion square + cream knockout, no retired gold.
+  assert.match(src, /fill="#D85A30"/i, "vermillion seal square");
+  assert.match(src, /fill="#f8f5f0"/i, "cream knockout");
+  assert.doesNotMatch(src, /fill="#c9a24b"/i, "the retired gold must be gone from the watermark");
   // Faint watermark so text on top holds AA contrast.
   assert.match(src, /opacity-\[0\.0\d\]/, "low-opacity watermark");
 });

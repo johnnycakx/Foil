@@ -29,7 +29,7 @@ function SiteHeader() {
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
         <Link
           href="/"
-          aria-label="FoilTCG home"
+          aria-label="Foil home"
           className="inline-flex items-center transition hover:text-foil-coral"
         >
           <Logo size="md" />
@@ -76,9 +76,9 @@ function SiteFooter() {
   return (
     <footer className="border-t border-foil-navy/10 bg-foil-cream">
       <div className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
-        {/* Brand wordmark lockup (ADR-055) — FoilTCG in Fredoka, navy + gold. */}
+        {/* Brand wordmark lockup (ADR-094) — the hanko seal + "Foil" in Bricolage, navy ink. */}
         <div className="mb-6">
-          <Link href="/" aria-label="FoilTCG home" className="inline-flex transition hover:opacity-80">
+          <Link href="/" aria-label="Foil home" className="inline-flex transition hover:opacity-80">
             <Logo size="md" />
           </Link>
         </div>

@@ -1,74 +1,96 @@
-// ADR-055 — Fredoka "FoilTCG" wordmark + foil-corner card mark.
+// ADR-094 — the Foil "hanko" seal mark + "Foil" wordmark (Bricolage Grotesque).
 //
-// Supersedes the ADR-036/038/040 glyph lineage (Foil Spark → navy Pokeball →
-// classic red/white Pokeball). The literal Pokeball was Nintendo/Pokémon
-// trade dress in the brand position of a buyer-side affiliate business — a
-// pre-PokeBeard-launch trademark-exposure blocker. This replaces it with an
-// owned mark: a Fredoka wordmark ("Foil" + gold-sheen "TCG") and an abstract
-// foil-corner card glyph. No Pokeball, no Pokémon-trademark shapes, no
-// yellow+blue Pokémon trade dress — navy/gold, fully in-brand.
+// Supersedes ADR-055's foil-corner card mark + gold "FoilTCG" wordmark. Two
+// forcing functions (John, 2026-07-01): (1) the gold accent is being retired
+// (fable-design-overhaul palette revision), which kills the gold-sheen "TCG"
+// treatment; (2) the brand needed a single owned mark that IS also the accent-
+// color decision. John's Stage-1 pick: "C1 — the hanko, carved straight" — a
+// vermillion carved seal, a card slotting into a pocket knocked out in negative
+// space, centered on the seal's vertical axis. The hanko vermillion (#D85A30)
+// is the coral that succeeds gold.
 //
-// Tokens (globals.css @theme): navy #0f1e3a, gold #c9a24b, cream #f8f5f0.
-// Fredoka is pinned in app/layout.tsx as the `--font-wordmark` next/font var,
-// exposed as the `font-wordmark` Tailwind utility.
+// Master geometry: 24×24 grid (John's canonical SVG, optically refined). The
+// seal SQUARE is the mark — favicons/avatars render it full-bleed (rounded
+// square, not circle-cropped). Knockout = cream (#f8f5f0) on vermillion. A
+// navy monochrome variant exists for single-ink contexts (print, embeds).
+//
+// Wordmark: seal + "Foil" in Bricolage Grotesque 600, navy ink. "TCG" is
+// dropped from the display wordmark (the domain keeps it). Font pinned in
+// app/layout.tsx as the `--font-wordmark` next/font var.
 
 type Size = "sm" | "md" | "lg";
 /** "onCream" (default, header): navy "Foil". "onNavy" (footer/dark/OG): cream "Foil". */
 type Tone = "onCream" | "onNavy";
+type MarkVariant = "vermillion" | "mono";
 
-const MARK_PX: Record<Size, number> = { sm: 16, md: 20, lg: 30 };
+const MARK_PX: Record<Size, number> = { sm: 18, md: 22, lg: 32 };
 const WORDMARK_CLASS: Record<Size, string> = { sm: "text-base", md: "text-xl", lg: "text-3xl" };
 const GAP_CLASS: Record<Size, string> = { sm: "gap-1.5", md: "gap-2", lg: "gap-2.5" };
 
-// Darker gold for the fold underside (the revealed corner) — passes as a flat
-// accent, distinct enough from the bright flap to read as a fold.
-const GOLD = "#c9a24b";
-const GOLD_DARK = "#a8842f";
-const GOLD_LIGHT = "#e3c87a";
+export const SEAL_VERMILLION = "#D85A30";
+const CREAM = "#f8f5f0";
 const NAVY = "#0f1e3a";
 
 /**
- * Foil-corner card mark. A navy rounded-rect card tile whose top-right corner
- * is folded forward, revealing a two-tone gold foil back (a "dog-ear"): the
- * cut corner shows darker gold (underside), the folded flap is bright gold with
- * a restrained vertical sheen gradient. Transparent background — drop it into
- * any lockup. Isolated + geometry-only so John can swap it later without
- * touching the wordmark. (viewBox 0 0 32 32; card x6→26 y4→28, fold leg 9.)
+ * The Foil hanko seal mark (ADR-094). A vermillion carved seal: a card
+ * (cream outline) slotting into a pocket (cream bar), knocked out in negative
+ * space. `variant="mono"` renders it in a single navy ink for contexts where
+ * the vermillion is unavailable. Transparent outside the seal square, so it
+ * drops into any lockup or renders full-bleed as a favicon/avatar.
+ *
+ * Geometry is the John-approved 24×24 master — refine optically, do not
+ * redesign. At ≤16px the card stroke thickens (~1.8) so the slot stays legible.
  */
-export function FoilCornerMark({ px = 20 }: { px?: number }) {
+export function SealMark({
+  px = 22,
+  variant = "vermillion",
+}: {
+  px?: number;
+  variant?: MarkVariant;
+}) {
+  const cardStroke = px <= 16 ? 1.8 : 1.5;
+  const ink = variant === "mono" ? NAVY : CREAM;
   return (
     <svg
-      viewBox="0 0 32 32"
+      viewBox="0 0 24 24"
       width={px}
       height={px}
       role="presentation"
       aria-hidden
       className="inline-block shrink-0"
     >
-      <defs>
-        <linearGradient id="foil-corner-sheen" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor={GOLD_LIGHT} />
-          <stop offset="1" stopColor={GOLD} />
-        </linearGradient>
-      </defs>
-      {/* Navy card body — top-right corner sliced for the fold. */}
-      <path
-        d="M 9.5 4 H 17 L 26 13 V 24.5 A 3.5 3.5 0 0 1 22.5 28 H 9.5 A 3.5 3.5 0 0 1 6 24.5 V 7.5 A 3.5 3.5 0 0 1 9.5 4 Z"
-        fill={NAVY}
+      {/* The seal square: solid vermillion, or a navy outline in mono. */}
+      <rect
+        x="3.2"
+        y="3.2"
+        width="17.6"
+        height="17.6"
+        rx="4.6"
+        fill={variant === "mono" ? "none" : SEAL_VERMILLION}
+        stroke={variant === "mono" ? NAVY : "none"}
+        strokeWidth={variant === "mono" ? 1.4 : 0}
       />
-      {/* Fold underside — the revealed corner (upper-right triangle), darker gold. */}
-      <path d="M 17 4 H 26 V 13 Z" fill={GOLD_DARK} />
-      {/* Folded flap lying on the card (lower-left triangle), bright gold + sheen. */}
-      <path d="M 17 4 L 26 13 H 17 Z" fill="url(#foil-corner-sheen)" />
+      {/* The card — an outline knocked into the seal. */}
+      <rect x="8.9" y="5.4" width="6.2" height="9.6" rx="1.1" fill="none" stroke={ink} strokeWidth={cardStroke} />
+      {/* The pocket bar the card slots into. */}
+      <path d="M6 14.4h12v1.5a2.9 2.9 0 0 1-2.9 2.9H8.9A2.9 2.9 0 0 1 6 15.9z" fill={ink} />
     </svg>
   );
 }
 
 /**
- * The FoilTCG wordmark lockup: foil-corner mark + "Foil" + gold-sheen "TCG",
- * set in Fredoka (font-wordmark). `tone` flips "Foil" navy↔cream for cream vs
- * navy/dark surfaces; "TCG" is always gold. Whole lockup is one accessible
- * name: "FoilTCG home" (no em dash — Gate 12).
+ * Deprecated alias for the pre-ADR-094 name. Kept so existing call sites don't
+ * break; renders the new seal mark. Prefer `SealMark`.
+ */
+export function FoilCornerMark({ px = 22 }: { px?: number }) {
+  return <SealMark px={px} />;
+}
+
+/**
+ * The Foil wordmark lockup (ADR-094): the hanko seal + "Foil" in Bricolage
+ * Grotesque 600 (font-wordmark). `tone` flips "Foil" navy↔cream for cream vs
+ * navy/dark surfaces. No "TCG" in the display wordmark. One accessible name:
+ * "Foil home".
  */
 export function Logo({
   size = "md",
@@ -82,27 +104,12 @@ export function Logo({
   const foilColor = tone === "onNavy" ? "text-foil-cream" : "text-foil-navy";
   return (
     <span
-      aria-label="FoilTCG home"
-      className={`font-wordmark inline-flex items-center font-bold leading-none tracking-tight ${GAP_CLASS[size]}`}
+      aria-label="Foil home"
+      className={`font-wordmark inline-flex items-center font-semibold leading-none tracking-tight ${GAP_CLASS[size]}`}
     >
-      {withMark && <FoilCornerMark px={MARK_PX[size]} />}
-      <span aria-hidden className={`inline-flex items-baseline ${WORDMARK_CLASS[size]}`}>
-        <span className={foilColor}>Foil</span>
-        {/* "TCG" gold with a restrained vertical sheen (gold→light→gold),
-            clipped to the text. A solid-gold fallback color shows for the
-            brief moment before background-clip paints + anywhere clip is
-            unsupported. */}
-        <span
-          className="bg-clip-text text-transparent"
-          style={{
-            color: GOLD,
-            backgroundImage: `linear-gradient(180deg, ${GOLD} 0%, ${GOLD_LIGHT} 50%, ${GOLD} 100%)`,
-            WebkitBackgroundClip: "text",
-            backgroundClip: "text",
-          }}
-        >
-          TCG
-        </span>
+      {withMark && <SealMark px={MARK_PX[size]} />}
+      <span aria-hidden className={`${WORDMARK_CLASS[size]} ${foilColor}`}>
+        Foil
       </span>
     </span>
   );

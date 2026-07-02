@@ -384,6 +384,17 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 **Mitigation playbook.** (1) Go inbox-only on the success screens (drops the pre-registration foothold entirely; one line of copy). (2) Rotate `UNSUBSCRIBE_TOKEN_SECRET` (invalidates every outstanding link; recovery form re-issues). (3) Add an `iat` freshness window on vault tokens (the claim is already in the payload). (4) Promote to authed accounts with the Pro tier.
 
+## R-065 — Brand-mark IP exposure (Pokémon trade dress in the logo position)
+
+**Severity:** Medium (a trademark claim against the brand mark of a buyer-side affiliate business, compounding if pointed at by paid creator traffic)
+**Status:** `resolved`. Two-step closure: **ADR-055 (2026-06-05)** retired the literal Pokéball (the actual trade-dress exposure) for an owned foil-corner card + "FoilTCG" wordmark; **ADR-094 (2026-07-01)** refreshed the *owned* mark again — to the hanko seal + "Foil" (Bricolage) — driven by the gold retirement, NOT a live IP concern. The trade-dress risk was already gone before ADR-094; the mark is fully owned, uses no Pokéball or Pokémon yellow+blue trade dress, and the "TCG" wordmark treatment (a nod, never a trademark shape) is dropped from the display lockup.
+
+**The risk (historical).** The pre-ADR-055 mark was a pixel-art Pokéball — a registered Nintendo/Pokémon trademark — in the brand position of a business that monetizes Pokémon-card affiliate links. Below the enforcement-detection threshold at zero traffic, but exactly the wrong thing to compound by driving paid creator traffic (the eve/PokeBeard moment) at it. Surfaced 2026-06-02 (IDEAS #295).
+
+**Trigger to re-open.** Any reintroduction of a Pokéball, Pokémon-trademark shape, or the Pokémon yellow+blue trade dress into a brand surface — the visual-regression guards (`lib/__tests__/visual-regression.test.ts`, ADR-094 mark tests) pin the negative.
+
+**Mitigation (shipped).** Owned mark across every in-repo surface (ADR-094); off-repo surfaces (X/Discord/Beehiiv) on John's checklist (`docs/brand-mark-offrepo-checklist.md`).
+
 ## How to log a new risk
 
 1. Next available ID (`R-NNN`, monotonically increasing).

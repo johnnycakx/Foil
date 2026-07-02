@@ -32,7 +32,7 @@
      humanist serif) as of Session 46 / ADR-036 — see the .font-display
      rule below for the optical-sizing + SOFT warmth axes. */
   --font-display: var(--font-display);
-  /* Brand wordmark cut — Fredoka (ADR-055). Pinned in app/layout.tsx as the
+  /* Brand wordmark cut — Bricolage Grotesque (ADR-094). Pinned in app/layout.tsx as the
      next/font `--font-wordmark` var; this exposes the `font-wordmark` utility
      used by the FoilTCG lockup in components/brand/logo.tsx. */
   --font-wordmark: var(--font-wordmark);

@@ -125,12 +125,13 @@ export function EditorialDigestEmail({ issue, model }: { issue: EditorialIssue; 
       <Preview>{preview}</Preview>
       <Body style={{ backgroundColor: CREAM, margin: 0, padding: "24px 0", fontFamily: SANS }}>
         <Container style={{ maxWidth: "600px", margin: "0 auto", backgroundColor: PANEL, borderRadius: "12px", padding: "32px 28px" }}>
-          {/* Masthead — text wordmark, no image (Primary-safe + degrades perfectly). */}
+          {/* Masthead — text wordmark, no image (Primary-safe + degrades
+              perfectly; the hanko seal stays text-forward in email per ADR-094
+              note 5). "TCG" dropped from the display wordmark. */}
           <Section style={{ paddingBottom: "8px" }}>
             <Text style={{ margin: 0, fontFamily: SANS, fontSize: "20px", fontWeight: 800, letterSpacing: "-0.01em" }}>
               <span style={{ color: NAVY }}>Foil</span>
-              <span style={{ color: GOLD }}>TCG</span>
-              <span style={{ color: SLATE, fontWeight: 600, fontSize: "14px" }}> {"·"} Foil Weekly</span>
+              <span style={{ color: SLATE, fontWeight: 600, fontSize: "14px" }}> {"·"} Weekly</span>
             </Text>
             <div style={{ height: "2px", width: "40px", backgroundColor: GOLD, borderRadius: "2px", marginTop: "10px" }} />
           </Section>
