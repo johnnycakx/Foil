@@ -116,13 +116,18 @@ export function Logo({
         ? "text-foil-cream"
         : "text-foil-navy";
   const faceClass = face === "bubble" ? "font-wordmark-bubble font-normal" : "font-wordmark";
+  // Round-3 fix 5: the bubble wordmark is pure lettering at presence size —
+  // one step up from the carved ladder (md chrome renders ~24px), identical
+  // treatment on night and cream.
+  const wordmarkClass =
+    face === "bubble" && size === "md" ? "text-2xl" : WORDMARK_CLASS[size];
   return (
     <span
       aria-label="Foil home"
       className={`${faceClass} inline-flex items-center font-semibold leading-none tracking-tight ${GAP_CLASS[size]}`}
     >
       {withMark && <SealMark px={MARK_PX[size]} />}
-      <span aria-hidden className={`${WORDMARK_CLASS[size]} ${foilColor}`}>
+      <span aria-hidden className={`${wordmarkClass} ${foilColor}`}>
         Foil
       </span>
     </span>

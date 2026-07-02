@@ -67,24 +67,52 @@ export default async function Home() {
 // never depends on the flaky images.pokemontcg.io CDN.
 // `arc` composes the fan's curve (middle cards ride high, edges settle low);
 // `edge` cards hide on mobile so the fan breathes at 390px.
+// Round-3 fix 1: the fan is a REAL fan, not a pasted row — per-card depth
+// slots. `depth` 0 = the focal Moonbreon (largest, sharpest, teal rim-glow —
+// the light source); 1–3 step progressively smaller, more rotated, dimmer and
+// softer toward the edges (depth of field), with z-order stacking down from
+// the center. Widths are per-slot so the silhouette curves.
+const DEPTH_SLOTS: Record<number, { size: string; z: string; fx: string }> = {
+  0: {
+    size: "w-32 sm:w-40 md:w-48 lg:w-[15rem]",
+    z: "z-40",
+    fx: "",
+  },
+  1: {
+    size: "w-[6.5rem] sm:w-32 md:w-[9.5rem] lg:w-44",
+    z: "z-30",
+    fx: "brightness-[0.92]",
+  },
+  2: {
+    size: "w-24 sm:w-28 md:w-32 lg:w-40",
+    z: "z-20",
+    fx: "brightness-[0.8] blur-[0.6px]",
+  },
+  3: {
+    size: "w-20 sm:w-24 md:w-28 lg:w-[8.5rem]",
+    z: "z-10",
+    fx: "brightness-[0.65] blur-[1.2px]",
+  },
+};
+
 const HERO_CARDS: {
   id: string;
   alt: string;
   tilt: string;
   arc: string;
+  depth: 0 | 1 | 2 | 3;
   edge?: boolean;
-  focal?: boolean;
 }[] = [
-  { id: "base1/4",    alt: "Charizard, Base Set (vintage anchor)",             tilt: "rotate-[-7deg]", arc: "translate-y-7", edge: true },
-  { id: "swsh35/74",  alt: "Charizard VMAX Rainbow Rare, Champions Path",      tilt: "rotate-[-5deg]", arc: "translate-y-4" },
-  { id: "swsh12/186", alt: "Lugia V Alt Art, Silver Tempest",                  tilt: "rotate-[-3deg]", arc: "translate-y-1.5" },
-  // Moonbreon is the FOCAL card — the community's grail leads the fan,
-  // scaled up with the brightest glow (the "whoa" of the fold).
-  { id: "swsh7/215",  alt: "Umbreon VMAX Alt Art (Moonbreon), Evolving Skies", tilt: "rotate-[0.5deg]", arc: "-translate-y-1", focal: true },
-  { id: "swsh8/269",  alt: "Mew VMAX Alt Art, Fusion Strike",                  tilt: "rotate-[1.5deg]", arc: "translate-y-0" },
-  { id: "swsh11/186", alt: "Giratina V Alt Art, Lost Origin",                  tilt: "rotate-[3deg]",  arc: "translate-y-1.5" },
-  { id: "swsh7/218",  alt: "Rayquaza VMAX Alt Art, Evolving Skies",            tilt: "rotate-[5deg]",  arc: "translate-y-4" },
-  { id: "swsh4/188",  alt: "Pikachu VMAX Rainbow, Vivid Voltage",              tilt: "rotate-[7deg]",  arc: "translate-y-7", edge: true },
+  { id: "base1/4",    alt: "Charizard, Base Set (vintage anchor)",             tilt: "rotate-[-11deg]", arc: "translate-y-10", depth: 3, edge: true },
+  { id: "swsh35/74",  alt: "Charizard VMAX Rainbow Rare, Champions Path",      tilt: "rotate-[-8deg]",  arc: "translate-y-6",  depth: 2 },
+  { id: "swsh12/186", alt: "Lugia V Alt Art, Silver Tempest",                  tilt: "rotate-[-4deg]",  arc: "translate-y-2",  depth: 1 },
+  // Moonbreon is the FOCAL card — the community's grail leads the fan at
+  // ~1.35x its neighbors with the teal rim-glow (the "whoa" of the fold).
+  { id: "swsh7/215",  alt: "Umbreon VMAX Alt Art (Moonbreon), Evolving Skies", tilt: "rotate-[0.5deg]", arc: "-translate-y-1", depth: 0 },
+  { id: "swsh8/269",  alt: "Mew VMAX Alt Art, Fusion Strike",                  tilt: "rotate-[4deg]",   arc: "translate-y-2",  depth: 1 },
+  { id: "swsh11/186", alt: "Giratina V Alt Art, Lost Origin",                  tilt: "rotate-[8deg]",   arc: "translate-y-6",  depth: 2 },
+  { id: "swsh7/218",  alt: "Rayquaza VMAX Alt Art, Evolving Skies",            tilt: "rotate-[11deg]",  arc: "translate-y-10", depth: 3 },
+  { id: "swsh4/188",  alt: "Pikachu VMAX Rainbow, Vivid Voltage",              tilt: "rotate-[14deg]",  arc: "translate-y-14", depth: 3, edge: true },
 ];
 
 function Hero() {
@@ -102,47 +130,60 @@ function Hero() {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-[560px] bg-[radial-gradient(ellipse_58%_46%_at_50%_16%,rgba(248,245,240,0.07),transparent_62%)]"
       />
-      {/* The floor — barely-there reflected light under the fan. */}
+      {/* The grail fan — a real lit fan (round-3 fix 1): the focal Moonbreon
+          leads at ~1.35x with a teal rim-glow; neighbors step down in size,
+          rotate away, and soften into the dark (depth of field); the whole
+          hand fades at the edges instead of hard-cropping. Each card still
+          holo-tilts under the pointer. Decorative → aria-hidden. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-[230px] h-24 bg-[radial-gradient(ellipse_42%_100%_at_50%_0%,rgba(248,245,240,0.035),transparent_75%)] sm:top-[300px] md:top-[330px] lg:top-[380px]"
-      />
-
-      {/* The grail fan — full-opacity card art, arced like a hand of cards,
-          each one holo-tilting under the pointer (the signature effect: a site
-          about foil cards where the cards actually foil). Decorative → the row
-          is aria-hidden so screen readers go straight to the pitch. */}
-      <div
-        aria-hidden
-        className="mx-auto flex max-w-6xl items-start justify-center px-2 pt-10 sm:pt-14"
+        className="relative mx-auto max-w-6xl [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]"
       >
-        {HERO_CARDS.map((c, i) => (
-          <div
-            key={c.id}
-            className={`relative ${c.tilt} ${c.arc} ${i > 0 ? "-ml-8 sm:-ml-8 md:-ml-9" : ""} ${
-              c.edge ? "hidden sm:block" : ""
-            } ${c.focal ? "z-10 scale-[1.12] sm:scale-[1.16]" : ""} transition duration-200 ease-out hover:z-20`}
-          >
-            <HoloCard
-              src={`/hero/${c.id.replace("/", "-")}.webp`}
-              alt={c.alt}
-              width={400}
-              height={560}
-              eager
-              className={`aspect-[5/7] w-[6.75rem] overflow-hidden rounded-lg ring-1 sm:w-32 md:w-36 lg:w-44 ${
-                c.focal
-                  ? "shadow-[0_12px_50px_-10px_rgba(248,245,240,0.38)] ring-foil-cream/25"
-                  : "shadow-[0_10px_36px_-14px_rgba(248,245,240,0.22)] ring-foil-cream/12"
-              }`}
-            />
-          </div>
-        ))}
+        <div className="flex items-start justify-center px-2 pt-10 sm:pt-14">
+          {HERO_CARDS.map((c, i) => {
+            const slot = DEPTH_SLOTS[c.depth];
+            return (
+              <div
+                key={c.id}
+                className={`relative ${c.tilt} ${c.arc} ${slot.z} ${i > 0 ? "-ml-9 sm:-ml-10 md:-ml-12" : ""} ${
+                  c.edge ? "hidden sm:block" : ""
+                } transition duration-200 ease-out hover:z-50`}
+              >
+                <HoloCard
+                  src={`/hero/${c.id.replace("/", "-")}.webp`}
+                  alt={c.alt}
+                  width={400}
+                  height={560}
+                  eager
+                  className={`aspect-[5/7] overflow-hidden rounded-lg ring-1 ${slot.size} ${slot.fx} ${
+                    c.depth === 0
+                      ? "shadow-[0_16px_60px_-12px_rgba(111,216,197,0.35),0_12px_40px_-10px_rgba(248,245,240,0.3)] ring-foil-accent/40"
+                      : "shadow-[0_10px_30px_-14px_rgba(248,245,240,0.18)] ring-foil-cream/12"
+                  }`}
+                />
+              </div>
+            );
+          })}
+        </div>
+        {/* THE FLOOR (round-3): a visible contact shadow directly under the
+            hand + a faint cool reflection pool — the cards STAND on something. */}
+        <div
+          aria-hidden
+          className="pointer-events-none mx-auto -mt-4 h-10 w-[68%] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(3,7,15,0.9),rgba(3,7,15,0.35)_55%,transparent_75%)] blur-[6px]"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none mx-auto -mt-8 h-16 w-[46%] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(111,216,197,0.10),rgba(248,245,240,0.05)_45%,transparent_72%)] blur-[10px]"
+        />
       </div>
 
       {/* The pitch — pull-model (fable-design-overhaul §1): the plain promise
           first, ONE primary action. "Vault" never leads; it charms in the CTA
           after the promise earns comprehension. */}
-      <div className="relative mx-auto w-full max-w-3xl px-5 pt-12 pb-20 text-center sm:px-8 sm:pt-14 sm:pb-28">
+      {/* Round-3 fix 4: tightened tail padding — the vault section enters
+          before the viewport empties (no dead black band after the founder
+          note). */}
+      <div className="relative mx-auto w-full max-w-3xl px-5 pt-6 pb-12 text-center sm:px-8 sm:pt-8 sm:pb-16">
         <p className="inline-flex items-center gap-2 rounded-full border border-foil-cream/15 bg-foil-night-2/80 px-3 py-1 text-xs font-medium text-foil-cream/80 backdrop-blur-sm">
           <SealMark px={13} />
           <span className="relative flex h-1.5 w-1.5">
@@ -226,7 +267,7 @@ function VaultMoment() {
       {/* Round-2 restraint: the section glow is gone — the raised night-2
           panel + its dark drop shadow do the depth work (layering, not
           luminescence). */}
-      <div className="reveal-rise relative mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
+      <div className="reveal-rise relative mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
         <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.2fr]">
           <div>
             <p className="text-xs font-medium tracking-[0.08em] text-foil-accent uppercase">
@@ -368,7 +409,7 @@ function PullLoop() {
 
   return (
     <section className="border-t border-foil-cream/10">
-      <div className="reveal-rise mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-24">
+      <div className="reveal-rise mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
         <h2 className="font-display text-4xl font-semibold tracking-[-0.01em] text-foil-cream sm:text-5xl">
           How the hunt works
         </h2>
@@ -406,7 +447,7 @@ function SampleAlert() {
         aria-hidden
         className="pointer-events-none absolute inset-y-0 right-0 w-2/3 bg-[radial-gradient(ellipse_45%_45%_at_65%_50%,rgba(248,245,240,0.04),transparent_65%)]"
       />
-      <div className="reveal-rise relative mx-auto grid w-full max-w-6xl items-center gap-12 px-5 py-20 sm:px-8 sm:py-24 lg:grid-cols-[1fr_1.1fr]">
+      <div className="reveal-rise relative mx-auto grid w-full max-w-6xl items-center gap-12 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[1fr_1.1fr]">
         <div>
           <p className="text-xs font-medium tracking-[0.08em] text-foil-accent uppercase">
             The alert
