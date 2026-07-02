@@ -112,3 +112,34 @@ craft.
 typeahead chip, a real price input, a real judged-listing row, a real subject
 line) — the Vercel proof-block principle, NOT an icon grid; polish stat-strip
 copy; sleeve-glint inset on binder pockets.
+
+---
+
+## iter-04 — CONVERGE: the Moonbreon hunt told in product fragments
+
+**Thesis:** The four steps carry miniature REAL product artifacts telling one
+continuous story ("One hunt, start to finish — here's Moonbreon's"): typeahead
+chip → $1,900 target input → $1,845 judged-listing row (17% under the ~$2,214
+sold avg — internally consistent) → the email subject. Stat strip replaced
+with the section-grammar bullets (eyebrow → h2 → body → vermillion-dot bullets
+→ link, consistent across sections). Pocket hover lift.
+
+**Scores:**
+| dim | score | note |
+|---|---|---|
+| (a) pull-clarity | 8.5 | Fold unchanged; still one obvious action. |
+| (b) craft | 8.3 | Unified section grammar; artifacts consistently styled; step-3 pill slightly loud. |
+| (c) depth | **8.0** | Every section owns an object; hero still the only true "room" moment. |
+| (d) ICP | 8.3 | The Moonbreon narrative is collector-brained screenshot material. |
+| (e) mobile | 8.2 | Full page coherent at 390; steps stack cleanly with artifacts. |
+| (f) plain-language | 9.0 | Artifacts speak product truth in plain words. |
+| (g) perf | 8.5 | All static markup + CSS. |
+| (h) card-spotlight | 8.5 | Art carries hero, binder, alert; steps stay quiet. |
+
+**avg 8.41 · min 8.0** (bar: 8.5/7.5 ×2 — one step away)
+
+**Weakest:** (c) — the lit room lacks a FLOOR; the light spill is too subtle
+to register in stills; mobile fan could carry more art.
+
+**Next thesis (iter-05):** the room gets a floor — a glossy-surface reflection
+glow under the fan, brighter hero spill, larger mobile fan presence.

@@ -235,20 +235,16 @@ function VaultMoment() {
               really sells for, watches every live listing, and emails you when
               one lands under your number.
             </p>
-            <dl className="mt-8 grid max-w-md grid-cols-2 gap-px overflow-hidden rounded-xl border border-foil-cream/10 bg-foil-cream/10">
-              <div className="bg-foil-night px-4 py-3">
-                <dt className="text-[11px] text-foil-cream/50">Judged against</dt>
-                <dd className="mt-0.5 text-sm font-medium text-foil-cream">
-                  real sold history
-                </dd>
-              </div>
-              <div className="bg-foil-night px-4 py-3">
-                <dt className="text-[11px] text-foil-cream/50">Checked</dt>
-                <dd className="mt-0.5 text-sm font-medium text-foil-cream">
-                  around the clock
-                </dd>
-              </div>
-            </dl>
+            <ul className="mt-6 max-w-md space-y-2 text-sm text-foil-cream/60">
+              <li className="flex items-start gap-2.5">
+                <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foil-vermillion" />
+                Every pocket shows what the card really sells for.
+              </li>
+              <li className="flex items-start gap-2.5">
+                <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foil-vermillion" />
+                Your targets are checked against live listings around the clock.
+              </li>
+            </ul>
             <Link
               href="/start?src=home-vault"
               className="mt-8 inline-block text-sm font-medium text-foil-cream underline decoration-foil-vermillion/50 underline-offset-4 transition hover:decoration-foil-vermillion"
@@ -262,7 +258,7 @@ function VaultMoment() {
             <ul className="grid grid-cols-3 gap-3 sm:gap-4">
               {VAULT_POCKETS.map((p) => (
                 <li key={p.id} className="group">
-                  <div className="aspect-[5/7] overflow-hidden rounded-lg ring-1 ring-foil-cream/10 transition group-hover:ring-foil-cream/30">
+                  <div className="aspect-[5/7] overflow-hidden rounded-lg ring-1 ring-foil-cream/10 transition group-hover:-translate-y-0.5 group-hover:ring-foil-cream/30">
                     <Image
                       src={`/hero/${p.id.replace("/", "-")}.webp`}
                       alt={p.name}
@@ -298,28 +294,70 @@ function VaultMoment() {
 
 // How it works, reordered around the pull loop (fable-design-overhaul §1):
 // pick cards → set your price → we watch sold-backed listings → you get the
-// email. Hairline columns, vermillion numerals — no boxes, no wallpaper.
+// email. Each step carries a MINIATURE PRODUCT ARTIFACT — one continuous
+// Moonbreon hunt told in real UI fragments (typeahead → target → judged
+// listing → the email subject), never an icon grid. Numbers stay internally
+// consistent: target $1,900, sold avg ~$2,214, listing $1,845 ≈ 17% under.
 function PullLoop() {
   const steps = [
     {
       num: "1",
       title: "Pick your cards",
       body: "Type a name — 'Moonbreon,' 'Base Set Charizard.' Foil knows every printing, from vintage to Japanese exclusives.",
+      artifact: (
+        <div className="rounded-lg border border-foil-cream/12 bg-foil-night-2 px-3 py-2">
+          <p className="flex items-center gap-2 text-xs text-foil-cream/80">
+            <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3 w-3 text-foil-cream/50">
+              <circle cx="8.5" cy="8.5" r="5.5" />
+              <path d="m13 13 4 4" strokeLinecap="round" />
+            </svg>
+            moonbreon
+          </p>
+          <p className="mt-1.5 border-t border-foil-cream/10 pt-1.5 text-[11px] text-foil-cream/55">
+            Umbreon VMAX alt art · Evolving Skies
+          </p>
+        </div>
+      ),
     },
     {
       num: "2",
       title: "Set your price",
       body: "Name what you'd happily pay. No number in mind? We'll watch for a real dip below what it usually sells for.",
+      artifact: (
+        <div className="flex items-center justify-between rounded-lg border border-foil-cream/12 bg-foil-night-2 px-3 py-2">
+          <span className="text-[11px] text-foil-cream/55">your price</span>
+          <span className="font-mono text-xs tabular-nums text-foil-cream/90">$1,900</span>
+        </div>
+      ),
     },
     {
       num: "3",
       title: "We watch the market",
       body: "Foil checks live listings around the clock and judges every price against what the card actually sells for.",
+      artifact: (
+        <div className="flex items-center justify-between gap-2 rounded-lg border border-foil-cream/12 bg-foil-night-2 px-3 py-2">
+          <span className="font-mono text-xs tabular-nums text-foil-cream/90">$1,845</span>
+          <span className="rounded-full bg-foil-vermillion/15 px-2 py-0.5 text-[10px] font-medium text-foil-vermillion">
+            17% under sold avg
+          </span>
+        </div>
+      ),
     },
     {
       num: "4",
       title: "You get one email",
       body: "The moment a real listing hits your number. No feed to check, no tabs to scrub, no junk to wade through.",
+      artifact: (
+        <div className="flex items-center gap-2 rounded-lg border border-foil-cream/12 bg-foil-night-2 px-3 py-2">
+          <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-3 w-3 shrink-0 text-foil-vermillion">
+            <rect x="2.5" y="4.5" width="15" height="11" rx="1.5" />
+            <path d="m3 6 7 5 7-5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span className="truncate text-[11px] text-foil-cream/80">
+            Moonbreon just hit $1,845
+          </span>
+        </div>
+      ),
     },
   ];
 
@@ -329,9 +367,12 @@ function PullLoop() {
         <h2 className="font-display text-3xl font-semibold tracking-[-0.01em] text-foil-cream sm:text-4xl">
           How the hunt works
         </h2>
+        <p className="mt-3 max-w-2xl text-foil-cream/60">
+          One hunt, start to finish — here&apos;s Moonbreon&apos;s.
+        </p>
         <ol className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s) => (
-            <li key={s.num} className="border-t border-foil-cream/15 pt-5">
+            <li key={s.num} className="flex flex-col border-t border-foil-cream/15 pt-5">
               <span className="font-display text-sm font-semibold text-foil-vermillion">
                 {s.num.padStart(2, "0")}
               </span>
@@ -339,6 +380,7 @@ function PullLoop() {
                 {s.title}
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-foil-cream/60">{s.body}</p>
+              <div className="mt-4 sm:mt-auto sm:pt-4">{s.artifact}</div>
             </li>
           ))}
         </ol>
