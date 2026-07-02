@@ -39,9 +39,9 @@ function humanTier(tier: string | null): string {
 export function DealsBoard({ deals }: { deals: DealRow[] }) {
   if (deals.length === 0) {
     return (
-      <div className="rounded-2xl border border-foil-navy/10 bg-foil-cream p-8 text-center shadow-sm shadow-foil-navy/5">
-        <p className="text-foil-navy">We&apos;re re-checking the market right now.</p>
-        <p className="mt-2 text-sm text-foil-slate">
+      <div className="rounded-2xl border border-foil-cream/12 bg-foil-night-2 p-8 text-center shadow-sm shadow-foil-navy/5">
+        <p className="text-foil-cream">We&apos;re re-checking the market right now.</p>
+        <p className="mt-2 text-sm text-foil-cream/60">
           New below-market listings post here every day. Check back shortly, or get them by email below.
         </p>
       </div>
@@ -49,18 +49,18 @@ export function DealsBoard({ deals }: { deals: DealRow[] }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-foil-navy/10 bg-foil-cream shadow-sm shadow-foil-navy/5">
+    <div className="overflow-hidden rounded-2xl border border-foil-cream/12 bg-foil-night-2">
       {/* Column header — hidden on the smallest screens (the row layout stacks
           and self-labels there). */}
-      <div className="hidden border-b border-foil-navy/10 px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-foil-slate sm:grid sm:grid-cols-[2rem_1fr_8rem_7rem_7rem] sm:items-center sm:gap-4">
+      <div className="hidden border-b border-foil-cream/12 px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-foil-cream/60 sm:grid sm:grid-cols-[2rem_1fr_8rem_7rem_7rem] sm:items-center sm:gap-4">
         <span aria-hidden>#</span>
         <span>Card</span>
         <span className="text-right">Recent sold</span>
-        <span className="text-right text-foil-accent-deep">Below by</span>
+        <span className="text-right text-foil-accent">Below by</span>
         <span className="text-right">See it</span>
       </div>
 
-      <ol className="divide-y divide-foil-navy/10">
+      <ol className="divide-y divide-foil-cream/10">
         {deals.map((d, i) => {
           const below = d.deltaPct != null ? Math.round(Math.abs(d.deltaPct)) : null;
           // Click-time redirect (ADR-056): /go/deal/[slug] runs a LIVE
@@ -75,7 +75,7 @@ export function DealsBoard({ deals }: { deals: DealRow[] }) {
               {/* Rank — desktop only (kept out of the mobile two-col grid). */}
               <span
                 aria-hidden
-                className="hidden font-mono text-sm tabular-nums text-foil-slate sm:inline"
+                className="hidden font-mono text-sm tabular-nums text-foil-cream/60 sm:inline"
               >
                 {i + 1}
               </span>
@@ -83,7 +83,7 @@ export function DealsBoard({ deals }: { deals: DealRow[] }) {
               {/* Card identity */}
               <Link
                 href={`/cards/${d.cardSlug}`}
-                className="flex min-w-0 items-center gap-3 transition hover:text-foil-accent-deep"
+                className="flex min-w-0 items-center gap-3 transition hover:text-foil-accent"
               >
                 {d.imageUrl ? (
                   <Image
@@ -92,16 +92,16 @@ export function DealsBoard({ deals }: { deals: DealRow[] }) {
                     width={48}
                     height={67}
                     unoptimized
-                    className="h-12 w-auto shrink-0 rounded-md border border-foil-navy/10 shadow-sm shadow-foil-navy/10"
+                    className="h-12 w-auto shrink-0 rounded-md border border-foil-cream/12 shadow-sm shadow-foil-navy/10"
                   />
                 ) : (
-                  <span aria-hidden className="h-12 w-9 shrink-0 rounded-md border border-foil-navy/10 bg-foil-cream" />
+                  <span aria-hidden className="h-12 w-9 shrink-0 rounded-md border border-foil-cream/12 bg-foil-night" />
                 )}
                 <span className="min-w-0">
-                  <span className="block truncate font-semibold text-foil-navy">{d.cardName}</span>
-                  <span className="block truncate text-xs text-foil-slate">{d.setName}</span>
+                  <span className="block truncate font-semibold text-foil-cream">{d.cardName}</span>
+                  <span className="block truncate text-xs text-foil-cream/60">{d.setName}</span>
                   {/* Mobile-only inline sold + below (the desktop columns are hidden here). */}
-                  <span className="mt-1 block text-xs text-foil-slate sm:hidden">
+                  <span className="mt-1 block text-xs text-foil-cream/60 sm:hidden">
                     {d.soldReference != null ? <>Sold {formatUsd(d.soldReference)}</> : null}
                     {d.matchedTier ? <> · {humanTier(d.matchedTier)}</> : null}
                   </span>
@@ -110,21 +110,21 @@ export function DealsBoard({ deals }: { deals: DealRow[] }) {
 
               {/* Recent sold (condition-matched) — desktop column */}
               <span className="hidden text-right sm:block">
-                <span className="block font-semibold tabular-nums text-foil-navy">
+                <span className="block font-semibold tabular-nums text-foil-cream">
                   {d.soldReference != null ? formatUsd(d.soldReference) : "—"}
                 </span>
                 {d.matchedTier ? (
-                  <span className="block text-[11px] text-foil-slate">{humanTier(d.matchedTier)}</span>
+                  <span className="block text-[11px] text-foil-cream/60">{humanTier(d.matchedTier)}</span>
                 ) : null}
               </span>
 
               {/* Below by — THE hook. Mobile: shown in the right cell; desktop:
                   its own prominent gold column. */}
               <span className="text-right">
-                <span className="font-display block text-2xl font-bold tabular-nums leading-none text-foil-navy sm:text-3xl">
+                <span className="font-display block text-2xl font-bold tabular-nums leading-none text-foil-cream sm:text-3xl">
                   {below != null ? `${below}%` : "—"}
                 </span>
-                <span className="block text-[11px] uppercase tracking-wider text-foil-accent-deep">below sold</span>
+                <span className="block text-[11px] uppercase tracking-wider text-foil-accent">below sold</span>
               </span>
 
               {/* See it on eBay — resolves the live listing on click (affiliate). */}
@@ -132,7 +132,7 @@ export function DealsBoard({ deals }: { deals: DealRow[] }) {
                 href={ctaUrl}
                 target="_blank"
                 rel="sponsored noopener noreferrer"
-                className="col-span-2 mt-1 inline-flex items-center justify-center rounded-full bg-foil-navy px-4 py-2 text-xs font-semibold text-foil-cream shadow-sm shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-accent-deep sm:col-span-1 sm:mt-0"
+                className="col-span-2 mt-1 inline-flex items-center justify-center rounded-full bg-foil-cream px-4 py-2 text-xs font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:bg-foil-accent sm:col-span-1 sm:mt-0"
               >
                 See it on eBay →
               </a>
