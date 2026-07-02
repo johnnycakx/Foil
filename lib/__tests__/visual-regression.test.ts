@@ -143,13 +143,15 @@ test("globals.css: no dark-mode media-query override (ADR-029: cream is consiste
 // Homepage — single-color navy headline + corner-shimmer + Card3D wrap
 // ---------------------------------------------------------------------------
 
-test("Homepage: H1 is a single-color cream headline with no inline color split (night register, overnight-design-loop)", () => {
+test("Homepage: H1 is a single-color ink headline with no inline color split (overnight-design-loop)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // The night-register hero sets the headline in one continuous cream line —
-  // no inline <span className="text-…"> splits (the pre-Session-39 coral
-  // split must never return in any palette).
-  const h1Block = src.match(/<h1\b[^>]*text-foil-cream[^>]*>[\s\S]*?<\/h1>/);
-  assert.ok(h1Block, "H1 with text-foil-cream must exist");
+  // The hero sets the headline in ONE continuous ink line — cream on the night
+  // register, navy on the warm register — with no inline
+  // <span className="text-…"> splits (the pre-Session-39 coral split must
+  // never return in any palette). Direction-agnostic during DIVERGE; the
+  // winner's exact ink gets pinned at CONVERGE.
+  const h1Block = src.match(/<h1\b[^>]*text-foil-(?:cream|navy)[^>]*>[\s\S]*?<\/h1>/);
+  assert.ok(h1Block, "H1 with a single foil ink color must exist");
   assert.doesNotMatch(h1Block![0], /<span\b[^>]*text-[^>]*>/);
 });
 
@@ -656,9 +658,10 @@ test("Hero showcase: the grail cards load eagerly through HoloCard, never lazy (
 // overnight-design-loop — night register + holo-tilt + scroll-reveal guards.
 // ---------------------------------------------------------------------------
 
-test("Night register: homepage opts in via data-tone, chrome re-tones via body:has(), tokens exist (overnight-design-loop)", () => {
-  const src = readFile("app/(site)/page.tsx");
-  assert.match(src, /data-tone="night"/, "the homepage main element must carry data-tone=night");
+test("Night register: the tone mechanism exists — tokens + body:has() chrome flip (overnight-design-loop)", () => {
+  // Whether the homepage opts in (dark direction) is a DIVERGE-phase choice;
+  // the MECHANISM must exist and stay coherent either way. The winner's
+  // homepage opt-in state gets pinned at CONVERGE.
   const css = readFile("app/globals.css");
   assert.match(css, /--color-foil-night:\s*#0a1322/i, "the night surface token exists");
   assert.match(css, /--color-foil-night-2:\s*#101d31/i, "the night panel token exists");

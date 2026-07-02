@@ -42,3 +42,40 @@ so stills capture the static-truth render (the fallback that must hold anyway).
 **Next thesis (iter-02):** DIVERGE leg 2 — the evolved-warm control (cream
 register, same pull-model bones, light-based depth, vermillion accents, no
 strawman). Dark's depth pass follows in iter-03.
+
+---
+
+## iter-02 — WARM direction: "the dealer's daylight table" (evolved-warm control)
+
+**Thesis:** Same pull-model bones on the cream register, evolved — vermillion
+accents, navy-tinted physical shadows on the fan, and its OWN earned moment:
+the binder proof shot as a NAVY dark-wall inset (holo art gets its dark
+backdrop inside the warm page). Not strawmanned: this is the strongest cream
+homepage Foil has had.
+
+**Scores:**
+| dim | score | note |
+|---|---|---|
+| (a) pull-clarity | 8.5 | Identical structure; fold works. |
+| (b) craft | 7.5 | Sections clean; but the alert email panel is cream-on-cream — barely separates. Hero wash imperceptible. |
+| (c) depth | 7.0 | Fan shadows give physical presence; binder inset is a real layer; the rest is flat paper. |
+| (d) ICP | **7.0** | Warm collector energy, but reads "nice editorial SaaS" — a document, not a place. Less screenshot-pull than the lit room. |
+| (e) mobile | 8.0 | Same bones. |
+| (f) plain-language | 9.0 | Same copy. |
+| (g) perf | 8.5 | Same. |
+| (h) card-spotlight | **7.0** | The decisive dimension: holo art visibly dims on the bright surface. The navy binder inset restores it — and in doing so PROVES the dark thesis. |
+
+**avg 7.81 · min 7.0**
+
+**DIVERGE verdict: DARK WINS (8.06 vs 7.81).** The gap is structural, not
+polish-level — (d) and (h) fail for the warm direction precisely where John's
+functional argument predicted: holographic card art is a light source, and
+light sources need a dark room. The warm control's best section (binder on
+navy) is itself evidence. What the warm leg contributes to the winner: the
+inset-contrast idea — a single CREAM artifact (the alert email) glowing inside
+the dark page is the same trick inverted, already present in iter-01; keep it
+and sharpen it.
+
+**Next thesis (iter-03):** CONVERGE on dark — the depth pass. Below-fold
+spatial identity: light logic per section, tighter left columns, bigger fan
+presence, one focal "whoa" (Moonbreon center-stage).
