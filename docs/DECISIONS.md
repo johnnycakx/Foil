@@ -2576,6 +2576,30 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 
 **Cross-refs.** `lib/wishlist/alert-decision.ts` (pure core), `lib/wishlist/scan-batch.ts`, `lib/wishlist/alert-email.ts`, `lib/affiliate/ebay-browse.ts` (`BROWSE_MARKETPLACE_FILTER`), `app/api/cron/wishlist-alerts/route.ts` (state writes + movers comp), `supabase/migrations/20260702000000_watchlists_alert_state.sql`, tests `lib/__tests__/{alert-decision,wishlist-scan-batch,wishlist-alert-email,ebay-browse}.test.ts` (fixture 12 acceptance), [ADR-069](#adr-069--insight-led-market-movers--good-buys-signal-aggregate-momentum-over-fragile-single-listings--the-like-for-like-currency-gate), [ADR-079](#adr-079--branded-newsletter-email-react-email-text-forward-to-hold-gmail-primary), [ADR-090](#adr-090--start-funnel-integrity-tri-store-opt-in-idempotent-watches-attribution-and-an-unsubscribe-that-stops-alerts), [R-010](RISKS.md).
 
+## ADR-092 — Demand-driven PokeTrace hydration: watches allocate the data budget
+
+**Date:** 2026-07-01
+**Status:** Accepted. Phase 2.5 of the Fable overhaul; the data-budget doctrine behind ADR-091's evidence lines. Extends ADR-042/049.2 (variant bake + market ladder), ADR-088 (the lazy-PokeTrace boundary on the top5-per-set expansion), ADR-069 (market_movers as the comp cache).
+
+**Context.** Foil cannot afford deep sold data on every card — an industry-hard problem (per Collectrics). But a watch SERVICE doesn't need breadth; it needs depth on the cards people actually track. The ~650 ADR-088 long-tail cards shipped with zero PokeTrace variants by design; their sold-history panels say "not yet available," their blank-target alerts have no basis, and their alert emails would carry the no-comp disclosure forever. PokeTrace is renewed (paid 2026-07-01); 10K req/day is ample for demand-driven depth — and nowhere near enough for bulk breadth.
+
+**Decision — demand allocates the data budget.**
+1. **Prioritization doctrine (recorded): watched > high-value > everything else. NEVER bulk-hydrate the full catalog.**
+2. **One resolution path.** The bake script's PokeTrace search + market-fallback ladder + override handling is extracted to `lib/poketrace/hydrate-core.ts::resolveVariantsForCard`; the bake script, the runtime worker, and the seed script all import it (test-pinned — a second ingestion path is structurally forbidden).
+3. **Trigger:** the shared watchlist upsert (every watch write path) enqueues any card whose catalog entry has no baked variants into `card_hydration` (migration `20260702010000`, applied) — one table is both queue and store; the PK makes enqueueing idempotent; soft-fail never blocks the watch write.
+4. **Worker:** hourly cron `/api/cron/hydrate-cards` (:10, off the :00 stampede) drains oldest-first, capped at 50 cards/run with 200ms pacing (≤~250 PokeTrace calls/run — under the 30 req/10s burst and far under 10K/day). `no_match` is terminal (vendor gap, never retried); transient errors retry to 3 attempts, then ping `#errors`.
+5. **Surfaces merge, baked wins:** the card page and the movers cron fall back to DB-hydrated variants only when the baked snapshot has none; a later local bake run folds hydrated cards into the committed snapshot for good. The sold-history panel discloses "Sold data tracked since <date>" on hydrated cards, and its empty state now tells visitors that watching a card is what queues it for tracking.
+6. **The alert coordination:** hydrated cards join the movers cron's momentum universe, so their NM 30-day averages land in `market_movers` — which is exactly what makes blank-target ("15% under 30d avg") alerts and evidence lines possible on long-tail cards (ADR-091 reads the same cache).
+7. **Proactive seed (one-time, the high-value leg):** the top-100 unhydrated cards by baked TCGplayer value were seeded through the same shared path directly into the committed snapshot — **81 hydrated · 19 no-match · 0 errors** (misses: alpha-numbered promos the matcher can't parse [H28/SWSH296-class] + genuine PokeTrace catalog gaps like the Van Gogh Pikachu — graceful degradation, logged). Snapshot: 1,189 → 1,270 cards with variants; 1,752 → 1,839 total variants.
+
+**Consequences.**
+- Sold-history depth accrues where demand exists, at ~zero standing cost; the PokeTrace budget is spent by watches, not by breadth ambitions.
+- Two variant sources exist until a bake run folds the DB layer in — the merge rule (baked wins; DB fills gaps) keeps them coherent, and the periodic-bake follow-up (ADR-030) now also syncs hydration.
+- Alpha-numbered promos (SWSH296, H28, SV49…) can't hydrate until `matchCatalogCard` learns letter-prefixed collector numbers — a known matcher limitation, now visible in the seed log and the `no_match` rows (future fix, not silent).
+- Blank-target alerts on hydrated long-tail cards start working the day after hydration (next movers run populates their comp).
+
+**Cross-refs.** `lib/poketrace/hydrate-core.ts`, `lib/poketrace/hydration.ts`, `app/api/cron/hydrate-cards/route.ts`, `supabase/migrations/20260702010000_card_hydration.sql`, `scripts/seed-hydration.ts`, `scripts/bake-poketrace-uuids.ts` (refactored), `lib/__tests__/hydration.test.ts`, [ADR-088](#adr-088--catalog-breadth-expansion-every-english-sets-top-5-by-value-chase-card-coverage), [ADR-091](#adr-091--alert-engine-rebuilt-as-an-honest-event-model-armedfired-state-market-floor-evidence-line-emails), [ADR-069](#adr-069--insight-led-market-movers--good-buys-signal-aggregate-momentum-over-fragile-single-listings--the-like-for-like-currency-gate).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

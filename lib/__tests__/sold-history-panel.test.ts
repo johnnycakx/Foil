@@ -79,7 +79,9 @@ test("page passes selectedCondition (?c) into the panel", () => {
 test("/cards/[slug]: mounts SoldHistoryPanel between variants and the buy CTA", () => {
   const src = read("app/(site)/cards/[slug]/page.tsx");
   assert.match(src, /<SoldHistoryPanel\b/);
-  assert.match(src, /variants=\{card\.variants\}/);
+  // ADR-092: the page passes the MERGED variants (baked → hydrated fallback),
+  // not the raw baked field.
+  assert.match(src, /variants=\{variants\}/);
   assert.match(src, /selectedKey=\{selectedVariant\}/);
   // Order: CardVariantsSection before SoldHistoryPanel, before the curated buy
   // CTA — now the client-hydrated <LiveListingSection> (ADR-047 v2; the

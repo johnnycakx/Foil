@@ -23,6 +23,7 @@
 import { NextResponse } from "next/server";
 import { getCardMetadata, getBakedCardMetadata } from "@/lib/cards/sdk";
 import { getSoldHistory } from "@/lib/poketrace/by-uuid";
+import { getAllHydratedVariants } from "@/lib/poketrace/hydration";
 import { CARD_CATALOG, cardTier } from "@/lib/cards/catalog";
 import {
   refreshMarketMovers,
@@ -54,15 +55,27 @@ export async function GET(request: Request): Promise<NextResponse> {
 
   const startedAt = Date.now();
 
-  // Movers universe (ADR-070): the curated tier PLUS the modern high-demand
-  // chase cards (long-tail entries from MODERN_MOVER_SET_IDS). The signal is
-  // PokeTrace-only, so the eBay-Browse-quota gate that limited the deals-refresh
-  // cron to curated-only does NOT apply here. Bounded by MAX_MOMENTUM_CARDS so it
-  // fits one ~300s run at the safe PokeTrace rate; the materiality filter then
-  // keeps sub-$10 bulk from surfacing.
+  // Movers universe (ADR-070 + ADR-092): the curated tier PLUS the modern
+  // high-demand chase cards PLUS every runtime-HYDRATED card (demand-driven —
+  // someone watches it, so its 30-day average must land in market_movers:
+  // that's what makes blank-target alerts possible on long-tail cards, and
+  // what feeds the alert email's evidence line). The signal is PokeTrace-only,
+  // so the eBay-Browse-quota gate does NOT apply here. Bounded by
+  // MAX_MOMENTUM_CARDS; the materiality filter keeps sub-$10 bulk from
+  // surfacing on the /deals board (its avg30d still lands for the alerts).
+  const hydrated = await getAllHydratedVariants();
   const entries: MomentumEntry[] = CARD_CATALOG
-    .filter((e) => cardTier(e.slug) === "curated" || isModernMoverCard(e.pokemonTcgId))
+    .filter(
+      (e) =>
+        cardTier(e.slug) === "curated" ||
+        isModernMoverCard(e.pokemonTcgId) ||
+        hydrated.has(e.slug),
+    )
     .map((e) => ({ slug: e.slug, pokemonTcgId: e.pokemonTcgId }));
+
+  // Hydrated variants live in the DB, not the baked snapshot — the metadata
+  // getter below merges them so the momentum walk can resolve their UUIDs.
+  const idToSlug = new Map(entries.map((e) => [e.pokemonTcgId, e.slug]));
 
   const limiter = createRateLimiter({
     maxPerWindow: POKETRACE_BURST_MAX,
@@ -75,7 +88,16 @@ export async function GET(request: Request): Promise<NextResponse> {
     // ~390 live SDK calls (with retry backoff under load) blew the 300s budget;
     // baked reads are synchronous, leaving the run PokeTrace-rate-bound (~190s).
     // Fall back to the live fetch only for the rare id absent from the snapshot.
-    getCardMetadata: async ({ id }) => getBakedCardMetadata(id) ?? (await getCardMetadata({ id })),
+    getCardMetadata: async ({ id }) => {
+      const baked = getBakedCardMetadata(id) ?? (await getCardMetadata({ id }));
+      // ADR-092 merge: runtime-hydrated variants fill the baked gap.
+      if ((baked.variants?.length ?? 0) === 0) {
+        const slug = idToSlug.get(id);
+        const hv = slug ? hydrated.get(slug) : undefined;
+        if (hv && hv.length > 0) return { ...baked, variants: hv };
+      }
+      return baked;
+    },
     entries,
     getSoldHistory: (uuid) => getSoldHistory(uuid),
     acquire: limiter.acquire,

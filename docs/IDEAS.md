@@ -20,6 +20,17 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 
 ---
 date: 2026-07-01
+category: monetization
+status: captured
+---
+## Layer-3 "Foil Concierge" — the paid grail-hunt service on top of demand-driven data
+
+The demand-driven hydration doctrine ([ADR-092](DECISIONS.md#adr-092--demand-driven-poketrace-hydration-watches-allocate-the-data-budget)) builds the free layers: watch a card → we hydrate its sold data → honest evidence-line alerts. Layer 3 is the paid packaging: a concierge grail-hunt — you name the exact card/grade/budget, Foil actively hunts (deeper scan cadence, cross-marketplace, maybe human-in-the-loop verification on the hit) and you pay for the find (flat fee or % of save vs 30-day avg). It's the natural monetization of the same machinery at higher intensity, and it prices on outcome, not access. **Packaging deferred until the eve concierge-v0 run teaches us what the service actually contains** — don't spec the product before the manual run reveals the real work.
+
+**Context:** demand-driven-data goal (2026-07-01); strategy John + Cowork same day (watch service needs depth-on-demand, not breadth).
+
+---
+date: 2026-07-01
 category: infra
 status: captured
 ---

@@ -34,6 +34,7 @@ import { CardVariantsSection } from "@/components/card-variants-section";
 import { SoldHistoryPanel } from "@/components/cards/sold-history-panel";
 import { WatchlistForm } from "@/components/cards/watchlist-form";
 import { deriveAvailableVariants } from "@/lib/poketrace/variant";
+import { getHydratedVariants } from "@/lib/poketrace/hydration";
 
 // Rendering mode (ADR-047, amended twice). This page reads `searchParams` (the
 // `v`/`c` URL state, ADR-043) on the server, which forces DYNAMIC rendering, so
@@ -122,6 +123,19 @@ export default async function CardPage({
 
   const card = await getCard(entry.pokemonTcgId);
   const tier = cardTier(slug);
+
+  // Demand-driven hydration merge (ADR-092): when the baked snapshot carries
+  // no PokeTrace variants (the ~650 top5-per-set long tail), fall back to the
+  // runtime-hydrated variants the watch-triggered worker persisted. Baked
+  // wins when present; a later bake run folds hydrated cards in for good.
+  // Soft-fail to empty — one cheap single-row read on a force-dynamic render.
+  let variants = card.variants ?? [];
+  let hydratedSince: string | null = null;
+  if (variants.length === 0) {
+    const hydrated = await getHydratedVariants(slug);
+    variants = hydrated.variants;
+    hydratedSince = hydrated.hydratedAt;
+  }
 
   // The curated-tier LIVE listing + buy-signal are NO LONGER fetched in this
   // server render (the ~38s eBay block that throttled crawl). They hydrate
@@ -266,7 +280,8 @@ export default async function CardPage({
             <SoldHistoryPanel
               slug={slug}
               cardName={card.name}
-              variants={card.variants}
+              variants={variants}
+              hydratedSince={hydratedSince}
               selectedKey={selectedVariant}
               selectedCondition={selectedCondition}
             />
@@ -317,7 +332,7 @@ export default async function CardPage({
           <WatchlistForm
             cardSlug={slug}
             cardName={card.name}
-            availableVariantKeys={deriveAvailableVariants(card)}
+            availableVariantKeys={deriveAvailableVariants({ variants })}
           />
           <p className="mt-3 text-[11px] uppercase tracking-wider text-foil-slate">
             One-shot email · No spam · Unsubscribe by clicking the link in any email we send.

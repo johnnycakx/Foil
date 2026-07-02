@@ -18,6 +18,7 @@ import { subscribeEmail } from "@/lib/beehiiv";
 import { getCatalogEntry } from "@/lib/cards/catalog";
 import { getCardMetadata } from "@/lib/cards/sdk";
 import { deriveAvailableVariants } from "@/lib/poketrace/variant";
+import { getHydratedVariants } from "@/lib/poketrace/hydration";
 import { upsertWatchlist } from "@/lib/wishlist/upsert";
 import { validateWatchlistSubmission } from "@/lib/wishlist/validate";
 
@@ -57,10 +58,16 @@ export async function createWatchlist(
     return { status: "error", error: "invalid_card_slug" };
   }
 
-  // Resolve the card's real baked variants so a watch can only target a
-  // printing that exists. getCardMetadata is 24h-cached + soft-fails.
+  // Resolve the card's real variants so a watch can only target a printing
+  // that exists. Baked snapshot first; for runtime-HYDRATED cards (ADR-092)
+  // the baked list is empty, so mirror the card page's merge — otherwise the
+  // form legitimately offers a hydrated variant the validator then rejects.
   const card = await getCardMetadata({ id: entry.pokemonTcgId });
-  const availableVariantKeys = deriveAvailableVariants(card);
+  let variantsForCard = card.variants ?? [];
+  if (variantsForCard.length === 0) {
+    variantsForCard = (await getHydratedVariants(card_slug)).variants;
+  }
+  const availableVariantKeys = deriveAvailableVariants({ variants: variantsForCard });
 
   const parsed = validateWatchlistSubmission(
     {

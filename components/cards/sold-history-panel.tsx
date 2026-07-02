@@ -33,6 +33,19 @@ const GRADED_PREFERENCE = ["PSA_10", "PSA_9", "BGS_10", "CGC_10"] as const;
 // the EU "AGGREGATED" roll-up for market-partitioned cards (Session 49.2).
 const SOURCES: readonly SoldSource[] = ["ebay", "tcgplayer", "cardmarket"];
 
+/** "2026-07-02T…" → "Jul 2, 2026" for the hydration-freshness line (ADR-092).
+ *  Deterministic (UTC) so the SSR string is stable. */
+function formatHydratedDate(iso: string): string {
+  const t = Date.parse(iso);
+  if (!Number.isFinite(t)) return iso;
+  return new Date(t).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 function money(n: number | null | undefined): string {
   if (typeof n !== "number" || !Number.isFinite(n)) return "—";
   return new Intl.NumberFormat("en-US", {
@@ -148,12 +161,17 @@ export async function SoldHistoryPanel({
   slug,
   cardName,
   variants,
+  hydratedSince,
   selectedKey,
   selectedCondition,
 }: {
   slug: string;
   cardName: string;
   variants: PoketraceVariant[] | undefined;
+  /** ISO timestamp when the card's variants were runtime-hydrated (ADR-092).
+   *  Null/omitted for baked cards. Renders a muted freshness line so the
+   *  panel is honest about how long we've been tracking this card. */
+  hydratedSince?: string | null;
   selectedKey?: string;
   /** ?c= condition token (Session 49b plumbing) — drives the reactive headline
    *  + chart series (Session 49c bug fix). */
@@ -166,7 +184,8 @@ export async function SoldHistoryPanel({
           Recent sold prices
         </h2>
         <p className="mt-3 rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 text-sm text-foil-slate shadow-sm shadow-foil-navy/5">
-          Live sold data not yet available for this card.
+          Live sold data not yet available for this card. Watching it (below) is
+          what queues it for tracking.
         </p>
       </section>
     );
@@ -319,6 +338,7 @@ export async function SoldHistoryPanel({
             </table>
             <p className="mt-4 text-[11px] uppercase tracking-wider text-foil-slate">
               Sold averages via PokeTrace · refreshed hourly · {cardName} actual completed sales, not active listings.
+              {hydratedSince ? <> · Sold data tracked since {formatHydratedDate(hydratedSince)}.</> : null}
             </p>
           </div>
         ) : (

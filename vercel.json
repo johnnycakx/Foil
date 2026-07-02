@@ -6,6 +6,10 @@
       "schedule": "0 * * * *"
     },
     {
+      "path": "/api/cron/hydrate-cards",
+      "schedule": "10 * * * *"
+    },
+    {
       "path": "/api/cron/browse-telemetry",
       "schedule": "0 6 * * *"
     },

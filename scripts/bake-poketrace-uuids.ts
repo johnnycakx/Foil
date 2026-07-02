@@ -26,14 +26,16 @@
 import { writeFileSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { CARD_CATALOG } from "../lib/cards/catalog.ts";
-import { matchCatalogCard, slugifyName, type PtCardLite, type PoketraceVariant } from "../lib/poketrace/variant.ts";
+import type { PoketraceVariant } from "../lib/poketrace/variant.ts";
+// The ONE PokeTrace resolution path (ADR-092) — shared with the runtime
+// hydration worker. Search + market ladder + match + overrides live there.
+import { resolveVariantsForCard, getManualOverride, HYDRATE_REQ_INTERVAL_MS } from "../lib/poketrace/hydrate-core.ts";
 import { createBakeCheckpoint } from "./bake-checkpoint.ts";
 
-const BASE_URL = "https://api.poketrace.com/v1";
 const OUTPUT_PATH = "lib/cards/baked-metadata.json";
 const MISSES_PATH = "docs/poketrace-bake-misses.md";
 const STATE_PATH = ".bake-poketrace-state.json";
-const REQ_INTERVAL_MS = 200; // ~50 req / 10s, under the 60/10s Scale burst.
+const REQ_INTERVAL_MS = HYDRATE_REQ_INTERVAL_MS; // shared pacing (hydrate-core)
 
 const REFRESH = process.argv.includes("--refresh");
 const RESUME = process.argv.includes("--resume");
@@ -66,25 +68,8 @@ function loadKey(): string {
 
 const KEY = loadKey();
 
-const OVERRIDES_PATH = "lib/cards/poketrace-overrides.json";
-
-// Manual UUID overrides (Session 49.1) — keyed by catalog slug. Consulted
-// BEFORE the search heuristic; win unconditionally. For cards whose SDK
-// collector number doesn't line up with PokeTrace's numbering.
-function loadOverrides(): Record<string, PoketraceVariant[]> {
-  try {
-    const raw = JSON.parse(readFileSync(join(process.cwd(), OVERRIDES_PATH), "utf8")) as Record<string, unknown>;
-    const out: Record<string, PoketraceVariant[]> = {};
-    for (const [k, v] of Object.entries(raw)) {
-      if (k.startsWith("_")) continue; // skip _comment
-      if (Array.isArray(v)) out[k] = v as PoketraceVariant[];
-    }
-    return out;
-  } catch {
-    return {};
-  }
-}
-const OVERRIDES = loadOverrides();
+// Manual overrides now live inside hydrate-core (the shared path consults
+// them before searching). Vendor gaps stay here — they're bake-report copy.
 
 // Cards PokeTrace genuinely has no usable catalog entry for (vendor data
 // gap, not a matching-logic failure). Tagged in the misses doc; the panel
@@ -96,33 +81,6 @@ const KNOWN_VENDOR_GAPS: Record<string, string> = {
 
 async function sleep(ms: number): Promise<void> {
   await new Promise((r) => setTimeout(r, ms));
-}
-
-/**
- * PokeTrace card search.
- *
- * Market fallback ladder (Session 49.2): PokeTrace's catalog is
- * market-partitioned — some cards (vintage holos, Classic Collection) are
- * systematically EU-only and never surface under `market=US`. The caller
- * walks the ladder when a US search yields no match:
- *   1. `market=US`  (default; the bulk of the catalog)
- *   2. `market=EU`  (vintage / EU-only printings — `cardmarket`-priced)
- *   3. no market filter (broadest possible search)
- * Pass `market = null` for the no-filter rung.
- */
-async function searchCards(name: string, setSlug?: string, market: string | null = "US"): Promise<PtCardLite[]> {
-  let url = `${BASE_URL}/cards?search=${encodeURIComponent(name)}&limit=50`;
-  if (market) url += `&market=${encodeURIComponent(market)}`;
-  if (setSlug) url += `&set=${encodeURIComponent(setSlug)}`;
-  const res = await fetch(url, { headers: { "X-API-Key": KEY, Accept: "application/json" } });
-  if (!res.ok) throw new Error(`PokeTrace ${res.status}: ${(await res.text().catch(() => "")).slice(0, 160)}`);
-  const json = (await res.json()) as { data?: PtCardLite[] };
-  return Array.isArray(json.data) ? json.data : [];
-}
-
-function mergeCandidates(a: PtCardLite[], b: PtCardLite[]): PtCardLite[] {
-  const seen = new Set(a.map((c) => c.id));
-  return [...a, ...b.filter((c) => !seen.has(c.id))];
 }
 
 function loadSnapshot(): Snapshot {
@@ -181,8 +139,8 @@ async function main(): Promise<void> {
 
     // Manual override wins unconditionally (Session 49.1), even over an
     // existing search-baked value and regardless of --refresh.
-    const override = OVERRIDES[entry.slug];
-    if (override && override.length > 0) {
+    const override = getManualOverride(entry.slug);
+    if (override) {
       card.variants = override;
       matched++;
       totalVariants += override.length;
@@ -200,62 +158,33 @@ async function main(): Promise<void> {
     const number = String(card.number ?? "");
     const setTotal = typeof sets[card.setId ?? ""]?.total === "number" ? (sets[card.setId ?? ""]!.total as number) : 0;
 
-    let candidates: PtCardLite[] = [];
-    try {
-      candidates = await searchCards(name);
-    } catch (err) {
-      misses.push(`- \`${id}\` (${name} / ${setName}) — search error: ${err instanceof Error ? err.message : String(err)}`);
+    // The ONE resolution path (hydrate-core, ADR-092) — overrides + search +
+    // market ladder + match. Shared byte-for-byte with the runtime worker.
+    const outcome = await resolveVariantsForCard(
+      { slug: entry.slug, name, setName, number, setTotal },
+      { apiKey: KEY },
+    );
+
+    if (outcome.status === "error") {
+      misses.push(`- \`${id}\` (${name} / ${setName}) — ${outcome.note}`);
       missed++;
-      await sleep(REQ_INTERVAL_MS);
-      continue;
-    }
-
-    let result = matchCatalogCard({ name, setName, setTotal, number }, candidates);
-
-    // Name-only search ranks reprints/reverse-holos first and can bury the
-    // target printing past the limit (common for vintage sets). On a miss,
-    // retry scoped to the set slug (PokeTrace's vintage slugs match
-    // slugify(setName): Jungle→jungle, Neo Genesis→neo-genesis, …) and
-    // re-match the merged candidate pool.
-    if (result.status === "miss" || result.variants.length === 0) {
-      const setSlug = slugifyName(setName) || undefined;
-      // Market fallback ladder: US set-scoped → EU set-scoped → no-market.
-      // Vintage / Classic-Collection cards are EU-only (cardmarket-priced).
-      const rungs: Array<[setSlug: string | undefined, market: string | null]> = [
-        [setSlug, "US"],
-        [setSlug, "EU"],
-        [undefined, "EU"],
-        [undefined, null],
-      ];
-      for (const [rungSet, rungMarket] of rungs) {
-        if (result.status !== "miss" && result.variants.length > 0) break;
-        try {
-          await sleep(REQ_INTERVAL_MS);
-          const more = await searchCards(name, rungSet, rungMarket);
-          candidates = mergeCandidates(candidates, more);
-          result = matchCatalogCard({ name, setName, setTotal, number }, candidates);
-        } catch {
-          /* keep the prior miss; try the next rung */
-        }
-      }
-    }
-    if (result.status === "miss" || result.variants.length === 0) {
+    } else if (outcome.status === "no_match") {
       const gap = KNOWN_VENDOR_GAPS[entry.slug];
       misses.push(
         gap
           ? `- \`${id}\` (${name} / ${setName} #${number}) — **PokeTrace catalog gap**: ${gap} Graceful degradation accepted.`
-          : `- \`${id}\` (${name} / ${setName} #${number}, total ${setTotal}) — ${result.note}`,
+          : `- \`${id}\` (${name} / ${setName} #${number}, total ${setTotal}) — ${outcome.note}`,
       );
       missed++;
     } else {
-      card.variants = result.variants;
+      card.variants = outcome.variants;
       matched++;
-      totalVariants += result.variants.length;
-      const keys = result.variants.map((v) => v.variantKey).join(", ");
-      if (result.status === "ambiguous") {
-        misses.push(`- \`${id}\` (${name} / ${setName}) — AMBIGUOUS: ${result.note}; kept [${keys}]`);
+      totalVariants += outcome.variants.length;
+      const keys = outcome.variants.map((v) => v.variantKey).join(", ");
+      if (outcome.status === "ambiguous") {
+        misses.push(`- \`${id}\` (${name} / ${setName}) — AMBIGUOUS: ${outcome.note}; kept [${keys}]`);
       }
-      console.log(`  [${i}/${CARD_CATALOG.length}] ${id} -> ${result.variants.length} variant(s): ${keys}`);
+      console.log(`  [${i}/${CARD_CATALOG.length}] ${id} -> ${outcome.variants.length} variant(s): ${keys}`);
     }
 
     await sleep(REQ_INTERVAL_MS);

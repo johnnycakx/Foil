@@ -1,5 +1,5 @@
 {
-  "bakedAt": "2026-07-01T21:56:48.662Z",
+  "bakedAt": "2026-07-02T01:01:49.074Z",
   "cards": {
     "base1-2": {
       "id": "base1-2",
@@ -80008,7 +80008,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "reverse-holofoil",
+          "poketraceId": "019bff79-8e0f-74bf-99c4-0ffe56d20834",
+          "variantLabel": "Reverse Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "sv8-252": {
       "id": "sv8-252",
@@ -80096,7 +80107,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff79-8e0f-74bf-99c4-38b0e3bc97c0",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex13-104": {
       "id": "ex13-104",
@@ -80151,7 +80173,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7f-e2b8-7168-a040-eff464690cf4",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex7-109": {
       "id": "ex7-109",
@@ -80206,7 +80239,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff83-863e-704c-9305-0b183852c882",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex8-105": {
       "id": "ex8-105",
@@ -80262,7 +80306,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/04/17"
+      "tcgplayerUpdatedAt": "2026/04/17",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7d-2e14-7575-b736-7c5051852164",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ecard2-149": {
       "id": "ecard2-149",
@@ -80319,7 +80374,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7e-1601-757e-bd2b-a1031c319f66",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "sm9-170": {
       "id": "sm9-170",
@@ -80377,7 +80443,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff91-e4dd-7702-a538-17f24d2594fa",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex16-101": {
       "id": "ex16-101",
@@ -80425,7 +80502,18 @@
           "directLow": 2998.99
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7d-2e11-71aa-95c3-e84c6af8430d",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex13-103": {
       "id": "ex13-103",
@@ -80481,7 +80569,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7e-fc50-71f0-aee1-8b357d2eb80c",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex7-107": {
       "id": "ex7-107",
@@ -80536,7 +80635,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "non-holo",
+          "poketraceId": "019bff7e-fc51-74ac-aafe-98c2d93b6156",
+          "variantLabel": "Non-Holo",
+          "isHolo": false,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex16-100": {
       "id": "ex16-100",
@@ -80584,7 +80694,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/05/31"
+      "tcgplayerUpdatedAt": "2026/05/31",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7b-60a7-77b8-b492-c859574ff4e5",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ecard3-148": {
       "id": "ecard3-148",
@@ -80649,7 +80770,27 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "reverse-holofoil",
+          "poketraceId": "019bff7c-4504-758b-a7ca-328b97feb6b0",
+          "variantLabel": "Reverse Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        },
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019c3ac3-ec65-7568-b393-7e07b01f9716",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "sm9-165": {
       "id": "sm9-165",
@@ -80705,7 +80846,18 @@
           "directLow": 2647.99
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff91-e4dc-73db-ac5c-a1aa909a1726",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex6-108": {
       "id": "ex6-108",
@@ -80766,7 +80918,27 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "non-holo",
+          "poketraceId": "019bff7c-4504-758b-a7c8-070b041494a4",
+          "variantLabel": "Non-Holo",
+          "isHolo": false,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        },
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019c3ac3-ec65-7568-b391-91e06530596f",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex7-97": {
       "id": "ex7-97",
@@ -80829,7 +81001,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff80-d352-765e-b970-f88a9272e6c4",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "pop5-16": {
       "id": "pop5-16",
@@ -80877,7 +81060,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/05/18"
+      "tcgplayerUpdatedAt": "2026/05/18",
+      "variants": [
+        {
+          "variantKey": "non-holo",
+          "poketraceId": "019bff7b-60a6-776a-9f3e-5ec734a9be61",
+          "variantLabel": "Non-Holo",
+          "isHolo": false,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "bwp-BW28": {
       "id": "bwp-BW28",
@@ -80960,7 +81154,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/06/01"
+      "tcgplayerUpdatedAt": "2026/06/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7e-fc50-71f0-aee1-40d2a291f002",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ecard2-H29": {
       "id": "ecard2-H29",
@@ -81065,7 +81270,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/04/22"
+      "tcgplayerUpdatedAt": "2026/04/22",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7c-4505-7332-a33a-08fb05c6613b",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex12-90": {
       "id": "ex12-90",
@@ -81121,7 +81337,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/05/08"
+      "tcgplayerUpdatedAt": "2026/05/08",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff80-d352-765e-b96f-4c8e3a533483",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "basep-40": {
       "id": "basep-40",
@@ -81148,7 +81375,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/04/24"
+      "tcgplayerUpdatedAt": "2026/04/24",
+      "variants": [
+        {
+          "variantKey": "non-holo",
+          "poketraceId": "019bff7f-e2b9-714a-88fb-4de905bd340a",
+          "variantLabel": "Non-Holo",
+          "isHolo": false,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ecard3-H10": {
       "id": "ecard3-H10",
@@ -81253,7 +81491,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff80-d351-7535-a79b-408a7c93b78e",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "bw8-136": {
       "id": "bw8-136",
@@ -81312,7 +81561,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff79-8e0f-74bf-99c4-2a571a03e1d4",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "svp-85": {
       "id": "svp-85",
@@ -81415,7 +81675,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7d-2e13-7175-b43d-dbfc1b3eb572",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex8-107": {
       "id": "ex8-107",
@@ -81473,7 +81744,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/05/13"
+      "tcgplayerUpdatedAt": "2026/05/13",
+      "variants": [
+        {
+          "variantKey": "non-holo",
+          "poketraceId": "019bff80-d352-765e-b96e-fb2fba6d2790",
+          "variantLabel": "Non-Holo",
+          "isHolo": false,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex7-108": {
       "id": "ex7-108",
@@ -81528,7 +81810,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff83-863e-704c-9303-c7b426b66a88",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex14-99": {
       "id": "ex14-99",
@@ -81584,7 +81877,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff77-befc-77ae-b884-4cede799483e",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex11-111": {
       "id": "ex11-111",
@@ -81642,7 +81946,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7c-4505-7332-a338-e7fbfb226126",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "xy2-108": {
       "id": "xy2-108",
@@ -81692,7 +82007,18 @@
           "directLow": 649.13
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff85-5452-714a-9660-2e9ee8b57ba5",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ecard3-H11": {
       "id": "ecard3-H11",
@@ -81777,7 +82103,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/06/13"
+      "tcgplayerUpdatedAt": "2026/06/13",
+      "variants": [
+        {
+          "variantKey": "non-holo",
+          "poketraceId": "019bff7e-1600-7088-8282-0c2046f1e9aa",
+          "variantLabel": "Non-Holo",
+          "isHolo": false,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "xy4-122": {
       "id": "xy4-122",
@@ -81836,7 +82173,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff85-545c-706c-953b-21b6ca3e68f9",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "hgss1-115": {
       "id": "hgss1-115",
@@ -81918,7 +82266,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff79-8e0f-74bf-99c3-7d172fed3dae",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex10-105": {
       "id": "ex10-105",
@@ -81966,7 +82325,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7e-1601-757e-bd2b-be9e17c3424e",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "np-5": {
       "id": "np-5",
@@ -82020,7 +82390,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/05/19"
+      "tcgplayerUpdatedAt": "2026/05/19",
+      "variants": [
+        {
+          "variantKey": "non-holo",
+          "poketraceId": "eu_275478",
+          "variantLabel": "Non-Holo",
+          "isHolo": false,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "bwp-BW50": {
       "id": "bwp-BW50",
@@ -82105,7 +82486,27 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff80-d352-765e-b971-73d8a88a3a52",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        },
+        {
+          "variantKey": "non-holo",
+          "poketraceId": "019e4493-1f97-70a6-8105-e6dd570e4384",
+          "variantLabel": "Non-Holo",
+          "isHolo": false,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex8-106": {
       "id": "ex8-106",
@@ -82161,7 +82562,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/04/17"
+      "tcgplayerUpdatedAt": "2026/04/17",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7d-2e14-7575-b736-b7f243946c9c",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "sm9-161": {
       "id": "sm9-161",
@@ -82220,7 +82632,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff91-e4dd-7702-a539-19dd9c3f010c",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "xy7-98": {
       "id": "xy7-98",
@@ -82268,7 +82691,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff88-5ffd-74db-88da-f06b73bec90e",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex11-113": {
       "id": "ex11-113",
@@ -82326,7 +82760,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/05/28"
+      "tcgplayerUpdatedAt": "2026/05/28",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7e-fc4f-7384-9b89-ba7c6dda0dd9",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "svp-45": {
       "id": "svp-45",
@@ -82409,7 +82854,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "eu_274888",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex3-100": {
       "id": "ex3-100",
@@ -82466,7 +82922,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/06/24"
+      "tcgplayerUpdatedAt": "2026/06/24",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff79-8e0f-74bf-99c4-124a3327d9e4",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ecard1-9": {
       "id": "ecard1-9",
@@ -82515,7 +82982,18 @@
           "directLow": 3009.72
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "eu_274884",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "pl2-111": {
       "id": "pl2-111",
@@ -82563,7 +83041,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff82-9f83-70dd-a44e-246921dec7a2",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex12-91": {
       "id": "ex12-91",
@@ -82619,7 +83108,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff80-d352-765e-b96f-8abbad6ccc5d",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "bw8-134": {
       "id": "bw8-134",
@@ -82669,7 +83169,18 @@
           "directLow": 2999.99
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7e-1601-757e-bd2b-ccd629b59639",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ecard1-20": {
       "id": "ecard1-20",
@@ -82731,7 +83242,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "eu_274895",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "xy4-114": {
       "id": "xy4-114",
@@ -82787,7 +83309,18 @@
           "directLow": 599.99
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff85-545b-7370-ba97-bde8814d16ba",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "bw9-122": {
       "id": "bw9-122",
@@ -82816,7 +83349,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff83-863f-718a-b5c2-478f7c13df48",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ru1-7": {
       "id": "ru1-7",
@@ -82911,7 +83455,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff79-8e0f-74bf-99c4-1f5c1905e99a",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "sma-SV49": {
       "id": "sma-SV49",
@@ -83036,7 +83591,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff80-d352-765e-b96e-e3026ca19035",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "pop4-1": {
       "id": "pop4-1",
@@ -83090,7 +83656,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "non-holo",
+          "poketraceId": "019bff79-8e10-76e9-bb0c-924978cb60e0",
+          "variantLabel": "Non-Holo",
+          "isHolo": false,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "sm10-205": {
       "id": "sm10-205",
@@ -83157,7 +83734,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff92-de40-7086-ac3d-4ea56b43302a",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ecard2-148": {
       "id": "ecard2-148",
@@ -83215,7 +83803,27 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "reverse-holofoil",
+          "poketraceId": "019bff7d-2e12-77f0-9b55-311cfcfcf766",
+          "variantLabel": "Reverse Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        },
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019c3ac3-ec66-706d-a49e-88185422e9d2",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "sm35-78": {
       "id": "sm35-78",
@@ -83280,7 +83888,18 @@
           "directLow": 699.99
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff8d-8220-71c8-938f-36a4d31abb47",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ecard2-150": {
       "id": "ecard2-150",
@@ -83338,7 +83957,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7e-fc51-74ac-aaff-c7952497e5ae",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "hsp-HGSS18": {
       "id": "hsp-HGSS18",
@@ -83444,7 +84074,18 @@
           "directLow": 718.75
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7a-78f4-707a-bf6e-926e992e363b",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "swshp-SWSH066": {
       "id": "swshp-SWSH066",
@@ -83575,7 +84216,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "reverse-holofoil",
+          "poketraceId": "019bff79-8e0f-74bf-99c4-33961a21b49c",
+          "variantLabel": "Reverse Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "sv4pt5-232": {
       "id": "sv4pt5-232",
@@ -83623,7 +84275,18 @@
           "directLow": 997.9
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bffac-ba79-773e-9b06-670b19752af1",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex10-115": {
       "id": "ex10-115",
@@ -83680,7 +84343,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff82-9f84-7584-9776-735ed48f8a6c",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "bw7-145": {
       "id": "bw7-145",
@@ -83739,7 +84413,18 @@
           "directLow": 399.98
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff78-a647-717f-a4e3-d0870a8ab678",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "sm3-150": {
       "id": "sm3-150",
@@ -83809,7 +84494,18 @@
           "directLow": 449.85
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff8c-7244-7168-b577-2a7b7d5e1134",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ru1-9": {
       "id": "ru1-9",
@@ -83921,7 +84617,27 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "reverse-holofoil",
+          "poketraceId": "019bff7d-2e12-77f0-9b54-8223f2290fe4",
+          "variantLabel": "Reverse Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        },
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019c3ac3-ec66-706d-a49d-f16fa5e83331",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "bw10-100": {
       "id": "bw10-100",
@@ -83981,7 +84697,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7f-e2b8-7168-a03e-0c94acf987f7",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex16-102": {
       "id": "ex16-102",
@@ -84029,7 +84756,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff83-8640-7057-ac6d-5333018054da",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "bw5-109": {
       "id": "bw5-109",
@@ -84077,7 +84815,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7b-60a8-766b-9d0c-5b0809cd6a2a",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "rsv10pt5-172": {
       "id": "rsv10pt5-172",
@@ -84123,7 +84872,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "non-holo",
+          "poketraceId": "eu_836225",
+          "variantLabel": "Non-Holo",
+          "isHolo": false,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex3-90": {
       "id": "ex3-90",
@@ -84181,7 +84941,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7a-78f4-707a-bf70-995a34797927",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex13-100": {
       "id": "ex13-100",
@@ -84238,7 +85009,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7e-fc50-71f0-aee1-49d8976d1bf8",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "xy4-121": {
       "id": "xy4-121",
@@ -84286,7 +85068,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff85-545c-706c-953b-1c63ef66607e",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "hgss3-86": {
       "id": "hgss3-86",
@@ -84390,7 +85183,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff83-863f-718a-b5c2-9092dbb2deec",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "me2-125": {
       "id": "me2-125",
@@ -84438,7 +85242,18 @@
           "directLow": 919.95
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019c0012-d832-755f-9d0c-103a3da1be59",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "zsv10pt5-172": {
       "id": "zsv10pt5-172",
@@ -84495,7 +85310,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019c000a-36f3-722c-bbf6-60405e4cbe51",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex12-92": {
       "id": "ex12-92",
@@ -84551,7 +85377,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/05/04"
+      "tcgplayerUpdatedAt": "2026/05/04",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff80-d352-765e-b96f-9f62d9cdf8d9",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "dp5-98": {
       "id": "dp5-98",
@@ -84598,7 +85435,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff7c-4504-758b-a7c9-18ca710ad435",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ecard2-H28": {
       "id": "ecard2-H28",
@@ -84718,7 +85566,27 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "reverse-holofoil",
+          "poketraceId": "019bff80-d352-765e-b96e-cdc98f149595",
+          "variantLabel": "Reverse Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        },
+        {
+          "variantKey": "non-holo",
+          "poketraceId": "019c3ac3-ec68-7410-8bd3-352f6802d168",
+          "variantLabel": "Non-Holo",
+          "isHolo": false,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "col1-SL10": {
       "id": "col1-SL10",
@@ -84846,7 +85714,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff83-863f-718a-b5c2-1e8e431bf43a",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "zsv10pt5-171": {
       "id": "zsv10pt5-171",
@@ -84892,7 +85771,18 @@
           "directLow": 799.98
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "non-holo",
+          "poketraceId": "eu_836245",
+          "variantLabel": "Non-Holo",
+          "isHolo": false,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ex6-105": {
       "id": "ex6-105",
@@ -84956,7 +85846,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff79-8e0f-74bf-99c4-3fdc75287a16",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "ecard1-6": {
       "id": "ecard1-6",
@@ -85011,7 +85912,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "eu_274881",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "smp-SM78": {
       "id": "smp-SM78",
@@ -85094,7 +86006,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "eu_274879",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "rsv10pt5-173": {
       "id": "rsv10pt5-173",
@@ -85216,7 +86139,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "reverse-holofoil",
+          "poketraceId": "019bff90-0db2-75a5-9cd3-a260e36f2f6a",
+          "variantLabel": "Reverse Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "swshp-SWSH296": {
       "id": "swshp-SWSH296",
@@ -86887,7 +87821,18 @@
           "directLow": null
         }
       },
-      "tcgplayerUpdatedAt": "2026/07/01"
+      "tcgplayerUpdatedAt": "2026/07/01",
+      "variants": [
+        {
+          "variantKey": "holofoil",
+          "poketraceId": "019bff84-6f78-703d-b07e-141f949e5239",
+          "variantLabel": "Holofoil",
+          "isHolo": true,
+          "isFirstEdition": false,
+          "isShadowless": false,
+          "isUnlimited": false
+        }
+      ]
     },
     "dpp-DP47": {
       "id": "dpp-DP47",

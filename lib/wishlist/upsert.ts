@@ -14,6 +14,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../supabase/types.ts";
 import { getAlertSuppression } from "./pause.ts";
+import { enqueueHydrationIfNeeded } from "../poketrace/hydration.ts";
 
 /** The UNIQUE conflict target — keep byte-identical with the migration. */
 export const WATCHLIST_CONFLICT_TARGET = "email,card_slug,variant,condition";
@@ -85,5 +86,17 @@ export async function upsertWatchlist(
     },
     { onConflict: WATCHLIST_CONFLICT_TARGET },
   );
+
+  // Demand-driven hydration trigger (ADR-092): a successful watch on a card
+  // with no baked PokeTrace variants enqueues it for the hourly worker —
+  // demand allocates the data budget. Idempotent + soft-fail; awaited so the
+  // insert isn't dropped by a serverless freeze, but its outcome never
+  // affects the watch write's result.
+  if (!error) {
+    await enqueueHydrationIfNeeded(input.card_slug, {
+      getClient: () => admin,
+    });
+  }
+
   return { ok: !error, error: error ? error.message : null };
 }

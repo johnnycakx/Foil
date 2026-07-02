@@ -24,6 +24,7 @@ import { subscribeEmail } from "@/lib/beehiiv";
 import { getCatalogEntry } from "@/lib/cards/catalog";
 import { getCardMetadata } from "@/lib/cards/sdk";
 import { deriveAvailableVariants, DEFAULT_VARIANT_KEY } from "@/lib/poketrace/variant";
+import { getHydratedVariants } from "@/lib/poketrace/hydration";
 import { isValidConditionToken, DEFAULT_CONDITION } from "@/lib/cards/conditions";
 import { upsertWatchlist } from "@/lib/wishlist/upsert";
 
@@ -76,7 +77,13 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (variant !== DEFAULT_VARIANT_KEY) {
     const entry = getCatalogEntry(parsed.data.card_slug);
     const card = entry ? await getCardMetadata({ id: entry.pokemonTcgId }) : null;
-    if (!deriveAvailableVariants(card).includes(variant)) {
+    // Baked variants first; runtime-HYDRATED cards (ADR-092) carry their
+    // variants in the DB, so mirror the card page's merge before rejecting.
+    let variantsForCard = card?.variants ?? [];
+    if (variantsForCard.length === 0 && entry) {
+      variantsForCard = (await getHydratedVariants(parsed.data.card_slug)).variants;
+    }
+    if (!deriveAvailableVariants({ variants: variantsForCard }).includes(variant)) {
       return NextResponse.json({ ok: false, error: "invalid_payload" }, { status: 400 });
     }
   }

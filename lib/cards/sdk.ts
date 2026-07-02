@@ -342,6 +342,14 @@ export function getBakedSnapshotTimestamp(): string {
   return BAKED.bakedAt;
 }
 
+/** Baked-ONLY set metadata — the committed snapshot entry, no network call.
+ *  The hydration worker uses the set's printed total for PokeTrace matching
+ *  (the denominator signal) with the same fidelity the bake script gets. */
+export function getBakedSetMetadata(id: string): SetMetadata | null {
+  if (!id) return null;
+  return BAKED.sets[id] ?? null;
+}
+
 export type RawCard = {
   id?: string;
   name?: string;
