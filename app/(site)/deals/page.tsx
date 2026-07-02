@@ -70,10 +70,10 @@ export default async function DealsPage() {
       {/* Screenshot-friendly header band: title + date + foiltcg.com all in
           frame so every shared screenshot is self-branding. */}
       <header className="text-center">
-        <p className="flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wider text-foil-gold">
+        <p className="flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wider text-foil-vermillion">
           <span className="relative inline-flex h-1.5 w-1.5" aria-hidden>
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foil-gold opacity-60" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-gold" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foil-vermillion opacity-60" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-vermillion" />
           </span>
           foiltcg.com · {boardDate}
         </p>
@@ -118,9 +118,21 @@ export default async function DealsPage() {
         the best deal, not the biggest payout.{" "}
         <Link
           href="/pricing-methodology"
-          className="text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
+          className="text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-vermillion"
         >
           See how we price.
+        </Link>
+      </p>
+
+      {/* The pull promise (fable-design-overhaul §4): this board is everyone's
+          drops — the product is YOUR cards' drops. */}
+      <p className="mt-8 text-center text-sm text-foil-slate">
+        These are this week&apos;s drops across the whole market.{" "}
+        <Link
+          href="/start?src=deals"
+          className="font-medium text-foil-navy underline decoration-foil-vermillion/50 underline-offset-4 transition hover:decoration-foil-vermillion"
+        >
+          Want them for your cards? Start your vault →
         </Link>
       </p>
 

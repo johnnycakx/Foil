@@ -225,3 +225,29 @@ spectacle; it needed a warm start and honest words, and now has both.
 
 **Next thesis (iter-08):** /deals — de-gold, methodology copy tightened to the
 pull promise ("want them for YOUR cards? → /start"), consistency pass.
+
+---
+
+## iter-08 — /deals: plain words, vermillion, the pull hook
+
+**Thesis:** The ticker jargon dies — "NM $16.71 (7d) vs $19.19 (30d) · 148
+sales" becomes "Near Mint copies: ~$16.71 this week, usually $19.19 · 148
+recent sales"; "below 30-day avg" → "below its average"; "vs 30-day" → "vs its
+average". Full gold → vermillion on the page + both boards (coral hovers →
+vermillion for succession coherence). New pull-promise line under the boards:
+"These are this week's drops across the whole market. Want them for your
+cards? Start your vault →" (src=deals).
+
+**Scores (rubric applied to /deals):**
+(a) 8.3 (board self-explains; pull hook present) · (b) 8.0 · (c) 7.5 (data
+table register, appropriately flat) · (d) 8.0 · (e) 8.3 (mobile rows
+self-label in sentences) · (f) 9.0 (the jargon is gone) · (g) 8.8 (zero new
+weight) · (h) 7.8 (thumbs only — art density is the card pages' job) —
+**avg 8.21 · min 7.5.**
+
+**Loop status after iter-08:** homepage terminated on quality (iters 5+6);
+/start and /deals carried the register's consequences. /lines/[pokemon] and
+/cards/[slug] inspected in the gallery and left untouched — /lines shipped
+yesterday at its own bar (ADR-095) and the card page's tiered-render surface
+is too load-bearing for an unattended overnight restyle; both are morning-
+scope with John (see SUMMARY).
