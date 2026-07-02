@@ -83,3 +83,15 @@ test("'default' variant is always accepted (any printing)", () => {
   const r = validateWatchlistSubmission(base({ variant: "default", condition: "any-raw" }), KEYS);
   assert.ok(r.ok);
 });
+
+test("blank target is a VALID watch → null (market basis, ADR-091); garbage still rejects", () => {
+  // Blank = "alert me at >=15% under the 30-day sold average." No sentinel.
+  const blank = validateWatchlistSubmission(base({ target_price_cents: undefined }), KEYS);
+  assert.ok(blank.ok);
+  if (blank.ok) assert.equal(blank.value.target_price_cents, null);
+  const empty = validateWatchlistSubmission(base({ target_price_cents: "" }), KEYS);
+  assert.ok(empty.ok);
+  if (empty.ok) assert.equal(empty.value.target_price_cents, null);
+  // Supplied-but-invalid still rejects (not silently nulled).
+  assert.equal(validateWatchlistSubmission(base({ target_price_cents: "abc" }), KEYS).ok, false);
+});

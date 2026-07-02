@@ -1,75 +1,102 @@
-// Wishlist alert email composers — pure functions, no I/O. The cron route
-// at app/api/cron/wishlist-alerts/route.ts assembles the inputs and uses
-// these to render the subject + HTML body, then hands off to
-// lib/notifications/resend.ts::sendTransactionalEmail.
+// Wishlist alert email composers — pure functions, no I/O (rebuilt for the
+// honest event model, alert-engine-rebuild / ADR-091).
 //
-// Affiliate posture: the CTA in the email body is an affiliate-tracked
-// eBay URL whose customid is the per-card wishlist code `wl-<slug>` (built by
-// buildCustomId in the cron; distinct from the per-card-page `cp-<slug>`) so
-// the per-channel + per-card commission attribution comes through clean.
+// Delivery doctrine (John, 2026-07-01): "the page is the house, email is the
+// doorbell." The alert is a THIN ping — an honest subject, the market-evidence
+// line, ONE link to the card page. All richness lives on the web, which also
+// keeps the email maximally Gmail-Primary-safe (ADR-079 constraints: no
+// images, no buttons, text-forward). Foil is a SaaS with email notifications,
+// not a newsletter — the word "newsletter" never appears in alert copy.
+//
+// Honesty contract:
+//   - kind "dropped" copy renders ONLY when a real cross was observed
+//     (lib/wishlist/alert-decision.ts decides; the composer just obeys).
+//   - kind "already_below" says so plainly — never "just dropped."
+//   - Every email carries EITHER a sold-comp evidence line (real PokeTrace
+//     30-day figures with their tier label) OR the explicit no-comp
+//     disclosure. No third state.
+//   - USD only: the scan gates currency before composing; these composers
+//     deal exclusively in USD cents and never render another currency.
+//   - No sentinel: a blank target renders as the market basis — the string
+//     "$100000.00" can never be built (targetPriceCents is null, not a
+//     sentinel).
 
-import type { EpnBestListing } from "../affiliate/epn.ts";
+import type { SoldComp } from "./alert-decision.ts";
 
-export type WishlistEmailInputs = {
+export type AlertEmailInputs = {
   cardName: string;
   setName: string;
-  cardSlug: string;
-  /** Lowest current listing as returned by getBestListing. */
-  listing: EpnBestListing;
-  /** Target price in cents that the watching email row asked for. */
-  targetPriceCents: number;
-  /** Pokemon TCG SDK image URL, may be null when the catalog metadata
-   *  doesn't expose one (renders without an image rather than 500ing). */
-  cardImage: string | null;
-  /** Absolute URL to /cards/<slug> on production — for the "view full
-   *  card page" link below the CTA. */
+  /** What actually happened — decided by decideAlert, never by the composer. */
+  kind: "dropped" | "already_below";
+  /** Which bound triggered: the user's explicit target or the market floor. */
+  basis: "target" | "market";
+  /** VERIFIED listing price in USD cents (the scan enforces USD). */
+  currentPriceCents: number;
+  /** The user's explicit target, or null for a blank ("market") watch. */
+  targetPriceCents: number | null;
+  /** 30-day sold comp (market_movers) or null when none exists. */
+  comp: SoldComp | null;
+  /** Absolute URL to /cards/<slug> — THE link. */
   cardPageUrl: string;
-  /** RFC 8058 one-click unsubscribe URL for the recipient. Optional —
-   *  when UNSUBSCRIBE_TOKEN_SECRET is missing the cron passes null and the
-   *  visible body link falls back to a mailto, but the email still sends.
-   *  Caller is responsible for minting via lib/unsubscribe-token. */
+  /** RFC 8058 one-click unsubscribe URL (null → mailto fallback line). */
   unsubscribeUrl: string | null;
-  /** Human variant label ("1st Edition Holofoil") when the watch targets a
-   *  specific printing. Omitted for the "any printing" default (Session 49b /
-   *  ADR-043) so a generic alert reads exactly as it did pre-49b. */
+  /** Human variant label ("1st Edition Holofoil") when the watch targets one. */
   variantLabel?: string;
-  /** Human condition label ("PSA 10"). Omitted for the "any raw" default. */
+  /** Human condition label ("PSA 10"). Omitted for the any-raw default. */
   conditionLabel?: string;
 };
-
-/** "1st Edition Holofoil (PSA 10)" / "1st Edition Holofoil" / "(PSA 10)" / "". */
-function trackingQualifier(input: WishlistEmailInputs): string {
-  return [input.variantLabel, input.conditionLabel ? `(${input.conditionLabel})` : null]
-    .filter(Boolean)
-    .join(" ");
-}
 
 export function formatUsd(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-function formatPriceFromListing(listing: EpnBestListing): string {
-  if (listing.currency === "USD") {
-    return `$${listing.price.toFixed(2)}`;
+/** Percent under the 30-day average, rounded to whole percent. Positive =
+ *  under. Returns null when the comp is unusable. */
+export function pctUnderAvg(currentPriceCents: number, comp: SoldComp | null): number | null {
+  if (!comp || comp.avg30dCents <= 0) return null;
+  return Math.round(((comp.avg30dCents - currentPriceCents) / comp.avg30dCents) * 100);
+}
+
+/** "1st Edition Holofoil (PSA 10)" / "1st Edition Holofoil" / "(PSA 10)" / "". */
+function trackingQualifier(input: Pick<AlertEmailInputs, "variantLabel" | "conditionLabel">): string {
+  return [input.variantLabel, input.conditionLabel ? `(${input.conditionLabel})` : null]
+    .filter(Boolean)
+    .join(" ");
+}
+
+/** The reason clause both subject + body lead with — honest per basis. */
+function triggerClause(input: AlertEmailInputs): string {
+  if (input.basis === "target" && input.targetPriceCents != null) {
+    return `at your ${formatUsd(input.targetPriceCents)} target`;
   }
-  return `${listing.price.toFixed(2)} ${listing.currency}`;
+  const pct = pctUnderAvg(input.currentPriceCents, input.comp);
+  // Market basis always has a comp by construction (decideAlert can't pick
+  // the market basis without one); the fallback keeps the composer total.
+  return pct != null ? `${pct}% under its 30-day sold average` : `under its market reference`;
 }
 
 /**
- * Subject line for a wishlist-alert email. Format:
- *   "Charizard (Base) dropped to $38 — you wanted ≤ $40"
- * The dollar figures land verbatim so inbox preview / spam filters see the
- * exact thresholds the user opted in to. Card name + set are kept short
- * because Gmail truncates around 70 chars.
+ * Subject line. Two honest shapes:
+ *   dropped:       "Charizard (Base) dropped to $38.00 — at your $40.00 target"
+ *   already_below: "Charizard (Base) is $38.00 — at your $40.00 target"
+ * "dropped" appears ONLY when the decision observed a real cross.
  */
-export function subjectLine(input: WishlistEmailInputs): string {
-  const currentPrice = formatPriceFromListing(input.listing);
-  const targetPrice = formatUsd(input.targetPriceCents);
-  // Variant + condition qualifier (Session 49b / ADR-043). Empty for the
-  // any-printing / any-raw default, so the line is byte-identical to pre-49b.
+export function subjectLine(input: AlertEmailInputs): string {
   const qualifier = trackingQualifier(input);
   const namePart = qualifier ? `${input.cardName} ${qualifier}` : input.cardName;
-  return `${namePart} (${input.setName}) dropped to ${currentPrice} — you wanted ≤ ${targetPrice}`;
+  const price = formatUsd(input.currentPriceCents);
+  const verb = input.kind === "dropped" ? `dropped to ${price}` : `is ${price}`;
+  return `${namePart} (${input.setName}) ${verb} — ${triggerClause(input)}`;
+}
+
+/** The trust payoff: cite the comp, or disclose its absence plainly. */
+export function evidenceLine(input: AlertEmailInputs): string {
+  const pct = pctUnderAvg(input.currentPriceCents, input.comp);
+  if (input.comp && pct != null) {
+    const rel = pct >= 0 ? `${pct}% under` : `${Math.abs(pct)}% over`;
+    return `30-day avg sold (${input.comp.tierLabel}): ${formatUsd(input.comp.avg30dCents)} · this listing: ${formatUsd(input.currentPriceCents)} (${rel})`;
+  }
+  return `No recent sold data for this card — this alert is against your target only.`;
 }
 
 function escapeHtml(s: string): string {
@@ -82,57 +109,37 @@ function escapeHtml(s: string): string {
 }
 
 /**
- * Body HTML for a wishlist-alert email. Single-purpose: surface the
- * current best listing for the watched card with an affiliate-tracked CTA.
- *
- * Image is optional — when card metadata didn't expose one we drop the
- * <img> entirely rather than render a broken icon.
+ * Body HTML — the thin ping. Text-forward, zero images, zero buttons, one
+ * styled text link to the card page. Everything else lives on the web.
  */
-export function emailBody(input: WishlistEmailInputs): string {
+export function emailBody(input: AlertEmailInputs): string {
   const safeName = escapeHtml(input.cardName);
   const safeSet = escapeHtml(input.setName);
-  const safeListingTitle = escapeHtml(input.listing.title);
-  const currentPrice = escapeHtml(formatPriceFromListing(input.listing));
-  const targetPrice = escapeHtml(formatUsd(input.targetPriceCents));
-  const safeAffiliateUrl = escapeHtml(input.listing.affiliateUrl);
+  const price = escapeHtml(formatUsd(input.currentPriceCents));
   const safeCardPageUrl = escapeHtml(input.cardPageUrl);
-
-  // What exactly is being tracked — variant + condition. Builds trust ("this
-  // is the printing/grade I asked for"). Empty for the all-defaults watch.
   const qualifier = trackingQualifier(input);
+
+  const headline =
+    input.kind === "dropped"
+      ? `${safeName} (${safeSet}) just dropped to ${price}.`
+      : `${safeName} (${safeSet}) is already at ${price} — below where you asked to be told.`;
+
+  const reason = `That's ${escapeHtml(triggerClause(input))}.`;
+
   const trackingLine = qualifier
-    ? `<p style="color: #777; font-size: 13px; margin: 0 0 24px;">Tracking: <strong style="color: #555;">${escapeHtml(qualifier)}</strong></p>`
-    : "";
-
-  const imageBlock = input.cardImage
-    ? `<img src="${escapeHtml(input.cardImage)}" alt="${safeName} (${safeSet})" width="160" style="border-radius: 12px; display: block; margin: 0 auto 16px;" />`
-    : "";
-
-  const listingImageBlock = input.listing.image
-    ? `<img src="${escapeHtml(input.listing.image)}" alt="Listing image" width="120" style="border-radius: 8px; margin-bottom: 12px;" />`
+    ? `<p style="color: #556; font-size: 13px; margin: 0 0 16px;">Tracking: <strong style="color: #334;">${escapeHtml(qualifier)}</strong></p>`
     : "";
 
   return [
     `<!doctype html>`,
-    `<html><body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; line-height: 1.55; color: #1a1a1a; background: #fff;">`,
-    `<h1 style="font-size: 22px; margin: 0 0 8px; color: #FF6B5C;">A card you're watching just dropped.</h1>`,
-    `<p style="color: #555; font-size: 14px; margin: 0 0 ${trackingLine ? "8px" : "24px"};">${safeName} (${safeSet}) is now <strong>${currentPrice}</strong> — you opted in for alerts when it hit ≤ ${targetPrice}.</p>`,
+    `<html><body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; line-height: 1.6; color: #1a2333; background: #ffffff;">`,
+    `<p style="font-size: 16px; margin: 0 0 8px;"><strong>${headline}</strong></p>`,
+    `<p style="font-size: 14px; color: #445; margin: 0 0 16px;">${reason}</p>`,
     trackingLine,
-
-    imageBlock,
-
-    `<div style="border: 1px solid #e0e0e0; border-radius: 12px; padding: 16px; margin: 16px 0; background: #fafafa;">`,
-    listingImageBlock,
-    `<p style="margin: 0 0 4px; font-size: 13px; color: #777; text-transform: uppercase; letter-spacing: 0.05em;">Best current listing</p>`,
-    `<p style="margin: 0 0 8px; font-size: 28px; font-weight: 700; color: #1a1a1a;">${currentPrice}</p>`,
-    `<p style="margin: 0 0 16px; font-size: 14px; color: #444;">${safeListingTitle}</p>`,
-    `<a href="${safeAffiliateUrl}" style="display: inline-block; background: #FF6B5C; color: #fff; padding: 12px 24px; border-radius: 999px; text-decoration: none; font-weight: 600; font-size: 15px;">Buy on eBay →</a>`,
-    `</div>`,
-
-    `<p style="font-size: 13px; color: #555; margin: 16px 0;">Prices update on every page load — <a href="${safeCardPageUrl}" style="color: #FF6B5C;">view the full card page</a> for the latest listing if this one's gone by the time you click.</p>`,
-
-    `<hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />`,
-    `<p style="font-size: 11px; color: #999; line-height: 1.5;">You're getting this because you set a watchlist alert at foiltcg.com. We send at most one alert per card per 24 hours. The "Buy on eBay" link is affiliate-tracked — Foil earns a commission on purchases that originate from this email.</p>`,
+    `<p style="font-size: 14px; color: #334; margin: 0 0 20px; padding: 10px 14px; border-left: 3px solid #C9A24B; background: #faf7f0;">${escapeHtml(evidenceLine(input))}</p>`,
+    `<p style="font-size: 15px; margin: 0 0 24px;"><a href="${safeCardPageUrl}" style="color: #0F1E3A; text-decoration: underline; text-underline-offset: 3px; font-weight: 600;">See the live listing and sold history on Foil →</a></p>`,
+    `<hr style="border: none; border-top: 1px solid #eee; margin: 24px 0 12px;" />`,
+    `<p style="font-size: 11px; color: #99a; line-height: 1.5; margin: 0;">You're getting this because you set a price alert at foiltcg.com. You'll hear about this card again only after its price moves back up and drops again.</p>`,
     unsubscribeFooter(input.unsubscribeUrl),
     `</body></html>`,
   ].join("\n");
@@ -141,7 +148,7 @@ export function emailBody(input: WishlistEmailInputs): string {
 function unsubscribeFooter(url: string | null): string {
   if (url) {
     const safe = escapeHtml(url);
-    return `<p style="font-size: 11px; color: #999; line-height: 1.5; margin-top: 8px;">Don't want these? <a href="${safe}" style="color: #999; text-decoration: underline;">Unsubscribe in one click</a>.</p>`;
+    return `<p style="font-size: 11px; color: #99a; line-height: 1.5; margin-top: 8px;">Don't want these? <a href="${safe}" style="color: #99a; text-decoration: underline;">Unsubscribe in one click</a> — it stops every alert.</p>`;
   }
-  return `<p style="font-size: 11px; color: #999; line-height: 1.5; margin-top: 8px;">Don't want these? Email john.c.craig24@gmail.com to be removed.</p>`;
+  return `<p style="font-size: 11px; color: #99a; line-height: 1.5; margin-top: 8px;">Don't want these? Email john.c.craig24@gmail.com to be removed.</p>`;
 }

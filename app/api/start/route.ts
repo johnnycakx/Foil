@@ -9,11 +9,11 @@
 //   - Pre-flight: only accept rows whose computed slug exists in
 //     CARD_CATALOG. The /start client already gates by `cataloguedIds`,
 //     but the server re-validates because the client is untrusted.
-//   - target_price_cents = null on the wire → store with the special
-//     "any drop" sentinel the cron interprets (the cron's threshold check is
-//     `currentPriceCents <= row.target_price_cents`; a sentinel maximum means
-//     "always meets the threshold" → alert on ANY listing). $10M cents
-//     (10_000_000) — well above any real listing, at the schema's max bound.
+//   - target_price_cents = null on the wire → stored as NULL (ADR-091): a
+//     blank target means "alert me at ≥15% under the 30-day sold average."
+//     No sentinel value exists anywhere — the old 10,000,000¢ sentinel made
+//     every listing "meet the threshold" and rendered "you wanted ≤
+//     $100000.00" in the email.
 //   - UPSERT each row via the shared upsertWatchlist helper (the same
 //     (email, card_slug, variant, condition) conflict target as every other
 //     write path) — re-submitting the same cards updates targets and returns
@@ -78,8 +78,6 @@ const startSchema = z.object({
   website: z.string().max(500).optional(),
 });
 
-const SENTINEL_ANY_PRICE_CENTS = 10_000_000;
-
 // Per-instance limiter (module scope survives across requests on a warm
 // function; a cold start resets it — acceptable for a pre-traffic funnel).
 const ipLimiter = createIpRateLimiter();
@@ -143,7 +141,8 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   type AcceptedRow = {
     slug: string;
-    target_price_cents: number;
+    /** null = blank target ("alert at ≥15% under the 30-day sold avg"). */
+    target_price_cents: number | null;
   };
   const accepted: AcceptedRow[] = [];
   const rejected: { id: string; reason: string }[] = [];
@@ -161,10 +160,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     void _derived;
     accepted.push({
       slug: catalogSlug,
-      target_price_cents:
-        card.target_price_cents == null
-          ? SENTINEL_ANY_PRICE_CENTS
-          : card.target_price_cents,
+      target_price_cents: card.target_price_cents ?? null,
     });
   }
 

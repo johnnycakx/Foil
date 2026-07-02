@@ -19,6 +19,8 @@ import { sendTransactionalEmail } from "@/lib/notifications/resend";
 import { resolveVerifiedListing } from "@/lib/listing/resolve";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { scanWatchlists, type SupabaseLike, type WatchlistRow } from "@/lib/wishlist/scan-batch";
+import { tierLabel, type SoldComp } from "@/lib/wishlist/alert-decision";
+import { MOVER_FRESHNESS_MS } from "@/lib/deals/market-movers-read";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,11 +45,16 @@ export async function GET(request: Request): Promise<NextResponse> {
       const admin = supabaseAdmin();
       const { data, error } = await admin
         .from("watchlists")
-        .select("id, email, card_slug, target_price_cents, variant, condition, last_notified_at")
+        .select(
+          "id, email, card_slug, target_price_cents, variant, condition, last_notified_at, last_seen_price_cents, alert_state",
+        )
         // Unsubscribed/complained addresses (alerts_paused_at set via
         // /api/unsubscribe or the Resend webhook) never enter the scan —
         // the one-click unsubscribe actually stops alerts (ADR-090).
         .is("alerts_paused_at", null)
+        // 24h cooldown stays as a BACKSTOP (ADR-091) — the event model's
+        // armed/fired state is the mechanism; this just bounds worst-case
+        // volume. Fired rows re-enter after 24h so the re-arm check runs.
         .or(`last_notified_at.is.null,last_notified_at.lt.${cutoffIso}`);
       if (error) {
         return { rows: [], error: error.message };
@@ -56,25 +63,52 @@ export async function GET(request: Request): Promise<NextResponse> {
         id: r.id as string,
         email: r.email as string,
         card_slug: r.card_slug as string,
-        target_price_cents: r.target_price_cents as number,
+        target_price_cents: (r.target_price_cents as number | null) ?? null,
         variant: (r.variant as string | null) ?? "default",
         condition: (r.condition as string | null) ?? "any-raw",
         last_notified_at: (r.last_notified_at as string | null) ?? null,
+        last_seen_price_cents: (r.last_seen_price_cents as number | null) ?? null,
+        alert_state: ((r.alert_state as string | null) === "fired" ? "fired" : "armed") as
+          | "armed"
+          | "fired",
       })) satisfies WatchlistRow[];
       return { rows, error: null };
     },
-    async markNotified(rowId, when) {
+    async updateWatchState(rowId, patch) {
       const admin = supabaseAdmin();
-      const { error } = await admin
-        .from("watchlists")
-        .update({ last_notified_at: when.toISOString() })
-        .eq("id", rowId);
+      const { error } = await admin.from("watchlists").update(patch).eq("id", rowId);
       return { error: error ? error.message : null };
     },
   };
 
+  // 30-day sold comp per slug from the market_movers cache (real PokeTrace
+  // aggregates, refreshed daily; ADR-069). Stale rows (older than the board's
+  // own freshness window) are treated as no-comp — the email then discloses
+  // "no recent sold data" instead of citing an old figure.
+  const getSoldComp = async (cardSlug: string): Promise<SoldComp | null> => {
+    const admin = supabaseAdmin();
+    const { data, error } = await admin
+      .from("market_movers")
+      .select("avg30d, sale_count, matched_tier, computed_at")
+      .eq("card_slug", cardSlug)
+      .maybeSingle();
+    if (error || !data) return null;
+    const avg30d = data.avg30d as number | null;
+    if (typeof avg30d !== "number" || avg30d <= 0) return null;
+    const computedAt = data.computed_at as string;
+    const age = Date.now() - Date.parse(computedAt);
+    if (!Number.isFinite(age) || age > MOVER_FRESHNESS_MS) return null;
+    return {
+      avg30dCents: Math.round(avg30d * 100),
+      saleCount: (data.sale_count as number | null) ?? 0,
+      tierLabel: tierLabel((data.matched_tier as string | null) ?? "NEAR_MINT"),
+      computedAt,
+    };
+  };
+
   const result = await scanWatchlists({
     supabase: supabaseLike,
+    getSoldComp,
     // The VERIFIED resolver (Tranche A #3): alerts fire only on identity-
     // verified condition matches. awaitLog: flush Browse telemetry before the
     // cron function suspends (fire-and-forget drops it in a cron context —

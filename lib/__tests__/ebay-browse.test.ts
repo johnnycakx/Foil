@@ -446,3 +446,28 @@ test("getBestListing: returns null on empty hits[]", async () => {
     },
   );
 });
+
+test("searchItems applies the marketplace hygiene filter — FIXED_PRICE + US + USD (ADR-091)", async () => {
+  // Auction bids are not prices; non-US listings hide import costs; a GBP
+  // figure against a USD target is a false alert (fixture 12). The filter is
+  // enforced at the API for EVERY surface, per the official Buy API Field
+  // Filters syntax (enum sets braced, scalars bare, comma-combined).
+  const { calls, fetch } = fakeFetch([
+    tokenJson(),
+    json({ itemSummaries: [] }),
+  ]);
+  await withEnv(
+    { EBAY_DEVELOPER_APP_ID: "appid", EBAY_DEVELOPER_CERT_ID: "cert" },
+    async () => {
+      __resetTokenCacheForTests();
+      const out = await searchItems({ query: "charizard", fetchImpl: fetch });
+      assert.equal(out.ok, true);
+      const browse = calls[1];
+      const url = new URL(browse.url);
+      assert.equal(
+        url.searchParams.get("filter"),
+        "buyingOptions:{FIXED_PRICE},itemLocationCountry:US,priceCurrency:USD",
+      );
+    },
+  );
+});

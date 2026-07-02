@@ -23,7 +23,8 @@ export type WatchlistUpsertInput = {
   card_slug: string;
   variant: string;
   condition: string;
-  target_price_cents: number;
+  /** null = blank target ("alert at ≥15% under the 30-day sold avg", ADR-091). */
+  target_price_cents: number | null;
   /** Inbound traffic source (e.g. a creator pilot tag from `?src=`). Optional,
    *  nullable column — omitting it preserves the pre-F2 write behaviour. */
   src?: string | null;

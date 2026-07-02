@@ -24,7 +24,8 @@ export type ValidatedWatchlist = {
   card_slug: string;
   variant: string;
   condition: ConditionToken;
-  target_price_cents: number;
+  /** null = blank target ("alert at ≥15% under the 30-day sold avg", ADR-091). */
+  target_price_cents: number | null;
 };
 
 export type ValidationResult =
@@ -67,10 +68,19 @@ export function validateWatchlistSubmission(
     return { ok: false, error: "invalid_condition" };
   }
 
-  const cents =
-    typeof raw.target_price_cents === "number" ? raw.target_price_cents : Number(raw.target_price_cents);
-  if (!Number.isInteger(cents) || cents < 1 || cents > 10_000_000) {
-    return { ok: false, error: "invalid_target_price" };
+  // Blank target is a VALID watch (ADR-091): "alert me at ≥15% under the
+  // 30-day sold average." Absent/empty → null; anything supplied must be a
+  // sane integer cent amount. No sentinel value exists.
+  const rawTarget = raw.target_price_cents;
+  let cents: number | null;
+  if (rawTarget == null || rawTarget === "") {
+    cents = null;
+  } else {
+    const n = typeof rawTarget === "number" ? rawTarget : Number(rawTarget);
+    if (!Number.isInteger(n) || n < 1 || n > 10_000_000) {
+      return { ok: false, error: "invalid_target_price" };
+    }
+    cents = n;
   }
 
   return { ok: true, value: { email, card_slug, variant, condition, target_price_cents: cents } };

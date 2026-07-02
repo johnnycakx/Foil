@@ -354,6 +354,19 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 **Mitigation playbook.** (1) Renew (money decision — John's). (2) If lapsing intentionally: announce the degradation in the newsletter copy pipeline so gates don't cite stale movers, and let the baked variants + SDK prices carry the pages. (3) Longer term: the `market_snapshots` time-series accumulates history that softens a gap.
 
+## R-063 — Alert engine dishonesty: repeat-alert noise + cross-currency false alerts
+
+**Severity:** High (the alert email is the pull-model's core promise; a false or nagging alert to the first real user kills the trust moat)
+**Status:** `mitigating` (2026-07-01, [ADR-091](DECISIONS.md#adr-091--alert-engine-rebuilt-as-an-honest-event-model-armedfired-state-market-floor-evidence-line-emails)). The structural causes are closed; stays `mitigating` (not `resolved`) until real watch traffic exercises the event model live.
+
+**The risk (as shipped pre-ADR-091).** (1) NOISE: the sole trigger `price ≤ target` with no baseline state re-alerted a below-target card every ~24h forever, each email claiming it "just dropped" — a subscription to daily spam, not an alert. (2) FALSE: no Browse `filter=` + no currency check meant auction bids and non-US/non-USD listings were "verified" prices — a £30 GBP listing cleared a $40 USD target (fixture 12, the Moonbreon class). (3) DISHONEST COPY: blank targets became a 10,000,000¢ sentinel and rendered "you wanted ≤ $100000.00."
+
+**What changed (ADR-091).** Armed/fired state machine + 5% hysteresis re-arm (oscillation fires once); "dropped" only on an observed cross; the Browse marketplace filter (FIXED_PRICE/US/USD) at the API for every surface + an explicit USD gate in the scan; sentinel purged (NULL target = 15%-under-30d-avg semantics); every email cites the sold comp or discloses its absence. Each acceptance criterion is test-pinned, including fixture 12.
+
+**Trigger to escalate.** Any live alert email that (a) claims a drop without a cross in the row's state history, (b) cites a non-USD figure, or (c) repeats within a fired state without a re-arm — each would mean the model and prod disagree. Also: `skippedNonUsd > 0` in the cron summary (the Browse filter and the payload disagree — investigate).
+
+**Mitigation playbook.** The cron result now carries `rearmed` / `skippedNonUsd` / `heldNoBasis` counters in the Discord summary path; watch them for the first weeks of real traffic. Flip to `resolved` after the first month of live watches with zero trigger events.
+
 ## How to log a new risk
 
 1. Next available ID (`R-NNN`, monotonically increasing).

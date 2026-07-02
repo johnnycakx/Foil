@@ -38,6 +38,22 @@ import { aspectsFromLocalized } from "../buy-signal/aspects.ts";
 const BROWSE_SEARCH_ENDPOINT = "https://api.ebay.com/buy/browse/v1/item_summary/search";
 const MARKETPLACE_ID = "EBAY_US";
 
+// Marketplace hygiene filter (alert-engine-rebuild, ADR-091). Every Foil
+// surface prices in USD against US-market comps, so every search excludes at
+// the API what we'd otherwise have to reject post-hoc:
+//   buyingOptions:{FIXED_PRICE} — auction bids are not prices (the $6-
+//     Charizard class: a live bid "verified" as the market ask);
+//   itemLocationCountry:US      — non-US listings carry shipping/imports the
+//     shown price doesn't include;
+//   priceCurrency:USD           — a GBP figure compared to a USD target is a
+//     false alert (fixture 12).
+// Syntax per the official Buy API Field Filters reference
+// (developer.ebay.com/api-docs/buy/static/ref-buy-browse-filters.html):
+// enum sets in braces, scalar values bare, filters comma-combined. The
+// wishlist scan ALSO re-checks currency explicitly (belt and braces).
+export const BROWSE_MARKETPLACE_FILTER =
+  "buyingOptions:{FIXED_PRICE},itemLocationCountry:US,priceCurrency:USD";
+
 export type SearchItemsInput = {
   query: string;
   limit?: number;
@@ -80,7 +96,8 @@ export async function searchItems(input: SearchItemsInput): Promise<EpnSearchRes
 
   const limit = Math.max(1, Math.min(input.limit ?? 25, 50));
   const url =
-    `${BROWSE_SEARCH_ENDPOINT}?q=${encodeURIComponent(input.query)}&limit=${limit}`;
+    `${BROWSE_SEARCH_ENDPOINT}?q=${encodeURIComponent(input.query)}&limit=${limit}` +
+    `&filter=${encodeURIComponent(BROWSE_MARKETPLACE_FILTER)}`;
 
   const surface: BrowseSurface = input.surface ?? "manual";
   const log = input.logImpl ?? logBrowseCall;

@@ -30,8 +30,12 @@ export type WatchlistFormState = {
   error?: string;
 };
 
-function dollarsToCents(raw: FormDataEntryValue | null): number {
-  const n = typeof raw === "string" ? parseFloat(raw) : NaN;
+function dollarsToCents(raw: FormDataEntryValue | null): number | null {
+  // Blank = a valid market-basis watch (ADR-091): validate.ts maps null
+  // through; the visible form still marks the field required (its UX asks
+  // for a target), so null only arises on deliberate blank submissions.
+  if (typeof raw !== "string" || raw.trim() === "") return null;
+  const n = parseFloat(raw);
   return Number.isFinite(n) ? Math.round(n * 100) : NaN;
 }
 

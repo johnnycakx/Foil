@@ -116,11 +116,14 @@ test("/api/start route: re-validates pokemon_tcg_id against CARD_CATALOG", () =>
   assert.match(src, /not_in_catalog/);
 });
 
-test("/api/start route: target_price_cents null → sentinel 'any drop' value", () => {
+test("/api/start route: blank target stays NULL — the sentinel is purged (ADR-091)", () => {
   const src = readFile("app/api/start/route.ts");
-  // The sentinel is 10_000_000 (matches the schema's max), used so the
-  // existing cron's `currentPriceCents <= target_price_cents` always passes.
-  assert.match(src, /SENTINEL_ANY_PRICE_CENTS\s*=\s*10_000_000/);
+  // Blank target = "alert me at ≥15% under the 30-day sold average." The old
+  // 10,000,000¢ sentinel fired on ANY listing and rendered "you wanted ≤
+  // $100000.00" in the email. It must never come back.
+  assert.doesNotMatch(src, /SENTINEL_ANY_PRICE_CENTS/);
+  assert.doesNotMatch(src, /10_000_000\s*[,;)]?\s*$/m, "no sentinel assignment");
+  assert.match(src, /target_price_cents: card\.target_price_cents \?\? null/);
 });
 
 test("/api/start route: subscribeEmail uses source='start-page'", () => {

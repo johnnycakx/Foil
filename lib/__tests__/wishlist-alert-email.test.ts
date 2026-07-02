@@ -1,130 +1,123 @@
-// Contract tests for the wishlist alert email composers. Pins:
-//   1. Subject line shape ("Card (Set) dropped to $X — you wanted ≤ $Y").
-//   2. Body HTML contains the affiliate CTA, the affiliate URL verbatim,
-//      and the customid=foil-wishlist-alert attribution suffix.
-//   3. Body renders without an <img> when cardImage is null.
-//   4. HTML escaping prevents listing-title XSS.
+// Alert email composer tests — rebuilt for the thin honest ping (ADR-091).
+// Pins the honesty contract:
+//   - "dropped" copy renders ONLY for kind "dropped"; "already_below" says so.
+//   - Every body carries a sold-comp evidence line OR the explicit no-comp
+//     disclosure — no third state (the acceptance criterion).
+//   - Delivery doctrine: no <img>, no button-styled CTA, ONE link to the card
+//     page (+ the unsubscribe footer link), no "newsletter" framing.
+//   - No sentinel: blank target renders market-basis copy; "$100000.00" is
+//     unbuildable.
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { emailBody, subjectLine, type WishlistEmailInputs } from "../wishlist/alert-email.ts";
+import { emailBody, evidenceLine, pctUnderAvg, subjectLine, type AlertEmailInputs } from "../wishlist/alert-email.ts";
+import type { SoldComp } from "../wishlist/alert-decision.ts";
 
-function inputs(overrides: Partial<WishlistEmailInputs> = {}): WishlistEmailInputs {
+const COMP: SoldComp = {
+  avg30dCents: 9200,
+  saleCount: 14,
+  tierLabel: "Near Mint",
+  computedAt: "2026-07-01T00:00:00Z",
+};
+
+function inputs(over: Partial<AlertEmailInputs> = {}): AlertEmailInputs {
   return {
     cardName: "Charizard",
     setName: "Base",
-    cardSlug: "base1-4-charizard",
-    listing: {
-      title: "Charizard 4/102 Base Set Holo NM",
-      image: "https://img.ebay/x.jpg",
-      price: 38.5,
-      currency: "USD",
-      affiliateUrl:
-        "https://www.ebay.com/itm/123?mkevt=1&mkcid=1&mkrid=711-53200-19255-0&toolid=10001&campid=555555&customid=foil-wishlist-alert",
-    },
+    kind: "dropped",
+    basis: "target",
+    currentPriceCents: 3800,
     targetPriceCents: 4000,
-    cardImage: "https://img.tcg/charizard.png",
+    comp: null,
     cardPageUrl: "https://foiltcg.com/cards/base1-4-charizard",
-    unsubscribeUrl: "https://foiltcg.com/api/unsubscribe?token=test-token-abc",
-    ...overrides,
+    unsubscribeUrl: "https://foiltcg.com/api/unsubscribe?token=tok",
+    ...over,
   };
 }
 
-test("subjectLine: card + set + dropped-to + wanted-≤ shape", () => {
-  const subject = subjectLine(inputs());
-  assert.equal(subject, "Charizard (Base) dropped to $38.50 — you wanted ≤ $40.00");
-});
-
-test("subjectLine: rounds price to two decimals from the listing's raw float", () => {
-  const subject = subjectLine(
-    inputs({ listing: { ...inputs().listing, price: 7.999 } }),
-  );
-  assert.match(subject, /dropped to \$8\.00/);
-});
-
-test("subjectLine: non-USD currency falls through to numeric + code", () => {
-  const subject = subjectLine(
-    inputs({ listing: { ...inputs().listing, price: 25.0, currency: "EUR" } }),
-  );
-  assert.match(subject, /dropped to 25\.00 EUR/);
-});
-
-test("emailBody: includes the affiliate URL verbatim with customid=foil-wishlist-alert", () => {
-  const html = emailBody(inputs());
-  assert.ok(html.includes("customid=foil-wishlist-alert"));
-  // The full URL string should appear unmodified (escape-safe) in href.
-  assert.match(html, /href="[^"]*customid=foil-wishlist-alert[^"]*"/);
-});
-
-test("emailBody: includes the price + card name + listing title + target price", () => {
-  const html = emailBody(inputs());
-  assert.match(html, /\$38\.50/);
-  assert.match(html, /Charizard/);
-  assert.match(html, /Base/);
-  assert.match(html, /Charizard 4\/102 Base Set Holo NM/);
-  assert.match(html, /\$40\.00/);
-});
-
-test("emailBody: omits the card image block when cardImage is null", () => {
-  const html = emailBody(inputs({ cardImage: null }));
-  // The card-art <img> shouldn't be present; the listing image still is.
-  const imgTags = html.match(/<img[^>]*>/g) ?? [];
-  // At most one <img> (the listing image), zero card-art img.
-  assert.ok(imgTags.length <= 1);
-  assert.ok(!html.includes("https://img.tcg/charizard.png"));
-});
-
-test("emailBody: HTML-escapes a malicious listing title", () => {
-  const html = emailBody(
-    inputs({
-      listing: {
-        ...inputs().listing,
-        title: '<script>alert("xss")</script>',
-      },
-    }),
-  );
-  assert.ok(!html.includes("<script>"));
-  assert.ok(html.includes("&lt;script&gt;"));
-});
-
-test("emailBody: includes the per-card page link for after-the-fact browsing", () => {
-  const html = emailBody(inputs());
-  assert.match(html, /href="https:\/\/foiltcg\.com\/cards\/base1-4-charizard"/);
-});
-
-// --- Session 49b: variant + condition labels -------------------------------
-
-test("subjectLine: injects variant + condition qualifier when present", () => {
-  const subject = subjectLine(
-    inputs({ variantLabel: "1st Edition Holofoil", conditionLabel: "PSA 10" }),
-  );
-  assert.equal(
-    subject,
-    "Charizard 1st Edition Holofoil (PSA 10) (Base) dropped to $38.50 — you wanted ≤ $40.00",
-  );
-});
-
-test("subjectLine: variant only (no condition) still reads cleanly", () => {
-  const subject = subjectLine(inputs({ variantLabel: "Shadowless Holofoil" }));
-  assert.match(subject, /^Charizard Shadowless Holofoil \(Base\) dropped to/);
-});
-
-test("subjectLine: omitting both labels is byte-identical to the pre-49b format", () => {
-  // Guards the all-defaults watch (variant 'default' / condition 'any-raw' →
-  // the cron passes undefined labels) against any regression.
+test("subject, dropped + target basis: names the drop and the user's target", () => {
   assert.equal(
     subjectLine(inputs()),
-    "Charizard (Base) dropped to $38.50 — you wanted ≤ $40.00",
+    "Charizard (Base) dropped to $38.00 — at your $40.00 target",
   );
 });
 
-test("emailBody: renders a 'Tracking: …' line with the qualifier, HTML-escaped", () => {
-  const html = emailBody(inputs({ variantLabel: "1st Edition Holofoil", conditionLabel: "PSA 10" }));
-  assert.match(html, /Tracking:/);
-  assert.match(html, /1st Edition Holofoil \(PSA 10\)/);
+test("subject, already_below: 'is', never 'dropped' — a drop that wasn't observed is never claimed", () => {
+  const s = subjectLine(inputs({ kind: "already_below" }));
+  assert.equal(s, "Charizard (Base) is $38.00 — at your $40.00 target");
+  assert.doesNotMatch(s, /dropped/);
 });
 
-test("emailBody: no 'Tracking:' line when labels are absent", () => {
+test("subject, market basis: cites the percent under the 30-day sold average", () => {
+  const s = subjectLine(
+    inputs({ kind: "dropped", basis: "market", targetPriceCents: null, currentPriceCents: 7500, comp: COMP }),
+  );
+  assert.match(s, /dropped to \$75\.00 — 18% under its 30-day sold average/);
+});
+
+test("evidence line cites the comp with tier + figures; discloses plainly when no comp exists", () => {
+  const withComp = evidenceLine(inputs({ currentPriceCents: 7500, comp: COMP }));
+  assert.equal(withComp, "30-day avg sold (Near Mint): $92.00 · this listing: $75.00 (18% under)");
+  const overAvg = evidenceLine(inputs({ currentPriceCents: 10000, comp: COMP }));
+  assert.match(overAvg, /9% over/);
+  const noComp = evidenceLine(inputs({ comp: null }));
+  assert.equal(noComp, "No recent sold data for this card — this alert is against your target only.");
+});
+
+test("body ALWAYS carries the evidence line or the disclosure (the acceptance criterion)", () => {
+  const withComp = emailBody(inputs({ currentPriceCents: 7500, comp: COMP }));
+  assert.match(withComp, /30-day avg sold \(Near Mint\): \$92\.00/);
+  const noComp = emailBody(inputs({ comp: null }));
+  assert.match(noComp, /No recent sold data for this card/);
+});
+
+test("body honesty per kind: 'just dropped' only for dropped; already_below says already", () => {
+  const dropped = emailBody(inputs({ kind: "dropped" }));
+  assert.match(dropped, /just dropped to \$38\.00/);
+  const already = emailBody(inputs({ kind: "already_below" }));
+  assert.match(already, /already at \$38\.00/);
+  assert.doesNotMatch(already, /just dropped/);
+});
+
+test("thin ping doctrine: no images, no button styling, exactly the card-page link + unsubscribe", () => {
   const html = emailBody(inputs());
-  assert.ok(!html.includes("Tracking:"));
+  assert.doesNotMatch(html, /<img/i, "no images (Primary-safe, ADR-079)");
+  assert.doesNotMatch(html, /display:\s*inline-block;\s*background/, "no button-styled CTA");
+  assert.doesNotMatch(html, /ebay\.com/i, "no affiliate link in the email — the page is the house");
+  assert.doesNotMatch(html, /newsletter/i, "SaaS notification, not a newsletter");
+  const links = [...html.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(links, [
+    "https://foiltcg.com/cards/base1-4-charizard",
+    "https://foiltcg.com/api/unsubscribe?token=tok",
+  ]);
+});
+
+test("no sentinel can render: blank target produces market copy, never $100000.00", () => {
+  const html = emailBody(
+    inputs({ basis: "market", targetPriceCents: null, currentPriceCents: 7500, comp: COMP }),
+  );
+  assert.doesNotMatch(html, /100000/);
+  assert.doesNotMatch(html, /you wanted/);
+  const subj = subjectLine(
+    inputs({ basis: "market", targetPriceCents: null, currentPriceCents: 7500, comp: COMP }),
+  );
+  assert.doesNotMatch(subj, /100000/);
+});
+
+test("variant + condition qualifier renders in subject and as a tracking line, HTML-escaped", () => {
+  const withLabels = inputs({ variantLabel: "1st Edition Holofoil", conditionLabel: "PSA 10" });
+  assert.match(subjectLine(withLabels), /^Charizard 1st Edition Holofoil \(PSA 10\) \(Base\)/);
+  const html = emailBody(inputs({ variantLabel: `<script>alert(1)</script>` }));
+  assert.doesNotMatch(html, /<script>/);
+  assert.match(html, /Tracking:/);
+  // Absent labels → no tracking line.
+  assert.doesNotMatch(emailBody(inputs()), /Tracking:/);
+});
+
+test("pctUnderAvg math + guards", () => {
+  assert.equal(pctUnderAvg(7500, COMP), 18);
+  assert.equal(pctUnderAvg(9200, COMP), 0);
+  assert.equal(pctUnderAvg(10000, COMP), -9);
+  assert.equal(pctUnderAvg(100, null), null);
+  assert.equal(pctUnderAvg(100, { ...COMP, avg30dCents: 0 }), null);
 });
