@@ -203,3 +203,25 @@ order — /start → /lines polish → /deals — carrying the won register's
 consequences (gold → vermillion, plain language, chrome coherence) WITHOUT
 migrating them dark (form/data surfaces staying cream is the deliberate
 marketing-dark / task-light split; John decides any full dark migration awake).
+
+---
+
+## iter-07 — /start: the money page earns the vault name
+
+**Thesis:** Kill the blank-form cold start — three one-tap grail chips with
+real card art (Moonbreon / Base Charizard / Giratina V alt, catalog-guarded);
+blank-target behavior explained in plain words; success state gains the
+/deals retention hook (src=start-success); full gold → vermillion sweep
+(form, typeahead, page shell); `<noscript>` fallback (newsletter + mailto).
+
+**Verified live:** chip click → card added with target row, button reads
+"Track 1 card", chips row hides after pick (design-loop/verify-chips.mjs).
+
+**Scores (rubric applied to /start):**
+(a) 8.5 · (b) 8.0 · (c) 7.5 (flat but task-appropriate) · (d) 8.3 (grail
+chips are collector-instant) · (e) 8.2 · (f) 9.2 (blank-target copy) ·
+(g) 8.8 · (h) 7.8 — **avg 8.29 · min 7.5.** A form page doesn't need
+spectacle; it needed a warm start and honest words, and now has both.
+
+**Next thesis (iter-08):** /deals — de-gold, methodology copy tightened to the
+pull promise ("want them for YOUR cards? → /start"), consistency pass.

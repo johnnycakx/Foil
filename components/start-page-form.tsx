@@ -29,6 +29,37 @@ type Submission =
 
 const MAX_SELECTED = 50;
 
+// One-tap example chase cards for the empty state (fable-design-overhaul §2):
+// three community grails a cold visitor recognizes on sight. Images are the
+// self-hosted hero webps (ADR-056); each chip only renders if the card is
+// actually in the catalog (no dead adds).
+const CHASE_EXAMPLES: SearchHit[] = [
+  {
+    id: "swsh7-215",
+    name: "Umbreon VMAX (Moonbreon)",
+    setName: "Evolving Skies",
+    setId: "swsh7",
+    number: "215",
+    image: "/hero/swsh7-215.webp",
+  },
+  {
+    id: "base1-4",
+    name: "Charizard",
+    setName: "Base Set",
+    setId: "base1",
+    number: "4",
+    image: "/hero/base1-4.webp",
+  },
+  {
+    id: "swsh11-186",
+    name: "Giratina V (alt art)",
+    setName: "Lost Origin",
+    setId: "swsh11",
+    number: "186",
+    image: "/hero/swsh11-186.webp",
+  },
+];
+
 export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
   const [selected, setSelected] = useState<Selected[]>([]);
   const [email, setEmail] = useState("");
@@ -147,8 +178,8 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
 
   if (submission.state === "success") {
     return (
-      <section className="rounded-3xl border border-foil-gold/40 bg-foil-cream p-8 shadow-xl shadow-foil-navy/10 sm:p-10">
-        <p className="text-xs font-medium uppercase tracking-widest text-foil-gold">
+      <section className="rounded-3xl border border-foil-vermillion/40 bg-foil-cream p-8 shadow-xl shadow-foil-navy/10 sm:p-10">
+        <p className="text-xs font-medium uppercase tracking-widest text-foil-vermillion">
           You&apos;re tracking {submission.count} cards
         </p>
         <h2 className="font-display mt-3 text-2xl font-bold tracking-[-0.02em] text-foil-navy sm:text-3xl">
@@ -161,23 +192,25 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
           {submission.vaultUrl ? (
             <a
               href={submission.vaultUrl}
-              className="inline-flex items-center justify-center rounded-xl bg-foil-navy px-5 py-2.5 text-sm font-semibold text-foil-cream transition hover:bg-foil-coral"
+              className="inline-flex items-center justify-center rounded-xl bg-foil-navy px-5 py-2.5 text-sm font-semibold text-foil-cream transition hover:bg-foil-vermillion"
             >
               Open your vault →
             </a>
           ) : (
             <a
               href="/cards"
-              className="inline-flex items-center justify-center rounded-xl bg-foil-navy px-5 py-2.5 text-sm font-semibold text-foil-cream transition hover:bg-foil-coral"
+              className="inline-flex items-center justify-center rounded-xl bg-foil-navy px-5 py-2.5 text-sm font-semibold text-foil-cream transition hover:bg-foil-vermillion"
             >
               Browse the catalog →
             </a>
           )}
+          {/* Retention hook (fable-design-overhaul §2): watch your inbox —
+              meanwhile, this week's best drops. */}
           <a
-            href="/newsletter"
-            className="text-sm text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
+            href="/deals?src=start-success"
+            className="text-sm text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-vermillion"
           >
-            Or read the newsletter
+            Meanwhile, see this week&apos;s best drops →
           </a>
         </div>
         {submission.vaultUrl && (
@@ -218,12 +251,45 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
         autoFocus
       />
 
+      {/* EMPTY STATE — one-tap chase-card chips so a cold visitor never faces
+          a blank form (fable-design-overhaul §2). Disappears once anything is
+          picked. */}
+      {selected.length === 0 && (
+        <div className="mt-4">
+          <p className="text-xs text-foil-slate">Not sure how to spell it? Start with a grail:</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {CHASE_EXAMPLES.filter((c) => cataloguedIds.includes(c.id)).map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => addCard(c)}
+                className="inline-flex items-center gap-2 rounded-full border border-foil-navy/15 bg-foil-cream py-1 pr-3 pl-1 text-xs font-medium text-foil-navy transition hover:border-foil-vermillion/60 hover:bg-foil-vermillion/5"
+              >
+                <Image
+                  src={c.image}
+                  alt=""
+                  width={24}
+                  height={34}
+                  className="h-8 w-6 rounded object-cover ring-1 ring-foil-navy/10"
+                />
+                {c.name}
+                <span aria-hidden className="text-foil-vermillion">+</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* SELECTED CARDS — section header (no number). Only renders once
           the user has picked at least one card. */}
       {selected.length > 0 && (
         <div className="mt-8">
           <p className="font-display text-base font-bold text-foil-navy">
-            Set target prices <span className="font-sans text-sm font-normal text-foil-slate">(leave blank for &ldquo;any drop&rdquo;)</span>
+            Set target prices
+          </p>
+          <p className="mt-1 text-sm text-foil-slate">
+            No price in mind? Leave it blank and we&apos;ll email you when the
+            card dips well below what it usually sells for.
           </p>
           <ul className="mt-3 space-y-2">
             {selected.map((s) => (
@@ -255,7 +321,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
                     value={s.targetPriceUsd}
                     onChange={(e) => updateTarget(s.id, e.target.value)}
                     placeholder="any"
-                    className="w-20 rounded-lg border border-foil-navy/15 bg-foil-cream px-2 py-1.5 text-right text-sm text-foil-navy placeholder:text-foil-slate/60 outline-none focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30"
+                    className="w-20 rounded-lg border border-foil-navy/15 bg-foil-cream px-2 py-1.5 text-right text-sm text-foil-navy placeholder:text-foil-slate/60 outline-none focus:border-foil-vermillion focus:ring-2 focus:ring-foil-vermillion/30"
                   />
                 </div>
                 <button
@@ -283,7 +349,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
             placeholder="you@gmail.com"
             required
             autoComplete="email"
-            className="mt-2 w-full rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/60 outline-none transition focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30"
+            className="mt-2 w-full rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/60 outline-none transition focus:border-foil-vermillion focus:ring-2 focus:ring-foil-vermillion/30"
           />
         </label>
         <label className="mt-4 flex items-start gap-3 text-sm text-foil-slate">
@@ -291,7 +357,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
             type="checkbox"
             checked={optInNewsletter}
             onChange={(e) => setOptInNewsletter(e.target.checked)}
-            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-foil-navy/20 bg-foil-cream text-foil-gold focus:ring-foil-gold focus:ring-offset-0"
+            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-foil-navy/20 bg-foil-cream text-foil-vermillion focus:ring-foil-vermillion focus:ring-offset-0"
           />
           <span>
             Also send me Foil&apos;s weekly deals newsletter (~1 email/week, unsubscribe anytime)
@@ -303,7 +369,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
       <button
         type="submit"
         disabled={submission.state === "submitting" || selected.length === 0}
-        className="mt-8 w-full rounded-xl bg-foil-navy px-6 py-3.5 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:bg-foil-navy disabled:hover:ring-0"
+        className="mt-8 w-full rounded-xl bg-foil-navy px-6 py-3.5 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-vermillion hover:shadow-lg hover:shadow-foil-navy/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:bg-foil-navy"
       >
         {submission.state === "submitting"
           ? "Setting up…"

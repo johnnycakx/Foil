@@ -55,7 +55,7 @@ export default function StartPage() {
   return (
     <main className="relative mx-auto w-full max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
       <header className="mb-10 text-center sm:text-left">
-        <p className="text-xs font-medium uppercase tracking-widest text-foil-gold">
+        <p className="text-xs font-medium uppercase tracking-widest text-foil-vermillion">
           Get started
         </p>
         <h1 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl md:text-5xl">
@@ -69,11 +69,30 @@ export default function StartPage() {
 
       <StartPageForm cataloguedIds={cataloguedIds} />
 
+      {/* No-JS fallback (fable-design-overhaul §2 / audit 🟡): the form above
+          is a client component; without JavaScript a visitor still gets a
+          working path — the newsletter form is a plain POST away, and email
+          works everywhere. */}
+      <noscript>
+        <p className="mt-6 rounded-xl border border-foil-navy/15 bg-foil-cream p-4 text-sm text-foil-navy">
+          This form needs JavaScript. Without it, you can still get the weekly
+          deals email at{" "}
+          <a href="/newsletter" className="underline underline-offset-4">
+            foiltcg.com/newsletter
+          </a>{" "}
+          — or email{" "}
+          <a href="mailto:john.c.craig24@gmail.com" className="underline underline-offset-4">
+            john.c.craig24@gmail.com
+          </a>{" "}
+          with the cards you want watched and we&apos;ll set it up by hand.
+        </p>
+      </noscript>
+
       <p className="mt-10 text-center text-xs text-foil-slate">
         Privacy is in the{" "}
         <a
           href="/legal/privacy"
-          className="underline decoration-foil-navy/20 underline-offset-4 transition hover:text-foil-navy hover:decoration-foil-gold"
+          className="underline decoration-foil-navy/20 underline-offset-4 transition hover:text-foil-navy hover:decoration-foil-vermillion"
         >
           policy
         </a>
