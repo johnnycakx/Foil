@@ -8,6 +8,21 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-07-02 (overnight, round 2) — John's 1am verdicts executed: the dark gallery goes site-wide, Shrikhand wordmark, teal accent bake-off, vault designed, sv3a unpublished (branch only, John merges)
+
+**Goal: execute `docs/goals/design-loop-round2.md` — John's live evaluator pass on round 1, same loop/branch/boundaries.** (Claude Code, unattended; continues the entry below.)
+
+- **Iters 09–15 on `design/overnight-loop-2026-07-02`** (round-1 iters 01–08 below). Full trail: `design-loop/ITERATION-LOG.md` + `design-loop/SUMMARY-ROUND2.md` (the morning decision list).
+- **iter-09 "the dark gallery" (8.59/8.3):** Linear restraint (glows pulled back — the cards glow, the page doesn't), type scale cranked (marketing body 18–20px, hero sub 24px), **Shrikhand** wordmark won the ten-face bubbly bake-off (closest OFL match to John's personal-use-only Skylens Italic ref — license note in SUMMARY) → wordmark-FIRST chrome, hanko demoted to favicon + hero-pill glyph; nav renamed **"Your vault"**.
+- **iters 10–12 accent bake-off, vermillion OUT:** token pair (accent/accent-deep, AA on night + cream) swapped per leg. **Moon-glow teal (#6fd8c5) ratified (8.63)** — sampled from Moonbreon's own moonlit art; sakura 8.45 (warm but detached from the cool hero art); holo-iridescent 8.2 (conceptually perfect, visually vanishes at restraint scale). All three galleried for John's ratification.
+- **iters 13–14 dark (almost) everywhere:** /deals + /blog index + **/cards/[slug]** (styling ONLY — zero logic/JSON-LD/affiliate changes; guards repinned with citations; hydrated + unhydrated tiers verified HTTP 200 with `data-tone="night"`). **/lines kept cream for eve** — a night-hanami variant PREVIEW (petals + art on dark, directional-only) at `design-loop/gallery/variants/lines-night-hanami.png`; the cream-header-over-dark-body chrome variation John asked for is at `variants/home-cream-header-fold.png` vs `home-dark-chrome-fold.png`.
+- **iter-13 content hygiene:** blog index leads with collector posts, vending posts under a compact "For businesses" section (pages + SEO live); **sv3a Raging Surf unpublished** (`_unpublished-` prefix → out of index/sitemap/route, preserved in-tree for content-trust-hotfix; blog-vending-surface guard repinned).
+- **iter-15 the vault:** /w night register + invitation empty state (subagent execution, gated).
+- **Gates:** tsc clean + full suite green per commit (one EXTERNAL transient: Anthropic `Grammar compilation timed out` on the live vision test — reran 3/0 green, unrelated to the diff) · card-page tier verification live · variants shot-and-reverted cleanly.
+- **John — morning decision list (SUMMARY-ROUND2):** wordmark face ratify · hanko fate · teal ratify · all-dark vs cream-header chrome · /lines tone for eve. **No push.**
+
+---
+
 ## 2026-07-02 (overnight) — the design loop: "the lit room" homepage wins the DIVERGE face-off, hits the bar, /start + /deals follow through (branch only, John merges)
 
 **Goal: execute `docs/goals/overnight-design-loop.md` unattended — Anthropic's evaluator-optimizer loop (generate → hostile-evaluate from screenshots → revise) on the homepage-first design overhaul, DIVERGE (two real art directions) → CONVERGE (polish the rubric winner), until avg ≥ 8.5 / min ≥ 7.5 ×2 or the budget caps.** ([ADR-096](DECISIONS.md#adr-096--the-night-register-homepage-as-the-lit-room-dark-direction-wins-the-diverge-face-off-chrome-tone-variables-vermillion-succession-begins); Claude Code, overnight.)

@@ -331,3 +331,15 @@ three legs galleried + committed for comparison). Tokens set to leg A; leg B's
 gradient artifacts reverted; no accent archaeology remains (the sweep is the
 token pair itself).
 
+
+---
+
+## iters 13-15 - ROUND 2: dark everywhere + hygiene + the vault
+
+**iter-13** /deals + /blog night (boards re-toned, cream CTA buttons; collector posts lead the index, vending under 'For businesses'; sv3a unpublished via _ prefix, guard repinned). Scores: /deals on night reads richer than cream - the thumbs pop; est avg 8.4.
+
+**iter-14** /cards/[slug] night, STYLING ONLY (subagent execution under strict brief; guards repinned with citations; hydrated + unhydrated tiers verified 200 + data-tone). The Moonbreon card page on night is the strongest single surface of the whole loop - est avg 8.6.
+
+**iter-15** the vault /w: night register + invitation empty state (subagent; gated).
+
+**Variants galleried (shot-and-reverted, committed state unchanged):** cream-header-over-dark-body chrome vs all-dark (variants/home-*.png); /lines night-hanami preview (variants/lines-night-hanami.png - directional only, cream default ships to eve).

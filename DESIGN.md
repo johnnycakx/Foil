@@ -362,6 +362,20 @@ or any Pokémon-trademark shape.
 - **Don't** use side-stripe accents (`border-left`/`border-right` > 1px as a color
   bar) or default to a modal when an inline or progressive reveal would do.
 
+> **ROUND-2 AMENDMENTS (design-loop-round2, John's 1am verdicts — override
+> conflicting lines below):** the night register now covers home, /deals,
+> /blog index, /cards/[slug], and the vault (/w); /lines stays cream-sakura
+> for the eve delivery. **Vermillion is OUT as the UI accent** (hanko ink
+> only) — THE accent is **moon-glow teal** (`--color-foil-accent` #6fd8c5 on
+> night / `--color-foil-accent-deep` #0e7c6b on cream, both AA), sampled from
+> Moonbreon's moonlit art; bake-off vs holo-iridescent + sakura galleried.
+> The register is MATTE Linear-grade ("the dark gallery"): glows pulled back,
+> depth from layering — the cards glow, the page doesn't. Wordmark: "Foil" in
+> **Shrikhand** (`--font-wordmark-bubble`, `Logo face="bubble"`), wordmark-
+> FIRST chrome (seal demoted to favicon + hero-pill glyph). Type scale up:
+> marketing body 18–20px. All pending John's morning ratification
+> (design-loop/SUMMARY-ROUND2.md).
+
 ## 7a. Night register (HOMEPAGE — overnight-design-loop, 2026-07-02, pending John's merge)
 
 The homepage runs the **"lit room"** register: a warm near-black surface where
