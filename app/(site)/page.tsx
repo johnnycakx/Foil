@@ -97,7 +97,14 @@ function Hero() {
           critical-path cost. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[540px] bg-[radial-gradient(ellipse_55%_45%_at_50%_18%,rgba(248,245,240,0.10),rgba(216,90,48,0.05)_45%,transparent_70%)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[560px] bg-[radial-gradient(ellipse_58%_46%_at_50%_16%,rgba(248,245,240,0.16),rgba(216,90,48,0.06)_45%,transparent_72%)]"
+      />
+      {/* The floor — a thin pool of reflected light directly under the fan,
+          so the cards stand IN a room (glossy surface) instead of floating on
+          a void. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-[230px] h-24 bg-[radial-gradient(ellipse_42%_100%_at_50%_0%,rgba(248,245,240,0.07),transparent_75%)] sm:top-[300px] md:top-[330px] lg:top-[380px]"
       />
 
       {/* The grail fan — full-opacity card art, arced like a hand of cards,
@@ -111,7 +118,7 @@ function Hero() {
         {HERO_CARDS.map((c, i) => (
           <div
             key={c.id}
-            className={`relative ${c.tilt} ${c.arc} ${i > 0 ? "-ml-6 sm:-ml-8 md:-ml-9" : ""} ${
+            className={`relative ${c.tilt} ${c.arc} ${i > 0 ? "-ml-8 sm:-ml-8 md:-ml-9" : ""} ${
               c.edge ? "hidden sm:block" : ""
             } ${c.focal ? "z-10 scale-[1.12] sm:scale-[1.16]" : ""} transition duration-200 ease-out hover:z-20`}
           >
@@ -121,7 +128,7 @@ function Hero() {
               width={400}
               height={560}
               eager
-              className={`aspect-[5/7] w-24 overflow-hidden rounded-lg ring-1 sm:w-32 md:w-36 lg:w-44 ${
+              className={`aspect-[5/7] w-[6.75rem] overflow-hidden rounded-lg ring-1 sm:w-32 md:w-36 lg:w-44 ${
                 c.focal
                   ? "shadow-[0_10px_70px_-8px_rgba(248,245,240,0.55)] ring-foil-cream/30"
                   : "shadow-[0_10px_50px_-12px_rgba(248,245,240,0.35)] ring-foil-cream/15"

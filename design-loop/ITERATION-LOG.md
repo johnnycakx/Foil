@@ -143,3 +143,32 @@ to register in stills; mobile fan could carry more art.
 
 **Next thesis (iter-05):** the room gets a floor — a glossy-surface reflection
 glow under the fan, brighter hero spill, larger mobile fan presence.
+
+---
+
+## iter-05 — CONVERGE: the room gets a floor
+
+**Thesis:** Brighter hero light spill (0.10 → 0.16 — now visible in stills), a
+thin pool of reflected light under the fan (the cards stand ON something),
+mobile fan cards up to 6.75rem with tighter overlap (more art in the
+screenshot unit).
+
+**Scores:**
+| dim | score | note |
+|---|---|---|
+| (a) pull-clarity | 8.5 | Fold logic unchanged, cleaner light hierarchy. |
+| (b) craft | 8.4 | Fold composition resolved; step-3 pill still slightly cramped. |
+| (c) depth | 8.3 | The room finally reads in stills: light source, floor, standing objects. |
+| (d) ICP | 8.6 | Desktop + mobile folds are both screenshot-bait now — Moonbreon glowing center-stage. |
+| (e) mobile | 8.4 | Bigger art, focal intact, no overflow issues. |
+| (f) plain-language | 9.0 | Unchanged. |
+| (g) perf | 8.5 | Two more static CSS gradients, nothing on the critical path. |
+| (h) card-spotlight | 8.8 | The cards ARE the page's light — thesis fully realized above the fold. |
+
+**avg 8.56 · min 8.3 — BAR HIT (1 of 2 consecutive needed)**
+
+**Next thesis (iter-06):** sustain pass — no-regression polish (step-3 pill
+sizing, live interactive verification of the holo-tilt in a real browser,
+micro-spacing), re-score. If the bar holds, the loop terminates on quality and
+remaining time goes to extending the won register's polish to /start + /deals
+(de-gold → vermillion, plain-language sweep) as scoped follow-through.
