@@ -49,10 +49,8 @@
      (focus rings, eyebrows, hover fills on light backgrounds). Bake-off legs
      swap ONLY these two values: (a) moon-glow teal drawn from Moonbreon's own
      moonlit palette · (b) holo-iridescent · (c) sakura. */
-  --color-foil-accent: #a9c6f5;
-  --color-foil-accent-deep: #4653c5;
-  /* Leg B only: the holo foil gradient for interactive accents (scarce). */
-  --foil-holo-gradient: linear-gradient(100deg, #7fd4ff, #b9a8ff 50%, #ff9ad5);
+  --color-foil-accent: #6fd8c5;
+  --color-foil-accent-deep: #0e7c6b;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   /* Display font for hero headlines + brand surfaces. Fraunces (variable

@@ -298,3 +298,36 @@ iteration per candidate, token-swapped so the legs differ ONLY in accent:
 accents Â· (12) sakura. Two-tone token pair (--color-foil-accent on night,
 --color-foil-accent-deep on cream) so AA holds on both surfaces.
 
+
+
+---
+
+## iters 10â€“12 â€” ROUND 2: the accent bake-off (vermillion OUT)
+
+**Method:** accent token pair (`--color-foil-accent` night / `--color-foil-accent-deep`
+cream) plumbed through every touched surface, so the three legs differ ONLY in
+the tokens (+ leg B's scarce gradients). Vermillion survives solely as the
+hanko INK (seal geometry, favicon) â€” zero accent classes reference it.
+
+**Leg A â€” moon-glow teal (#6fd8c5 / #0e7c6b), gallery/iter-10-accent-teal:**
+Drawn from Moonbreon's own moonlit palette â€” the page glows the way the focal
+card glows. Distinct at every size, expensive on the matte night, deep variant
+handsome on cream. Contrast: ~8:1 on night, 4.85:1 on cream â€” AA both.
+**avg 8.63.**
+
+**Leg B â€” holo-iridescent (#a9c6f5 + foil gradients), gallery/iter-11-accent-holo:**
+Conceptually the most on-brand ("foil accents on a foil site") but at Linear-
+restraint sizes it VANISHES â€” pale blue eyebrows read as muted cream, the
+gradient underline/dot are too small to register as iridescent. Scarcity
+became invisibility. **avg ~8.2.**
+
+**Leg C â€” sakura (#d98aa0 / #a5546e), gallery/iter-12-accent-sakura:**
+Visible, warm, romantic, eve-adjacent (the /lines register promoted). But the
+pink sits apart from the cool moonlit hero art â€” it decorates the page rather
+than emerging from it. Contrast AA both surfaces. **avg ~8.45.**
+
+**VERDICT: MOON-GLOW TEAL RATIFIED** (subject to John's morning sign-off; all
+three legs galleried + committed for comparison). Tokens set to leg A; leg B's
+gradient artifacts reverted; no accent archaeology remains (the sweep is the
+token pair itself).
+

@@ -62,7 +62,7 @@ function SiteHeader() {
               (audit 2026-07-01); the vending pages stay live for SEO. */}
           <Link
             href="/start"
-            className="bg-[image:var(--foil-holo-gradient)] bg-[length:100%_2px] bg-bottom bg-no-repeat pb-1 font-medium text-[var(--chrome-ink)] transition hover:opacity-80"
+            className="font-medium text-[var(--chrome-ink)] underline decoration-foil-accent/50 underline-offset-4 transition hover:decoration-foil-accent"
           >
             Your vault
           </Link>

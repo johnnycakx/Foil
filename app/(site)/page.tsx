@@ -146,8 +146,8 @@ function Hero() {
         <p className="inline-flex items-center gap-2 rounded-full border border-foil-cream/15 bg-foil-night-2/80 px-3 py-1 text-xs font-medium text-foil-cream/80 backdrop-blur-sm">
           <SealMark px={13} />
           <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-[conic-gradient(from_0deg,#7fd4ff,#b9a8ff,#ff9ad5,#7fd4ff)] opacity-75 motion-safe:animate-ping" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[conic-gradient(from_0deg,#7fd4ff,#b9a8ff,#ff9ad5,#7fd4ff)]" />
+            <span className="absolute inline-flex h-full w-full rounded-full bg-foil-accent opacity-75 motion-safe:animate-ping" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-accent" />
           </span>
           Live · watching {cardCount} cards across {setCount} sets
         </p>
