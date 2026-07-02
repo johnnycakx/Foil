@@ -325,10 +325,14 @@ test("ACCEPTANCE: below-target at first scan → ONE honest 'already below' emai
   assert.match(sent[0].subject, /is \$35\.00/, "first-observation subject must NOT claim a drop");
   assert.doesNotMatch(sent[0].subject, /dropped/);
   assert.match(sent[0].html, /already at \$35\.00/);
-  // State transitioned to fired with the baseline + alert stamps.
-  const fired = scan1.patches.find((p) => p.rowId === "w");
+  // State transitioned to fired with the baseline + alert stamps. Since
+  // alert-digest-batching, a firing row takes TWO writes: the observation
+  // (baseline) at evaluation time, then the 'fired' stamp after the batched
+  // send succeeds — so assert on the stamp write, not the first patch.
+  const observed = scan1.patches.find((p) => p.rowId === "w");
+  assert.equal(observed?.patch.last_seen_price_cents, 3500, "observation recorded at evaluation time");
+  const fired = scan1.patches.filter((p) => p.rowId === "w").at(-1);
   assert.equal(fired?.patch.alert_state, "fired");
-  assert.equal(fired?.patch.last_seen_price_cents, 3500);
   assert.equal(fired?.patch.last_alerted_price_cents, 3500);
 
   // Scan 2: same price, state now 'fired' → SILENCE (but baseline still written).
@@ -519,4 +523,159 @@ test("explicit-target row above the market floor: the floor can lift the trigger
   assert.equal(out.alerted, 1);
   assert.match(sent[0].subject, /under its 30-day sold average/);
   assert.doesNotMatch(sent[0].subject, /\$30\.00 target/, "must not claim the user's target was met");
+});
+
+// ---------------------------------------------------------------------------
+// alert-digest-batching — the send-boundary contract (2026-07-02).
+// ONE email per subscriber per run; these five tests ARE the contract.
+// ---------------------------------------------------------------------------
+
+const TEN_SLUGS = [
+  "base1-4-charizard",
+  "swsh35-74-charizard-vmax-rainbow-rare",
+  "swsh12-186-lugia-v-alt-art",
+  "swsh7-215-umbreon-vmax-alt-art",
+  "swsh8-269-mew-vmax-alt-art",
+  "swsh11-186-giratina-v-alt-art",
+  "swsh7-218-rayquaza-vmax-alt-art",
+  "swsh4-188-pikachu-vmax-rainbow",
+  "swsh7-214-umbreon-vmax",
+  "swsh7-95-umbreon-vmax",
+] as const;
+
+test("BATCH GROUPING: 10 fired cards, 1 user -> exactly ONE email listing all 10", async () => {
+  const sent: Array<{ to: string; subject: string; html: string }> = [];
+  const sendEmail: ScanWatchlistsInput["sendEmail"] = async (i) => {
+    sent.push(i);
+    return { ok: true };
+  };
+  const { supabase } = fakeSupabase(
+    rows(TEN_SLUGS.map((slug, i) => ({ id: `r${i}`, email: "one@x.com", card_slug: slug, target_price_cents: 4000 }))),
+  );
+  const out = await scanWatchlists(
+    baseInput({ supabase, resolveListing: fakeResolver(35), sendEmail }),
+  );
+  assert.equal(sent.length, 1, "exactly one email for the whole run");
+  assert.equal(sent[0].to, "one@x.com");
+  assert.equal(sent[0].subject, "10 of your cards hit good buys today");
+  for (const slug of TEN_SLUGS) {
+    assert.ok(sent[0].html.includes(`/cards/${slug}`), `digest must list ${slug}`);
+  }
+  assert.equal(out.alerted, 10);
+  assert.equal(out.subscribersEmailed, 1);
+  assert.equal(out.dupesMerged, 0);
+});
+
+test("BATCH ISOLATION: 2 users in one run -> 2 emails, ZERO cross-user card leakage", async () => {
+  const sent: Array<{ to: string; html: string }> = [];
+  const sendEmail: ScanWatchlistsInput["sendEmail"] = async (i) => {
+    sent.push({ to: i.to, html: i.html });
+    return { ok: true };
+  };
+  const { supabase } = fakeSupabase(
+    rows([
+      { id: "a1", email: "a@x.com", card_slug: "base1-4-charizard", target_price_cents: 4000 },
+      { id: "b1", email: "b@x.com", card_slug: "swsh12-186-lugia-v-alt-art", target_price_cents: 4000 },
+    ]),
+  );
+  const out = await scanWatchlists(
+    baseInput({ supabase, resolveListing: fakeResolver(35), sendEmail }),
+  );
+  assert.equal(sent.length, 2);
+  assert.equal(out.subscribersEmailed, 2);
+  const toA = sent.find((s) => s.to === "a@x.com");
+  const toB = sent.find((s) => s.to === "b@x.com");
+  assert.ok(toA && toB, "each user gets their own email");
+  // A privacy leak here is an incident — pin both directions hard.
+  assert.ok(toA!.html.includes("/cards/base1-4-charizard"), "A sees A's card");
+  assert.ok(!toA!.html.includes("/cards/swsh12-186-lugia-v-alt-art"), "A must NEVER see B's card");
+  assert.ok(toB!.html.includes("/cards/swsh12-186-lugia-v-alt-art"), "B sees B's card");
+  assert.ok(!toB!.html.includes("/cards/base1-4-charizard"), "B must NEVER see A's card");
+  assert.ok(!toB!.html.includes("a@x.com") && !toA!.html.includes("b@x.com"), "no address leakage either");
+});
+
+test("BATCH DEDUPE: same (user, card) firing via two combos -> one entry, reasons merged, target framing wins", async () => {
+  const sent: Array<{ subject: string; html: string }> = [];
+  const sendEmail: ScanWatchlistsInput["sendEmail"] = async (i) => {
+    sent.push({ subject: i.subject, html: i.html });
+    return { ok: true };
+  };
+  // Two rows for the SAME card + user in DIFFERENT combos (the two-Blastoise
+  // class): one blank-target (market basis via comp), one explicit target.
+  const fake = fakeSupabase(
+    rows([
+      { id: "m", email: "dupe@x.com", card_slug: "base1-4-charizard", target_price_cents: null, condition: "any-raw" },
+      { id: "t", email: "dupe@x.com", card_slug: "base1-4-charizard", target_price_cents: 4000, condition: "nm" },
+    ]),
+  );
+  const out = await scanWatchlists(
+    baseInput({
+      supabase: fake.supabase,
+      resolveListing: fakeResolver(35),
+      sendEmail,
+      getSoldComp: async () => comp(10000),
+    }),
+  );
+  assert.equal(sent.length, 1, "ONE email, not two");
+  assert.equal(out.dupesMerged, 1);
+  assert.equal(out.subscribersEmailed, 1);
+  assert.equal(out.alerted, 2, "both rows counted + stamped");
+  // After the merge it is a single-card email and the explicit-target framing
+  // won the copy (its evidence line already carries the market comparison).
+  assert.match(sent[0].subject, /at your \$40\.00 target/);
+  // BOTH rows got their fired stamp.
+  for (const id of ["m", "t"]) {
+    const last = fake.patches.filter((p) => p.rowId === id).at(-1);
+    assert.equal(last?.patch.alert_state, "fired", `row ${id} must be stamped fired`);
+  }
+});
+
+test("BATCH IDEMPOTENCY: re-running the send step for the same run resends nothing", async () => {
+  const sent: string[] = [];
+  const sendEmail: ScanWatchlistsInput["sendEmail"] = async (i) => {
+    sent.push(i.to);
+    return { ok: true };
+  };
+  // Run 1 fires + stamps.
+  const run1 = fakeSupabase(rows([{ id: "w", email: "idem@x.com", target_price_cents: 4000 }]));
+  await scanWatchlists(baseInput({ supabase: run1.supabase, resolveListing: fakeResolver(35), sendEmail }));
+  assert.equal(sent.length, 1);
+  // Run 2 with the post-run-1 row state (fired + baseline): nothing resends.
+  const run2 = fakeSupabase(
+    rows([
+      { id: "w", email: "idem@x.com", target_price_cents: 4000, alert_state: "fired", last_seen_price_cents: 3500 },
+    ]),
+  );
+  const out2 = await scanWatchlists(
+    baseInput({ supabase: run2.supabase, resolveListing: fakeResolver(35), sendEmail }),
+  );
+  assert.equal(sent.length, 1, "no resend on re-run");
+  assert.equal(out2.alerted, 0);
+  assert.equal(out2.subscribersEmailed, 0);
+});
+
+test("BATCH SOFT-FAIL: one subscriber's send failure never blocks the rest of the run", async () => {
+  const sent: string[] = [];
+  const sendEmail: ScanWatchlistsInput["sendEmail"] = async (i) => {
+    if (i.to === "down@x.com") return { ok: false, error: "provider_500" };
+    sent.push(i.to);
+    return { ok: true };
+  };
+  const fake = fakeSupabase(
+    rows([
+      { id: "d1", email: "down@x.com", card_slug: "base1-4-charizard", target_price_cents: 4000 },
+      { id: "u1", email: "up@x.com", card_slug: "swsh12-186-lugia-v-alt-art", target_price_cents: 4000 },
+    ]),
+  );
+  const out = await scanWatchlists(
+    baseInput({ supabase: fake.supabase, resolveListing: fakeResolver(35), sendEmail }),
+  );
+  assert.deepEqual(sent, ["up@x.com"], "the healthy subscriber still gets their email");
+  assert.equal(out.subscribersEmailed, 1);
+  assert.ok(out.errors.some((e) => e.stage === "send" && e.rowId === "d1"), "the failure is recorded per row");
+  // The failed subscriber's row stays armed (observation only) -> retries next run.
+  const dLast = fake.patches.filter((p) => p.rowId === "d1").at(-1);
+  assert.equal(dLast?.patch.alert_state, undefined, "no fired stamp on a failed send");
+  const uLast = fake.patches.filter((p) => p.rowId === "u1").at(-1);
+  assert.equal(uLast?.patch.alert_state, "fired");
 });

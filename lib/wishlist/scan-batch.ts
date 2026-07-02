@@ -26,7 +26,13 @@
 
 import { getCatalogEntry } from "../cards/catalog.ts";
 import { getCardMetadata, type CardMetadata } from "../cards/sdk.ts";
-import { emailBody, subjectLine, type AlertEmailInputs } from "./alert-email.ts";
+import {
+  batchEmailBody,
+  batchSubjectLine,
+  emailBody,
+  subjectLine,
+  type AlertEmailInputs,
+} from "./alert-email.ts";
 import { decideAlert, type AlertState, type SoldComp } from "./alert-decision.ts";
 import { buildUnsubscribeUrl } from "../unsubscribe-token.ts";
 import { buildVaultUrl } from "../vault-token.ts";
@@ -146,6 +152,13 @@ export type ScanResult = {
   errors: ScanError[];
   /** True when we hit MAX_BROWSE_CALLS and skipped the rest of the slugs. */
   capHit: boolean;
+  /** Distinct subscribers who received an email this run (alert-digest-
+   *  batching: exactly one email per subscriber per run). */
+  subscribersEmailed: number;
+  /** Same-(subscriber, card) fire events merged into one digest entry this
+   *  run (the two-Blastoise-emails class — different variant/condition combos
+   *  firing independently for one card). */
+  dupesMerged: number;
 };
 
 /**
@@ -165,7 +178,20 @@ export async function scanWatchlists(input: ScanWatchlistsInput): Promise<ScanRe
     heldNoBasis: 0,
     errors: [],
     capHit: false,
+    subscribersEmailed: 0,
+    dupesMerged: 0,
   };
+
+  // Per-run send buffer (alert-digest-batching): fired alerts collect here,
+  // keyed subscriber → card, and flush as ONE email per subscriber after the
+  // scan. Engine logic upstream (hysteresis, thresholds, eligibility) is
+  // untouched — this is strictly the send boundary.
+  type PendingAlert = {
+    cardSlug: string;
+    inputs: AlertEmailInputs;
+    rows: { rowId: string; alertedPriceCents: number }[];
+  };
+  const pending = new Map<string, Map<string, PendingAlert>>();
 
   const fetched = await input.supabase.fetchDueRows(now);
   if (fetched.error) {
@@ -330,7 +356,16 @@ export async function scanWatchlists(input: ScanWatchlistsInput): Promise<ScanRe
           continue;
         }
 
-        // Fire.
+        // Fire — batched at the send boundary (alert-digest-batching). The
+        // OBSERVATION is recorded now, per row, exactly as on hold paths; the
+        // email is buffered per subscriber and flushed once after the scan.
+        // The 'fired' stamp moves to flush time so a failed send leaves the
+        // row armed (unchanged retry semantics).
+        const observed = await input.supabase.updateWatchState(row.id, patch);
+        if (observed.error) {
+          result.errors.push({ rowId: row.id, cardSlug: slug, stage: "update_state", error: observed.error });
+        }
+
         const emailInputs: AlertEmailInputs = {
           cardName: metadata.name,
           setName: metadata.setName,
@@ -345,46 +380,91 @@ export async function scanWatchlists(input: ScanWatchlistsInput): Promise<ScanRe
           variantLabel,
           conditionLabel: condLabel,
         };
-        const sendResult = await input.sendEmail({
-          to: row.email,
-          subject: subjectLine(emailInputs),
-          html: emailBody(emailInputs),
-        });
-        if (!sendResult.ok) {
-          result.errors.push({
-            rowId: row.id,
+
+        const byCard = pending.get(row.email) ?? new Map<string, PendingAlert>();
+        const existing = byCard.get(slug);
+        if (existing) {
+          // DEDUPE per (subscriber, card): two combo rows for the same card
+          // firing in one run merge to ONE digest entry (the two-Blastoise-
+          // emails class). The explicit-target framing wins the copy (its body
+          // already carries the market evidence line); "dropped" outranks
+          // "already_below" within the same basis. EVERY merged row still gets
+          // its own fired stamp at flush, at its own observed price.
+          result.dupesMerged += 1;
+          existing.rows.push({ rowId: row.id, alertedPriceCents: currentPriceCents });
+          const takeover =
+            (emailInputs.basis === "target" && existing.inputs.basis !== "target") ||
+            (emailInputs.basis === existing.inputs.basis &&
+              emailInputs.kind === "dropped" &&
+              existing.inputs.kind !== "dropped");
+          if (takeover) existing.inputs = emailInputs;
+        } else {
+          byCard.set(slug, {
             cardSlug: slug,
-            stage: "send",
-            error: sendResult.error ?? "send_failed",
+            inputs: emailInputs,
+            rows: [{ rowId: row.id, alertedPriceCents: currentPriceCents }],
           });
-          // Send failed: record the observation but DON'T transition to
-          // 'fired' — the user never got the email; the next scan may retry
-          // (and will honestly say "already below," since the cross is spent).
-          const wrote = await input.supabase.updateWatchState(row.id, patch);
-          if (wrote.error) {
-            result.errors.push({ rowId: row.id, cardSlug: slug, stage: "update_state", error: wrote.error });
-          }
-          continue;
+          pending.set(row.email, byCard);
         }
-        patch.alert_state = "fired";
-        patch.last_alerted_price_cents = currentPriceCents;
-        patch.last_notified_at = now.toISOString();
-        const wrote = await input.supabase.updateWatchState(row.id, patch);
-        if (wrote.error) {
-          result.errors.push({
-            rowId: row.id,
-            cardSlug: slug,
-            stage: "update_state",
-            error: wrote.error,
-          });
-          // Still count as alerted — the email went out; the failed stamp
-          // surfaces in the error list so we notice.
-        }
-        result.alerted += 1;
       }
     }
 
     if (result.capHit) break;
+  }
+
+  // Flush — ONE email per subscriber per run (alert-digest-batching). n=1
+  // renders the existing single-card email verbatim; n>1 renders the batched
+  // digest, most significant first. One subscriber's failure never blocks the
+  // rest. Idempotency is unchanged: rows stamp 'fired' + last_notified_at only
+  // after a successful send, so re-running the send step resends nothing (the
+  // fetch filter + state machine both exclude stamped rows).
+  for (const [email, byCard] of pending) {
+    const entries = [...byCard.values()];
+    const inputsList = entries.map((e) => e.inputs);
+    const message =
+      entries.length === 1
+        ? { subject: subjectLine(inputsList[0]), html: emailBody(inputsList[0]) }
+        : { subject: batchSubjectLine(entries.length), html: batchEmailBody(inputsList) };
+    const sendResult = await input.sendEmail({ to: email, ...message });
+    if (!sendResult.ok) {
+      for (const entry of entries) {
+        for (const r of entry.rows) {
+          result.errors.push({
+            rowId: r.rowId,
+            cardSlug: entry.cardSlug,
+            stage: "send",
+            error: sendResult.error ?? "send_failed",
+          });
+        }
+      }
+      // Send failed: observations were already recorded; state stays armed so
+      // the next scan retries (honestly as "already below" — the cross is spent).
+      continue;
+    }
+    result.subscribersEmailed += 1;
+    for (const entry of entries) {
+      for (const r of entry.rows) {
+        result.alerted += 1;
+        const stamped = await input.supabase.updateWatchState(r.rowId, {
+          // WatchStatePatch always carries the observation; re-writing the
+          // same observed price here is a no-op refresh, not a new reading.
+          last_seen_price_cents: r.alertedPriceCents,
+          alert_state: "fired",
+          last_alerted_price_cents: r.alertedPriceCents,
+          last_notified_at: now.toISOString(),
+        });
+        if (stamped.error) {
+          result.errors.push({
+            rowId: r.rowId,
+            cardSlug: entry.cardSlug,
+            stage: "update_state",
+            error: stamped.error,
+          });
+          // Still counted as alerted — the email went out; the failed stamp
+          // surfaces in the error list so we notice.
+        }
+      }
+    }
   }
 
   return result;

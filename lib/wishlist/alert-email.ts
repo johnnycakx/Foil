@@ -152,6 +152,73 @@ export function emailBody(input: AlertEmailInputs): string {
   ].join("\n");
 }
 
+// ---------------------------------------------------------------------------
+// Batched digest composers (alert-digest-batching, 2026-07-02). One email per
+// subscriber per cron run: n=1 renders EXACTLY the single-card email above
+// (the caller branches); these two render only n>=2. Same thin-ping doctrine:
+// text-forward, no images, no buttons, one link PER CARD, one footer, one
+// unsubscribe. Subject is count + plain words — no hype, no emoji.
+// ---------------------------------------------------------------------------
+
+/** Most significant first: explicit-target hits lead (the user named that
+ *  number), then the deepest %-under-average. Stable for ties. */
+export function sortAlertsBySignificance(entries: readonly AlertEmailInputs[]): AlertEmailInputs[] {
+  return [...entries].sort((a, b) => {
+    const aTarget = a.basis === "target" ? 0 : 1;
+    const bTarget = b.basis === "target" ? 0 : 1;
+    if (aTarget !== bTarget) return aTarget - bTarget;
+    const aPct = pctUnderAvg(a.currentPriceCents, a.comp) ?? -1;
+    const bPct = pctUnderAvg(b.currentPriceCents, b.comp) ?? -1;
+    return bPct - aPct;
+  });
+}
+
+export function batchSubjectLine(count: number): string {
+  return `${count} of your cards hit good buys today`;
+}
+
+/** One compact section per card, in the existing evidence-line style. */
+export function batchEmailBody(unsorted: readonly AlertEmailInputs[]): string {
+  const entries = sortAlertsBySignificance(unsorted);
+  const sections = entries.map((input) => {
+    const safeName = escapeHtml(input.cardName);
+    const safeSet = escapeHtml(input.setName);
+    const price = escapeHtml(formatUsd(input.currentPriceCents));
+    const qualifier = trackingQualifier(input);
+    const kindClause =
+      input.kind === "dropped"
+        ? "Just dropped"
+        : "Already below where you asked to be told";
+    return [
+      `<div style="margin: 0 0 20px; padding-bottom: 16px; border-bottom: 1px solid #eee;">`,
+      `<p style="font-size: 15px; margin: 0 0 4px;"><strong>${safeName} (${safeSet}) — ${price}</strong>${
+        qualifier ? ` <span style="color: #556; font-size: 13px;">· ${escapeHtml(qualifier)}</span>` : ""
+      }</p>`,
+      `<p style="font-size: 13px; color: #445; margin: 0 0 6px;">${escapeHtml(kindClause)} — ${escapeHtml(triggerClause(input))}.</p>`,
+      `<p style="font-size: 13px; color: #334; margin: 0 0 8px;">${escapeHtml(evidenceLine(input))}</p>`,
+      `<p style="font-size: 14px; margin: 0;"><a href="${escapeHtml(input.cardPageUrl)}" style="color: #0F1E3A; text-decoration: underline; text-underline-offset: 3px; font-weight: 600;">See the live listing and sold history →</a></p>`,
+      `</div>`,
+    ].join("\n");
+  });
+
+  // Footer/unsubscribe come from the first entry — all entries belong to the
+  // SAME subscriber by construction (the scan groups by email before render).
+  const first = entries[0];
+  return [
+    `<!doctype html>`,
+    `<html><body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; line-height: 1.6; color: #1a2333; background: #ffffff;">`,
+    `<p style="font-size: 16px; margin: 0 0 20px;"><strong>${entries.length} of the cards you watch hit prices worth a look.</strong> Most significant first.</p>`,
+    ...sections,
+    `<p style="font-size: 11px; color: #99a; line-height: 1.5; margin: 12px 0 0;">You're getting this because you set price alerts at foiltcg.com. Each card goes quiet until its price moves back up and drops again.${
+      first.manageUrl
+        ? ` <a href="${escapeHtml(first.manageUrl)}" style="color: #99a; text-decoration: underline;">Manage your watchlist</a> — change targets, pause, or add cards.`
+        : ""
+    }</p>`,
+    unsubscribeFooter(first.unsubscribeUrl),
+    `</body></html>`,
+  ].join("\n");
+}
+
 function unsubscribeFooter(url: string | null): string {
   if (url) {
     const safe = escapeHtml(url);

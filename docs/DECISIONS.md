@@ -2716,3 +2716,18 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 4. **Fan composition:** symmetric wing cadence (mirrored tilt/arc), per-card `gap` clearance kills the sliver-behind-focal bug, per-card `fx` equalizes edge luminance (artwork brightness differs; treatment compensates), firmer floor (contact shadow + sakura reflection pool).
 
 **Consequences.** Gold remains wordmark-scope (the wordmark itself is the post-send blackout goal); vermillion stays hanko ink. Emerald/amber semantic tints stay for meaning. Guards pin the charcoal hexes, the sakura pair, the teal ban, and the hero-link contract. The round-2 bake-off galleries remain the record of why teal was tried; this ADR is the record of why it retired: coherence with the surface eve actually lands on beats a palette argued from the focal card's art.
+
+
+## ADR-098 — Alert digest batching: one email per subscriber per cron run (send-boundary aggregation)
+
+**Date:** 2026-07-02 · **Status:** Accepted (live proof pending John's push + next cron)
+
+**Context.** The hourly alert cron sent one email PER WATCHLIST ROW — John received 7 separate Foil emails at 12:01 PM, including TWO for the same Blastoise (two rows for one card in different variant/condition combos, each firing independently with different framings). Per-card emails trash inboxes, invite spam-marks (domain-wide Gmail punishment), and bury the signal.
+
+**Decision — aggregation strictly at the send boundary (engine untouched):**
+1. **Two-write pattern per firing row:** the OBSERVATION (`last_seen_price_cents`) is written at evaluation time exactly like hold paths; the `fired` stamp (`alert_state`/`last_alerted_price_cents`/`last_notified_at`) moves to AFTER the batched send succeeds. A failed send therefore leaves the row armed with a fresh baseline — identical retry semantics to before (honest "already below" next run).
+2. **Collector keyed subscriber → card:** fired alerts buffer per email; ONE send per subscriber per run. n=1 renders the existing single-card email verbatim; n>1 renders the batched digest (subject "N of your cards hit good buys today", most significant first: explicit-target hits, then deepest %-under; one footer, one one-click unsubscribe).
+3. **Dedupe per (subscriber, card):** same-card rows from different combos merge to ONE digest entry. The explicit-target framing wins the copy (its evidence line already carries the market comparison, so the merged email still conveys both reasons); "dropped" outranks "already_below" within a basis. EVERY merged row still gets its own fired stamp at its own observed price.
+4. **Contract tests** (lib/__tests__/wishlist-scan-batch.test.ts): GROUPING (10 cards/1 user → 1 email), ISOLATION (2 users → 2 emails, zero cross-user leakage — a leak is a privacy incident), DEDUPE, IDEMPOTENCY (re-run resends nothing), SOFT-FAIL (one subscriber's failure never blocks the rest). Discord run embed gains "Subscribers emailed / Cards fired / Dupes merged".
+
+**P0 findings recorded:** the "already at $X" emails are ADR-091's deliberate one-time first-observation confirmation (not a signup send) — semantics unchanged, they simply batch now. The 12:01 run is NOT replayable (no per-run event log exists; per-row state overwrites each run) — the dry-run artifact (docs/goals/_results/batched-email-preview.html) renders from an honest reconstruction of John's reported inbox instead; a persisted alert-event log is noted as a future observability candidate, not built here.

@@ -142,6 +142,8 @@ export async function GET(request: Request): Promise<NextResponse> {
       errorCount: result.errors.length,
       capHit: result.capHit,
       durationMs,
+      subscribersEmailed: result.subscribersEmailed,
+      dupesMerged: result.dupesMerged,
     });
   }
 

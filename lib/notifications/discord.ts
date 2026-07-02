@@ -504,6 +504,11 @@ export type WishlistAlertRunInput = {
   capHit: boolean;
   /** Run duration in ms — for the at-a-glance perf signal. */
   durationMs: number;
+  /** alert-digest-batching observability: distinct subscribers emailed this
+   *  run (one email each) + same-(subscriber,card) fires merged into one
+   *  digest entry. */
+  subscribersEmailed: number;
+  dupesMerged: number;
 };
 
 /**
@@ -521,7 +526,9 @@ export async function postWishlistAlertRun(
     { name: "Slugs considered", value: String(ev.slugsConsidered), inline: true },
     { name: "Browse calls", value: String(ev.browseCalls), inline: true },
     { name: "With listing", value: String(ev.slugsWithListing), inline: true },
-    { name: "Alerts sent", value: String(ev.alerted), inline: true },
+    { name: "Subscribers emailed", value: String(ev.subscribersEmailed), inline: true },
+    { name: "Cards fired", value: String(ev.alerted), inline: true },
+    { name: "Dupes merged", value: String(ev.dupesMerged), inline: true },
     { name: "Errors", value: String(ev.errorCount), inline: true },
     { name: "Duration", value: `${(ev.durationMs / 1000).toFixed(1)}s`, inline: true },
   ];
