@@ -137,16 +137,18 @@ export default async function VaultPage({
   const vaultPath = `/w/${encodeURIComponent(token)}`;
 
   return (
-    <main className="mx-auto w-full max-w-5xl flex-1 px-5 pt-10 pb-20 sm:px-8 sm:pt-14">
+    // design-loop-round2 §4: the vault gets the night register — binder pockets
+    // on the night surface, card art as the only bright thing.
+    <main data-tone="night" className="mx-auto w-full max-w-5xl flex-1 bg-foil-night px-5 pt-10 pb-20 text-foil-cream sm:px-8 sm:pt-14">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-medium uppercase tracking-widest text-foil-gold">Your vault</p>
-          <h1 className="font-display mt-1 text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl">
+          <p className="text-xs font-medium uppercase tracking-widest text-foil-accent">Your vault</p>
+          <h1 className="font-display mt-1 text-4xl font-bold tracking-[-0.02em] text-foil-cream sm:text-5xl">
             {rows.length === 0
-              ? "Your vault is empty"
+              ? "Your vault is empty — for now."
               : `You're watching ${rows.length} ${rows.length === 1 ? "card" : "cards"}`}
           </h1>
-          <p className="mt-2 text-sm text-foil-slate">
+          <p className="mt-3 max-w-xl text-base text-foil-cream/70 sm:text-lg">
             We check eBay every hour and email you when a card genuinely hits your number.
           </p>
         </div>
@@ -155,7 +157,7 @@ export default async function VaultPage({
             <input type="hidden" name="token" value={token} />
             <button
               type="submit"
-              className="rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-2 text-sm font-medium text-foil-navy transition hover:border-foil-gold/50 hover:bg-foil-gold/5"
+              className="rounded-xl bg-foil-night-2 px-4 py-2 text-sm font-medium text-foil-cream ring-1 ring-foil-cream/15 transition hover:ring-foil-accent/50"
             >
               {allPaused ? "Resume all alerts" : "Pause all alerts"}
             </button>
@@ -164,13 +166,24 @@ export default async function VaultPage({
       </header>
 
       {rows.length === 0 ? (
-        <section className="mt-10 rounded-3xl border border-foil-navy/10 bg-foil-cream p-8 text-center shadow-sm shadow-foil-navy/5">
-          <p className="font-display text-xl font-bold text-foil-navy">
-            Add the first card you&apos;re hunting.
+        <section className="mt-10 rounded-3xl bg-foil-night-2 p-8 text-center ring-1 ring-foil-cream/10 sm:p-10">
+          {/* Three waiting pockets — the empty binder page as an invitation. */}
+          <div aria-hidden className="mx-auto grid max-w-xs grid-cols-3 gap-3">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="rounded-xl bg-foil-night shadow-[inset_0_1px_3px_rgba(4,9,18,0.7),inset_0_-1px_2px_rgba(248,245,240,0.04)] ring-1 ring-foil-cream/10"
+                style={{ aspectRatio: "245 / 342" }}
+              />
+            ))}
+          </div>
+          <p className="font-display mt-6 text-2xl font-bold text-foil-cream sm:text-3xl">
+            Nine pockets, waiting for your first card.
           </p>
-          <p className="mx-auto mt-2 max-w-md text-sm text-foil-slate">
-            Search any card below — we&apos;ll watch eBay for you and email you the moment a
-            verified listing hits your target.
+          <p className="mx-auto mt-3 max-w-md text-base text-foil-cream/70 sm:text-lg">
+            Tell us the card you&apos;re hunting and the price you&apos;d be happy to pay.
+            We&apos;ll watch eBay around the clock and email you the moment a verified
+            listing hits your number — no tabs left open, no daily scrubbing.
           </p>
         </section>
       ) : (
@@ -183,11 +196,12 @@ export default async function VaultPage({
               return (
                 <li
                   key={row.id}
-                  // The pocket: faint plastic-sleeve depth — inset ring +
-                  // top-light. Flat at rest beyond that (DESIGN.md).
-                  className="rounded-2xl border border-foil-navy/10 bg-foil-cream p-3 shadow-[inset_0_1px_3px_rgba(15,30,58,0.08),inset_0_-1px_2px_rgba(255,255,255,0.7)]"
+                  // The pocket: faint plastic-sleeve depth on the night panel —
+                  // inset ring + a whisper of top-light. Matte at rest; the
+                  // card art is the light source (design-loop-round2 §4).
+                  className="rounded-2xl bg-foil-night-2 p-3 shadow-[inset_0_1px_3px_rgba(4,9,18,0.7),inset_0_-1px_2px_rgba(248,245,240,0.05)] ring-1 ring-foil-cream/10 transition hover:-translate-y-0.5 hover:ring-foil-cream/30"
                 >
-                  <div className="relative overflow-hidden rounded-xl bg-foil-navy/5">
+                  <div className="relative overflow-hidden rounded-xl bg-foil-cream/5">
                     {meta?.image ? (
                       <Link href={`/cards/${row.card_slug}`}>
                         <Image
@@ -202,13 +216,15 @@ export default async function VaultPage({
                     ) : (
                       <div aria-hidden className="w-full" style={{ aspectRatio: "245 / 342" }} />
                     )}
+                    {/* Alert-state chips: accent = live, cream/10 = paused. A
+                        night/85 backing keeps them legible over bright art. */}
                     <span
-                      className={`absolute right-2 top-2 rounded-full px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${
+                      className={`absolute right-2 top-2 rounded-full px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider backdrop-blur-sm ${
                         paused
-                          ? "bg-foil-navy/70 text-foil-cream"
+                          ? "bg-foil-night/85 text-foil-cream/60 ring-1 ring-foil-cream/10"
                           : row.alert_state === "fired"
-                            ? "bg-foil-gold/90 text-foil-navy"
-                            : "bg-foil-cream/90 text-foil-navy ring-1 ring-foil-navy/15"
+                            ? "bg-foil-accent/90 text-foil-night"
+                            : "bg-foil-night/85 text-foil-accent ring-1 ring-foil-accent/40"
                       }`}
                     >
                       {stateLabel}
@@ -216,36 +232,36 @@ export default async function VaultPage({
                   </div>
 
                   <div className="mt-3 px-1">
-                    <p className="truncate text-sm font-semibold text-foil-navy">
+                    <p className="truncate text-sm font-semibold text-foil-cream">
                       {meta?.name ?? row.card_slug}
                     </p>
-                    <p className="truncate font-mono text-[11px] uppercase tracking-wider text-foil-slate">
+                    <p className="truncate font-mono text-[11px] uppercase tracking-wider text-foil-cream/50">
                       {meta?.setName ?? ""} {meta?.number ? `· #${meta.number}` : ""}
                     </p>
 
                     {/* The market brain, set quietly beneath the card. */}
-                    <p className="mt-2 text-xs text-foil-slate">
+                    <p className="mt-2 text-xs text-foil-cream/60">
                       {row.last_seen_price_cents != null ? (
-                        <>Last verified listing: <span className="font-mono tabular-nums text-foil-navy">{usd(row.last_seen_price_cents)}</span></>
+                        <>Last verified listing: <span className="font-mono tabular-nums text-foil-cream">{usd(row.last_seen_price_cents)}</span></>
                       ) : (
                         <>Not checked yet — first look within the hour.</>
                       )}
                     </p>
-                    <p className="text-xs text-foil-slate">
+                    <p className="text-xs text-foil-cream/60">
                       {soldCents ? (
-                        <>Sold for ~{usd(soldCents)} recently</>
+                        <>Sold for ~<span className="tabular-nums">{usd(soldCents)}</span> recently</>
                       ) : (
                         <>No recent sold data yet</>
                       )}
                       {effective != null && row.target_price_cents == null ? (
-                        <> · alerting {usd(effective)} or less</>
+                        <> · alerting <span className="tabular-nums">{usd(effective)}</span> or less</>
                       ) : null}
                     </p>
 
                     <form action={vaultUpdateTarget} className="mt-2 flex items-center gap-1.5">
                       <input type="hidden" name="token" value={token} />
                       <input type="hidden" name="row_id" value={row.id} />
-                      <span className="text-xs text-foil-slate">$</span>
+                      <span className="text-xs text-foil-cream/60">$</span>
                       <input
                         type="number"
                         name="target_usd"
@@ -257,11 +273,11 @@ export default async function VaultPage({
                         }
                         placeholder="any"
                         aria-label={`Target price for ${meta?.name ?? row.card_slug}`}
-                        className="w-16 rounded-lg border border-foil-navy/15 bg-white/60 px-2 py-1 text-right text-xs text-foil-navy placeholder:text-foil-slate/60 outline-none focus:border-foil-gold focus:ring-1 focus:ring-foil-gold/30"
+                        className="w-16 rounded-lg border border-foil-cream/15 bg-foil-night px-2 py-1 text-right text-xs tabular-nums text-foil-cream placeholder:text-foil-cream/40 outline-none focus:border-foil-accent focus:ring-1 focus:ring-foil-accent/30"
                       />
                       <button
                         type="submit"
-                        className="rounded-lg border border-foil-navy/15 px-2 py-1 text-[11px] font-medium text-foil-navy transition hover:border-foil-gold/50 hover:bg-foil-gold/5"
+                        className="rounded-lg border border-foil-cream/15 px-2 py-1 text-[11px] font-medium text-foil-cream transition hover:border-foil-accent/50 hover:bg-foil-accent/10"
                       >
                         Save
                       </button>
@@ -269,7 +285,7 @@ export default async function VaultPage({
 
                     <div className="mt-2 flex items-center gap-2">
                       {complaintLocked ? (
-                        <span className="text-[11px] text-foil-slate" title="Alerts for this address were stopped after a spam report; they can't be resumed from this page.">
+                        <span className="text-[11px] text-foil-cream/50" title="Alerts for this address were stopped after a spam report; they can't be resumed from this page.">
                           Alerts off
                         </span>
                       ) : (
@@ -278,7 +294,7 @@ export default async function VaultPage({
                           <input type="hidden" name="row_id" value={row.id} />
                           <button
                             type="submit"
-                            className="text-[11px] font-medium text-foil-navy underline decoration-foil-navy/20 underline-offset-2 transition hover:decoration-foil-gold"
+                            className="text-[11px] font-medium text-foil-cream underline decoration-foil-cream/25 underline-offset-2 transition hover:decoration-foil-accent"
                           >
                             {paused ? "Resume" : "Pause"}
                           </button>
@@ -290,14 +306,14 @@ export default async function VaultPage({
                         <button
                           type="submit"
                           aria-label={`Remove ${meta?.name ?? row.card_slug} from your vault`}
-                          className="text-[11px] text-foil-slate underline decoration-foil-navy/15 underline-offset-2 transition hover:text-foil-navy hover:decoration-foil-gold"
+                          className="text-[11px] text-foil-cream/60 underline decoration-foil-cream/20 underline-offset-2 transition hover:text-foil-cream hover:decoration-foil-accent"
                         >
                           Remove
                         </button>
                       </form>
                       <Link
                         href={`/cards/${row.card_slug}`}
-                        className="ml-auto text-[11px] font-medium text-foil-navy underline decoration-foil-navy/20 underline-offset-2 transition hover:decoration-foil-gold"
+                        className="ml-auto text-[11px] font-medium text-foil-cream underline decoration-foil-cream/25 underline-offset-2 transition hover:text-foil-accent hover:decoration-foil-accent"
                       >
                         Live listing →
                       </Link>
@@ -314,17 +330,17 @@ export default async function VaultPage({
       {totalPages > 1 && (
         <nav aria-label="Binder pages" className="mt-6 flex items-center justify-between text-sm">
           {page > 1 ? (
-            <Link href={`${vaultPath}?p=${page - 1}`} className="font-medium text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold">
+            <Link href={`${vaultPath}?p=${page - 1}`} className="font-medium text-foil-cream underline decoration-foil-cream/25 underline-offset-4 transition hover:text-foil-accent hover:decoration-foil-accent">
               ← Turn back
             </Link>
           ) : (
             <span />
           )}
-          <span className="font-mono text-[11px] uppercase tracking-wider text-foil-slate">
+          <span className="font-mono text-[11px] uppercase tracking-wider tabular-nums text-foil-cream/50">
             Page {page} of {totalPages}
           </span>
           {page < totalPages ? (
-            <Link href={`${vaultPath}?p=${page + 1}`} className="font-medium text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold">
+            <Link href={`${vaultPath}?p=${page + 1}`} className="font-medium text-foil-cream underline decoration-foil-cream/25 underline-offset-4 transition hover:text-foil-accent hover:decoration-foil-accent">
               Turn page →
             </Link>
           ) : (
@@ -334,8 +350,8 @@ export default async function VaultPage({
       )}
 
       {/* Add cards in place — the SAME shared type-ahead as /start (no fork). */}
-      <section className="mt-12 rounded-3xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-8" aria-labelledby="vault-add-heading">
-        <h2 id="vault-add-heading" className="text-sm font-semibold uppercase tracking-wider text-foil-gold">
+      <section className="mt-12 rounded-3xl bg-foil-night-2 p-6 ring-1 ring-foil-cream/10 sm:p-8" aria-labelledby="vault-add-heading">
+        <h2 id="vault-add-heading" className="text-sm font-semibold uppercase tracking-wider text-foil-accent">
           Add to your vault
         </h2>
         <div className="mt-4">
@@ -349,7 +365,7 @@ export default async function VaultPage({
         </div>
       </section>
 
-      <p className="mt-8 text-[11px] text-foil-slate">
+      <p className="mt-8 text-[11px] text-foil-cream/50">
         This page is private to this link — anyone who has it can view and edit your vault.
         Alerts go to the email this vault belongs to.
       </p>

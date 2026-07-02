@@ -29,19 +29,20 @@ export default async function VaultRecoveryPage({
   }
 
   return (
-    <main className="mx-auto w-full max-w-xl flex-1 px-5 pt-14 pb-20 sm:px-8">
-      <p className="text-xs font-medium uppercase tracking-widest text-foil-gold">Your vault</p>
-      <h1 className="font-display mt-1 text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl">
+    // design-loop-round2 §4: the vault surfaces live in the night register.
+    <main data-tone="night" className="mx-auto w-full max-w-xl flex-1 bg-foil-night px-5 pt-14 pb-20 text-foil-cream sm:px-8">
+      <p className="text-xs font-medium uppercase tracking-widest text-foil-accent">Your vault</p>
+      <h1 className="font-display mt-1 text-4xl font-bold tracking-[-0.02em] text-foil-cream sm:text-5xl">
         Find your vault link
       </h1>
-      <p className="mt-3 text-sm text-foil-slate">
+      <p className="mt-4 text-base text-foil-cream/70 sm:text-lg">
         Your vault is the private page with every card you&apos;re watching. The link lives in
         your welcome email and at the bottom of every price alert — or we can send it again.
       </p>
 
       {sent ? (
-        <section className="mt-8 rounded-2xl border border-foil-gold/40 bg-foil-gold/5 p-6">
-          <p className="text-sm text-foil-navy">
+        <section className="mt-8 rounded-2xl border border-foil-accent/40 bg-foil-accent/10 p-6">
+          <p className="text-base text-foil-cream">
             If that email has a vault, the link is on its way. Check your inbox (and the
             promotions tab, just in case).
           </p>
@@ -61,19 +62,19 @@ export default async function VaultRecoveryPage({
             required
             autoComplete="email"
             placeholder="you@gmail.com"
-            className="flex-1 rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/60 outline-none transition focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30"
+            className="flex-1 rounded-xl border border-foil-cream/15 bg-foil-night-2 px-4 py-3 text-base text-foil-cream placeholder:text-foil-cream/40 outline-none transition focus:border-foil-accent focus:ring-2 focus:ring-foil-accent/30"
           />
           <button
             type="submit"
-            className="rounded-xl bg-foil-navy px-6 py-3 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition hover:bg-foil-coral"
+            className="rounded-xl bg-foil-cream px-6 py-3 text-base font-semibold text-foil-navy shadow-[0_10px_30px_-12px_rgba(4,9,18,0.8)] transition hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-accent/60"
           >
             Send my link
           </button>
         </form>
       )}
 
-      <p className="mt-6 text-sm text-foil-slate">
-        Nothing tracked yet? <a href="/start" className="font-medium text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold">Start your vault</a> — search a card you&apos;re hunting.
+      <p className="mt-6 text-base text-foil-cream/70">
+        Nothing tracked yet? <a href="/start" className="font-medium text-foil-cream underline decoration-foil-cream/25 underline-offset-4 transition hover:text-foil-accent hover:decoration-foil-accent">Start your vault</a> — search a card you&apos;re hunting.
       </p>
     </main>
   );

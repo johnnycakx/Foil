@@ -42,25 +42,33 @@ export function VaultAddCard({
 
   return (
     <div>
-      <CardTypeahead
-        cataloguedIds={cataloguedIds}
-        pickedIds={trackedIds}
-        onPick={(hit) => {
-          setMessage(null);
-          setPicked(hit);
-        }}
-        label="Search a card you're hunting"
-        pickedBadge="In your vault ✓"
-        pickCta="+ Add"
-      />
+      {/* design-loop-round2 §4 (vault night register): the SHARED typeahead is
+          cream-register (it must keep working on /start's cream page — do not
+          fork or edit it). Its cream input + cream result rows read fine as
+          light slips on the night-2 panel; the only true clashes are the navy
+          label and the slate "Searching…" line, re-inked here from the wrapper
+          via arbitrary-variant overrides. */}
+      <div className="[&_label>span]:text-foil-cream [&_li:only-child]:text-foil-cream/60">
+        <CardTypeahead
+          cataloguedIds={cataloguedIds}
+          pickedIds={trackedIds}
+          onPick={(hit) => {
+            setMessage(null);
+            setPicked(hit);
+          }}
+          label="Search a card you're hunting"
+          pickedBadge="In your vault ✓"
+          pickCta="+ Add"
+        />
+      </div>
 
       {picked && (
-        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-foil-gold/40 bg-foil-gold/5 px-4 py-3">
-          <p className="text-sm font-medium text-foil-navy">
-            {picked.name} <span className="text-foil-slate">({picked.setName})</span>
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-foil-accent/40 bg-foil-accent/10 px-4 py-3">
+          <p className="text-sm font-medium text-foil-cream">
+            {picked.name} <span className="text-foil-cream/60">({picked.setName})</span>
           </p>
           <div className="flex items-center gap-1.5">
-            <span className="text-sm text-foil-slate">$</span>
+            <span className="text-sm text-foil-cream/60">$</span>
             <input
               type="number"
               inputMode="decimal"
@@ -70,21 +78,21 @@ export function VaultAddCard({
               onChange={(e) => setTargetUsd(e.target.value)}
               placeholder="any"
               aria-label={`Target price for ${picked.name}`}
-              className="w-20 rounded-lg border border-foil-navy/15 bg-foil-cream px-2 py-1.5 text-right text-sm text-foil-navy placeholder:text-foil-slate/60 outline-none focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30"
+              className="w-20 rounded-lg border border-foil-cream/15 bg-foil-night px-2 py-1.5 text-right text-sm tabular-nums text-foil-cream placeholder:text-foil-cream/40 outline-none focus:border-foil-accent focus:ring-2 focus:ring-foil-accent/30"
             />
           </div>
           <button
             type="button"
             disabled={isPending}
             onClick={() => submit(picked, targetUsd)}
-            className="rounded-xl bg-foil-navy px-4 py-2 text-sm font-semibold text-foil-cream transition hover:bg-foil-coral disabled:opacity-60"
+            className="rounded-xl bg-foil-cream px-4 py-2 text-sm font-semibold text-foil-navy transition hover:ring-2 hover:ring-foil-accent/60 disabled:opacity-60"
           >
             {isPending ? "Adding…" : "Add to vault"}
           </button>
           <button
             type="button"
             onClick={() => setPicked(null)}
-            className="text-sm text-foil-slate underline decoration-foil-navy/20 underline-offset-2 hover:text-foil-navy"
+            className="text-sm text-foil-cream/60 underline decoration-foil-cream/25 underline-offset-2 hover:text-foil-cream"
           >
             Cancel
           </button>
@@ -92,7 +100,7 @@ export function VaultAddCard({
       )}
 
       {message && (
-        <p role="status" className="mt-3 text-sm text-foil-navy">
+        <p role="status" className="mt-3 text-sm text-foil-cream">
           {message}
         </p>
       )}
