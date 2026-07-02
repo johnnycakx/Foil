@@ -95,6 +95,15 @@ const DEPTH_SLOTS: Record<number, { size: string; z: string; fx: string }> = {
   },
 };
 
+// Pre-send-coherence §3+§4: the fan is SYMMETRIC (three cards per wing,
+// mirrored tilt/arc cadence, edges dimmed EQUALLY) and every card is a real
+// link to its /cards/[slug] page. `gap` overrides the overlap for the cards
+// flanking the focal so no card is ever crushed to a sliver behind Moonbreon.
+// `fx` overrides equalize edge brightness (the Base Charizard + Pikachu
+// artworks differ wildly in luminance; the treatment compensates per-card so
+// both edges READ equally dim). Pikachu sits as the far-right fourth card of
+// an 8-card hand — it takes the deepest treatment so the visual mass still
+// balances around the focal.
 const HERO_CARDS: {
   id: string;
   alt: string;
@@ -102,18 +111,30 @@ const HERO_CARDS: {
   arc: string;
   depth: 0 | 1 | 2 | 3;
   edge?: boolean;
+  gap?: string;
+  fx?: string;
 }[] = [
-  { id: "base1/4",    alt: "Charizard, Base Set (vintage anchor)",             tilt: "rotate-[-11deg]", arc: "translate-y-10", depth: 3, edge: true },
+  { id: "base1/4",    alt: "Charizard, Base Set (vintage anchor)",             tilt: "rotate-[-12deg]", arc: "translate-y-10", depth: 3, edge: true },
   { id: "swsh35/74",  alt: "Charizard VMAX Rainbow Rare, Champions Path",      tilt: "rotate-[-8deg]",  arc: "translate-y-6",  depth: 2 },
   { id: "swsh12/186", alt: "Lugia V Alt Art, Silver Tempest",                  tilt: "rotate-[-4deg]",  arc: "translate-y-2",  depth: 1 },
   // Moonbreon is the FOCAL card — the community's grail leads the fan at
-  // ~1.35x its neighbors with the teal rim-glow (the "whoa" of the fold).
+  // ~1.35x its neighbors with the sakura rim-glow (the "whoa" of the fold).
   { id: "swsh7/215",  alt: "Umbreon VMAX Alt Art (Moonbreon), Evolving Skies", tilt: "rotate-[0.5deg]", arc: "-translate-y-1", depth: 0 },
-  { id: "swsh8/269",  alt: "Mew VMAX Alt Art, Fusion Strike",                  tilt: "rotate-[4deg]",   arc: "translate-y-2",  depth: 1 },
+  // Right of the focal: extra clearance so Mew is a legible fan member, never
+  // a sliver peeking out from behind Moonbreon's edge.
+  { id: "swsh8/269",  alt: "Mew VMAX Alt Art, Fusion Strike",                  tilt: "rotate-[4deg]",   arc: "translate-y-2",  depth: 1, gap: "-ml-3 sm:-ml-4 md:-ml-5" },
   { id: "swsh11/186", alt: "Giratina V Alt Art, Lost Origin",                  tilt: "rotate-[8deg]",   arc: "translate-y-6",  depth: 2 },
-  { id: "swsh7/218",  alt: "Rayquaza VMAX Alt Art, Evolving Skies",            tilt: "rotate-[11deg]",  arc: "translate-y-10", depth: 3 },
-  { id: "swsh4/188",  alt: "Pikachu VMAX Rainbow, Vivid Voltage",              tilt: "rotate-[14deg]",  arc: "translate-y-14", depth: 3, edge: true },
+  { id: "swsh7/218",  alt: "Rayquaza VMAX Alt Art, Evolving Skies",            tilt: "rotate-[12deg]",  arc: "translate-y-10", depth: 3 },
+  { id: "swsh4/188",  alt: "Pikachu VMAX Rainbow, Vivid Voltage",              tilt: "rotate-[15deg]",  arc: "translate-y-14", depth: 3, edge: true, fx: "brightness-[0.45] blur-[1.6px]" },
 ];
+
+/** Resolve a HERO_CARDS/VAULT_POCKETS id ("swsh7/215") to its catalog slug.
+ *  Null over guess: a card without a catalog entry renders unlinked rather
+ *  than pointing a visitor at a 404. */
+function cardSlug(id: string): string | null {
+  const tcgId = id.replace("/", "-");
+  return CARD_CATALOG.find((e) => e.pokemonTcgId === tcgId)?.slug ?? null;
+}
 
 function Hero() {
   const cardCount = CARD_CATALOG.length;
@@ -135,45 +156,61 @@ function Hero() {
           rotate away, and soften into the dark (depth of field); the whole
           hand fades at the edges instead of hard-cropping. Each card still
           holo-tilts under the pointer. Decorative → aria-hidden. */}
-      <div
-        aria-hidden
-        className="relative mx-auto max-w-6xl [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]"
-      >
+      {/* NOT aria-hidden anymore (pre-send-coherence §4): every fan card is a
+          real link to its card page — focusable, labeled, holo-tilt preserved. */}
+      <div className="relative mx-auto max-w-6xl [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]">
         <div className="flex items-start justify-center px-2 pt-10 sm:pt-14">
           {HERO_CARDS.map((c, i) => {
             const slot = DEPTH_SLOTS[c.depth];
+            const slug = cardSlug(c.id);
+            const card = (
+              <HoloCard
+                src={`/hero/${c.id.replace("/", "-")}.webp`}
+                alt={c.alt}
+                width={400}
+                height={560}
+                eager
+                className={`aspect-[5/7] overflow-hidden rounded-lg ring-1 ${slot.size} ${c.fx ?? slot.fx} ${
+                  c.depth === 0
+                    ? "shadow-[0_16px_60px_-12px_rgba(217,138,160,0.32),0_12px_40px_-10px_rgba(248,245,240,0.3)] ring-foil-accent/40"
+                    : "shadow-[0_10px_30px_-14px_rgba(248,245,240,0.18)] ring-foil-cream/12"
+                }`}
+              />
+            );
             return (
               <div
                 key={c.id}
-                className={`relative ${c.tilt} ${c.arc} ${slot.z} ${i > 0 ? "-ml-9 sm:-ml-10 md:-ml-12" : ""} ${
+                className={`relative ${c.tilt} ${c.arc} ${slot.z} ${i > 0 ? (c.gap ?? "-ml-9 sm:-ml-10 md:-ml-12") : ""} ${
                   c.edge ? "hidden sm:block" : ""
-                } transition duration-200 ease-out hover:z-50`}
+                } transition duration-200 ease-out hover:z-50 focus-within:z-50`}
               >
-                <HoloCard
-                  src={`/hero/${c.id.replace("/", "-")}.webp`}
-                  alt={c.alt}
-                  width={400}
-                  height={560}
-                  eager
-                  className={`aspect-[5/7] overflow-hidden rounded-lg ring-1 ${slot.size} ${slot.fx} ${
-                    c.depth === 0
-                      ? "shadow-[0_16px_60px_-12px_rgba(111,216,197,0.35),0_12px_40px_-10px_rgba(248,245,240,0.3)] ring-foil-accent/40"
-                      : "shadow-[0_10px_30px_-14px_rgba(248,245,240,0.18)] ring-foil-cream/12"
-                  }`}
-                />
+                {slug ? (
+                  <Link
+                    href={`/cards/${slug}`}
+                    aria-label={`${c.alt} — sold prices and live listings`}
+                    className="block rounded-lg focus-visible:ring-2 focus-visible:ring-foil-accent focus-visible:outline-none"
+                  >
+                    {card}
+                  </Link>
+                ) : (
+                  <span aria-hidden>{card}</span>
+                )}
               </div>
             );
           })}
         </div>
         {/* THE FLOOR (round-3): a visible contact shadow directly under the
             hand + a faint cool reflection pool — the cards STAND on something. */}
+        {/* Pre-send-coherence §3: the floor reads at a glance — a firmer
+            contact shadow hugging the hand + a visible sakura-warmed
+            reflection pool beneath it. */}
         <div
           aria-hidden
-          className="pointer-events-none mx-auto -mt-4 h-10 w-[68%] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(3,7,15,0.9),rgba(3,7,15,0.35)_55%,transparent_75%)] blur-[6px]"
+          className="pointer-events-none mx-auto -mt-5 h-10 w-[58%] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(4,4,5,0.95),rgba(4,4,5,0.4)_55%,transparent_75%)] blur-[5px]"
         />
         <div
           aria-hidden
-          className="pointer-events-none mx-auto -mt-8 h-16 w-[46%] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(111,216,197,0.10),rgba(248,245,240,0.05)_45%,transparent_72%)] blur-[10px]"
+          className="pointer-events-none mx-auto -mt-7 h-16 w-[44%] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(217,138,160,0.13),rgba(248,245,240,0.06)_45%,transparent_72%)] blur-[10px]"
         />
       </div>
 
@@ -302,23 +339,43 @@ function VaultMoment() {
           {/* The binder spread — a 3×3 pocket page, plastic-sleeve insets. */}
           <div className="rounded-3xl border border-foil-cream/10 bg-foil-night-2 p-4 shadow-[0_24px_60px_-28px_rgba(4,9,18,0.85)] sm:p-6">
             <ul className="grid grid-cols-3 gap-3 sm:gap-4">
-              {VAULT_POCKETS.map((p) => (
-                <li key={p.id} className="group">
-                  <div className="aspect-[5/7] overflow-hidden rounded-lg ring-1 ring-foil-cream/10 transition group-hover:-translate-y-0.5 group-hover:ring-foil-cream/30">
-                    <Image
-                      src={`/hero/${p.id.replace("/", "-")}.webp`}
-                      alt={p.name}
-                      width={280}
-                      height={392}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <p className="mt-1.5 truncate text-[11px] font-medium text-foil-cream/80">
-                    {p.name}
-                  </p>
-                  <p className="truncate text-[11px] text-foil-cream/45">{p.target}</p>
-                </li>
-              ))}
+              {VAULT_POCKETS.map((p) => {
+                const slug = cardSlug(p.id);
+                const pocket = (
+                  <>
+                    <div className="aspect-[5/7] overflow-hidden rounded-lg ring-1 ring-foil-cream/10 transition group-hover:-translate-y-0.5 group-hover:ring-foil-cream/30">
+                      <Image
+                        src={`/hero/${p.id.replace("/", "-")}.webp`}
+                        alt={p.name}
+                        width={280}
+                        height={392}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <p className="mt-1.5 truncate text-[11px] font-medium text-foil-cream/80">
+                      {p.name}
+                    </p>
+                    <p className="truncate text-[11px] text-foil-cream/45">{p.target}</p>
+                  </>
+                );
+                return (
+                  <li key={p.id} className="group">
+                    {/* Pre-send-coherence §4: pockets link to their card pages
+                        (same slug lookup as the fan; unlinked if uncatalogued). */}
+                    {slug ? (
+                      <Link
+                        href={`/cards/${slug}`}
+                        aria-label={`${p.name} — sold prices and live listings`}
+                        className="block rounded-lg focus-visible:ring-2 focus-visible:ring-foil-accent focus-visible:outline-none"
+                      >
+                        {pocket}
+                      </Link>
+                    ) : (
+                      pocket
+                    )}
+                  </li>
+                );
+              })}
               <li>
                 <Link
                   href="/start?src=home-vault"

@@ -668,13 +668,34 @@ test("Night register: the tone mechanism exists — tokens + body:has() chrome f
   // the MECHANISM must exist and stay coherent either way. The winner's
   // homepage opt-in state gets pinned at CONVERGE.
   const css = readFile("app/globals.css");
-  assert.match(css, /--color-foil-night:\s*#0a1322/i, "the night surface token exists");
-  assert.match(css, /--color-foil-night-2:\s*#101d31/i, "the night panel token exists");
-  assert.match(css, /--color-foil-vermillion:\s*#d85a30/i, "the vermillion accent token exists");
+  // pre-send-coherence §1: the ground is neutral matte CHARCOAL (zero blue
+  // cast), superseding the navy-derived night hexes.
+  assert.match(css, /--color-foil-night:\s*#0d0d0e/i, "the charcoal ground token exists");
+  assert.match(css, /--color-foil-night-2:\s*#17171a/i, "the charcoal elevated token exists");
+  assert.match(css, /--color-foil-vermillion:\s*#d85a30/i, "the vermillion (hanko ink) token exists");
+  // pre-send-coherence §2 / ADR-097: sakura succeeds teal as THE accent pair —
+  // the same hue family on both tones (/lines sets the standard). Teal retired.
+  assert.match(css, /--color-foil-accent:\s*#d98aa0/i, "the accent IS the /lines sakura on dark");
+  assert.match(css, /--color-foil-accent-deep:\s*#a5546e/i, "the deep sakura sibling for cream");
+  assert.doesNotMatch(css, /#6fd8c5|#0e7c6b/i, "the retired teal hexes must be gone");
   assert.match(css, /body:has\(\[data-tone="night"\]\)/, "the chrome flips via body:has(), no layout fork");
   const layout = readFile("app/(site)/layout.tsx");
   assert.match(layout, /var\(--chrome-bg\)/, "the header reads the chrome tone variables");
   assert.match(layout, /var\(--chrome-surface\)/, "the shell reads the chrome surface variable");
+});
+
+test("Hero fan + vault pockets: every card is a slug-verified link to its card page (pre-send-coherence §4)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  // The fan resolves slugs from the catalog (null over guess — never a 404
+  // promise) and each linked card carries the a11y contract.
+  assert.match(src, /function cardSlug\(/, "the catalog slug lookup must exist");
+  assert.match(src, /href=\{`\/cards\/\$\{slug\}`\}/, "fan/pocket cards must link /cards/[slug]");
+  assert.match(src, /sold prices and live listings/, "linked cards carry the aria-label contract");
+  assert.match(src, /focus-visible:ring-2 focus-visible:ring-foil-accent/, "linked cards get the accent focus ring");
+  // The fan container is no longer aria-hidden (links must be reachable).
+  const fanIdx = src.indexOf("HERO_CARDS.map");
+  const heroBlock = src.slice(src.indexOf("function Hero"), fanIdx);
+  assert.doesNotMatch(heroBlock.slice(heroBlock.lastIndexOf("<div")), /aria-hidden/, "the fan wrapper must not be aria-hidden");
 });
 
 test("Nav: /start is a first-class item; 'Host a machine' is footer-only (fable-design-overhaul §1)", () => {

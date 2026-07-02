@@ -33,24 +33,26 @@
      tint for panels. */
   --color-foil-sakura: #d98aa0;
   --color-foil-sakura-wash: #f6e6ea;
-  /* Night register (overnight-design-loop, 2026-07-02) — the dark direction's
-     surface tokens. `night` is a WARM near-black derived from foil-navy (never
-     #000, honoring the No-Pure-Black rule's spirit); `night-2` is the raised
-     panel tone. Homepage-scoped tonight via data-tone="night"; other surfaces
-     keep cream until the direction is won. */
-  --color-foil-night: #0a1322;
-  --color-foil-night-2: #101d31;
+  /* Night register ground (pre-send-coherence §1, supersedes the navy-derived
+     night). Neutral matte CHARCOAL — zero blue cast; the cards and data are
+     the only luminous objects on the page. A whisper of warmth (not #000, not
+     dead-gray: oklch chroma ≈ 0.004 toward the sakura hue) keeps the ground
+     matte rather than lifeless. Navy survives only as semantic ink/shadow on
+     cream surfaces. */
+  --color-foil-night: #0d0d0e;
+  --color-foil-night-2: #17171a;
   /* Vermillion — the hanko INK only (ADR-094 seal geometry, favicon). John
      rejected it as the UI accent (design-loop-round2 §2); interactive accents
      use the --color-foil-accent pair below. Do not use vermillion for new UI. */
   --color-foil-vermillion: #d85a30;
-  /* THE accent pair (round-2 bake-off winner slot). `accent` is tuned for the
-     night surface; `accent-deep` is its AA-safe sibling for cream surfaces
-     (focus rings, eyebrows, hover fills on light backgrounds). Bake-off legs
-     swap ONLY these two values: (a) moon-glow teal drawn from Moonbreon's own
-     moonlit palette · (b) holo-iridescent · (c) sakura. */
-  --color-foil-accent: #6fd8c5;
-  --color-foil-accent-deep: #0e7c6b;
+  /* THE accent pair — SAKURA succeeds teal (pre-send-coherence §2, ADR-097;
+     supersedes the round-2 moon-glow ratification after John's in-prod call:
+     the /lines pages set the standard site-wide). `accent` is the /lines petal
+     ink itself, AA on charcoal (≈7:1); `accent-deep` is the darker sibling for
+     cream surfaces (4.8:1). One hue family, both tones — /lines→home is one
+     site. Teal is RETIRED. */
+  --color-foil-accent: #d98aa0;
+  --color-foil-accent-deep: #a5546e;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   /* Display font for hero headlines + brand surfaces. Fraunces (variable
@@ -84,12 +86,12 @@
 }
 
 body:has([data-tone="night"]) {
-  --chrome-bg: rgba(10, 19, 34, 0.88);
+  --chrome-bg: rgba(13, 13, 14, 0.88);
   --chrome-ink: #f8f5f0;
   --chrome-muted: rgba(248, 245, 240, 0.66);
   --chrome-border: rgba(248, 245, 240, 0.12);
-  --chrome-surface: #0a1322;
-  background: #0a1322;
+  --chrome-surface: #0d0d0e;
+  background: #0d0d0e;
 }
 
 body {
@@ -184,7 +186,7 @@ body {
     linear-gradient(
       calc(var(--hx, 0.5) * 140deg + 20deg),
       transparent 30%,
-      rgba(216, 90, 48, 0.14) 44%,
+      rgba(217, 138, 160, 0.13) 44%,
       rgba(160, 200, 255, 0.13) 52%,
       transparent 70%
     );

@@ -2701,3 +2701,18 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 - The marketing-dark / task-light split (dark homepage -> cream /start, vault, card pages) is deliberate tonight; extending night to other surfaces is John's decision, one `data-tone` attribute per page when made.
 - DESIGN.md gains §7a (night register) + night/vermillion tokens; `.impeccable/design.json` carries their tonal ramps. The "Dealer's Quiet Backroom" §§1-6 canon still governs untouched cream surfaces.
 - Follow-ups (tracked in ROADMAP/IDEAS): brand-asset re-roll in the new register, night-register decision for /cards + /start, /lines + card-page polish under the won direction, blog-index split.
+
+
+## ADR-097 — Charcoal ground + sakura succeeds teal (pre-send-coherence: one visual family before the eve send)
+
+**Date:** 2026-07-02 · **Status:** Accepted
+
+**Context.** Eve's audience enters on /lines (cream + sakura) and clicks into the night surfaces (previously navy-derived ground + moon-glow teal accent, ADR-096 + round-2 bake-off). John's in-prod verdict: the /lines pages set the standard — "design choices should follow the espeon and umbreon pages across the board." The teal ratification is explicitly superseded by this call; recording the succession rather than silently flipping.
+
+**Decision.**
+1. **Charcoal ground:** `--color-foil-night` #0d0d0e / `--color-foil-night-2` #17171a — neutral matte charcoal, zero blue cast (supersedes the navy-derived #0a1322/#101d31). The cards and data are the only luminous objects. Navy survives solely as semantic ink/shadow on cream surfaces.
+2. **Sakura succeeds teal as THE accent, site-wide, both tones:** `--color-foil-accent` = #d98aa0 (the /lines petal ink itself; ~7:1 on charcoal) · `--color-foil-accent-deep` = #a5546e (4.8:1 on cream). One hue family across /lines → home → /deals → cards → vault. **Teal (#6fd8c5/#0e7c6b) is RETIRED** (guard-enforced: the hexes are forbidden in globals). Raw teal rgba values in the hero rim glow/reflection swept to sakura; the holo-sheen's vermillion stop retinted sakura (pale-blue stop kept — iridescence, not accent).
+3. **Hero fan links (navigation promise verified):** every fan card + vault pocket links to its `/cards/[slug]` page via a catalog lookup (null over guess — uncatalogued renders unlinked); all 8 targets verified rendering WITH price data before shipping. Fan is no longer aria-hidden; links carry `aria-label "<name> — sold prices and live listings"` + accent focus-visible ring.
+4. **Fan composition:** symmetric wing cadence (mirrored tilt/arc), per-card `gap` clearance kills the sliver-behind-focal bug, per-card `fx` equalizes edge luminance (artwork brightness differs; treatment compensates), firmer floor (contact shadow + sakura reflection pool).
+
+**Consequences.** Gold remains wordmark-scope (the wordmark itself is the post-send blackout goal); vermillion stays hanko ink. Emerald/amber semantic tints stay for meaning. Guards pin the charcoal hexes, the sakura pair, the teal ban, and the hero-link contract. The round-2 bake-off galleries remain the record of why teal was tried; this ADR is the record of why it retired: coherence with the surface eve actually lands on beats a palette argued from the focal card's art.
