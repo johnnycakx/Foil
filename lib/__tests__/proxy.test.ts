@@ -327,3 +327,26 @@ test("PUBLIC_ROUTES is exported and non-empty so the doc has a single source of 
   assert.ok(PUBLIC_ROUTES.some((r) => r.path === "/"));
   assert.ok(PUBLIC_ROUTES.some((r) => r.path === "/blog"));
 });
+
+test("eve vanity shortcuts /umbreon + /espeon are public and 302 to the UTM'd line pages (eve-clean-links)", async () => {
+  // These paths appear in a LIVE TWEET — a refactor that kills them is
+  // permanent public breakage. Pin the allowlist entries AND the redirect
+  // contract (temporary 302, never permanent: the destination gets
+  // re-pointed post-event and a cached 301/308 would freeze the UTM URL).
+  assert.equal(isPublicRoute("/umbreon"), true);
+  assert.equal(isPublicRoute("/espeon"), true);
+  // Exact rules — no stem bleed.
+  assert.equal(isPublicRoute("/umbreonx"), false);
+  const { GET: umbreon } = await import("../../app/umbreon/route.ts");
+  const { GET: espeon } = await import("../../app/espeon/route.ts");
+  const u = umbreon(new Request("https://foiltcg.com/umbreon"));
+  assert.equal(u.status, 302, "temporary 302, never 301/308");
+  assert.equal(
+    u.headers.get("location"),
+    "https://foiltcg.com/lines/umbreon?utm_source=x&utm_medium=eve",
+    "location carries the full UTM query",
+  );
+  const e = espeon(new Request("https://foiltcg.com/espeon"));
+  assert.equal(e.status, 302);
+  assert.equal(e.headers.get("location"), "https://foiltcg.com/lines/espeon?utm_source=x&utm_medium=eve");
+});

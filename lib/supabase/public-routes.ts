@@ -54,6 +54,12 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // the per-card Track posts to /api/start (already public).
   { kind: "prefix", path: "/lines" },
 
+  // Vanity shortcuts for the eve send (eve-clean-links) — clean top-level
+  // paths that 302 to the UTM'd line pages. These appear in a LIVE TWEET;
+  // killing them is permanent public breakage (guard-pinned in proxy.test.ts).
+  { kind: "exact", path: "/umbreon" },
+  { kind: "exact", path: "/espeon" },
+
   // Auth surface — login form (exact) + magic-link callback tree. /auth/*
   // MUST be public or the magic-link redirect loops back through the auth
   // gate and consumes the OTP token before /auth/callback can exchange it
