@@ -20,7 +20,7 @@ export function LineCardRail({ cards, pokemon }: { cards: RailCard[]; pokemon: s
     <div
       role="list"
       aria-label={`${pokemon} card art — tap a card to jump to it`}
-      className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 [scrollbar-width:thin]"
+      className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 [scrollbar-width:thin] [mask-image:linear-gradient(90deg,transparent,black_4%,black_96%,transparent)]"
     >
       {cards.map((c) => (
         <button
@@ -34,7 +34,9 @@ export function LineCardRail({ cards, pokemon }: { cards: RailCard[]; pokemon: s
           }}
           className="group relative shrink-0 snap-start focus:outline-none"
         >
-          <div className="w-24 overflow-hidden rounded-xl bg-foil-navy/5 ring-1 ring-foil-navy/10 transition group-hover:-translate-y-1 group-hover:ring-foil-sakura/50 group-focus-visible:ring-2 group-focus-visible:ring-foil-sakura sm:w-28">
+          {/* Unified tile height + soft navy-tinted shadow (design-round3-fixes §6):
+              h is w × the 245/342 card ratio, so every tile lands identical. */}
+          <div className="h-[134px] w-24 overflow-hidden rounded-xl bg-foil-navy/5 shadow-md shadow-foil-navy/10 ring-1 ring-foil-navy/10 transition group-hover:-translate-y-1 group-hover:ring-foil-sakura/50 group-focus-visible:ring-2 group-focus-visible:ring-foil-sakura sm:h-[156px] sm:w-28">
             {c.image ? (
               <Image
                 src={c.image}
@@ -45,7 +47,11 @@ export function LineCardRail({ cards, pokemon }: { cards: RailCard[]; pokemon: s
                 className="aspect-[245/342] w-full"
               />
             ) : (
-              <div aria-hidden className="aspect-[245/342] w-full bg-foil-navy/5" />
+              // Designed placeholder — never a blank box (design-round3-fixes §6).
+              <div className="flex aspect-[245/342] w-full flex-col items-center justify-center gap-1 bg-foil-navy/5 p-2 text-center">
+                <span className="text-[10px] font-medium leading-tight text-foil-slate">{c.name}</span>
+                <span className="text-[9px] text-foil-slate">{c.setName}</span>
+              </div>
             )}
           </div>
         </button>

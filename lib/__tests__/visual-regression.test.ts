@@ -779,6 +779,47 @@ test("Sakura petals: motion lives ONLY in motion-safe: — reduced-motion users 
   // mismatch). Match the call form so the "no Math.random" note in the file's
   // own comment doesn't trip the guard.
   assert.doesNotMatch(src, /Math\.random\s*\(/, "petals must be deterministic (no Math.random() call)");
+  // design-round3-fixes §3: the sway layer is motion too — same motion-safe bar.
+  assert.match(src, /motion-safe:animate-\[sakura-sway/, "the petal sway must be motion-safe-gated");
+  assert.doesNotMatch(
+    src.replace(/motion-safe:animate-\[sakura-sway[^\]]*\]/g, ""),
+    /(^|[\s"'`])animate-\[sakura-sway/,
+    "no un-gated sakura-sway animation",
+  );
+  // design-round3-fixes §3: real petal silhouettes (SVG path) in two depth
+  // layers (far layer blurred), not the old 3-4px border-radius dots.
+  assert.match(src, /<path/, "petals must be real SVG petal shapes");
+  assert.match(src, /blur-\[2px\]/, "the far petal layer must carry the depth blur");
+});
+
+test("Line page: the sold-vs-ask pair is DRAWN — spread chip only on good buys, designed pending chip, era headers (design-round3-fixes §2 + §6)", () => {
+  const src = readFile("app/(site)/lines/[pokemon]/page.tsx");
+  // §2: the spread chip exists, its math is presentation-only from the two
+  // existing figures, and it renders ONLY when buy < sold (a good buy).
+  assert.match(src, /% under recent sales/, "the spread chip copy must exist");
+  assert.match(
+    src,
+    /card\.marketCents\s*<\s*card\.soldCents/,
+    "the spread chip must gate on buy < sold (neutral otherwise)",
+  );
+  // §2: the pending state is a designed chip, never the broken-looking italic line.
+  assert.match(src, /Sold data pending/, "the honest pending chip label must render");
+  assert.doesNotMatch(src, /italic/, "the pending state must not be italic gray text");
+  // §2: figures use tabular-nums so the price columns align.
+  assert.match(src, /tabular-nums/, "figures must be tabular-nums");
+  // §6: the printings are grouped into labeled eras with quiet headers.
+  assert.match(src, /Modern grails/, "the modern era header must exist");
+  assert.match(src, /Vintage &(amp;)? classics/, "the vintage era header must exist");
+  assert.match(src, /Promos/, "the promos era header must exist");
+  // §6: grouping is presentation-only — empty eras don't render.
+  assert.match(src, /era\.cards\.length > 0/, "empty era buckets must not render");
+});
+
+test("Line card rail: unified tile height, navy-tinted shadow, edge-fade mask (design-round3-fixes §6)", () => {
+  const src = readFile("components/lines/line-card-rail.tsx");
+  assert.match(src, /mask-image:linear-gradient\(90deg,transparent,black_4%,black_96%,transparent\)/, "the rail must edge-fade");
+  assert.match(src, /shadow-foil-navy\/10/, "rail tiles carry the navy-tinted shadow");
+  assert.match(src, /h-\[134px\]/, "rail tiles must share a fixed height");
 });
 
 test("Line card rail: no auto-scroll, smooth-scroll is user-click-driven only (ADR-095)", () => {

@@ -110,7 +110,7 @@ export default async function LinePage({ params }: { params: Promise<{ pokemon: 
             {soldCount > 0 ? (
               <> · real recent-sale data on {soldCount}{soldAsOfDate ? ` (as of ${soldAsOfDate})` : ""}</>
             ) : null}
-            . Sorted by price, most valuable first.
+            . Grouped by era — within each, most valuable first.
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <Link
@@ -133,13 +133,23 @@ export default async function LinePage({ params }: { params: Promise<{ pokemon: 
         </div>
       </section>
 
-      {/* THE LIST — price high → low; Moonbreon on top. */}
+      {/* THE LIST — grouped into labeled eras (design-round3-fixes §6);
+          within each era the price-high order is preserved, Moonbreon on top. */}
       <section className="mx-auto w-full max-w-5xl px-5 py-10 sm:px-8">
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {cards.map((c) => (
-            <LineCardTile key={c.slug} card={c} pokemon={pokemon} />
-          ))}
-        </ul>
+        {groupByEra(cards).map((era, i) => (
+          <div key={era.label} className={i === 0 ? undefined : "mt-12"}>
+            <div className="flex items-center gap-3">
+              <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-foil-slate">{era.label}</h2>
+              <span aria-hidden className="h-px flex-1 bg-foil-navy/10" />
+              <span className="text-[11px] tabular-nums text-foil-slate">{era.cards.length}</span>
+            </div>
+            <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {era.cards.map((c) => (
+                <LineCardTile key={c.slug} card={c} pokemon={pokemon} />
+              ))}
+            </ul>
+          </div>
+        ))}
 
         {/* Persistent bottom CTA. */}
         <div className="mt-12 rounded-3xl border border-foil-sakura/30 bg-foil-sakura-wash p-8 text-center">
@@ -165,9 +175,41 @@ export default async function LinePage({ params }: { params: Promise<{ pokemon: 
   );
 }
 
+// ---------------------------------------------------------------------------
+// Era grouping (design-round3-fixes §6) — PRESENTATION ONLY. Buckets the
+// already-sorted list by set-id prefix; order within each bucket is untouched,
+// so "within each era, most valuable first" stays literally true. Verified
+// against the live catalog set ids: promos are the all-letter ids ending in
+// `p` (smp, bwp, xyp, swshp); modern = Sword/Shield + Scarlet/Violet + the
+// Celebrations reprints (sv*/swsh*/cel*); everything else (base/neo/ecard/ex/
+// dp/pl/hgss/bw/xy/sm/col/pop) is vintage & classics.
+// ---------------------------------------------------------------------------
+
+function eraOf(card: LineCard): "modern" | "vintage" | "promo" {
+  const setId = card.pokemonTcgId.slice(0, card.pokemonTcgId.indexOf("-")).toLowerCase();
+  if (/^[a-z]+p$/.test(setId)) return "promo";
+  if (/^(sv|swsh|cel)/.test(setId)) return "modern";
+  return "vintage";
+}
+
+function groupByEra(cards: LineCard[]): { label: string; cards: LineCard[] }[] {
+  return [
+    { label: "Modern grails", cards: cards.filter((c) => eraOf(c) === "modern") },
+    { label: "Vintage & classics", cards: cards.filter((c) => eraOf(c) === "vintage") },
+    { label: "Promos", cards: cards.filter((c) => eraOf(c) === "promo") },
+  ].filter((era) => era.cards.length > 0);
+}
+
 function LineCardTile({ card, pokemon }: { card: LineCard; pokemon: string }) {
   const market = marketPhrase(card);
   const hasSold = card.soldCents != null;
+  // Spread chip (design-round3-fixes §2) — presentation math only, from the two
+  // figures already on the tile. Renders ONLY when buy < sold (a good buy);
+  // buy >= sold or missing data = no chip, neutral.
+  const spreadPct =
+    card.soldCents != null && card.marketCents != null && card.marketCents < card.soldCents
+      ? Math.round(((card.soldCents - card.marketCents) / card.soldCents) * 100)
+      : null;
   return (
     <li
       id={`card-${card.slug}`}
@@ -186,7 +228,11 @@ function LineCardTile({ card, pokemon }: { card: LineCard; pokemon: string }) {
                 className="aspect-[245/342] w-full"
               />
             ) : (
-              <div aria-hidden className="aspect-[245/342] w-full bg-foil-navy/5" />
+              // Designed placeholder — never a blank box (design-round3-fixes §6).
+              <div className="flex aspect-[245/342] w-full flex-col items-center justify-center gap-1 bg-foil-navy/5 p-2 text-center">
+                <span className="text-[10px] font-medium leading-tight text-foil-slate">{card.setName}</span>
+                <span className="font-mono text-[10px] text-foil-slate">#{card.number}</span>
+              </div>
             )}
           </div>
         </Link>
@@ -200,13 +246,39 @@ function LineCardTile({ card, pokemon }: { card: LineCard; pokemon: string }) {
             {card.rarity ? <p className="mt-0.5 truncate text-[11px] text-foil-slate">{card.rarity}</p> : null}
           </Link>
 
-          {/* The market brain, in collector words. */}
-          <p
-            className={`mt-2 text-xs ${hasSold ? "font-medium text-foil-navy" : "italic text-foil-slate"}`}
-          >
-            {soldPhrase(card)}
-          </p>
-          {market ? <p className="text-xs text-foil-slate">{market} to buy right now</p> : null}
+          {/* The market brain, in collector words — the sold-vs-ask pair gets
+              DRAWN, not just written (design-round3-fixes §2). */}
+          {hasSold ? (
+            <p className="mt-2 text-xs font-medium tabular-nums text-foil-navy">{soldPhrase(card)}</p>
+          ) : (
+            <p className="mt-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-foil-navy/5 px-2 py-0.5 text-[11px] font-medium text-foil-slate">
+                <span aria-hidden className="size-1 rounded-full bg-foil-slate/60" />
+                Sold data pending
+              </span>
+            </p>
+          )}
+          {market ? <p className="text-xs tabular-nums text-foil-slate">{market} to buy right now</p> : null}
+          {spreadPct != null && spreadPct >= 1 ? (
+            <p className="mt-1.5">
+              <span className="inline-flex items-center gap-1 rounded-full border border-foil-sakura/40 bg-foil-sakura-wash px-2 py-0.5 text-[11px] font-semibold tabular-nums text-foil-navy">
+                <svg
+                  aria-hidden
+                  width="10"
+                  height="10"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M8 2 2 8M2 3.5V8h4.5" />
+                </svg>
+                {spreadPct}% under recent sales
+              </span>
+            </p>
+          ) : null}
         </div>
       </div>
 

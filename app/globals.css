@@ -226,19 +226,32 @@ body {
   }
 }
 
+/* Sakura drift (ADR-095, reshaped design-round3-fixes §3): transform-only,
+   GPU-cheap. Fall is viewport-relative (the old own-box % barely moved a 10px
+   petal — the "screen dust" bug); sway/rotation lives on a nested layer so the
+   two compose. Both are applied ONLY via motion-safe: utilities. */
 @keyframes sakura-fall {
   0% {
-    transform: translateY(-8%) translateX(0) rotate(0deg);
+    transform: translateY(-6vh);
     opacity: 0;
   }
-  12% {
-    opacity: 0.85;
+  10% {
+    opacity: 1;
   }
-  88% {
-    opacity: 0.85;
+  68% {
+    opacity: 1;
   }
   100% {
-    transform: translateY(108%) translateX(24px) rotate(220deg);
+    transform: translateY(56vh);
     opacity: 0;
+  }
+}
+
+@keyframes sakura-sway {
+  from {
+    transform: translateX(-7px) rotate(-16deg);
+  }
+  to {
+    transform: translateX(9px) rotate(14deg);
   }
 }
