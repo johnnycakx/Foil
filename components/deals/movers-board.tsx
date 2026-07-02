@@ -62,10 +62,10 @@ export function MoversBoard({ movers }: { movers: MarketMovers }) {
                     <Image
                       src={m.imageUrl}
                       alt=""
-                      width={48}
-                      height={67}
+                      width={64}
+                      height={89}
                       unoptimized
-                      className="h-12 w-auto shrink-0 rounded-md border border-foil-cream/12 shadow-sm shadow-foil-navy/10"
+                      className="h-16 w-auto shrink-0 rounded-lg border border-foil-cream/12 shadow-[0_4px_14px_rgba(4,9,18,0.6)]"
                     />
                   ) : (
                     <span aria-hidden className="h-12 w-9 shrink-0 rounded-md border border-foil-cream/12 bg-foil-night" />
@@ -89,7 +89,11 @@ export function MoversBoard({ movers }: { movers: MarketMovers }) {
                   </span>
                 </Link>
 
-                {/* The hook — how far below the 30-day average. */}
+                {/* The hook — how far below the 30-day average, DRAWN as well
+                    as written (design-round3-fixes §2): a two-point dumbbell —
+                    the cream dot is the usual (30-day) price, the teal dot is
+                    this week, sitting left by the % below. A real two-point
+                    delta from the two real aggregates — never a fake curve. */}
                 <span className="text-right">
                   <span className="font-display block text-2xl font-bold tabular-nums leading-none text-foil-cream sm:text-3xl">
                     {Math.abs(m.momentumPct)}%
@@ -97,6 +101,20 @@ export function MoversBoard({ movers }: { movers: MarketMovers }) {
                   <span className="block text-[11px] uppercase tracking-wider text-foil-accent">
                     below its average
                   </span>
+                  {m.avg7d != null && m.avg30d != null ? (
+                    <span aria-hidden className="relative mt-2 ml-auto block h-2 w-24">
+                      <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 rounded bg-foil-cream/15" />
+                      <span
+                        className="absolute top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-foil-accent/50"
+                        style={{ right: "3px", width: `${Math.min(85, Math.abs(m.momentumPct) * 2.4)}%` }}
+                      />
+                      <span className="absolute right-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-foil-cream/45" />
+                      <span
+                        className="absolute top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-foil-accent"
+                        style={{ right: `${Math.min(85, Math.abs(m.momentumPct) * 2.4)}%` }}
+                      />
+                    </span>
+                  ) : null}
                 </span>
 
                 {/* Card-level eBay browse (affiliate search) — never a listing. */}
@@ -104,7 +122,7 @@ export function MoversBoard({ movers }: { movers: MarketMovers }) {
                   href={browseHref(m)}
                   target="_blank"
                   rel="sponsored noopener noreferrer"
-                  className="col-span-2 mt-1 inline-flex items-center justify-center rounded-full bg-foil-cream px-4 py-2 text-xs font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:bg-foil-accent sm:col-span-1 sm:mt-0"
+                  className="col-span-2 mt-1 inline-flex items-center justify-center rounded-full border border-foil-accent/40 px-4 py-2 text-xs font-semibold text-foil-accent transition-all hover:-translate-y-0.5 hover:bg-foil-accent/10 sm:col-span-1 sm:mt-0"
                 >
                   Browse on eBay →
                 </a>
