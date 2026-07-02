@@ -79,3 +79,36 @@ and sharpen it.
 **Next thesis (iter-03):** CONVERGE on dark — the depth pass. Below-fold
 spatial identity: light logic per section, tighter left columns, bigger fan
 presence, one focal "whoa" (Moonbreon center-stage).
+
+---
+
+## iter-03 — CONVERGE: the depth pass (dark)
+
+**Thesis:** Moonbreon as the focal card (scaled, brightest glow, leads the
+fan); [text-wrap:balance] on the H1; vermillion live-ping in the pill; per-
+section light spills (each section's artifact is its light source — binder and
+email glow onto the night surface); panel elevation shadows; left columns
+filled with real micro-artifacts (sold-history stat strip; alert reassurance
+bullets).
+
+**Scores:**
+| dim | score | note |
+|---|---|---|
+| (a) pull-clarity | 8.5 | Unchanged fold logic; balanced H1 reads cleaner. |
+| (b) craft | 8.0 | Columns balanced; the dl stat strip is the weakest element (label copy slightly widget-y). |
+| (c) depth | **7.8** | Light logic now consistent (artifact = light source per section); spills subtle in stills. Steps band still the flattest. |
+| (d) ICP | 8.0 | Moonbreon leading the fan is the community-correct focal choice. |
+| (e) mobile | 8.0 | Focal scale holds at 390 (scale-112 mobile). |
+| (f) plain-language | 9.0 | Bullets stay plain ("before we bother you"). |
+| (g) perf | 8.5 | All additions CSS-only. |
+| (h) card-spotlight | 8.5 | Focal card + binder + alert thumb — art carries every section. |
+
+**avg 8.29 · min 7.8** (bar: 8.5/7.5 ×2 — not yet)
+
+**Weakest:** (c) depth — the steps band is the last flat stretch; stat-strip
+craft.
+
+**Next thesis (iter-04):** steps as MINIATURE PRODUCT ARTIFACTS (a real
+typeahead chip, a real price input, a real judged-listing row, a real subject
+line) — the Vercel proof-block principle, NOT an icon grid; polish stat-strip
+copy; sleeve-glint inset on binder pockets.
