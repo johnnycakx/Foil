@@ -33,6 +33,24 @@
         "displayName": "Touch Coral",
         "canonical": "#ff6b5c",
         "tonalRamp": ["oklch(34% 0.090 25)", "oklch(44% 0.120 25)", "oklch(54% 0.150 25)", "oklch(62% 0.175 25)", "oklch(70% 0.175 25)", "oklch(80% 0.130 25)", "oklch(89% 0.080 25)", "oklch(96% 0.035 25)"]
+      },
+      "night": {
+        "role": "surface-dark",
+        "displayName": "Night (homepage lit-room surface)",
+        "canonical": "#0a1322",
+        "tonalRamp": ["oklch(14% 0.030 260)", "oklch(18% 0.035 260)", "oklch(24% 0.040 260)", "oklch(32% 0.045 260)", "oklch(42% 0.048 260)", "oklch(54% 0.045 260)", "oklch(68% 0.035 260)", "oklch(84% 0.020 260)"]
+      },
+      "night-2": {
+        "role": "surface-dark-raised",
+        "displayName": "Night Panel",
+        "canonical": "#101d31",
+        "tonalRamp": ["oklch(16% 0.032 260)", "oklch(21% 0.038 260)", "oklch(27% 0.042 260)", "oklch(35% 0.046 260)", "oklch(45% 0.048 260)", "oklch(57% 0.044 260)", "oklch(70% 0.034 260)", "oklch(85% 0.018 260)"]
+      },
+      "vermillion": {
+        "role": "accent",
+        "displayName": "Hanko Vermillion (succeeds gold on migrated surfaces)",
+        "canonical": "#d85a30",
+        "tonalRamp": ["oklch(32% 0.085 40)", "oklch(42% 0.110 40)", "oklch(52% 0.140 40)", "oklch(60% 0.155 40)", "oklch(68% 0.150 40)", "oklch(78% 0.115 40)", "oklch(88% 0.070 40)", "oklch(95% 0.030 40)"]
       }
     },
     "typographyMeta": {

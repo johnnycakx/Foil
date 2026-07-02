@@ -2678,3 +2678,26 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 2. Title: short, specific. The choice + the rationale, not the topic.
 3. Sections: Status (Accepted / Superseded / Deprecated), Context (what was true that forced the choice), Decision (what we chose, concretely), Consequences (what now follows — costs, constraints, follow-ups).
 4. If superseding an old ADR, edit the old one to add "Superseded by ADR-N" to its Status — don't delete it.
+
+
+## ADR-096 — The night register: homepage as "the lit room" (dark direction wins the DIVERGE face-off; chrome tone variables; vermillion succession begins)
+
+**Date:** 2026-07-02 · **Status:** Accepted (pending John's morning merge of `design/overnight-loop-2026-07-02`)
+
+**Context.** John's 2026-07-02 evaluator pass named four enemies on the live homepage — flat/no depth, empty/sparse, generic-AI-template smell, weak hero moment — and unlocked the brand system ("anything for the ICP"), with a taste direction of basement.studio energy tuned to collectors and a functional thesis: holographic card art is a light source, and light sources need dark walls. The overnight evaluator-optimizer loop (goal: overnight-design-loop) ran a DIVERGE phase — a dark rebuild vs an honest evolved-warm control scored against one rubric — then converged on the winner.
+
+**Decision.**
+1. **The homepage runs a night register** ("the lit room"): warm near-black surface tokens (`--color-foil-night` #0a1322, `--color-foil-night-2` #101d31 — navy-derived, never #000), where the grail card fan is the light source (glow spills, a floor pool, Moonbreon focal). Scoped to the homepage via `data-tone="night"`.
+2. **Chrome tone variables, not a layout fork:** the shared (site) header/footer read `--chrome-*` CSS variables; `body:has([data-tone="night"])` flips them dark. Any future page is one attribute from the night register; no client JS, no route-group split.
+3. **Vermillion (#d85a30) is now a first-class token** (`--color-foil-vermillion`) and REPLACES gold on every surface the loop touched (homepage, /start, /deals, email-capture, typeahead). This begins the ADR-094-coordinated gold retirement in the UI; untouched surfaces keep gold until their own pass — do not add new gold.
+4. **The signature effect is holo-tilt** (`components/cards/holo-card.tsx`): pointer-tracked 3D tilt + foil sheen (pokemon-cards-css technique in-house), transform/opacity only, touch never tilts, reduced-motion fully static (verified live). Tier-1 ambience is CSS scroll-driven reveals (`animation-timeline: view()`) behind `@supports` + reduced-motion exclusion; the hero never reveals (LCP guard).
+5. **The tiled seal-watermark wallpaper is dead** and guard-forbidden (no SVG `<pattern>` tiles on the homepage). Depth is structural (light, planes, interaction), never applied texture.
+6. **Wordmark soft cut:** "Foil" in Baloo 2 600 (`--font-wordmark-soft`, `Logo face="soft"`) in the site chrome; Bricolage stays the carved cut on OG/favicon surfaces pending the brand-asset follow-up goal.
+
+**Evidence.** DIVERGE scores: dark 8.06 vs warm 7.81 at first-draft fidelity; the gap sat exactly on the ICP-resonance and card-art-spotlight dimensions (holo art visibly dims on cream in the side-by-side galleries: design-loop/gallery/iter-01 vs iter-02). The converged dark homepage sustained avg >= 8.5 / min >= 7.5 across two consecutive iterations (iter-05 8.56, iter-06 8.59) and terminated on quality. Full trail: design-loop/{RUBRIC,RESEARCH,ITERATION-LOG,SUMMARY}.md.
+
+**Consequences.**
+- The homepage guard block in `lib/__tests__/visual-regression.test.ts` pins the new contract (pull-model H1 + "Start your vault" -> /start, no wallpaper patterns, night mechanism, HoloCard eager loading, reveal/reduced-motion discipline). The warm direction remains recoverable at commit `efc26ac`.
+- The marketing-dark / task-light split (dark homepage -> cream /start, vault, card pages) is deliberate tonight; extending night to other surfaces is John's decision, one `data-tone` attribute per page when made.
+- DESIGN.md gains §7a (night register) + night/vermillion tokens; `.impeccable/design.json` carries their tonal ramps. The "Dealer's Quiet Backroom" §§1-6 canon still governs untouched cream surfaces.
+- Follow-ups (tracked in ROADMAP/IDEAS): brand-asset re-roll in the new register, night-register decision for /cards + /start, /lines + card-page polish under the won direction, blog-index split.
