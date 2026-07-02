@@ -255,6 +255,14 @@ test("per-card landing pages /cards/<slug> are public — buyer-side anonymous-f
   assert.equal(isPublicRoute("/cards/some-future-slug"), true);
 });
 
+test("line-tracker pages /lines/<pokemon> are public — shareable SEO surfaces (ADR-095)", () => {
+  assert.equal(isPublicRoute("/lines/umbreon"), true);
+  assert.equal(isPublicRoute("/lines/espeon"), true);
+  assert.equal(isPublicRoute("/lines/umbreon/opengraph-image"), true);
+  // Segment-scoped: /linesomething stays gated.
+  assert.equal(isPublicRoute("/linesomething"), false);
+});
+
 test("watchlist email-capture endpoint is public — same contract as /api/subscribe", () => {
   assert.equal(isPublicRoute("/api/watchlist"), true);
 });

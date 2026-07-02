@@ -19,6 +19,17 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-07-02
+category: growth
+status: captured
+---
+## Line-tracker as a repeatable acquisition channel — the "collector with reach → their line page → share" playbook
+
+The `/lines/[pokemon]` surface ([ADR-095](DECISIONS.md#adr-095--the-line-tracker-lines pokemon-shareable-pages-sakura-register-accent-null-over-guess-sold-data-the-gift-economy-acquisition-play)) is built config-driven so a new line is a data entry, not a build. The play generalizes: find a high-reach collector who's *known for one line*, build their line page in a day (dedicated to them), hand it over, let the "made-for-me" feeling drive the share. Each run leaves a permanent SEO page ("every X card" is a real query) whether or not the share lands. **Candidate next lines/collectors to queue once the eve launch teaches us the conversion reality:** other Eeveelution mains (Sylveon, Vaporeon, Glaceon have their own fandoms), Charizard (the biggest but most saturated), Gengar, Lugia, or any creator whose brand IS a single Pokémon. Also a natural fit for a "vote for the next line" engagement loop on X. **Trigger to promote: eve launch produces a measurable signup lift (the goal's 30–100 tracked-users target), OR a second reach-collector asks for one.** Don't build line #3 until its target exists.
+
+**Context:** eve-line-tracker goal (2026-07-02); strategy John + Cowork (2026-07-01) — "reusable product surface, not a one-off; the win case is a repeatable playbook."
+
+---
 date: 2026-07-01
 category: monetization
 status: captured

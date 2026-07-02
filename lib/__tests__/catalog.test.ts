@@ -87,8 +87,11 @@ test("every slug matches <set-id>-<number>-<kebab-name> format", () => {
 test("every catalog entry has a non-empty pokemonTcgId", () => {
   for (const entry of CARD_CATALOG) {
     assert.ok(entry.pokemonTcgId && entry.pokemonTcgId.length > 0, `empty id at slug ${entry.slug}`);
-    // pokemonTcgId format: <set-id>-<number>
-    assert.match(entry.pokemonTcgId, /^[a-z0-9]+(?:pt[0-9]+)?-[a-zA-Z0-9]+$/, `bad id shape: ${entry.pokemonTcgId}`);
+    // pokemonTcgId format: <set-id>-<number>. The number can carry pokemontcg.io's
+    // Classic Collection variant suffix (e.g. cel25c-17_A) — a legit SDK id shape
+    // for the Celebrations Classic Collection reprints (ADR-095 line-tracker adds
+    // one: the Umbreon ★). Allow `_` in the number segment.
+    assert.match(entry.pokemonTcgId, /^[a-z0-9]+(?:pt[0-9]+)?-[a-zA-Z0-9_]+$/, `bad id shape: ${entry.pokemonTcgId}`);
   }
 });
 

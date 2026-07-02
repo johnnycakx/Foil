@@ -83,9 +83,12 @@ function metadataBlock(src: string, key: "openGraph" | "twitter"): string | null
 }
 
 /** A block "has an OG image" if it names the dynamic file OG or a real per-
- *  entity image binding (card image / set logo). */
+ *  entity image binding (card image / set logo). The OG path may be the exact
+ *  root ("/opengraph-image") OR a per-route dynamic OG in a template literal
+ *  (e.g. `/lines/${pokemon}/opengraph-image`, ADR-095) — both are real images;
+ *  what the guard forbids is an openGraph override with NO image at all. */
 const referencesOgImage = (block: string) =>
-  /["']\/opengraph-image["']/.test(block) || /(card\.image|set\.logoUrl)/.test(block);
+  /\/opengraph-image[`"']/.test(block) || /(card\.image|set\.logoUrl)/.test(block);
 
 test("Metadata completeness: every (site) openGraph/twitter block references an OG image (blank-share-card regression)", () => {
   const siteDir = join(ROOT, "app", "(site)");

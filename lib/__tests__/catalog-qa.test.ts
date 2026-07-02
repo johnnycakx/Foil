@@ -52,8 +52,17 @@ test("every baked card's setName matches its set's name (setId↔setName consist
 });
 
 test("every baked card id is <setId>-<number> (id/setId/number consistency)", () => {
+  // The id normally reconstructs as `${setId}-${number}`. The ONE documented
+  // exception is pokemontcg.io's Celebrations Classic Collection subset, whose
+  // ids carry a variant suffix (e.g. `cel25c-17_A`, the Umbreon ★) while the
+  // collector `number` stays "17" — an upstream id convention, not a baking
+  // desync. Tolerate a trailing `_<suffix>` on top of the base reconstruction
+  // (ADR-095 added the first such card via the Eeveelution line expansion).
   const bad = cards
-    .filter((c) => c.id !== `${c.setId}-${c.number}`)
+    .filter((c) => {
+      const base = `${c.setId}-${c.number}`;
+      return c.id !== base && !c.id.startsWith(`${base}_`);
+    })
     .map((c) => `${c.id}: setId="${c.setId}" number="${c.number}" → expected id "${c.setId}-${c.number}"`);
   assert.deepEqual(bad, [], `id/setId/number desync:\n  ${bad.join("\n  ")}`);
 });

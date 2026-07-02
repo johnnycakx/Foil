@@ -49,6 +49,11 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // arrive with the Pro tier, not now.
   { kind: "prefix", path: "/w" },
 
+  // Line-tracker pages (ADR-095) — /lines/[pokemon], public shareable SEO
+  // surfaces (every Umbreon/Espeon printing). Anonymous-friendly per ADR-020;
+  // the per-card Track posts to /api/start (already public).
+  { kind: "prefix", path: "/lines" },
+
   // Auth surface — login form (exact) + magic-link callback tree. /auth/*
   // MUST be public or the magic-link redirect loops back through the auth
   // gate and consumes the OTP token before /auth/callback can exchange it

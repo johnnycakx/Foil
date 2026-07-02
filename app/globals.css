@@ -26,6 +26,13 @@
   --color-foil-slate: #4a5568;
   --color-foil-gold: #c9a24b;
   --color-foil-coral: #ff6b5c;
+  /* Sakura — an INTENTIONAL register accent for the /lines/[pokemon] tracker
+     surface only (ADR-095), harmonized with cream/navy. NOT a brand fork: the
+     petal pink is a page-scoped accent; the Foil wordmark + navy ink keep the
+     surface unmistakably Foil. `sakura` = the petal ink; `sakura-wash` = a soft
+     tint for panels. */
+  --color-foil-sakura: #d98aa0;
+  --color-foil-sakura-wash: #f6e6ea;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   /* Display font for hero headlines + brand surfaces. Fraunces (variable
@@ -88,5 +95,29 @@ body {
   }
   to {
     transform: translateY(0) scale(1);
+  }
+}
+
+/*
+ * Sakura petal drift for the /lines/[pokemon] tracker (ADR-095). A slow,
+ * restrained fall — the ONE signature flourish on the surface (Flat-At-Rest
+ * everywhere else). Gated behind Tailwind's motion-safe variant in the
+ * component, so prefers-reduced-motion users get static petals, never a
+ * moving one. Transform + opacity only (compositor-friendly).
+ */
+@keyframes sakura-fall {
+  0% {
+    transform: translateY(-8%) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.85;
+  }
+  88% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(108%) translateX(24px) rotate(220deg);
+    opacity: 0;
   }
 }

@@ -1,29 +1,179 @@
 # PokeTrace UUID bake — unmatched / ambiguous cards
 
-_Last bake: 2026-06-25T21:02:08.092Z_
+_Last bake: 2026-07-02T04:35:23.370Z_
 
-- `base1-1` (Alakazam / Base) — AMBIGUOUS: 2 duplicate variantKey(s) collapsed by saleCount; kept [holofoil, shadowless-holofoil]
-- `base1-4` (Charizard / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil, shadowless-holofoil]
-- `base1-8` (Machamp / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil]
-- `base1-15` (Venusaur / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil, shadowless-holofoil]
-- `gym1-1` (Blaine's Moltres / Gym Heroes) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
-- `gym1-9` (Misty's Seadra / Gym Heroes) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
-- `gym1-11` (Rocket's Hitmonchan / Gym Heroes) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
-- `gym2-1` (Blaine's Arcanine / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
-- `gym2-4` (Erika's Venusaur / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
-- `gym2-14` (Rocket's Mewtwo / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
-- `gym2-15` (Rocket's Zapdos / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-holofoil, holofoil]
-- `gym2-28` (Lt. Surge's Jolteon / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
-- `gym1-28` (Lt. Surge's Raichu / Gym Heroes) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
-- `gym2-51` (Lt. Surge's Eevee / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
-- `gym1-54` (Misty's Psyduck / Gym Heroes) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo, non-holo]
-- `gym1-61` (Blaine's Charmander / Gym Heroes) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
-- `base1-78` (Scoop Up / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [non-holo, shadowless-non-holo]
-- `gym1-62` (Blaine's Growlithe / Gym Heroes) — AMBIGUOUS: 2 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
-- `gym2-54` (Misty's Dewgong / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
-- `sv3pt5-94` (Gengar / 151) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [non-holo, holofoil]
-- `base1-70` (Clefairy Doll / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [non-holo, shadowless-non-holo]
-- `base1-76` (Pokémon Breeder / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [non-holo, shadowless-non-holo]
-- `base1-77` (Pokémon Trader / Base) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [shadowless-non-holo, non-holo]
-- `gym2-93` (Sabrina's Abra / Gym Challenge) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [unlimited-non-holo, 1st-edition-non-holo]
-- `sv8-252` (sv8-252-jet-energy) — no baked card metadata; run `bake:cards` first.
+- `bwp-BW28` (Tropical Beach / BW Black Star Promos #BW28, total 101) — catalog card has no parseable number
+- `ecard2-H29` (Umbreon / Aquapolis #H29, total 182) — catalog card has no parseable number
+- `ecard3-H10` (Gyarados / Skyridge #H10, total 182) — catalog card has no parseable number
+- `svp-85` (Pikachu with Grey Felt Hat / Scarlet & Violet Black Star Promos #85, total 196) — no candidate matched; saw: sv-scarlet-and-violet-promo-cards#085(Normal), base-set#058/102(Normal), base-set-2#087/130(Normal), jungle#60/64(Unlimited), neo-genesis#070/111(Unlimited), sandstorm#72/100(Reverse_Holofoil)
+- `ecard3-H11` (Houndoom / Skyridge #H11, total 182) — catalog card has no parseable number
+- `bwp-BW50` (Tropical Beach / BW Black Star Promos #BW50, total 101) — catalog card has no parseable number
+- `hgss1-115` (Grass Energy / HeartGold & SoulSilver #115, total 124) — no candidate matched; saw: base-set#099/102(Normal), base-set-2#127/130(Normal), neo-genesis#108/111(Unlimited), gym-heroes#129/132(Unlimited), gym-challenge#129/132(Unlimited), expedition#162/165(Normal)
+- `svp-45` (Paradise Resort / Scarlet & Violet Black Star Promos #45, total 196) — no candidate matched; saw: sv-scarlet-and-violet-promo-cards#045(Normal), sv-scarlet-and-violet-promo-cards#150(Normal), sv-scarlet-and-violet-promo-cards#045(Normal), sv-scarlet-and-violet-promo-cards#150(Normal), sv-p-promotional-cards#(Normal), sv-scarlet-and-violet-promo-cards#224(Normal)
+- `ru1-7` (Pikachu / Pokémon Rumble #7, total 16) — no candidate matched; saw: base-set#058/102(Normal), base-set-2#087/130(Normal), jungle#60/64(Unlimited), neo-genesis#070/111(Unlimited), sandstorm#72/100(Reverse_Holofoil), skyridge#084/144(Reverse_Holofoil)
+- `sma-SV49` (Charizard-GX / Hidden Fates Shiny Vault #SV49, total 94) — catalog card has no parseable number
+- `svp-150` (Paradise Resort / Scarlet & Violet Black Star Promos #150, total 196) — no candidate matched; saw: sv-scarlet-and-violet-promo-cards#045(Normal), sv-scarlet-and-violet-promo-cards#150(Normal), sv-scarlet-and-violet-promo-cards#045(Normal), sv-scarlet-and-violet-promo-cards#150(Normal), sv-p-promotional-cards#(Normal), sv-scarlet-and-violet-promo-cards#224(Normal)
+- `hsp-HGSS18` (Tropical Tidal Wave / HGSS Black Star Promos #HGSS18, total 25) — catalog card has no parseable number
+- `swshp-SWSH066` (Charizard / SWSH Black Star Promos #SWSH066, total 304) — catalog card has no parseable number
+- `dpp-DP05` (Tropical Wind / DP Black Star Promos #DP05, total 56) — catalog card has no parseable number
+- `ru1-9` (Mewtwo / Pokémon Rumble #9, total 16) — no candidate matched; saw: base-set#010/102(Holofoil), base-set-2#010/130(Holofoil), legendary-collection#029/110(Reverse_Holofoil), majestic-dawn#9/100(Reverse_Holofoil), legends-awakened#11/146(Reverse_Holofoil), rumble#9(Holofoil)
+- `col1-SL10` (Rayquaza / Call of Legends #SL10, total 106) — catalog card has no parseable number
+- `hgss3-86` (Umbreon / HS—Undaunted #86, total 91) — no candidate matched; saw: sandstorm#24/100(Reverse_Holofoil), aquapolis#041/147(Reverse_Holofoil), majestic-dawn#32/100(Reverse_Holofoil), undaunted#10/90(Reverse_Holofoil), call-of-legends#22/95(Reverse_Holofoil), xy-promos#XY96(Holofoil)
+- `ecard2-H28` (Tyranitar / Aquapolis #H28, total 182) — catalog card has no parseable number
+- `swshp-SWSH296` (Champions Festival / SWSH Black Star Promos #SWSH296, total 304) — catalog card has no parseable number
+- `hgss4-94` (Gengar / HS—Triumphant #94, total 103) — no candidate matched; saw: legendary-collection#011/110(Reverse_Holofoil), legend-maker#5/92(Reverse_Holofoil), diamond-and-pearl#27/130(Reverse_Holofoil), stormfront#18/100(Reverse_Holofoil), xy-breakthrough#60/162(Reverse_Holofoil), generations#35/83(Reverse_Holofoil)
+- `dc1-6` (Team Aqua's Kyogre-EX / Double Crisis) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil]
+- `smp-SM78` (Champions Festival / SM Black Star Promos #SM78, total 250) — catalog card has no parseable number
+- `swshp-SWSH177` (Special Delivery Bidoof / SWSH Black Star Promos #SWSH177, total 304) — catalog card has no parseable number
+- `dc1-15` (Team Magma's Groudon-EX / Double Crisis) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil]
+- `swsh12pt5gg-GG69` (Giratina VSTAR / Crown Zenith Galarian Gallery #GG69, total 70) — catalog card has no parseable number
+- `xyp-XY60` (Gyarados / XY Black Star Promos #XY60, total 216) — catalog card has no parseable number
+- `swshp-SWSH074` (Special Delivery Pikachu / SWSH Black Star Promos #SWSH074, total 304) — catalog card has no parseable number
+- `xyp-XY124` (Pikachu-EX / XY Black Star Promos #XY124, total 216) — catalog card has no parseable number
+- `ru1-10` (Mew / Pokémon Rumble #10, total 16) — no candidate matched; saw: deck-exclusives#053/108(Normal), miscellaneous-cards-and-products#111/110(Normal), league-and-championship-cards#053/108(Holofoil), league-and-championship-cards#053/108(Holofoil), league-and-championship-cards#053/108(Holofoil), league-and-championship-cards#053/108(Holofoil)
+- `dpp-DP47` (Rayquaza C LV.X / DP Black Star Promos #DP47, total 56) — catalog card has no parseable number
+- `bwp-BW97` (Eevee / BW Black Star Promos #BW97, total 101) — catalog card has no parseable number
+- `hgss4-97` (Mew / HS—Triumphant #97, total 103) — no candidate matched; saw: deck-exclusives#053/108(Normal), miscellaneous-cards-and-products#111/110(Normal), league-and-championship-cards#053/108(Holofoil), league-and-championship-cards#053/108(Holofoil), league-and-championship-cards#053/108(Holofoil), league-and-championship-cards#053/108(Holofoil)
+- `col1-SL11` (Suicune / Call of Legends #SL11, total 106) — catalog card has no parseable number
+- `smp-SM191` (Mewtwo & Mew-GX / SM Black Star Promos #SM191, total 250) — catalog card has no parseable number
+- `bwp-BW85` (Lucario / BW Black Star Promos #BW85, total 101) — catalog card has no parseable number
+- `basep-24` (_____'s Pikachu / Wizards Black Star Promos) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil]
+- `ru1-3` (Ninetales / Pokémon Rumble #3, total 16) — no candidate matched; saw: base-set#012/102(Holofoil), base-set-2#013/130(Holofoil), legendary-collection#017/110(Reverse_Holofoil), aquapolis#025/147(Reverse_Holofoil), hidden-legends#22/101(Reverse_Holofoil), emerald#38/106(Reverse_Holofoil)
+- `swsh12pt5gg-GG44` (Mewtwo VSTAR / Crown Zenith Galarian Gallery #GG44, total 70) — catalog card has no parseable number
+- `sma-SV69` (Umbreon-GX / Hidden Fates Shiny Vault #SV69, total 94) — catalog card has no parseable number
+- `bwp-BW98` (Mew / BW Black Star Promos #BW98, total 101) — catalog card has no parseable number
+- `xyp-XY91` (Champions Festival / XY Black Star Promos #XY91, total 216) — catalog card has no parseable number
+- `ru1-12` (Lucario / Pokémon Rumble #12, total 16) — no candidate matched; saw: diamond-and-pearl#6/130(Reverse_Holofoil), pop-series-6#002/017(Normal), dp-trainer-kit-manaphy-and-lucario#3/11(Holofoil), legends-awakened#61/146(Reverse_Holofoil), pop-series-8#002/017(Normal), platinum#53/127(Reverse_Holofoil)
+- `xyp-XY122` (Blastoise-EX / XY Black Star Promos #XY122, total 216) — catalog card has no parseable number
+- `xyp-XY166` (M Gengar-EX / XY Black Star Promos #XY166, total 216) — catalog card has no parseable number
+- `hgss1-114` (Lugia LEGEND / HeartGold & SoulSilver #114, total 124) — no candidate matched; saw: heartgold-soulsilver#114/123(Holofoil), heartgold-soulsilver#113/123(Holofoil), l1-soulsilver-collection#029/070(1st_Edition_Holofoil), l1-soulsilver-collection#030/070(1st_Edition_Holofoil), l1-soulsilver-collection#029/070(Normal), l1-soulsilver-collection#030/070(Normal)
+- `smp-SM241` (Umbreon & Darkrai-GX / SM Black Star Promos #SM241, total 250) — catalog card has no parseable number
+- `hgss3-90` (Rayquaza & Deoxys LEGEND / HS—Undaunted #90, total 91) — no candidate matched; saw: undaunted#90/90(Holofoil), undaunted#89/90(Holofoil), world-championship-decks#89/90(Normal), world-championship-decks#90/90(Normal), l3-clash-at-the-summit#074/080(1st_Edition_Holofoil), l3-clash-at-the-summit#075/080(1st_Edition_Holofoil)
+- `hgss1-113` (Lugia LEGEND / HeartGold & SoulSilver #113, total 124) — no candidate matched; saw: heartgold-soulsilver#114/123(Holofoil), heartgold-soulsilver#113/123(Holofoil), l1-soulsilver-collection#029/070(1st_Edition_Holofoil), l1-soulsilver-collection#030/070(1st_Edition_Holofoil), l1-soulsilver-collection#029/070(Normal), l1-soulsilver-collection#030/070(Normal)
+- `dpp-DP45` (Charizard G LV.X / DP Black Star Promos #DP45, total 56) — catalog card has no parseable number
+- `smp-SM228` (Armored Mewtwo / SM Black Star Promos #SM228, total 250) — catalog card has no parseable number
+- `smp-SM231` (Champions Festival / SM Black Star Promos #SM231, total 250) — catalog card has no parseable number
+- `dpp-DP48` (Tropical Wind / DP Black Star Promos #DP48, total 56) — catalog card has no parseable number
+- `swsh12pt5gg-GG70` (Arceus VSTAR / Crown Zenith Galarian Gallery #GG70, total 70) — catalog card has no parseable number
+- `pl3-SH7` (Milotic / Supreme Victors #SH7, total 153) — catalog card has no parseable number
+- `ex14-94` (Jirachi ex / Crystal Guardians) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil, non-holo]
+- `ex16-92` (Absol ex / Power Keepers) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil, non-holo]
+- `swshp-SWSH068` (Snorlax / SWSH Black Star Promos #SWSH068, total 304) — catalog card has no parseable number
+- `swsh12tg-TG20` (Rayquaza VMAX / Silver Tempest Trainer Gallery #TG20, total 30) — catalog card has no parseable number
+- `pl4-SH11` (Ponyta / Arceus #SH11, total 111) — catalog card has no parseable number
+- `hgss2-88` (Tyranitar / HS—Unleashed #88, total 96) — no candidate matched; saw: aquapolis#040/147(Reverse_Holofoil), mysterious-treasures#17/123(Reverse_Holofoil), stormfront#30/100(Reverse_Holofoil), unleashed#26/95(Reverse_Holofoil), xy-fates-collide#56/124(Reverse_Holofoil), deck-exclusives#026/095(Holofoil)
+- `hgss3-82` (Houndoom / HS—Undaunted #82, total 91) — no candidate matched; saw: neo-revelation#08/64(Unlimited_Holofoil), dragon#34/97(Reverse_Holofoil), unseen-forces#7/115(Reverse_Holofoil), great-encounters#18/106(Reverse_Holofoil), legends-awakened#57/146(Reverse_Holofoil), undaunted#5/90(Reverse_Holofoil)
+- `g1-RC28` (Flareon-EX / Generations #RC28, total 117) — catalog card has no parseable number
+- `hgss3-87` (Kyogre & Groudon LEGEND / HS—Undaunted #87, total 91) — no candidate matched; saw: undaunted#88/90(Holofoil), undaunted#87/90(Holofoil), l3-clash-at-the-summit#070/080(1st_Edition_Holofoil), l3-clash-at-the-summit#071/080(1st_Edition_Holofoil), l3-clash-at-the-summit#070/080(Normal), l3-clash-at-the-summit#071/080(Normal)
+- `hgss3-81` (Espeon / HS—Undaunted #81, total 91) — no candidate matched; saw: aquapolis#011/147(Reverse_Holofoil), sandstorm#16/100(Reverse_Holofoil), majestic-dawn#18/100(Reverse_Holofoil), undaunted#2/90(Reverse_Holofoil), call-of-legends#4/95(Reverse_Holofoil), dark-explorers#48/108(Reverse_Holofoil)
+- `sma-SV76` (Sylveon-GX / Hidden Fates Shiny Vault #SV76, total 94) — catalog card has no parseable number
+- `sma-SV82` (Cynthia / Hidden Fates Shiny Vault #SV82, total 94) — catalog card has no parseable number
+- `hgss1-111` (Ho-Oh LEGEND / HeartGold & SoulSilver #111, total 124) — no candidate matched; saw: heartgold-soulsilver#112/123(Holofoil), heartgold-soulsilver#111/123(Holofoil), l1-heartgold-collection#015/070(Normal), l1-heartgold-collection#016/070(Normal), l1-heartgold-collection#015/070(Normal), l1-heartgold-collection#016/070(Normal)
+- `hgss4-99` (Darkrai & Cresselia LEGEND / HS—Triumphant #99, total 103) — no candidate matched; saw: jumbo-cards#099/102 & 100/102(Holofoil), triumphant#100/102(Holofoil), triumphant#99/102(Holofoil), ll-lost-link#035/040(Holofoil), ll-lost-link#036/040(Holofoil), miscellaneous-cards-and-products#null(Normal)
+- `g1-RC32` (Sylveon-EX / Generations #RC32, total 117) — catalog card has no parseable number
+- `bw11-RC24` (Mew-EX / Legendary Treasures #RC24, total 140) — catalog card has no parseable number
+- `hgss2-95` (Suicune & Entei LEGEND / HS—Unleashed #95, total 96) — no candidate matched; saw: unleashed#95/95(Holofoil), unleashed#94/95(Holofoil), world-championship-decks#95/95(Normal), l2-revival-legends#065/080(Normal), l2-revival-legends#066/080(1st_Edition_Holofoil), l2-revival-legends#065/080(Normal)
+- `dp6-2` (Dragonite / Legends Awakened) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [reverse-holofoil, non-holo]
+- `dp3-15` (Mew / Secret Wonders) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil]
+- `g1-RC29` (Pikachu / Generations #RC29, total 117) — catalog card has no parseable number
+- `hgss2-92` (Raikou & Suicune LEGEND / HS—Unleashed #92, total 96) — no candidate matched; saw: unleashed#93/95(Holofoil), unleashed#92/95(Holofoil), l2-revival-legends#067/080(1st_Edition_Holofoil), l2-revival-legends#068/080(1st_Edition_Holofoil), l2-revival-legends#067/080(Normal), l2-revival-legends#068/080(1st_Edition_Holofoil)
+- `bw11-RC22` (Reshiram / Legendary Treasures #RC22, total 140) — catalog card has no parseable number
+- `hgss2-93` (Raikou & Suicune LEGEND / HS—Unleashed #93, total 96) — no candidate matched; saw: unleashed#93/95(Holofoil), unleashed#92/95(Holofoil), l2-revival-legends#067/080(1st_Edition_Holofoil), l2-revival-legends#068/080(1st_Edition_Holofoil), l2-revival-legends#067/080(Normal), l2-revival-legends#068/080(1st_Edition_Holofoil)
+- `pl1-SH6` (Vulpix / Platinum #SH6, total 133) — catalog card has no parseable number
+- `swsh45sv-SV107` (Charizard VMAX / Shining Fates Shiny Vault #SV107, total 122) — catalog card has no parseable number
+- `pl4-SH12` (Shinx / Arceus #SH12, total 111) — catalog card has no parseable number
+- `sm35-40` (Shining Mew / Shining Legends) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil]
+- `swsh12pt5gg-GG68` (Origin Forme Dialga VSTAR / Crown Zenith Galarian Gallery #GG68, total 70) — catalog card has no parseable number
+- `swsh12pt5gg-GG67` (Origin Forme Palkia VSTAR / Crown Zenith Galarian Gallery #GG67, total 70) — catalog card has no parseable number
+- `sma-SV59` (Mewtwo-GX / Hidden Fates Shiny Vault #SV59, total 94) — catalog card has no parseable number
+- `hgss4-100` (Darkrai & Cresselia LEGEND / HS—Triumphant #100, total 103) — no candidate matched; saw: jumbo-cards#099/102 & 100/102(Holofoil), triumphant#100/102(Holofoil), triumphant#99/102(Holofoil), ll-lost-link#035/040(Holofoil), ll-lost-link#036/040(Holofoil), miscellaneous-cards-and-products#null(Normal)
+- `swsh11tg-TG16` (Pikachu V / Lost Origin Trainer Gallery #TG16, total 30) — catalog card has no parseable number
+- `swsh10tg-TG13` (Starmie V / Astral Radiance Trainer Gallery #TG13, total 30) — catalog card has no parseable number
+- `hgss1-123` (Gyarados / HeartGold & SoulSilver #123, total 124) — no candidate matched; saw: base-set#006/102(Holofoil), base-set-2#007/130(Holofoil), legendary-collection#012/110(Reverse_Holofoil), dragon#32/97(Reverse_Holofoil), deoxys#8/107(Reverse_Holofoil), heartgold-soulsilver#4/123(Reverse_Holofoil)
+- `hgss4-18` (Dragonite / HS—Triumphant #18, total 103) — no candidate matched; saw: legends-awakened#2/146(Reverse_Holofoil), triumphant#18/102(Reverse_Holofoil), dragon-vault#5/20(Holofoil), plasma-freeze#83/116(Reverse_Holofoil), sm-base-set#96/149(Reverse_Holofoil), deck-exclusives#052/108(Normal)
+- `bp-7` (Dark Venusaur / Best of Game) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [non-holo]
+- `sm1-154` (Umbreon-GX / Sun & Moon #154, total 173) — no candidate matched; saw: sm-base-set#80/149(Holofoil), hidden-fates-shiny-vault#SV69/SV94(Holofoil), sm-base-set#142/149(Holofoil), sm-base-set#154/149(Holofoil), sm-guardians-rising#null(Normal), sm-promos#SM36(Holofoil)
+- `swsh11tg-TG17` (Pikachu VMAX / Lost Origin Trainer Gallery #TG17, total 30) — catalog card has no parseable number
+- `hgss2-TWO` (Alph Lithograph / HS—Unleashed #TWO, total 96) — catalog card has no parseable number
+- `dpp-DP12` (Lucario LV.X / DP Black Star Promos #DP12, total 56) — catalog card has no parseable number
+- `svp-132` (Greninja ex / Scarlet & Violet Black Star Promos #132, total 196) — no candidate matched; saw: sv06-twilight-masquerade#106/167(Holofoil), sv06-twilight-masquerade#198/167(Holofoil), sv06-twilight-masquerade#214/167(Holofoil), sv07-stellar-crown#041/142(Holofoil), prize-pack-series-cards#106/167(Holofoil), xy-promos#XY20(Holofoil)
+- `swsh9tg-TG23` (Umbreon VMAX / Brilliant Stars Trainer Gallery #TG23, total 30) — catalog card has no parseable number
+- `g1-RC31` (M Gardevoir-EX / Generations #RC31, total 117) — catalog card has no parseable number
+- `dp3-131` (Gardevoir LV.X / Secret Wonders) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil, non-holo]
+- `ex1-102` (Scyther ex / Ruby & Sapphire) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil]
+- `swsh1-206` (Snorlax VMAX / Sword & Shield #206, total 216) — no candidate matched; saw: swsh01-sword-and-shield-base-set#142/202(Holofoil), jumbo-cards#142/202(Holofoil), swsh01-sword-and-shield-base-set#206/202(Holofoil), s1h-shield#046/060(Holofoil), s1h-shield#070/060(Holofoil), miscellaneous-cards-and-products#null(Normal)
+- `hsp-HGSS02` (Lugia / HGSS Black Star Promos #HGSS02, total 25) — catalog card has no parseable number
+- `svp-131` (Kingdra ex / Scarlet & Violet Black Star Promos #131, total 196) — no candidate matched; saw: dragon#92/97(Holofoil), xy-fates-collide#73/124(Holofoil), jumbo-cards#073/124(Holofoil), sv-shrouded-fable#012/064(Holofoil), sv-shrouded-fable#080/064(Holofoil), dragon-frontiers#94/101(Holofoil)
+- `swsh9tg-TG16` (Mimikyu V / Brilliant Stars Trainer Gallery #TG16, total 30) — catalog card has no parseable number
+- `pop1-3` (Rayquaza / POP Series 1) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [non-holo, holofoil]
+- `sv1-245` (Gardevoir ex / Scarlet & Violet #245, total 258) — no candidate matched; saw: sandstorm#96/100(Holofoil), xy-primal-clash#105/160(Holofoil), xy-steam-siege#78/114(Holofoil), sv01-scarlet-and-violet-base-set#245/198(Holofoil), sv01-scarlet-and-violet-base-set#086/198(Holofoil), sv01-scarlet-and-violet-base-set#228/198(Holofoil)
+- `ex1-103` (Sneasel ex / Ruby & Sapphire) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [holofoil]
+- `bw11-RC23` (Emolga / Legendary Treasures #RC23, total 140) — catalog card has no parseable number
+- `swsh9tg-TG17` (Mimikyu VMAX / Brilliant Stars Trainer Gallery #TG17, total 30) — catalog card has no parseable number
+- `swsh9tg-TG14` (Sylveon V / Brilliant Stars Trainer Gallery #TG14, total 30) — catalog card has no parseable number
+- `swsh10tg-TG23` (Garchomp V / Astral Radiance Trainer Gallery #TG23, total 30) — catalog card has no parseable number
+- `swsh9tg-TG15` (Sylveon VMAX / Brilliant Stars Trainer Gallery #TG15, total 30) — catalog card has no parseable number
+- `hsp-HGSS07` (Feraligatr / HGSS Black Star Promos #HGSS07, total 25) — catalog card has no parseable number
+- `sv1-210` (Drowzee / Scarlet & Violet #210, total 258) — no candidate matched; saw: base-set#049/102(Normal), base-set-2#073/130(Normal), team-rocket#54/82(Unlimited), legendary-collection#073/110(Reverse_Holofoil), team-rocket-returns#54/109(Reverse_Holofoil), delta-species#67/113(Reverse_Holofoil)
+- `pgo-72` (Mewtwo V / Pokémon GO #72, total 88) — no candidate matched; saw: pokemon-go#030/078(Holofoil), prize-pack-series-cards#030/078(Holofoil), swsh07-evolving-skies#null(Normal), swsh-sword-and-shield-promo-cards#SWSH159(Holofoil), swsh-sword-and-shield-promo-cards#SWSH160(Holofoil), swsh-sword-and-shield-promo-cards#SWSH161(Holofoil)
+- `swsh1-142` (Snorlax VMAX / Sword & Shield #142, total 216) — no candidate matched; saw: swsh01-sword-and-shield-base-set#142/202(Holofoil), jumbo-cards#142/202(Holofoil), swsh01-sword-and-shield-base-set#206/202(Holofoil), s1h-shield#046/060(Holofoil), s1h-shield#070/060(Holofoil), miscellaneous-cards-and-products#null(Normal)
+- `swsh11tg-TG06` (Gengar / Lost Origin Trainer Gallery #TG06, total 30) — catalog card has no parseable number
+- `swsh11tg-TG05` (Pikachu / Lost Origin Trainer Gallery #TG05, total 30) — catalog card has no parseable number
+- `hsp-HGSS21` (Suicune / HGSS Black Star Promos #HGSS21, total 25) — catalog card has no parseable number
+- `hsp-HGSS20` (Entei / HGSS Black Star Promos #HGSS20, total 25) — catalog card has no parseable number
+- `pgo-79` (Mewtwo VSTAR / Pokémon GO #79, total 88) — no candidate matched; saw: pokemon-go#031/078(Holofoil), swsh-crown-zenith-galarian-gallery#GG44/GG70(Holofoil), prize-pack-series-cards#031/078(Holofoil), pokemon-go#079/078(Holofoil), pokemon-go#086/078(Holofoil), s12a-vstar-universe#051/172(Holofoil)
+- `sv1-211` (Ralts / Scarlet & Violet #211, total 258) — no candidate matched; saw: sandstorm#74/100(Reverse_Holofoil), ruby-and-sapphire#66/109(Reverse_Holofoil), ruby-and-sapphire#67/109(Reverse_Holofoil), ruby-and-sapphire#68/109(Reverse_Holofoil), emerald#61/106(Reverse_Holofoil), delta-species#81/113(Reverse_Holofoil)
+- `sv1-212` (Kirlia / Scarlet & Violet #212, total 258) — no candidate matched; saw: ruby-and-sapphire#34/109(Reverse_Holofoil), ruby-and-sapphire#35/109(Reverse_Holofoil), sandstorm#40/100(Reverse_Holofoil), emerald#33/106(Reverse_Holofoil), delta-species#47/113(Reverse_Holofoil), dragon-frontiers#32/101(Reverse_Holofoil)
+- `sm1-142` (Umbreon-GX / Sun & Moon #142, total 173) — no candidate matched; saw: sm-base-set#80/149(Holofoil), hidden-fates-shiny-vault#SV69/SV94(Holofoil), sm-base-set#142/149(Holofoil), sm-base-set#154/149(Holofoil), sm-guardians-rising#null(Normal), sm-promos#SM36(Holofoil)
+- `sm1-152` (Espeon-GX / Sun & Moon #152, total 173) — no candidate matched; saw: sm-base-set#61/149(Holofoil), hidden-fates-shiny-vault#SV60/SV94(Holofoil), sm-base-set#140/149(Holofoil), sm-base-set#152/149(Holofoil), sm-guardians-rising#null(Normal), sm-promos#SM35(Holofoil)
+- `pgo-81` (Dragonite VSTAR / Pokémon GO #81, total 88) — no candidate matched; saw: pokemon-go#050/078(Holofoil), swsh-sword-and-shield-promo-cards#SWSH236(Holofoil), pokemon-go#081/078(Holofoil), s10b-pokemon-go#050/071(Holofoil), s10b-pokemon-go#086/071(Holofoil), s-p-sword-and-shield-promos#293/S-P(Holofoil)
+- `sm1-147` (Lillie / Sun & Moon #147, total 173) — no candidate matched; saw: sm-base-set#122/149(Reverse_Holofoil), shining-legends#62/73(Reverse_Holofoil), sm-ultra-prism#125/156(Reverse_Holofoil), sm-base-set#122/149(Normal), shining-legends#62/73(Normal), sm-ultra-prism#125/156(Normal)
+- `sv1-204` (Slowpoke / Scarlet & Violet #204, total 258) — no candidate matched; saw: fossil#55/62(Unlimited), team-rocket#67/82(Unlimited), neo-genesis#073/111(Unlimited), legendary-collection#093/110(Reverse_Holofoil), aquapolis#108/147(Reverse_Holofoil), team-magma-vs-team-aqua#45/95(Reverse_Holofoil)
+- `pgo-86` (Mewtwo VSTAR / Pokémon GO #86, total 88) — no candidate matched; saw: pokemon-go#031/078(Holofoil), swsh-crown-zenith-galarian-gallery#GG44/GG70(Holofoil), prize-pack-series-cards#031/078(Holofoil), pokemon-go#079/078(Holofoil), pokemon-go#086/078(Holofoil), s12a-vstar-universe#051/172(Holofoil)
+- `swsh12tg-TG29` (Rayquaza VMAX / Silver Tempest Trainer Gallery #TG29, total 30) — catalog card has no parseable number
+- `swsh12tg-TG15` (Blaziken VMAX / Silver Tempest Trainer Gallery #TG15, total 30) — catalog card has no parseable number
+- `bp-6` (Dark Ivysaur / Best of Game) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [non-holo]
+- `swsh1-200` (Marnie / Sword & Shield #200, total 216) — no candidate matched; saw: swsh01-sword-and-shield-base-set#169/202(Reverse_Holofoil), deck-exclusives#169/202(Normal), champions-path#56/73(Reverse_Holofoil), prize-pack-series-cards#169/202(Normal), swsh01-sword-and-shield-base-set#169/202(Holofoil), champions-path#56/73(Holofoil)
+- `bp-2` (Hitmonchan / Best of Game #2, total 9) — no candidate matched; saw: base-set#007/102(Holofoil), base-set-2#008/130(Holofoil), neo-destiny#069/105(Unlimited), aquapolis#081/147(Reverse_Holofoil), unseen-forces#24/115(Reverse_Holofoil), legends-awakened#99/146(Reverse_Holofoil)
+- `pop6-12` (Buneary / POP Series 6) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [non-holo]
+- `swsh12tg-TG14` (Blaziken V / Silver Tempest Trainer Gallery #TG14, total 30) — catalog card has no parseable number
+- `swsh11tg-TG03` (Charizard / Lost Origin Trainer Gallery #TG03, total 30) — catalog card has no parseable number
+- `mcd19-6` (Pikachu / McDonald's Collection 2019 #6, total 12) — no candidate matched; saw: base-set#058/102(Normal), base-set-2#087/130(Normal), jungle#60/64(Unlimited), neo-genesis#070/111(Unlimited), sandstorm#72/100(Reverse_Holofoil), skyridge#084/144(Reverse_Holofoil)
+- `sm1-140` (Espeon-GX / Sun & Moon #140, total 173) — no candidate matched; saw: sm-base-set#61/149(Holofoil), hidden-fates-shiny-vault#SV60/SV94(Holofoil), sm-base-set#140/149(Holofoil), sm-base-set#152/149(Holofoil), sm-guardians-rising#null(Normal), sm-promos#SM35(Holofoil)
+- `swsh1-197` (Snorlax V / Sword & Shield #197, total 216) — no candidate matched; saw: swsh01-sword-and-shield-base-set#141/202(Holofoil), jumbo-cards#141/202(Holofoil), swsh01-sword-and-shield-base-set#197/202(Holofoil), s1h-shield#045/060(Holofoil), s1h-shield#066/060(Holofoil), swsh01-sword-and-shield-base-set#142/202(Holofoil)
+- `pop6-2` (Lucario / POP Series 6) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [non-holo]
+- `pgo-11` (Radiant Charizard / Pokémon GO #11, total 88) — no candidate matched; saw: pokemon-go#011/078(Holofoil), swsh-crown-zenith#020/159(Holofoil), prize-pack-series-cards#020/159(Holofoil), s12a-vstar-universe#015/172(Holofoil), s10b-pokemon-go#011/071(Holofoil), sv-stellar-miracle-deck-build-box#001/044(Normal)
+- `swsh12tg-TG13` (Serperior V / Silver Tempest Trainer Gallery #TG13, total 30) — catalog card has no parseable number
+- `swsh1-204` (Morpeko VMAX / Sword & Shield #204, total 216) — no candidate matched; saw: swsh01-sword-and-shield-base-set#080/202(Holofoil), shining-fates#038/072(Holofoil), swsh01-sword-and-shield-base-set#204/202(Holofoil), s1h-shield#020/060(Holofoil), s1h-shield#069/060(Holofoil), sp2-vmax-special-set#003/004(Holofoil)
+- `pop8-2` (Lucario / POP Series 8) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [non-holo]
+- `mcd21-25` (Pikachu / McDonald's Collection 2021 #25, total 25) — no candidate matched; saw: base-set#058/102(Normal), base-set-2#087/130(Normal), jungle#60/64(Unlimited), neo-genesis#070/111(Unlimited), sandstorm#72/100(Reverse_Holofoil), skyridge#084/144(Reverse_Holofoil)
+- `swsh10tg-TG21` (Zacian V / Astral Radiance Trainer Gallery #TG21, total 30) — catalog card has no parseable number
+- `swsh10tg-TG20` (Galarian Moltres V / Astral Radiance Trainer Gallery #TG20, total 30) — catalog card has no parseable number
+- `swsh10tg-TG16` (Galarian Articuno V / Astral Radiance Trainer Gallery #TG16, total 30) — catalog card has no parseable number
+- `swsh45sv-SV039` (Yamper / Shining Fates Shiny Vault #SV039, total 122) — catalog card has no parseable number
+- `mcd19-12` (Eevee / McDonald's Collection 2019 #12, total 12) — no candidate matched; saw: jungle#51/64(Unlimited), sandstorm#63/100(Reverse_Holofoil), wotc-promo#11/53(Holofoil), neo-discovery#38/75(Unlimited), skyridge#054/144(Reverse_Holofoil), team-rocket#55/82(Unlimited)
+- `pop8-15` (Piplup / POP Series 8) — AMBIGUOUS: 1 duplicate variantKey(s) collapsed by saleCount; kept [non-holo]
+- `swsh45sv-SV022` (Suicune / Shining Fates Shiny Vault #SV022, total 122) — catalog card has no parseable number
+- `swsh45sv-SV047` (Galarian Ponyta / Shining Fates Shiny Vault #SV047, total 122) — catalog card has no parseable number
+- `swsh45sv-SV119` (Ditto VMAX / Shining Fates Shiny Vault #SV119, total 122) — catalog card has no parseable number
+- `mcd21-17` (Squirtle / McDonald's Collection 2021 #17, total 25) — no candidate matched; saw: base-set#063/102(Normal), base-set-2#093/130(Normal), team-rocket#68/82(Unlimited), legendary-collection#095/110(Reverse_Holofoil), team-magma-vs-team-aqua#46/95(Reverse_Holofoil), firered-and-leafgreen#82/112(Reverse_Holofoil)
+- `mcd22-7` (Pikachu / McDonald's Collection 2022 #7, total 15) — no candidate matched; saw: base-set#058/102(Normal), base-set-2#087/130(Normal), jungle#60/64(Unlimited), neo-genesis#070/111(Unlimited), sandstorm#72/100(Reverse_Holofoil), skyridge#084/144(Reverse_Holofoil)
+- `mcd22-4` (Growlithe / McDonald's Collection 2022 #4, total 15) — no candidate matched; saw: base-set#028/102(Normal), base-set-2#042/130(Normal), legendary-collection#045/110(Reverse_Holofoil), skyridge#062/144(Reverse_Holofoil), sandstorm#65/100(Reverse_Holofoil), neo-destiny#068/105(Unlimited)
+- `hgss3-10` (Umbreon / HS—Undaunted #10, total 91) — no candidate matched; saw: sandstorm#24/100(Reverse_Holofoil), aquapolis#041/147(Reverse_Holofoil), majestic-dawn#32/100(Reverse_Holofoil), undaunted#10/90(Reverse_Holofoil), call-of-legends#22/95(Reverse_Holofoil), xy-promos#XY96(Holofoil)
+- `ecard3-H30` (Umbreon / Skyridge #H30, total 182) — catalog card has no parseable number
+- `smp-SM36` (Umbreon-GX / SM Black Star Promos #SM36, total 250) — catalog card has no parseable number
+- `sm1-80` (Umbreon-GX / Sun & Moon #80, total 173) — no candidate matched; saw: sm-base-set#80/149(Holofoil), hidden-fates-shiny-vault#SV69/SV94(Holofoil), sm-base-set#142/149(Holofoil), sm-base-set#154/149(Holofoil), sm-guardians-rising#null(Normal), sm-promos#SM36(Holofoil)
+- `bwp-BW93` (Umbreon / BW Black Star Promos #BW93, total 101) — catalog card has no parseable number
+- `xyp-XY96` (Umbreon / XY Black Star Promos #XY96, total 216) — catalog card has no parseable number
+- `swshp-SWSH129` (Umbreon / SWSH Black Star Promos #SWSH129, total 304) — catalog card has no parseable number
+- `swsh9tg-TG22` (Umbreon V / Brilliant Stars Trainer Gallery #TG22, total 30) — catalog card has no parseable number
+- `swshp-SWSH203` (Umbreon V / SWSH Black Star Promos #SWSH203, total 304) — catalog card has no parseable number
+- `ecard2-H9` (Espeon / Aquapolis #H9, total 182) — catalog card has no parseable number
+- `hgss3-2` (Espeon / HS—Undaunted #2, total 91) — no candidate matched; saw: aquapolis#011/147(Reverse_Holofoil), sandstorm#16/100(Reverse_Holofoil), majestic-dawn#18/100(Reverse_Holofoil), undaunted#2/90(Reverse_Holofoil), call-of-legends#4/95(Reverse_Holofoil), dark-explorers#48/108(Reverse_Holofoil)
+- `smp-SM35` (Espeon-GX / SM Black Star Promos #SM35, total 250) — catalog card has no parseable number
+- `sm1-61` (Espeon-GX / Sun & Moon #61, total 173) — no candidate matched; saw: sm-base-set#61/149(Holofoil), hidden-fates-shiny-vault#SV60/SV94(Holofoil), sm-base-set#140/149(Holofoil), sm-base-set#152/149(Holofoil), sm-guardians-rising#null(Normal), sm-promos#SM35(Holofoil)
+- `sma-SV60` (Espeon-GX / Hidden Fates Shiny Vault #SV60, total 94) — catalog card has no parseable number
+- `bwp-BW92` (Espeon / BW Black Star Promos #BW92, total 101) — catalog card has no parseable number
+- `smp-SM240` (Espeon & Deoxys-GX / SM Black Star Promos #SM240, total 250) — catalog card has no parseable number
+- `swshp-SWSH174` (Espeon / SWSH Black Star Promos #SWSH174, total 304) — catalog card has no parseable number
+- `swshp-SWSH201` (Espeon V / SWSH Black Star Promos #SWSH201, total 304) — catalog card has no parseable number

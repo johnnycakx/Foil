@@ -99,6 +99,17 @@ const PUBLIC_SURFACES: readonly string[] = [
   "app/(site)/w/page.tsx",
   "components/vault/vault-add-card.tsx",
   "components/cards/card-typeahead.tsx",
+  // ADR-095: the line-tracker surface (/lines/[pokemon] + its client
+  // components). It layers a SAKURA register accent over the cream/navy base —
+  // sakura is used as the hover/accent color (like coral elsewhere), never a
+  // resting fill beyond the soft --color-foil-sakura-wash tint. The no-raw-hex +
+  // coral-hover-only invariants cover them so the accent can't drift into a
+  // loud default. The OG image (opengraph-image.tsx) is intentionally excluded:
+  // it uses raw hex for Satori inline styles, same as every other OG route.
+  "app/(site)/lines/[pokemon]/page.tsx",
+  "components/lines/sakura-petals.tsx",
+  "components/lines/line-card-rail.tsx",
+  "components/lines/line-track-form.tsx",
 ];
 
 // ---------------------------------------------------------------------------
@@ -654,4 +665,79 @@ test("Hero founder avatar: loads eagerly, never lazy (blank-on-paint regression)
   const founderImg = imageBlockContaining(src, "/founder/john-craig.webp");
   assert.match(founderImg, /loading="eager"/, "the above-the-fold founder avatar must be eager");
   assert.doesNotMatch(founderImg, /loading="lazy"/, "founder avatar must not be lazy");
+});
+
+// ---------------------------------------------------------------------------
+// ADR-095 — line-tracker (/lines/[pokemon]) sakura register + trust guards.
+// The surface layers a sakura accent over cream/navy AND makes a hard
+// null-over-guess promise (fabricated sold figures = anti-viral). Pin the
+// structural anchors a refactor could slip past: the sakura tokens exist, the
+// accent is hover/wash-scoped (never a loud resting fill), motion is
+// motion-safe-gated, and the honest "pending" fallback can't be replaced by a
+// guess.
+// ---------------------------------------------------------------------------
+
+test("globals.css: declares the sakura register tokens (ADR-095)", () => {
+  const css = readFile("app/globals.css");
+  assert.match(css, /--color-foil-sakura:\s*#[0-9a-fA-F]{6}/, "the sakura accent token must exist");
+  assert.match(css, /--color-foil-sakura-wash:\s*#[0-9a-fA-F]{6}/, "the sakura wash token must exist");
+  // The fall keyframe backs the motion-safe petal animation.
+  assert.match(css, /@keyframes sakura-fall/, "the sakura-fall keyframe must exist");
+});
+
+test("Line page: sakura is an accent — resting fills stay cream/navy, sakura only on hover or the soft wash (ADR-095)", () => {
+  const src = readFile("app/(site)/lines/[pokemon]/page.tsx");
+  // `bg-foil-sakura` (the saturated accent) must never be a resting fill — only
+  // `hover:bg-foil-sakura`. The soft `bg-foil-sakura-wash` tint IS allowed at
+  // rest (it's the register's cream-adjacent surface, like a gold/5 panel).
+  const re = /(\S*)bg-foil-sakura(?!-wash)/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(src)) !== null) {
+    const lead = m[1];
+    assert.ok(
+      lead.endsWith("hover:") || lead.endsWith("group-hover:"),
+      `saturated bg-foil-sakura without a hover: prefix in the line page — context "${src.slice(Math.max(0, m.index - 14), m.index + 16)}"`,
+    );
+  }
+});
+
+test("Line page: keeps the @possiblyeve dedication + the price-high, most-valuable-first ordering copy (ADR-095)", () => {
+  const src = readFile("app/(site)/lines/[pokemon]/page.tsx");
+  // The dedication ("Made for …") is the gift-economy hook; the sort copy is the
+  // Moonbreon-on-top promise. Both are load-bearing to the surface's purpose.
+  assert.match(src, /Made for \{config\.dedication\}/, "the dedication line must render config.dedication");
+  assert.match(src, /most valuable first/i, "the price-high sort promise must be stated");
+  // Every figure is real market data — the honesty line is part of the trust moat.
+  assert.match(src, /Every figure is real market data/, "the null-over-guess honesty line must render");
+});
+
+test("Line data: the sold phrase is null-over-guess — no data renders 'pending', never a fabricated figure (ADR-095)", () => {
+  const src = readFile("lib/lines/data.ts");
+  // soldPhrase must gate on soldCents == null → a "pending"/"tracking" string,
+  // NOT a guessed or SDK-derived dollar figure. Pin the honest fallback so a
+  // refactor can't quietly backfill a fake number (the anti-viral failure mode).
+  assert.match(src, /soldCents\s*==\s*null|soldCents\s*===\s*null|card\.soldCents\s*==\s*null/, "soldPhrase must branch on a null sold figure");
+  assert.match(src, /pending|tracking/i, "the null branch must render an honest pending/tracking phrase");
+});
+
+test("Sakura petals: motion lives ONLY in motion-safe: — reduced-motion users see static petals, never auto-motion (ADR-095)", () => {
+  const src = readFile("components/lines/sakura-petals.tsx");
+  // The animate utility MUST carry the motion-safe: prefix. A bare `animate-`
+  // would move for prefers-reduced-motion users (the accessibility bar).
+  assert.match(src, /motion-safe:animate-\[sakura-fall/, "the petal animation must be motion-safe-gated");
+  const bareAnimate = /(^|[\s"'`])animate-\[sakura-fall/;
+  assert.doesNotMatch(src.replace(/motion-safe:animate-\[sakura-fall[^\]]*\]/g, ""), bareAnimate, "no un-gated sakura-fall animation");
+  // Deterministic petals — no Math.random() CALL (harness ban + hydration
+  // mismatch). Match the call form so the "no Math.random" note in the file's
+  // own comment doesn't trip the guard.
+  assert.doesNotMatch(src, /Math\.random\s*\(/, "petals must be deterministic (no Math.random() call)");
+});
+
+test("Line card rail: no auto-scroll, smooth-scroll is user-click-driven only (ADR-095)", () => {
+  const src = readFile("components/lines/line-card-rail.tsx");
+  // The rail scrolls only in response to a click (scrollIntoView in onClick).
+  // No setInterval/requestAnimationFrame auto-advance (that would be motion the
+  // reduced-motion query can't stop).
+  assert.match(src, /onClick=\{\(\)\s*=>/, "rail navigation is click-driven");
+  assert.doesNotMatch(src, /setInterval|requestAnimationFrame/, "no auto-scroll timer on the rail");
 });

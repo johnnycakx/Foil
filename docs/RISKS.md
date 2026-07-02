@@ -395,6 +395,23 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 **Mitigation (shipped).** Owned mark across every in-repo surface (ADR-094); off-repo surfaces (X/Discord/Beehiiv) on John's checklist (`docs/brand-mark-offrepo-checklist.md`).
 
+## R-066 — Public-accuracy exposure on the line-tracker pages (a wrong figure now reaches a creator's whole audience)
+
+**Severity:** Medium (a fabricated- or wrong-looking price on a page shared to ~50K collectors is anti-viral — it converts an admiration moment into a "these people don't know what they're doing" screenshot, and the whole acquisition play depends on trust)
+
+**Status:** `mitigating`. The `/lines/[pokemon]` surface ([ADR-095](DECISIONS.md#adr-095--the-line-tracker-lines pokemon-shareable-pages-sakura-register-accent-null-over-guess-sold-data-the-gift-economy-acquisition-play)) puts prices in front of a reach-collector's audience for the first time — a higher-stakes stage than the crawler-facing `/cards/[slug]` pages. Three layers are shipped; a residual snapshot-staleness surface remains.
+
+**The risk.** Two concrete failure modes, both seen during this build: (1) a **junk sold figure** — a 2-sale $499k Damaged-copy "sold" price on a ~$50 card (the exact 12×-contradiction the audit warned of); (2) a **junk market figure** — the TCGplayer `high` field polluted by single $9,999 placeholder listings, which if sorted/displayed on puts a $499-market card above Moonbreon and shows "Around $5,000" on a card sitting below "$2,000" cards. Either reads as "broken" to a sharp Eeveelution collector.
+
+**Trigger to escalate.** Any wrong/contradictory figure reported on a live line page (self-audit or a reply screenshot); or the committed sold snapshot going stale enough that a headline figure visibly diverges from the live eBay listing on the linked card page.
+
+**Mitigation (shipped in ADR-095).**
+- **Null-over-guess:** a card with no quality sold data renders "Sold data pending," never a fabricated figure.
+- **Outlier-suppression moat** in `scripts/seed-line-sold.ts`: headline only NM/LP tiers, require ≥3 sales, and cross-check against the baked TCGplayer market (reject > 4× high / < 0.15× low). Two cards were correctly suppressed on seed.
+- **Outlier-resistant ranking + display:** sort on `max(sold, market)`, never the `high` field; the market line anchors on the representative `market` value so the shown number matches the sort.
+- **Accuracy-pass closure gate:** the top-10-by-value end-to-end spot-check is now a required step for this surface (it's what caught the `cents`/`soldCents` field-name desync that had silently blanked every sold figure — a passing build did not).
+- **Residual:** the snapshot is point-in-time, labeled "as of <date>"; refresh = re-run the seed script. A scheduled refresh is the follow-up if lines multiply.
+
 ## How to log a new risk
 
 1. Next available ID (`R-NNN`, monotonically increasing).
