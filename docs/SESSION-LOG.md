@@ -8,6 +8,10 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-07-02 (pre-send) — lines-petals-and-type: hanami density (14→28 petals, per-petal breeze/amp/wobble via CSS vars — no straight-down falls), /lines type up a step across the hierarchy (sold/ask lines 12→14px, names 14→16px, subtitle 18→20px). Gates green (1,402/0, build 208/208, lint clean); shots in gallery/iter-19-petals; IDEAS +2 (/lines index, line-page expansion program). NO push — John's push is the eve send trigger.
+
+---
+
 ## 2026-07-02 (round 3) — make the dark gallery earn its name: the six execution-quality fixes before the eve send (branch only, John merges)
 
 **Goal: execute `docs/goals/design-round3-fixes.md` — bounded final round on `design/overnight-loop-2026-07-02`; ratified decisions (Shrikhand, teal, all-dark chrome, cream /lines) untouched.** (Claude Code.)

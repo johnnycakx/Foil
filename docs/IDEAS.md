@@ -20,6 +20,32 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 
 ---
 date: 2026-07-02
+category: growth
+status: captured
+---
+## /lines index page — "The lines we track"
+
+A visible home for all line pages, linked in nav or footer; each line = cover card + printings count + sample spread. John's call 2026-07-02: line pages are pretty, clickable, and give people a reason to share — right now they're only reachable by direct link.
+
+**Context:** lines-petals-and-type closure (pre-eve send). Build after the eve signal comes in.
+
+---
+
+---
+date: 2026-07-02
+category: growth
+status: captured
+---
+## Line-page expansion program (Charizard, Pikachu, Eeveelutions, Rayquaza, Gengar, Mewtwo…)
+
+"Every X card, tracked" is a keyword-rich, genuinely linkable page class — an SEO + share surface on the config-driven /lines/[pokemon] machinery (line #3 is a data change, not a build). Prereqs before scaling: a cadence + data-freshness design (R-066: sold snapshots are point-in-time) so dozens of pages don't rot. Dedications stay per-page metadata — eve keeps hers; most pages have none.
+
+**Context:** lines-petals-and-type closure. Promote when the eve launch shows a signup lift (pairs with the existing "line-tracker as acquisition channel" idea).
+
+---
+
+---
+date: 2026-07-02
 category: ux
 status: captured
 ---

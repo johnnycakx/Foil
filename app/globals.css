@@ -230,9 +230,14 @@ body {
    GPU-cheap. Fall is viewport-relative (the old own-box % barely moved a 10px
    petal — the "screen dust" bug); sway/rotation lives on a nested layer so the
    two compose. Both are applied ONLY via motion-safe: utilities. */
+/* Natural fall (lines-petals-and-type): petals never drop straight down —
+   the fall carries a per-petal breeze drift (--breeze, net horizontal
+   displacement over the descent) while the nested sway layer oscillates with
+   per-petal amplitude (--amp) and rotation wobble (--wob). All transform/
+   opacity, all driven by CSS custom properties set per petal — no JS loop. */
 @keyframes sakura-fall {
   0% {
-    transform: translateY(-6vh);
+    transform: translateY(-6vh) translateX(0);
     opacity: 0;
   }
   10% {
@@ -242,16 +247,16 @@ body {
     opacity: 1;
   }
   100% {
-    transform: translateY(56vh);
+    transform: translateY(56vh) translateX(var(--breeze, 3vw));
     opacity: 0;
   }
 }
 
 @keyframes sakura-sway {
   from {
-    transform: translateX(-7px) rotate(-16deg);
+    transform: translateX(calc(var(--amp, 8px) * -1)) rotate(calc(var(--wob, 15deg) * -1));
   }
   to {
-    transform: translateX(9px) rotate(14deg);
+    transform: translateX(var(--amp, 8px)) rotate(var(--wob, 15deg));
   }
 }
