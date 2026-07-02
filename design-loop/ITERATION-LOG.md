@@ -172,3 +172,34 @@ sizing, live interactive verification of the holo-tilt in a real browser,
 micro-spacing), re-score. If the bar holds, the loop terminates on quality and
 remaining time goes to extending the won register's polish to /start + /deals
 (de-gold → vermillion, plain-language sweep) as scoped follow-through.
+
+---
+
+## iter-06 — CONVERGE: sustain pass (bar held)
+
+**Thesis:** No-regression polish + live interactive verification. The step-3
+pill wraps safely (whitespace-nowrap + flex-wrap). **Holo-tilt verified in a
+real browser** (design-loop/verify-holo.mjs): pointer sweep → real 3D matrix +
+sheen opacity 1, pointer leave → clean reset to 0.5/0.5, and under
+prefers-reduced-motion the card never tilts (listeners bail). 
+
+**Scores:**
+| dim | score | note |
+|---|---|---|
+| (a) pull-clarity | 8.5 | Unchanged. |
+| (b) craft | 8.5 | Pill fixed; no remaining cramped elements found. |
+| (c) depth | 8.3 | Unchanged (still-image ceiling without motion). |
+| (d) ICP | 8.6 | Unchanged. |
+| (e) mobile | 8.4 | Unchanged. |
+| (f) plain-language | 9.0 | Unchanged. |
+| (g) perf | 8.6 | Motion now VERIFIED live: transform-only, reduced-motion fully static. |
+| (h) card-spotlight | 8.8 | Unchanged. |
+
+**avg 8.59 · min 8.3 — BAR SUSTAINED (2 consecutive ≥ 8.5 / ≥ 7.5).
+The homepage loop TERMINATES ON QUALITY.**
+
+**Remaining budget** goes to the brief's follow-through surfaces in priority
+order — /start → /lines polish → /deals — carrying the won register's
+consequences (gold → vermillion, plain language, chrome coherence) WITHOUT
+migrating them dark (form/data surfaces staying cream is the deliberate
+marketing-dark / task-light split; John decides any full dark migration awake).

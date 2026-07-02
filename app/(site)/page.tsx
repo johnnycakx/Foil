@@ -342,9 +342,9 @@ function PullLoop() {
       title: "We watch the market",
       body: "Foil checks live listings around the clock and judges every price against what the card actually sells for.",
       artifact: (
-        <div className="flex items-center justify-between gap-2 rounded-lg border border-foil-cream/12 bg-foil-night-2 px-3 py-2">
+        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 rounded-lg border border-foil-cream/12 bg-foil-night-2 px-3 py-2">
           <span className="font-mono text-xs tabular-nums text-foil-cream/90">$1,845</span>
-          <span className="rounded-full bg-foil-vermillion/15 px-2 py-0.5 text-[10px] font-medium text-foil-vermillion">
+          <span className="rounded-full bg-foil-vermillion/15 px-2 py-0.5 text-[10px] font-medium whitespace-nowrap text-foil-vermillion">
             17% under sold avg
           </span>
         </div>
