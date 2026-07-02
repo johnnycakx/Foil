@@ -8,6 +8,19 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-07-02 (round 3) — make the dark gallery earn its name: the six execution-quality fixes before the eve send (branch only, John merges)
+
+**Goal: execute `docs/goals/design-round3-fixes.md` — bounded final round on `design/overnight-loop-2026-07-02`; ratified decisions (Shrikhand, teal, all-dark chrome, cream /lines) untouched.** (Claude Code.)
+
+- **P0:** branch/tree/dev-server confirmed; none of the six fixes were de facto done except fix 2's card-page half (SoldHistoryChart already draws real sold history — verified, skipped).
+- **iter-16 [fixes 1/4/5]:** the hero fan became a REAL lit fan — depth slots (Moonbreon focal ~1.35x + teal rim-glow, neighbors step down/rotate/blur toward the edges, z-stacked), a VISIBLE floor (contact shadow + reflection pool), edge-fade mask instead of hard crops; the dead black band after the founder note killed (paddings tightened); wordmark to pure lettering at 24px, identical both tones. The flagship miss is fixed — `gallery/iter-16/home-desktop-fold.png`.
+- **iter-17 [fix 2]:** the sold-vs-ask spread is DRAWN — a two-point dumbbell per /deals mover row (cream anchor = usual price, teal dot = this week, distance = the discount; real aggregates, never a fake curve), a magnitude bar on below-sold rows (ADR-054: the ask is never republished, so the bar draws only the %), 64px thumbs with dark shadows, stock white pills → teal ghost buttons.
+- **iter-18 [fixes 2-lines/3/6]:** /lines (eve's CREAM surface): real SVG petals in two depth layers (near sharp / far blurred), density concentrated at the hero + dedication, faint sakura wash, motion-safe drift with static-scatter fallback; sold/buy pair gets a designed spread chip + the pending line becomes a proper chip (dot + label, no more broken-italic); printings grouped into labeled eras; lineup strip unified + edge-faded; the blank-image slots in the round-2 variant shot verified (see iteration log for the artifact-vs-real verdict).
+- **Gates:** tsc clean · full suite green per commit · `npm run build` ✓ (208/208 pages) · design:lint clean on touched surfaces · /security-review per round-1 posture (styling-only diff; no new data paths).
+- **No push — John walks /, /deals, /lines/umbreon, then merges.**
+
+---
+
 ## 2026-07-02 (overnight, round 2) — John's 1am verdicts executed: the dark gallery goes site-wide, Shrikhand wordmark, teal accent bake-off, vault designed, sv3a unpublished (branch only, John merges)
 
 **Goal: execute `docs/goals/design-loop-round2.md` — John's live evaluator pass on round 1, same loop/branch/boundaries.** (Claude Code, unattended; continues the entry below.)

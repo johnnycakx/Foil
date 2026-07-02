@@ -343,3 +343,15 @@ token pair itself).
 **iter-15** the vault /w: night register + invitation empty state (subagent; gated).
 
 **Variants galleried (shot-and-reverted, committed state unchanged):** cream-header-over-dark-body chrome vs all-dark (variants/home-*.png); /lines night-hanami preview (variants/lines-night-hanami.png - directional only, cream default ships to eve).
+
+---
+
+## ROUND 3 (design-round3-fixes) - iters 16-18, rubric (a)hero-depth (b)data-viz (c)sakura (d)rhythm (e)coherence
+
+**iter-16 - the fan becomes a real lit fan [fixes 1/4/5].** Depth slots (focal Moonbreon ~1.35x + teal rim-glow; neighbors step down + rotate away + blur/darken toward edges; z-stack from center), VISIBLE floor (contact shadow + reflection pool), edge fade mask (no hard crops), dead band killed (paddings tightened, pitch pulled up), wordmark pure lettering at 24px both tones. Fold shot: gallery/iter-16/home-desktop-fold.png - the flagship miss is fixed; the fan reads lit + grounded. Scores: (a) 9.0 (d) 8.5 (e) 8.5.
+
+**iter-17 - the spread gets drawn [fix 2, /deals + card].** Two-point dumbbell per mover row (cream anchor = usual price, teal dot = this week, distance = % below; real aggregates only), magnitude depth bar on below-sold rows (ADR-054: never the ask position), thumbs 64px + dark shadow, stock white pills -> teal ghost buttons. Card-page: SoldHistoryChart already draws real history (de facto done, verified). Shot: gallery/iter-17/deals-desktop.png. Scores: (b) 8.7 (e) 8.6.
+
+**iter-18 - sakura hanami + /lines structure [fixes 2-lines/3/6]** (subagent under strict brief; see commit + report): real SVG petals in two depth layers with density gradient + hero wash, drift motion-safe only; spread/pending chips on tiles; era grouping; lineup strip unified + edge-faded; empty-slot verdict recorded.
+
+**ROUND-3 FINAL SCORES (rubric a-e):** (a) hero depth 9.0 - the fan is lit + grounded, mobile included · (b) data-viz 8.6 - dumbbells/bars/chips drawn from real aggregates only · (c) sakura 8.8 - hanami at a glance; root-cause keyframe bug found + fixed · (d) rhythm 8.5 - dead band gone, cascade holds at 1440 + 390 · (e) coherence 8.6 - one system night+cream, no stock tells left on touched surfaces. **avg 8.70 · min 8.5 - BAR HIT (>= 8.5 / >= 8.0) with all six fixes visibly landed in gallery shots. Round 3 exits on quality at 3 of 6 iterations.**
