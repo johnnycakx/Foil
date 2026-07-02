@@ -146,8 +146,8 @@ function Hero() {
         <p className="inline-flex items-center gap-2 rounded-full border border-foil-cream/15 bg-foil-night-2/80 px-3 py-1 text-xs font-medium text-foil-cream/80 backdrop-blur-sm">
           <SealMark px={13} />
           <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-foil-vermillion opacity-75 motion-safe:animate-ping" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-vermillion" />
+            <span className="absolute inline-flex h-full w-full rounded-full bg-foil-accent opacity-75 motion-safe:animate-ping" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-accent" />
           </span>
           Live · watching {cardCount} cards across {setCount} sets
         </p>
@@ -164,13 +164,13 @@ function Hero() {
         <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
             href="/start?src=home-hero"
-            className="rounded-xl bg-foil-cream px-7 py-3.5 text-lg font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-vermillion/60"
+            className="rounded-xl bg-foil-cream px-7 py-3.5 text-lg font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-accent/60"
           >
             Start your vault
           </Link>
           <Link
             href="/deals?src=home-hero"
-            className="text-base text-foil-cream/60 underline decoration-foil-cream/25 underline-offset-4 transition hover:text-foil-cream hover:decoration-foil-vermillion"
+            className="text-base text-foil-cream/60 underline decoration-foil-cream/25 underline-offset-4 transition hover:text-foil-cream hover:decoration-foil-accent"
           >
             or see today&apos;s best drops →
           </Link>
@@ -229,7 +229,7 @@ function VaultMoment() {
       <div className="reveal-rise relative mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
         <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.2fr]">
           <div>
-            <p className="text-xs font-medium tracking-[0.08em] text-foil-vermillion uppercase">
+            <p className="text-xs font-medium tracking-[0.08em] text-foil-accent uppercase">
               The vault
             </p>
             <h2 className="font-display mt-3 text-4xl font-semibold tracking-[-0.01em] text-foil-cream sm:text-5xl">
@@ -242,17 +242,17 @@ function VaultMoment() {
             </p>
             <ul className="mt-6 max-w-md space-y-2.5 text-base text-foil-cream/60">
               <li className="flex items-start gap-2.5">
-                <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foil-vermillion" />
+                <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foil-accent" />
                 Every pocket shows what the card really sells for.
               </li>
               <li className="flex items-start gap-2.5">
-                <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foil-vermillion" />
+                <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foil-accent" />
                 Your targets are checked against live listings around the clock.
               </li>
             </ul>
             <Link
               href="/start?src=home-vault"
-              className="mt-8 inline-block text-sm font-medium text-foil-cream underline decoration-foil-vermillion/50 underline-offset-4 transition hover:decoration-foil-vermillion"
+              className="mt-8 inline-block text-sm font-medium text-foil-cream underline decoration-foil-accent/50 underline-offset-4 transition hover:decoration-foil-accent"
             >
               Start filling yours →
             </Link>
@@ -281,7 +281,7 @@ function VaultMoment() {
               <li>
                 <Link
                   href="/start?src=home-vault"
-                  className="flex aspect-[5/7] flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-foil-cream/25 text-center transition hover:border-foil-vermillion/60 hover:bg-foil-vermillion/5"
+                  className="flex aspect-[5/7] flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-foil-cream/25 text-center transition hover:border-foil-accent/60 hover:bg-foil-accent/5"
                 >
                   <span className="text-2xl leading-none text-foil-cream/50">+</span>
                   <span className="px-2 text-[11px] text-foil-cream/60">
@@ -342,7 +342,7 @@ function PullLoop() {
       artifact: (
         <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 rounded-lg border border-foil-cream/12 bg-foil-night-2 px-3 py-2">
           <span className="font-mono text-xs tabular-nums text-foil-cream/90">$1,845</span>
-          <span className="rounded-full bg-foil-vermillion/15 px-2 py-0.5 text-[10px] font-medium whitespace-nowrap text-foil-vermillion">
+          <span className="rounded-full bg-foil-accent/15 px-2 py-0.5 text-[10px] font-medium whitespace-nowrap text-foil-accent">
             17% under sold avg
           </span>
         </div>
@@ -354,7 +354,7 @@ function PullLoop() {
       body: "The moment a real listing hits your number. No feed to check, no tabs to scrub, no junk to wade through.",
       artifact: (
         <div className="flex items-center gap-2 rounded-lg border border-foil-cream/12 bg-foil-night-2 px-3 py-2">
-          <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-3 w-3 shrink-0 text-foil-vermillion">
+          <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-3 w-3 shrink-0 text-foil-accent">
             <rect x="2.5" y="4.5" width="15" height="11" rx="1.5" />
             <path d="m3 6 7 5 7-5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -378,7 +378,7 @@ function PullLoop() {
         <ol className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s) => (
             <li key={s.num} className="flex flex-col border-t border-foil-cream/15 pt-5">
-              <span className="font-display text-sm font-semibold text-foil-vermillion">
+              <span className="font-display text-sm font-semibold text-foil-accent">
                 {s.num.padStart(2, "0")}
               </span>
               <h3 className="font-display mt-2 text-xl font-semibold text-foil-cream">
@@ -408,7 +408,7 @@ function SampleAlert() {
       />
       <div className="reveal-rise relative mx-auto grid w-full max-w-6xl items-center gap-12 px-5 py-20 sm:px-8 sm:py-24 lg:grid-cols-[1fr_1.1fr]">
         <div>
-          <p className="text-xs font-medium tracking-[0.08em] text-foil-vermillion uppercase">
+          <p className="text-xs font-medium tracking-[0.08em] text-foil-accent uppercase">
             The alert
           </p>
           <h2 className="font-display mt-3 text-4xl font-semibold tracking-[-0.01em] text-foil-cream sm:text-5xl">
@@ -421,12 +421,12 @@ function SampleAlert() {
           </p>
           <ul className="mt-6 max-w-md space-y-2.5 text-base text-foil-cream/60">
             <li className="flex items-start gap-2.5">
-              <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foil-vermillion" />
+              <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foil-accent" />
               Real listings only — seller, condition, and sold history checked
               before we bother you.
             </li>
             <li className="flex items-start gap-2.5">
-              <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foil-vermillion" />
+              <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foil-accent" />
               One click to stop watching any card, any time.
             </li>
           </ul>

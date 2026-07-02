@@ -56,7 +56,7 @@ export function DealsBoard({ deals }: { deals: DealRow[] }) {
         <span aria-hidden>#</span>
         <span>Card</span>
         <span className="text-right">Recent sold</span>
-        <span className="text-right text-foil-vermillion">Below by</span>
+        <span className="text-right text-foil-accent-deep">Below by</span>
         <span className="text-right">See it</span>
       </div>
 
@@ -83,7 +83,7 @@ export function DealsBoard({ deals }: { deals: DealRow[] }) {
               {/* Card identity */}
               <Link
                 href={`/cards/${d.cardSlug}`}
-                className="flex min-w-0 items-center gap-3 transition hover:text-foil-vermillion"
+                className="flex min-w-0 items-center gap-3 transition hover:text-foil-accent-deep"
               >
                 {d.imageUrl ? (
                   <Image
@@ -124,7 +124,7 @@ export function DealsBoard({ deals }: { deals: DealRow[] }) {
                 <span className="font-display block text-2xl font-bold tabular-nums leading-none text-foil-navy sm:text-3xl">
                   {below != null ? `${below}%` : "—"}
                 </span>
-                <span className="block text-[11px] uppercase tracking-wider text-foil-vermillion">below sold</span>
+                <span className="block text-[11px] uppercase tracking-wider text-foil-accent-deep">below sold</span>
               </span>
 
               {/* See it on eBay — resolves the live listing on click (affiliate). */}
@@ -132,7 +132,7 @@ export function DealsBoard({ deals }: { deals: DealRow[] }) {
                 href={ctaUrl}
                 target="_blank"
                 rel="sponsored noopener noreferrer"
-                className="col-span-2 mt-1 inline-flex items-center justify-center rounded-full bg-foil-navy px-4 py-2 text-xs font-semibold text-foil-cream shadow-sm shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-vermillion sm:col-span-1 sm:mt-0"
+                className="col-span-2 mt-1 inline-flex items-center justify-center rounded-full bg-foil-navy px-4 py-2 text-xs font-semibold text-foil-cream shadow-sm shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-accent-deep sm:col-span-1 sm:mt-0"
               >
                 See it on eBay →
               </a>

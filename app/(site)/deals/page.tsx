@@ -70,10 +70,10 @@ export default async function DealsPage() {
       {/* Screenshot-friendly header band: title + date + foiltcg.com all in
           frame so every shared screenshot is self-branding. */}
       <header className="text-center">
-        <p className="flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wider text-foil-vermillion">
+        <p className="flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wider text-foil-accent-deep">
           <span className="relative inline-flex h-1.5 w-1.5" aria-hidden>
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foil-vermillion opacity-60" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-vermillion" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foil-accent-deep opacity-60" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-accent-deep" />
           </span>
           foiltcg.com · {boardDate}
         </p>
@@ -118,7 +118,7 @@ export default async function DealsPage() {
         the best deal, not the biggest payout.{" "}
         <Link
           href="/pricing-methodology"
-          className="text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-vermillion"
+          className="text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-accent-deep"
         >
           See how we price.
         </Link>
@@ -130,7 +130,7 @@ export default async function DealsPage() {
         These are this week&apos;s drops across the whole market.{" "}
         <Link
           href="/start?src=deals"
-          className="font-medium text-foil-navy underline decoration-foil-vermillion/50 underline-offset-4 transition hover:decoration-foil-vermillion"
+          className="font-medium text-foil-navy underline decoration-foil-accent-deep/50 underline-offset-4 transition hover:decoration-foil-accent-deep"
         >
           Want them for your cards? Start your vault →
         </Link>

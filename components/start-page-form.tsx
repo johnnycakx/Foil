@@ -178,8 +178,8 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
 
   if (submission.state === "success") {
     return (
-      <section className="rounded-3xl border border-foil-vermillion/40 bg-foil-cream p-8 shadow-xl shadow-foil-navy/10 sm:p-10">
-        <p className="text-xs font-medium uppercase tracking-widest text-foil-vermillion">
+      <section className="rounded-3xl border border-foil-accent-deep/40 bg-foil-cream p-8 shadow-xl shadow-foil-navy/10 sm:p-10">
+        <p className="text-xs font-medium uppercase tracking-widest text-foil-accent-deep">
           You&apos;re tracking {submission.count} cards
         </p>
         <h2 className="font-display mt-3 text-2xl font-bold tracking-[-0.02em] text-foil-navy sm:text-3xl">
@@ -192,14 +192,14 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
           {submission.vaultUrl ? (
             <a
               href={submission.vaultUrl}
-              className="inline-flex items-center justify-center rounded-xl bg-foil-navy px-5 py-2.5 text-sm font-semibold text-foil-cream transition hover:bg-foil-vermillion"
+              className="inline-flex items-center justify-center rounded-xl bg-foil-navy px-5 py-2.5 text-sm font-semibold text-foil-cream transition hover:bg-foil-accent-deep"
             >
               Open your vault →
             </a>
           ) : (
             <a
               href="/cards"
-              className="inline-flex items-center justify-center rounded-xl bg-foil-navy px-5 py-2.5 text-sm font-semibold text-foil-cream transition hover:bg-foil-vermillion"
+              className="inline-flex items-center justify-center rounded-xl bg-foil-navy px-5 py-2.5 text-sm font-semibold text-foil-cream transition hover:bg-foil-accent-deep"
             >
               Browse the catalog →
             </a>
@@ -208,7 +208,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
               meanwhile, this week's best drops. */}
           <a
             href="/deals?src=start-success"
-            className="text-sm text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-vermillion"
+            className="text-sm text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-accent-deep"
           >
             Meanwhile, see this week&apos;s best drops →
           </a>
@@ -263,7 +263,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
                 key={c.id}
                 type="button"
                 onClick={() => addCard(c)}
-                className="inline-flex items-center gap-2 rounded-full border border-foil-navy/15 bg-foil-cream py-1 pr-3 pl-1 text-xs font-medium text-foil-navy transition hover:border-foil-vermillion/60 hover:bg-foil-vermillion/5"
+                className="inline-flex items-center gap-2 rounded-full border border-foil-navy/15 bg-foil-cream py-1 pr-3 pl-1 text-xs font-medium text-foil-navy transition hover:border-foil-accent-deep/60 hover:bg-foil-accent-deep/5"
               >
                 <Image
                   src={c.image}
@@ -273,7 +273,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
                   className="h-8 w-6 rounded object-cover ring-1 ring-foil-navy/10"
                 />
                 {c.name}
-                <span aria-hidden className="text-foil-vermillion">+</span>
+                <span aria-hidden className="text-foil-accent-deep">+</span>
               </button>
             ))}
           </div>
@@ -321,7 +321,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
                     value={s.targetPriceUsd}
                     onChange={(e) => updateTarget(s.id, e.target.value)}
                     placeholder="any"
-                    className="w-20 rounded-lg border border-foil-navy/15 bg-foil-cream px-2 py-1.5 text-right text-sm text-foil-navy placeholder:text-foil-slate/60 outline-none focus:border-foil-vermillion focus:ring-2 focus:ring-foil-vermillion/30"
+                    className="w-20 rounded-lg border border-foil-navy/15 bg-foil-cream px-2 py-1.5 text-right text-sm text-foil-navy placeholder:text-foil-slate/60 outline-none focus:border-foil-accent-deep focus:ring-2 focus:ring-foil-accent-deep/30"
                   />
                 </div>
                 <button
@@ -349,7 +349,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
             placeholder="you@gmail.com"
             required
             autoComplete="email"
-            className="mt-2 w-full rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/60 outline-none transition focus:border-foil-vermillion focus:ring-2 focus:ring-foil-vermillion/30"
+            className="mt-2 w-full rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/60 outline-none transition focus:border-foil-accent-deep focus:ring-2 focus:ring-foil-accent-deep/30"
           />
         </label>
         <label className="mt-4 flex items-start gap-3 text-sm text-foil-slate">
@@ -357,7 +357,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
             type="checkbox"
             checked={optInNewsletter}
             onChange={(e) => setOptInNewsletter(e.target.checked)}
-            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-foil-navy/20 bg-foil-cream text-foil-vermillion focus:ring-foil-vermillion focus:ring-offset-0"
+            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-foil-navy/20 bg-foil-cream text-foil-accent-deep focus:ring-foil-accent-deep focus:ring-offset-0"
           />
           <span>
             Also send me Foil&apos;s weekly deals newsletter (~1 email/week, unsubscribe anytime)
@@ -369,7 +369,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
       <button
         type="submit"
         disabled={submission.state === "submitting" || selected.length === 0}
-        className="mt-8 w-full rounded-xl bg-foil-navy px-6 py-3.5 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-vermillion hover:shadow-lg hover:shadow-foil-navy/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:bg-foil-navy"
+        className="mt-8 w-full rounded-xl bg-foil-navy px-6 py-3.5 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-accent-deep hover:shadow-lg hover:shadow-foil-navy/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:bg-foil-navy"
       >
         {submission.state === "submitting"
           ? "Setting up…"

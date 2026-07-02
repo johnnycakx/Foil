@@ -56,7 +56,7 @@ export function MoversBoard({ movers }: { movers: MarketMovers }) {
                 {/* Card identity */}
                 <Link
                   href={`/cards/${m.cardSlug}`}
-                  className="flex min-w-0 items-center gap-3 transition hover:text-foil-vermillion"
+                  className="flex min-w-0 items-center gap-3 transition hover:text-foil-accent-deep"
                 >
                   {m.imageUrl ? (
                     <Image
@@ -94,7 +94,7 @@ export function MoversBoard({ movers }: { movers: MarketMovers }) {
                   <span className="font-display block text-2xl font-bold tabular-nums leading-none text-foil-navy sm:text-3xl">
                     {Math.abs(m.momentumPct)}%
                   </span>
-                  <span className="block text-[11px] uppercase tracking-wider text-foil-vermillion">
+                  <span className="block text-[11px] uppercase tracking-wider text-foil-accent-deep">
                     below its average
                   </span>
                 </span>
@@ -104,7 +104,7 @@ export function MoversBoard({ movers }: { movers: MarketMovers }) {
                   href={browseHref(m)}
                   target="_blank"
                   rel="sponsored noopener noreferrer"
-                  className="col-span-2 mt-1 inline-flex items-center justify-center rounded-full bg-foil-navy px-4 py-2 text-xs font-semibold text-foil-cream shadow-sm shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-vermillion sm:col-span-1 sm:mt-0"
+                  className="col-span-2 mt-1 inline-flex items-center justify-center rounded-full bg-foil-navy px-4 py-2 text-xs font-semibold text-foil-cream shadow-sm shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-accent-deep sm:col-span-1 sm:mt-0"
                 >
                   Browse on eBay →
                 </a>
@@ -126,7 +126,7 @@ export function MoversBoard({ movers }: { movers: MarketMovers }) {
               <li key={m.cardSlug} className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
                 <Link
                   href={`/cards/${m.cardSlug}`}
-                  className="min-w-0 transition hover:text-foil-vermillion"
+                  className="min-w-0 transition hover:text-foil-accent-deep"
                 >
                   <span className="block truncate font-semibold text-foil-navy">{m.cardName}</span>
                   <span className="block truncate text-xs text-foil-slate">
@@ -146,7 +146,7 @@ export function MoversBoard({ movers }: { movers: MarketMovers }) {
                     href={browseHref(m)}
                     target="_blank"
                     rel="sponsored noopener noreferrer"
-                    className="inline-flex items-center justify-center rounded-full border border-foil-navy/20 px-3 py-1.5 text-xs font-semibold text-foil-navy transition-all hover:border-foil-vermillion/50 hover:text-foil-vermillion"
+                    className="inline-flex items-center justify-center rounded-full border border-foil-navy/20 px-3 py-1.5 text-xs font-semibold text-foil-navy transition-all hover:border-foil-accent-deep/50 hover:text-foil-accent-deep"
                   >
                     Browse →
                   </a>

@@ -107,7 +107,7 @@ export function CardTypeahead({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}
-          className="mt-2 w-full rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/60 outline-none transition focus:border-foil-vermillion focus:ring-2 focus:ring-foil-vermillion/30"
+          className="mt-2 w-full rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/60 outline-none transition focus:border-foil-accent-deep focus:ring-2 focus:ring-foil-accent-deep/30"
           autoFocus={autoFocus}
         />
       </label>
@@ -128,9 +128,9 @@ export function CardTypeahead({
                   disabled={!isCatalogued || isPicked}
                   className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-left transition ${
                     isPicked
-                      ? "border-foil-vermillion/40 bg-foil-vermillion/5 opacity-60"
+                      ? "border-foil-accent-deep/40 bg-foil-accent-deep/5 opacity-60"
                       : isCatalogued
-                        ? "border-foil-navy/10 bg-foil-cream hover:border-foil-vermillion/50 hover:bg-foil-vermillion/5"
+                        ? "border-foil-navy/10 bg-foil-cream hover:border-foil-accent-deep/50 hover:bg-foil-accent-deep/5"
                         : "border-foil-navy/5 bg-foil-cream/50 opacity-50 cursor-not-allowed"
                   }`}
                 >
@@ -149,7 +149,7 @@ export function CardTypeahead({
                     </p>
                   </div>
                   {isPicked ? (
-                    <span className="text-xs font-medium text-foil-vermillion">{pickedBadge}</span>
+                    <span className="text-xs font-medium text-foil-accent-deep">{pickedBadge}</span>
                   ) : isCatalogued ? (
                     <span className="text-xs font-medium text-foil-navy">{pickCta}</span>
                   ) : (

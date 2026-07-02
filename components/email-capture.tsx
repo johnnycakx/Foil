@@ -72,10 +72,10 @@ export function EmailCapture({
       <div
         className={
           isNight
-            ? "rounded-2xl border border-foil-vermillion/40 bg-foil-vermillion/10 p-5 text-sm text-foil-cream"
+            ? "rounded-2xl border border-foil-accent/40 bg-foil-accent/10 p-5 text-sm text-foil-cream"
             : isFooter
-              ? "rounded-2xl border border-foil-vermillion/40 bg-foil-vermillion/10 p-4 text-sm text-foil-navy"
-              : "mt-12 rounded-2xl border border-foil-vermillion/40 bg-foil-vermillion/10 p-5 text-sm text-foil-navy"
+              ? "rounded-2xl border border-foil-accent-deep/40 bg-foil-accent-deep/10 p-4 text-sm text-foil-navy"
+              : "mt-12 rounded-2xl border border-foil-accent-deep/40 bg-foil-accent-deep/10 p-5 text-sm text-foil-navy"
         }
         aria-live="polite"
       >
@@ -142,8 +142,8 @@ export function EmailCapture({
           disabled={isPending}
           className={
             isNight
-              ? "min-w-0 flex-1 rounded-xl border border-foil-cream/20 bg-foil-night px-4 py-3 text-base text-foil-cream placeholder:text-foil-cream/40 outline-none transition focus:border-foil-vermillion focus:ring-2 focus:ring-foil-vermillion/30 disabled:opacity-60"
-              : "min-w-0 flex-1 rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/70 outline-none transition focus:border-foil-vermillion focus:ring-2 focus:ring-foil-vermillion/30 disabled:opacity-60"
+              ? "min-w-0 flex-1 rounded-xl border border-foil-cream/20 bg-foil-night px-4 py-3 text-base text-foil-cream placeholder:text-foil-cream/40 outline-none transition focus:border-foil-accent focus:ring-2 focus:ring-foil-accent/30 disabled:opacity-60"
+              : "min-w-0 flex-1 rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/70 outline-none transition focus:border-foil-accent-deep focus:ring-2 focus:ring-foil-accent-deep/30 disabled:opacity-60"
           }
           aria-invalid={state?.ok === false}
           aria-describedby={state?.ok === false ? errorId : undefined}
@@ -153,8 +153,8 @@ export function EmailCapture({
           disabled={isPending}
           className={
             isNight
-              ? "rounded-xl bg-foil-cream px-5 py-3 text-base font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-vermillion/60 disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:ring-0"
-              : "rounded-xl bg-foil-navy px-5 py-3 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-vermillion hover:shadow-lg hover:shadow-foil-navy/30 disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:bg-foil-navy"
+              ? "rounded-xl bg-foil-cream px-5 py-3 text-base font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-accent/60 disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:ring-0"
+              : "rounded-xl bg-foil-navy px-5 py-3 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-accent-deep hover:shadow-lg hover:shadow-foil-navy/30 disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:bg-foil-navy"
           }
         >
           {isPending ? "Subscribing…" : "Subscribe"}
