@@ -2,45 +2,51 @@
 blogSlug: "how-to-grade-your-own-pokemon-card-before-sending-to-psa"
 blogTitle: "How to Grade Your Own Pokémon Card Before Sending to PSA"
 blogUrl: "https://foiltcg.com/blog/how-to-grade-your-own-pokemon-card-before-sending-to-psa"
-subject: "Pre-grade checklist: filter PSA 8s before you pay"
-previewText: "The $30 fee you keep wasting on PSA 8s"
-wordCount: 557
-sourceWordCount: 1666
-generatedAt: "2026-06-25T16:34:33.791Z"
+subject: "The $25 mistake that kills grading ROI"
+previewText: "Pre-grade this before your next PSA submission"
+wordCount: 584
+sourceWordCount: 1692
+generatedAt: "2026-07-02T16:12:02.285Z"
 beehiivStatus: "deferred-manual-paste"
 subjectCandidates:
-  - "Pre-grade checklist: filter PSA 8s before you pay"
-  - "The $30 fee you keep wasting on PSA 8s"
-  - "How to read a card before PSA does"
+  - "The $25 mistake that kills grading ROI"
+  - "Pre-grade this before your next PSA submission"
+  - "Why your PSA 8s keep coming back"
 topicRationale: |
   Selected from the **pokemon card condition guide** pillar (URL: /pokemon-card-condition-guide). This was rank #3 of 11 cluster posts in that pillar; 9 remain unshipped after this one. Tied at rank 3 with the **pokemon-card-value-calculator** pillar(s) — broke ties by alphabetical pillar slug (per pickNextCandidate). Long-tail keywords from the strategy doc: how to grade pokemon cards before psa..
 ---
 
 ## Newsletter body (paste-ready)
 
-**Subject:** Pre-grade checklist: filter PSA 8s before you pay
-**Preview text:** The $30 fee you keep wasting on PSA 8s
+**Subject:** The $25 mistake that kills grading ROI
+**Preview text:** Pre-grade this before your next PSA submission
 
 ---
 
-<p>A PSA 9 and a PSA 8 on the same Moonbreon is the difference between a $400 sale and a $180 sale. Most of those PSA 8s are filterable at your desk, before you print a shipping label.</p>
+<p>A Moonbreon PSA 10 clears $900 or more. A PSA 9 on the same card sells for roughly $300. The gap is almost always visible before the card hits a submission envelope, if you know the four things PSA graders are actually measuring.</p>
 
-<p>The new post walks a full pre-grade sequence using the same criteria PSA graders apply. Here's what's worth your attention before you click through.</p>
+<p>I published a full pre-grade checklist this week built around those four criteria: centering, surfaces, edges, and corners. It's narrow on purpose. The goal is to filter out cards that come back PSA 8 or lower before you spend a dollar on fees.</p>
 
-<h2>Start with three fields, not artwork</h2>
-<p>The most common mistake Foil's scan data surfaces: collectors read the card name, then guess the set code and collector number. Those three fields together are what PSA's intake process uses to verify authenticity and assign a pop report entry. The Garchomp ex SIR (Obsidian Flames, 231/197) and the standard art version have meaningfully different PSA 10 populations, and the market prices diverge by over $150 at the top grade. Guessing the set code costs you a $30 fee on the wrong card.</p>
+<h2>The fee math is unforgiving</h2>
 
-<h2>Centering is the easiest filter, and the one most people skip on the back</h2>
-<p>PSA grades front and back separately. The published threshold: <strong>55/45 or better for a PSA 10, 60/40 or better for a PSA 9</strong>. If the white border on one side is visibly more than half-again as wide as the opposite border, you're likely outside 60/40 and should pull the card. A cheap transparent ruler gives you exact millimeter readings in 30 seconds. Then flip it over and run the same check, because perfect front centering and a badly off-center back still costs you points.</p>
+<p>PSA's standard service sits at <strong>$25 per card</strong> as of 2026, before shipping and insurance. Submit 20 cards, get 15 PSA 8s back, and you've spent $375 on cards that may not move resale value at all. The PSA 8 premium over raw for most modern cards is thin; the post puts it at often under $15 per card once fees are factored in. On express tiers at $50 or $100 per card, a misread PSA 8 on a card you expected to grade 10 is a real, measurable loss.</p>
 
-<h2>The submission math has a hard floor</h2>
-<p>PSA's 2026 standard service is $30 per card for cards valued under $499, and the economy tier is gone. A raw Charizard ex SIR in NM/M condition sells around $90 on TCGplayer as of June 2026. The same card in a PSA 7 holder moves for roughly $110. That $20 premium barely covers the fee after eBay's cut. The math only works if the card has a realistic shot at PSA 9 or 10. For cards where raw value is under $15, grading rarely makes sense at current fee levels regardless of grade ceiling.</p>
+<p>Pre-grading is loss prevention. That's the whole frame.</p>
 
-<h2>Three piles, not two</h2>
-<p>After running the full checklist (three-field ID, centering front and back, corners under a single-point light, surfaces tilted toward the light, edges rotated slowly in sequence) you should have a <strong>Submit</strong> pile, a <strong>Hold</strong> pile, and a <strong>Skip</strong> pile. The Hold pile is where you check eBay completed sales filtered to PSA 8 for that specific card before deciding. If a PSA 8 sells for $55 and raw NM sells for $40, the $30 fee produces a $15 gain before shipping. That's not a submission; that's a raw listing with an honest condition note.</p>
+<h2>What the checklist actually covers</h2>
 
-<p>The pre-grade process is a rejection protocol. Its job is to protect your fees from going toward slabs that will sit in your collection at a loss.</p>
+<p><strong>Centering</strong> is the only objective criterion. You can measure it with a digital caliper. PSA 10 requires roughly 55/45 front and back. If your left border is 2.1mm and your right is 3.4mm, that's outside PSA 10 territory. Modern cards from Sword and Shield onward are held to tighter standards than vintage because manufacturing improved; don't apply the same discard threshold to a Base Set Charizard that you'd apply to a Destined Rivals SIR.</p>
 
-<p><a href="/blog/how-to-grade-your-own-pokemon-card-before-sending-to-psa">Read the full post →</a> for the complete seven-step sequence, including the corner grading table, surface inspection method for SIR and alt-art prints, and the documentation step you should run before any card goes into a submission bag.</p>
+<p><strong>Surfaces</strong> require a 10x loupe or USB microscope. Phone cameras miss fine print lines and micro-scratches on the holo layer. Tilt the card at 45 degrees under a direct desk lamp; scratches that are invisible face-on show immediately at an angle. One note that matters: never clean a card with any liquid or cloth before grading. PSA graders can detect it, and a cleaned card can receive a qualifier that permanently tanks resale value.</p>
 
-<p>If you want to check whether a card's PSA 9 and PSA 10 sold prices actually justify the fee before you commit to the submission, <a href="https://foiltcg.com/upload">Try Foil free →</a> and pull the graded price ladder alongside the raw market price in one scan.</p>
+<p><strong>Edges</strong> get ignored more than any other criterion. Run a fingernail lightly along all four edges, then check under the loupe at eye level. A single white chip on a dark border is a PSA 8 or lower. On lighter-bordered modern cards, chips are easy to miss without magnification, which is exactly why they keep showing up as surprise downgrades.</p>
+
+<p><strong>Corners</strong> are zero-tolerance for PSA 10: all four, front and back. The back corners are frequently worse because people handle the back carelessly. Fraying (visible white fibers at the corner tip) typically means PSA 9 or lower. Soft corners without fiber separation can grade PSA 9 or PSA 8 depending on severity. Neither passes for a 10.</p>
+
+<h2>The upstream error that breaks the whole pipeline</h2>
+
+<p>The most consistent mistake in a submission pipeline isn't a bad corner. It's identifying a card by artwork instead of by name, set code, and collector number. Two cards can share an identical illustration at different collector numbers with different population reports and different comps. If you're pricing the wrong variant, your entire submission decision is built on bad data.</p>
+
+<p>Confirm all three fields before you pull comps or choose a service tier. <a href="https://foiltcg.com/upload">Scan a card →</a> and Foil reads name, set code, and collector number directly off the image so you're pricing the exact listing, not an artwork-based guess.</p>
+
+<p>The full checklist, scoring sheet, and fee framework are in the post. <a href="/blog/how-to-grade-your-own-pokemon-card-before-sending-to-psa">Read the full post →</a></p>
