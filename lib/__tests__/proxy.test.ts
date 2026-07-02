@@ -350,3 +350,13 @@ test("eve vanity shortcuts /umbreon + /espeon are public and 302 to the UTM'd li
   assert.equal(e.status, 302);
   assert.equal(e.headers.get("location"), "https://foiltcg.com/lines/espeon?utm_source=x&utm_medium=eve");
 });
+
+test("bio link /x is public and 302s to the homepage with bio attribution (x-profile-banner addendum)", async () => {
+  // Lives in the @FoilTCG bio — same permanence stakes as the tweet links.
+  assert.equal(isPublicRoute("/x"), true);
+  assert.equal(isPublicRoute("/xyz"), false, "exact rule - no stem bleed");
+  const { GET } = await import("../../app/x/route.ts");
+  const r = GET(new Request("https://foiltcg.com/x"));
+  assert.equal(r.status, 302, "temporary 302, never 301/308");
+  assert.equal(r.headers.get("location"), "https://foiltcg.com/?utm_source=x&utm_medium=bio");
+});

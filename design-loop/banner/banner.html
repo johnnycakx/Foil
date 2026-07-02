@@ -1,0 +1,141 @@
+<!doctype html>
+<!-- @FoilTCG X profile banner (x-profile-banner, 2026-07-02). Composed from
+     the site's own ingredients: charcoal ground (#0d0d0e/#17171a), sakura
+     petals (the /lines notched-teardrop path, static scatter), the hero card
+     fan (self-hosted webp), the Shrikhand "Foil" wordmark exactly as the site
+     header renders it. Three 1500x500 variants + a safe-area verification
+     block (X avatar mock bottom-left + center-60% text rule). Screenshot
+     artifact only - never shipped. -->
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Shrikhand&family=Fraunces:opsz,wght@9..144,400;9..144,600&display=block" rel="stylesheet">
+<style>
+  :root {
+    --night: #0d0d0e;
+    --night-2: #17171a;
+    --cream: #f8f5f0;
+    --sakura: #d98aa0;
+  }
+  body { margin: 0; background: #333; }
+  .banner {
+    position: relative; width: 1500px; height: 500px; overflow: hidden;
+    background: var(--night); margin-bottom: 24px;
+  }
+  .wordmark {
+    font-family: "Shrikhand"; color: var(--cream); line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .tagline {
+    font-family: "Fraunces"; font-weight: 400; color: rgba(248,245,240,0.72);
+  }
+  .card {
+    position: absolute; border-radius: 14px; overflow: hidden;
+    box-shadow: 0 14px 44px -14px rgba(248,245,240,0.22);
+    outline: 1px solid rgba(248,245,240,0.14);
+  }
+  .card img { display: block; width: 100%; height: auto; }
+  .focal {
+    box-shadow: 0 18px 70px -12px rgba(217,138,160,0.4), 0 12px 40px -10px rgba(248,245,240,0.3);
+    outline: 1.5px solid rgba(217,138,160,0.45);
+  }
+  .petal { position: absolute; }
+  .petal.far { filter: blur(2px); }
+  .spill {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 50% 70% at 68% 40%, rgba(248,245,240,0.06), transparent 65%);
+  }
+  /* Safe-area debug overlays */
+  .avatar-mock {
+    position: absolute; left: 60px; bottom: -70px; width: 140px; height: 140px;
+    border-radius: 50%; background: rgba(255,255,255,0.25);
+    outline: 4px dashed rgba(255,255,255,0.6);
+  }
+  .center-60 {
+    position: absolute; top: 0; bottom: 0; left: 20%; right: 20%;
+    outline: 2px dashed rgba(217,138,160,0.5);
+  }
+</style>
+</head>
+<body>
+
+<!-- VARIANT A: wordmark left + tagline, fan bleeding off the right, petals. -->
+<div class="banner" id="a">
+  <div class="spill"></div>
+  <svg class="petal" style="left:340px; top:60px; opacity:.85;" width="20" height="20" viewBox="0 0 20 20"><path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0" transform="rotate(-24 10 10)"/></svg>
+  <svg class="petal" style="left:520px; top:330px; opacity:.7;" width="15" height="15" viewBox="0 0 20 20"><path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0" transform="rotate(44 10 10)"/></svg>
+  <svg class="petal far" style="left:120px; top:390px; opacity:.4;" width="11" height="11" viewBox="0 0 20 20"><path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0" transform="rotate(66 10 10)"/></svg>
+  <svg class="petal far" style="left:700px; top:80px; opacity:.45;" width="12" height="12" viewBox="0 0 20 20"><path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0" transform="rotate(-50 10 10)"/></svg>
+  <svg class="petal" style="left:640px; top:200px; opacity:.6;" width="13" height="13" viewBox="0 0 20 20"><path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0" transform="rotate(15 10 10)"/></svg>
+  <svg class="petal far" style="left:250px; top:150px; opacity:.35;" width="10" height="10" viewBox="0 0 20 20"><path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0" transform="rotate(30 10 10)"/></svg>
+  <!-- Fan bleeding off the right edge; Moonbreon focal w/ sakura rim. -->
+  <div class="card" style="right:388px; top:120px; width:180px; transform:rotate(-9deg); filter:brightness(.72) blur(.6px); z-index:1;"><img src="../../public/hero/swsh12-186.webp"></div>
+  <div class="card" style="right:265px; top:85px; width:200px; transform:rotate(-4deg); filter:brightness(.88); z-index:2;"><img src="../../public/hero/swsh35-74.webp"></div>
+  <div class="card focal" style="right:105px; top:45px; width:250px; transform:rotate(1deg); z-index:3;"><img src="../../public/hero/swsh7-215.webp"></div>
+  <div class="card" style="right:-40px; top:90px; width:205px; transform:rotate(7deg); filter:brightness(.85); z-index:2;"><img src="../../public/hero/swsh8-269.webp"></div>
+  <div class="card" style="right:-135px; top:140px; width:180px; transform:rotate(13deg); filter:brightness(.6) blur(1px); z-index:1;"><img src="../../public/hero/swsh11-186.webp"></div>
+  <div style="position:absolute; left:320px; top:158px; z-index:4;">
+    <div class="wordmark" style="font-size:120px;">Foil</div>
+    <div class="tagline" style="font-size:30px; margin-top:18px;">Real sold prices, not asking prices.</div>
+  </div>
+</div>
+
+<!-- VARIANT B: centered wordmark over a wide shallow fan, petals only. -->
+<div class="banner" id="b">
+  <div class="spill" style="background: radial-gradient(ellipse 55% 65% at 50% 100%, rgba(217,138,160,0.08), transparent 70%);"></div>
+  <svg class="petal" style="left:300px; top:70px; opacity:.8;" width="18" height="18" viewBox="0 0 20 20"><path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0" transform="rotate(-30 10 10)"/></svg>
+  <svg class="petal" style="left:1150px; top:100px; opacity:.75;" width="16" height="16" viewBox="0 0 20 20"><path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0" transform="rotate(52 10 10)"/></svg>
+  <svg class="petal far" style="left:480px; top:180px; opacity:.4;" width="11" height="11" viewBox="0 0 20 20"><path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0" transform="rotate(70 10 10)"/></svg>
+  <svg class="petal far" style="left:980px; top:60px; opacity:.42;" width="12" height="12" viewBox="0 0 20 20"><path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0" transform="rotate(-15 10 10)"/></svg>
+  <svg class="petal far" style="left:720px; top:40px; opacity:.35;" width="10" height="10" viewBox="0 0 20 20"><path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0" transform="rotate(10 10 10)"/></svg>
+  <svg class="petal" style="left:180px; top:280px; opacity:.55;" width="13" height="13" viewBox="0 0 20 20"><path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0" transform="rotate(38 10 10)"/></svg>
+  <svg class="petal" style="left:1300px; top:300px; opacity:.5;" width="14" height="14" viewBox="0 0 20 20"><path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0" transform="rotate(-60 10 10)"/></svg>
+  <!-- Wide shallow fan along the bottom, mostly submerged. -->
+  <div class="card" style="left:290px; bottom:-150px; width:190px; transform:rotate(-12deg); filter:brightness(.6) blur(.8px);"><img src="../../public/hero/base1-4.webp"></div>
+  <div class="card" style="left:460px; bottom:-120px; width:200px; transform:rotate(-7deg); filter:brightness(.8);"><img src="../../public/hero/swsh12-186.webp"></div>
+  <div class="card focal" style="left:640px; bottom:-95px; width:220px; transform:rotate(0deg);"><img src="../../public/hero/swsh7-215.webp"></div>
+  <div class="card" style="left:850px; bottom:-120px; width:200px; transform:rotate(7deg); filter:brightness(.8);"><img src="../../public/hero/swsh8-269.webp"></div>
+  <div class="card" style="left:1030px; bottom:-150px; width:190px; transform:rotate(12deg); filter:brightness(.6) blur(.8px);"><img src="../../public/hero/swsh7-218.webp"></div>
+  <div style="position:absolute; left:0; right:0; top:96px; text-align:center; z-index:4;">
+    <div class="wordmark" style="font-size:132px;">Foil</div>
+    <div class="tagline" style="font-size:28px; margin-top:14px;">Real sold prices, not asking prices.</div>
+  </div>
+</div>
+
+<!-- VARIANT C: Gen-1 IR binder strip + wordmark. -->
+<div class="banner" id="c">
+  <div class="spill" style="background: radial-gradient(ellipse 45% 60% at 72% 50%, rgba(248,245,240,0.05), transparent 65%);"></div>
+  <svg class="petal" style="left:250px; top:330px; opacity:.7;" width="15" height="15" viewBox="0 0 20 20"><path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0" transform="rotate(24 10 10)"/></svg>
+  <svg class="petal far" style="left:420px; top:90px; opacity:.4;" width="11" height="11" viewBox="0 0 20 20"><path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0" transform="rotate(-45 10 10)"/></svg>
+  <svg class="petal" style="left:150px; top:120px; opacity:.85;" width="18" height="18" viewBox="0 0 20 20"><path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0" transform="rotate(-20 10 10)"/></svg>
+  <!-- Binder strip: the SV-151 starter lines on a night-2 tray, right side. -->
+  <div style="position:absolute; right:56px; top:74px; background:var(--night-2); border-radius:24px; padding:22px; display:flex; gap:14px; outline:1px solid rgba(248,245,240,0.1); box-shadow:0 24px 60px -28px rgba(4,9,18,0.85);">
+    <img src="../../public/binder/sv3pt5-166.webp" style="width:96px; border-radius:8px; outline:1px solid rgba(248,245,240,0.12);">
+    <img src="../../public/binder/sv3pt5-167.webp" style="width:96px; border-radius:8px; outline:1px solid rgba(248,245,240,0.12);">
+    <img src="../../public/binder/sv3pt5-198.webp" style="width:96px; border-radius:8px; outline:1px solid rgba(248,245,240,0.12);">
+    <img src="../../public/binder/sv3pt5-168.webp" style="width:96px; border-radius:8px; outline:1px solid rgba(248,245,240,0.12);">
+    <img src="../../public/binder/sv3pt5-169.webp" style="width:96px; border-radius:8px; outline:1px solid rgba(248,245,240,0.12);">
+    <img src="../../public/binder/sv3pt5-199.webp" style="width:96px; border-radius:8px; outline:1px solid rgba(248,245,240,0.12);">
+  </div>
+  <div style="position:absolute; left:320px; top:150px; z-index:4;">
+    <div class="wordmark" style="font-size:110px;">Foil</div>
+    <div class="tagline" style="font-size:26px; margin-top:16px; max-width:520px;">Every card, tracked against what it actually sells for.</div>
+  </div>
+</div>
+
+<!-- SAFE-AREA CHECK: variant A + X avatar mock (bottom-left) + center-60% frame. -->
+<div class="banner" id="safe">
+  <div class="spill"></div>
+  <div class="card" style="right:265px; top:85px; width:200px; transform:rotate(-4deg); filter:brightness(.88); z-index:2;"><img src="../../public/hero/swsh35-74.webp"></div>
+  <div class="card focal" style="right:105px; top:45px; width:250px; transform:rotate(1deg); z-index:3;"><img src="../../public/hero/swsh7-215.webp"></div>
+  <div class="card" style="right:-40px; top:90px; width:205px; transform:rotate(7deg); filter:brightness(.85); z-index:2;"><img src="../../public/hero/swsh8-269.webp"></div>
+  <div style="position:absolute; left:320px; top:158px; z-index:4;">
+    <div class="wordmark" style="font-size:120px;">Foil</div>
+    <div class="tagline" style="font-size:30px; margin-top:18px;">Real sold prices, not asking prices.</div>
+  </div>
+  <div class="avatar-mock"></div>
+  <div class="center-60"></div>
+</div>
+
+</body>
+</html>

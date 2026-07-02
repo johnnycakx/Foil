@@ -8,6 +8,10 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-07-02 — x-profile-banner: three @FoilTCG banner variants composed from the site's own ingredients (charcoal ground, Shrikhand wordmark, static hanami, the Moonbreon fan / wide shallow fan / SV-151 binder strip) at exactly 1500×500 + 3000×1000 in `design-loop/gallery/banner/` (variant-a/b/c + @2x). Safe-area verified by eye against the mocked avatar + center-60% frame — iteration 2 shifted the text into the safe band after the check caught the wordmark outside it. ADDENDUM shipped: `/x` bio vanity 302 → `/?utm_source=x&utm_medium=bio` (eve-clean-links pattern: Response.redirect handler, PUBLIC_ROUTES exact entry, proxy guard pins status + Location, verified unauthenticated on dev). Gates: 1,430/0 · build clean. John picks a variant, uploads it in X settings, and sets the bio website to `foiltcg.com/x`; the redirect rides his next push.
+
+---
+
 ## 2026-07-02 (send-gate) — eve-clean-links: vanity 302s `/umbreon` + `/espeon` → the UTM'd line pages (clean tweet, attribution intact). Web-standard `Response.redirect` route handlers (302 by design — temporary, never cached-permanent); PUBLIC_ROUTES exact entries; proxy guard pins allowlist + status + exact Location (a dead tweet link is permanent public breakage). Verified 302 + query intact unauthenticated on dev. Gates: 1,429/0 · build clean. **FOLLOW-UP: re-point both paths to the clean /lines/* URLs as permanent shortcuts after the eve event.** Awaits John's push; post-deploy: `curl -I https://foiltcg.com/umbreon` then the X card validator through the redirect.
 
 ---

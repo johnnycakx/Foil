@@ -59,6 +59,9 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // killing them is permanent public breakage (guard-pinned in proxy.test.ts).
   { kind: "exact", path: "/umbreon" },
   { kind: "exact", path: "/espeon" },
+  // The @FoilTCG bio link (x-profile-banner addendum) — same live-link
+  // permanence stakes as the tweet shortcuts above.
+  { kind: "exact", path: "/x" },
 
   // Auth surface — login form (exact) + magic-link callback tree. /auth/*
   // MUST be public or the magic-link redirect loops back through the auth
