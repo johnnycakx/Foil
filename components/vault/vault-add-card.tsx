@@ -56,7 +56,7 @@ export function VaultAddCard({
             setMessage(null);
             setPicked(hit);
           }}
-          label="Search a card you're hunting"
+          label="Search a card you're chasing"
           pickedBadge="In your vault ✓"
           pickCta="+ Add"
         />

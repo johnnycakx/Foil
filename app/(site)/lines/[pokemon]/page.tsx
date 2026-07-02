@@ -155,7 +155,7 @@ export default async function LinePage({ params }: { params: Promise<{ pokemon: 
 
         {/* Persistent bottom CTA. */}
         <div className="mt-12 rounded-3xl border border-foil-sakura/30 bg-foil-sakura-wash p-8 text-center">
-          <p className="font-display text-2xl font-semibold text-foil-navy">Hunting a specific one?</p>
+          <p className="font-display text-2xl font-semibold text-foil-navy">Chasing a card you don&apos;t see?</p>
           <p className="mx-auto mt-2 max-w-xl text-base text-foil-slate">
             Foil watches eBay every hour and emails you the moment any card hits a price worth buying —
             {config.pokemon} or anything else. Free, no account.

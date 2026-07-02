@@ -86,7 +86,7 @@ export default function MachinesPage() {
         <p className="mt-5 max-w-prose text-base leading-relaxed text-foil-slate sm:text-lg">
           Foil is putting Pokémon TCG vending machines into real locations: stocked with
           sealed product, restocked on a schedule, and priced for the convenience of
-          buying on the spot. The Foil site is built for patient price-hunting; the
+          buying on the spot. The Foil site is built for patient price-chasing; the
           machines are built for right now. Two different products, and we keep them
           honest about each other.
         </p>

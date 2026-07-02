@@ -74,7 +74,7 @@ export default async function VaultRecoveryPage({
       )}
 
       <p className="mt-6 text-base text-foil-cream/70">
-        Nothing tracked yet? <a href="/start" className="font-medium text-foil-cream underline decoration-foil-cream/25 underline-offset-4 transition hover:text-foil-accent hover:decoration-foil-accent">Start your vault</a> — search a card you&apos;re hunting.
+        Nothing tracked yet? <a href="/start" className="font-medium text-foil-cream underline decoration-foil-cream/25 underline-offset-4 transition hover:text-foil-accent hover:decoration-foil-accent">Start your vault</a> — search a card you&apos;re chasing.
       </p>
     </main>
   );

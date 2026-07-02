@@ -10,7 +10,7 @@ import { SealMark } from "@/components/brand/logo";
 
 const SITE_TITLE = "Foil: the best price on any Pokémon card";
 const SITE_DESCRIPTION =
-  "Tell Foil the cards you're hunting. We watch the market and email you the moment one drops to your price — judged against what cards really sell for, not asking prices. Free.";
+  "Tell Foil the cards you're chasing. We watch the market and email you the moment one drops to your price — judged against what cards really sell for, not asking prices. Free.";
 
 export const metadata: Metadata = {
   title: SITE_TITLE,
@@ -194,7 +194,7 @@ function Hero() {
         </p>
 
         <h1 className="font-display mx-auto mt-6 max-w-3xl text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.015em] text-foil-cream [text-wrap:balance] sm:text-6xl md:text-7xl">
-          Tell us the cards you&apos;re hunting.
+          Tell us the cards you&apos;re chasing.
         </h1>
 
         <p className="mx-auto mt-6 max-w-xl text-xl text-foil-cream/70 sm:text-2xl sm:leading-snug">
@@ -411,10 +411,10 @@ function PullLoop() {
     <section className="border-t border-foil-cream/10">
       <div className="reveal-rise mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
         <h2 className="font-display text-4xl font-semibold tracking-[-0.01em] text-foil-cream sm:text-5xl">
-          How the hunt works
+          How the chase works
         </h2>
         <p className="mt-3 max-w-2xl text-lg text-foil-cream/60">
-          One hunt, start to finish — here&apos;s Moonbreon&apos;s.
+          One chase, start to finish — here&apos;s Moonbreon&apos;s.
         </p>
         <ol className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s) => (
@@ -520,7 +520,7 @@ function NewsletterBand() {
           source="homepage_hero"
           variant="inline"
           tone="night"
-          headline="Not hunting one card? Get the weekly drop."
+          headline="Not chasing one card? Get the weekly drop."
           subtext="One email a week: the best live card deals right now, the cards on the move, and one sharp valuation note. No spam."
         />
       </div>

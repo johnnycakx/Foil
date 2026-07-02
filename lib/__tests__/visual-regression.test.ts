@@ -159,9 +159,9 @@ test("Homepage: H1 is a single-color ink headline with no inline color split (ov
 
 test("Homepage: pull-model hero — 'Start your vault' → /start is the primary CTA; newsletter is the demoted secondary ask (fable-design-overhaul §1)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // The hero promise is PULL (tell us what you hunt), never push ("stop
+  // The hero promise is PULL (tell us what you chase), never push ("stop
   // guessing what your cards are worth"). One primary action: /start.
-  assert.match(src, /Tell us the cards you&apos;re hunting\./, "the pull-model H1 copy must be present");
+  assert.match(src, /Tell us the cards you&apos;re chasing\./, "the pull-model H1 copy must be present");
   assert.doesNotMatch(src, /Stop guessing what your cards are worth/, "the push-model headline must be gone");
   assert.match(src, /href="\/start\?src=home-hero"/, "the primary CTA must link /start with src attribution");
   assert.match(src, /Start your vault/, "the primary CTA copy is 'Start your vault'");
