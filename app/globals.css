@@ -33,6 +33,24 @@
      tint for panels. */
   --color-foil-sakura: #d98aa0;
   --color-foil-sakura-wash: #f6e6ea;
+  /* Night register (overnight-design-loop, 2026-07-02) — the dark direction's
+     surface tokens. `night` is a WARM near-black derived from foil-navy (never
+     #000, honoring the No-Pure-Black rule's spirit); `night-2` is the raised
+     panel tone. Homepage-scoped tonight via data-tone="night"; other surfaces
+     keep cream until the direction is won. */
+  --color-foil-night: #0a1322;
+  --color-foil-night-2: #101d31;
+  /* Vermillion — the hanko INK only (ADR-094 seal geometry, favicon). John
+     rejected it as the UI accent (design-loop-round2 §2); interactive accents
+     use the --color-foil-accent pair below. Do not use vermillion for new UI. */
+  --color-foil-vermillion: #d85a30;
+  /* THE accent pair (round-2 bake-off winner slot). `accent` is tuned for the
+     night surface; `accent-deep` is its AA-safe sibling for cream surfaces
+     (focus rings, eyebrows, hover fills on light backgrounds). Bake-off legs
+     swap ONLY these two values: (a) moon-glow teal drawn from Moonbreon's own
+     moonlit palette · (b) holo-iridescent · (c) sakura. */
+  --color-foil-accent: #6fd8c5;
+  --color-foil-accent-deep: #0e7c6b;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   /* Display font for hero headlines + brand surfaces. Fraunces (variable
@@ -43,6 +61,35 @@
      next/font `--font-wordmark` var; this exposes the `font-wordmark` utility
      used by the FoilTCG lockup in components/brand/logo.tsx. */
   --font-wordmark: var(--font-wordmark);
+  /* Bubble wordmark cut — Shrikhand (design-loop-round2: John's balloon-letter
+     identity verdict; closest OFL match to the personal-use-only Skylens
+     Italic taste ref). Rendered as live text via Logo face="bubble"; the
+     carved Bricolage cut stays available for OG/favicon surfaces. */
+  --font-wordmark-bubble: var(--font-wordmark-bubble);
+}
+
+/*
+ * Chrome tone variables (overnight-design-loop). The shared header/footer read
+ * these instead of hardcoded cream/navy classes so a single page can flip the
+ * chrome dark without forking the layout. A page opts in by rendering
+ * data-tone="night" on its top-level element; body:has() re-tones the chrome
+ * and the page background in one place. Cream is the default everywhere else.
+ */
+:root {
+  --chrome-bg: rgba(248, 245, 240, 0.9);
+  --chrome-ink: #0f1e3a;
+  --chrome-muted: #4a5568;
+  --chrome-border: rgba(15, 30, 58, 0.1);
+  --chrome-surface: #f8f5f0;
+}
+
+body:has([data-tone="night"]) {
+  --chrome-bg: rgba(10, 19, 34, 0.88);
+  --chrome-ink: #f8f5f0;
+  --chrome-muted: rgba(248, 245, 240, 0.66);
+  --chrome-border: rgba(248, 245, 240, 0.12);
+  --chrome-surface: #0a1322;
+  background: #0a1322;
 }
 
 body {
@@ -105,19 +152,106 @@ body {
  * component, so prefers-reduced-motion users get static petals, never a
  * moving one. Transform + opacity only (compositor-friendly).
  */
+/*
+ * Holo-tilt (overnight-design-loop, the Tier-2 signature from
+ * fable-design-overhaul): pointer-tracked 3D tilt + a foil-sheen highlight that
+ * follows the cursor across the card art — the pokemon-cards-css technique
+ * adapted in-house (layered gradient + blend mode driven by --hx/--hy custom
+ * properties set from a pointermove handler). Transform/opacity only; the
+ * component skips its listeners entirely under prefers-reduced-motion, and the
+ * global reduced-motion reset above collapses the transitions as a second net.
+ * A site about foil cards where the cards actually foil.
+ */
+.holo-card {
+  transform: perspective(900px)
+    rotateY(calc((var(--hx, 0.5) - 0.5) * 16deg))
+    rotateX(calc((0.5 - var(--hy, 0.5)) * 12deg));
+  transition: transform 0.18s ease-out;
+  will-change: transform;
+  transform-style: preserve-3d;
+}
+.holo-sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at calc(var(--hx, 0.5) * 100%) calc(var(--hy, 0.5) * 100%),
+      rgba(255, 253, 245, 0.5),
+      rgba(255, 253, 245, 0.12) 32%,
+      transparent 62%
+    ),
+    linear-gradient(
+      calc(var(--hx, 0.5) * 140deg + 20deg),
+      transparent 30%,
+      rgba(216, 90, 48, 0.14) 44%,
+      rgba(160, 200, 255, 0.13) 52%,
+      transparent 70%
+    );
+  mix-blend-mode: overlay;
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+}
+.holo-card:hover .holo-sheen,
+.holo-card:active .holo-sheen {
+  opacity: 1;
+}
+
+/*
+ * Scroll-driven section reveals (Tier-1 ambience, CSS-only): content rises and
+ * settles as it enters the viewport via the native animation-timeline API.
+ * Progressive enhancement — browsers without support render everything static,
+ * and reduced-motion users are excluded by the media query, not by the global
+ * reset alone (an animation-timeline animation holds `from` state if only its
+ * duration is zeroed, which would blank the section). Never applied above the
+ * fold: the hero paints instantly.
+ */
+@keyframes reveal-rise {
+  from {
+    opacity: 0.001;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal-rise {
+      animation: reveal-rise both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+  }
+}
+
+/* Sakura drift (ADR-095, reshaped design-round3-fixes §3): transform-only,
+   GPU-cheap. Fall is viewport-relative (the old own-box % barely moved a 10px
+   petal — the "screen dust" bug); sway/rotation lives on a nested layer so the
+   two compose. Both are applied ONLY via motion-safe: utilities. */
 @keyframes sakura-fall {
   0% {
-    transform: translateY(-8%) translateX(0) rotate(0deg);
+    transform: translateY(-6vh);
     opacity: 0;
   }
-  12% {
-    opacity: 0.85;
+  10% {
+    opacity: 1;
   }
-  88% {
-    opacity: 0.85;
+  68% {
+    opacity: 1;
   }
   100% {
-    transform: translateY(108%) translateX(24px) rotate(220deg);
+    transform: translateY(56vh);
     opacity: 0;
+  }
+}
+
+@keyframes sakura-sway {
+  from {
+    transform: translateX(-7px) rotate(-16deg);
+  }
+  to {
+    transform: translateX(9px) rotate(14deg);
   }
 }

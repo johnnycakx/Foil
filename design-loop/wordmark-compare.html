@@ -1,0 +1,53 @@
+<!doctype html>
+<!-- Wordmark exploration (John's brief: "Foil" in a cloudy/bubbly rounded display
+     face, white/very light cream). Three self-hostable Google Fonts candidates
+     judged at hero size AND nav size, on the dark night surface and on cream.
+     Screenshot-only artifact — never shipped. -->
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Fredoka:wght@500;600;700&family=Comfortaa:wght@500;600;700&display=block" rel="stylesheet">
+<style>
+  body { margin: 0; font-family: system-ui; display: grid; grid-template-columns: 1fr 1fr; }
+  .panel { padding: 48px 56px; }
+  .night { background: #0a1226; color: #f8f5f0; }
+  .cream { background: #f8f5f0; color: #0f1e3a; }
+  .label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.5; margin: 28px 0 6px; }
+  .hero { font-size: 96px; line-height: 1; margin: 0; }
+  .nav { font-size: 20px; display: flex; align-items: center; gap: 8px; }
+  .seal { width: 22px; height: 22px; border-radius: 5px; background: #D85A30; display: inline-block; }
+  .baloo { font-family: "Baloo 2"; font-weight: 600; }
+  .baloo-b { font-family: "Baloo 2"; font-weight: 700; }
+  .fredoka { font-family: "Fredoka"; font-weight: 600; }
+  .comfortaa { font-family: "Comfortaa"; font-weight: 700; }
+</style>
+</head>
+<body>
+  <div class="panel night">
+    <div class="label">Baloo 2 · 600 / hero + nav</div>
+    <p class="hero baloo">Foil</p>
+    <div class="nav baloo"><span class="seal"></span>Foil</div>
+    <div class="label">Baloo 2 · 700</div>
+    <p class="hero baloo-b">Foil</p>
+    <div class="label">Fredoka · 600</div>
+    <p class="hero fredoka">Foil</p>
+    <div class="nav fredoka"><span class="seal"></span>Foil</div>
+    <div class="label">Comfortaa · 700</div>
+    <p class="hero comfortaa">Foil</p>
+    <div class="nav comfortaa"><span class="seal"></span>Foil</div>
+  </div>
+  <div class="panel cream">
+    <div class="label">Baloo 2 · 600 / hero + nav</div>
+    <p class="hero baloo">Foil</p>
+    <div class="nav baloo"><span class="seal"></span>Foil</div>
+    <div class="label">Baloo 2 · 700</div>
+    <p class="hero baloo-b">Foil</p>
+    <div class="label">Fredoka · 600</div>
+    <p class="hero fredoka">Foil</p>
+    <div class="nav fredoka"><span class="seal"></span>Foil</div>
+    <div class="label">Comfortaa · 700</div>
+    <p class="hero comfortaa">Foil</p>
+    <div class="nav comfortaa"><span class="seal"></span>Foil</div>
+  </div>
+</body>
+</html>

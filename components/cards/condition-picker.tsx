@@ -10,8 +10,9 @@
 // (router.replace) that preserves the email the user has already typed.
 //
 // Two groups: Raw (Any / NM / LP / MP / HP / DMG) and Graded (Any / PSA / BGS /
-// CGC ladders). Pills follow DESIGN.md: cream/navy at rest, a gold ring + gold
-// tint when selected, coral never resting. Rendered as a radiogroup for a11y.
+// CGC ladders). Pills follow the night register (design-loop-round2 §3): matte
+// night surfaces at rest, an accent ring + accent tint when selected, coral
+// never resting. Rendered as a radiogroup for a11y.
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
@@ -39,8 +40,8 @@ function Pill({
       onClick={() => onSelect(token)}
       className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
         selected
-          ? "border-foil-gold/50 bg-foil-gold/10 text-foil-navy ring-1 ring-foil-gold/30"
-          : "border-foil-navy/15 bg-foil-cream text-foil-slate hover:border-foil-gold/40 hover:bg-foil-gold/5 hover:text-foil-navy"
+          ? "border-foil-accent/50 bg-foil-accent/10 text-foil-cream ring-1 ring-foil-accent/30"
+          : "border-foil-cream/15 bg-foil-night text-foil-cream/60 hover:border-foil-accent/40 hover:bg-foil-accent/5 hover:text-foil-cream"
       }`}
     >
       {CONDITION_LABELS[token as keyof typeof CONDITION_LABELS] ?? token}
@@ -71,10 +72,10 @@ export function ConditionPicker() {
 
   return (
     <div className="mt-6">
-      <p className="text-xs uppercase tracking-wide text-foil-slate">Alert condition</p>
+      <p className="text-xs uppercase tracking-wide text-foil-cream/60">Alert condition</p>
       <div className="mt-2 space-y-3">
         <div role="radiogroup" aria-label="Raw condition">
-          <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-foil-slate/80">Raw</p>
+          <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-foil-cream/60">Raw</p>
           <div className="flex flex-wrap gap-2">
             {RAW_CONDITION_TOKENS.map((t) => (
               <Pill key={t} token={t} selected={selected === t} onSelect={select} />
@@ -82,8 +83,8 @@ export function ConditionPicker() {
           </div>
         </div>
         <details className="group" open>
-          <summary className="mb-1.5 cursor-pointer list-none text-[11px] font-medium uppercase tracking-wider text-foil-slate/80 marker:content-none">
-            Graded <span className="text-foil-slate/50 group-open:hidden">(tap to expand)</span>
+          <summary className="mb-1.5 cursor-pointer list-none text-[11px] font-medium uppercase tracking-wider text-foil-cream/60 marker:content-none">
+            Graded <span className="text-foil-cream/40 group-open:hidden">(tap to expand)</span>
           </summary>
           <div role="radiogroup" aria-label="Graded condition" className="flex flex-wrap gap-2">
             {GRADED_CONDITION_TOKENS.map((t) => (
@@ -92,7 +93,7 @@ export function ConditionPicker() {
           </div>
         </details>
       </div>
-      <p className="mt-2 text-[11px] text-foil-slate">Used for your price alert below.</p>
+      <p className="mt-2 text-[11px] text-foil-cream/60">Used for your price alert below.</p>
     </div>
   );
 }

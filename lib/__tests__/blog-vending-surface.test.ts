@@ -81,6 +81,23 @@ test("getVendingPosts returns exactly the vending posts (deal-finder excluded)",
 test("the dormant deal-finder posts still exist in-tree (preserved, not deleted)", () => {
   const all = new Set(getAllPosts().map((p) => p.slug));
   for (const slug of DEAL_FINDER_SLUGS) {
+    if (slug === "sv3a-raging-surf-every-chase-card-by-price") {
+      // UNPUBLISHED (design-loop-round2 §5): the sv3a post carries
+      // audit-confirmed fabrications (wrong set size, invented rarities/cards)
+      // and was pulled from index + sitemap + route via the `_` filename
+      // prefix (isPostFile excludes it). The FILE is preserved in-tree for
+      // content-trust-hotfix to regenerate from; it must never surface again
+      // until that goal rewrites it.
+      assert.ok(
+        !all.has(slug),
+        `${slug} is unpublished and must NOT surface via getAllPosts`,
+      );
+      assert.ok(
+        fs.existsSync(path.join(POSTS_DIR, `_unpublished-${slug}.mdx`)),
+        `the unpublished sv3a source must remain in-tree as _unpublished-${slug}.mdx`,
+      );
+      continue;
+    }
     assert.ok(all.has(slug), `${slug} must remain in-tree (dormant, not deleted)`);
   }
 });

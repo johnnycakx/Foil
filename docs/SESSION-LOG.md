@@ -8,6 +8,50 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-07-02 (round 3) — make the dark gallery earn its name: the six execution-quality fixes before the eve send (branch only, John merges)
+
+**Goal: execute `docs/goals/design-round3-fixes.md` — bounded final round on `design/overnight-loop-2026-07-02`; ratified decisions (Shrikhand, teal, all-dark chrome, cream /lines) untouched.** (Claude Code.)
+
+- **P0:** branch/tree/dev-server confirmed; none of the six fixes were de facto done except fix 2's card-page half (SoldHistoryChart already draws real sold history — verified, skipped).
+- **iter-16 [fixes 1/4/5]:** the hero fan became a REAL lit fan — depth slots (Moonbreon focal ~1.35x + teal rim-glow, neighbors step down/rotate/blur toward the edges, z-stacked), a VISIBLE floor (contact shadow + reflection pool), edge-fade mask instead of hard crops; the dead black band after the founder note killed (paddings tightened); wordmark to pure lettering at 24px, identical both tones. The flagship miss is fixed — `gallery/iter-16/home-desktop-fold.png`.
+- **iter-17 [fix 2]:** the sold-vs-ask spread is DRAWN — a two-point dumbbell per /deals mover row (cream anchor = usual price, teal dot = this week, distance = the discount; real aggregates, never a fake curve), a magnitude bar on below-sold rows (ADR-054: the ask is never republished, so the bar draws only the %), 64px thumbs with dark shadows, stock white pills → teal ghost buttons.
+- **iter-18 [fixes 2-lines/3/6]:** /lines (eve's CREAM surface): real SVG petals in two depth layers (near sharp / far blurred), density concentrated at the hero + dedication, faint sakura wash, motion-safe drift with static-scatter fallback; sold/buy pair gets a designed spread chip + the pending line becomes a proper chip (dot + label, no more broken-italic); printings grouped into labeled eras; lineup strip unified + edge-faded; the blank-image slots in the round-2 variant shot verified (see iteration log for the artifact-vs-real verdict).
+- **Gates:** tsc clean · full suite green per commit · `npm run build` ✓ (208/208 pages) · design:lint clean on touched surfaces · /security-review per round-1 posture (styling-only diff; no new data paths).
+- **No push — John walks /, /deals, /lines/umbreon, then merges.**
+
+---
+
+## 2026-07-02 (overnight, round 2) — John's 1am verdicts executed: the dark gallery goes site-wide, Shrikhand wordmark, teal accent bake-off, vault designed, sv3a unpublished (branch only, John merges)
+
+**Goal: execute `docs/goals/design-loop-round2.md` — John's live evaluator pass on round 1, same loop/branch/boundaries.** (Claude Code, unattended; continues the entry below.)
+
+- **Iters 09–15 on `design/overnight-loop-2026-07-02`** (round-1 iters 01–08 below). Full trail: `design-loop/ITERATION-LOG.md` + `design-loop/SUMMARY-ROUND2.md` (the morning decision list).
+- **iter-09 "the dark gallery" (8.59/8.3):** Linear restraint (glows pulled back — the cards glow, the page doesn't), type scale cranked (marketing body 18–20px, hero sub 24px), **Shrikhand** wordmark won the ten-face bubbly bake-off (closest OFL match to John's personal-use-only Skylens Italic ref — license note in SUMMARY) → wordmark-FIRST chrome, hanko demoted to favicon + hero-pill glyph; nav renamed **"Your vault"**.
+- **iters 10–12 accent bake-off, vermillion OUT:** token pair (accent/accent-deep, AA on night + cream) swapped per leg. **Moon-glow teal (#6fd8c5) ratified (8.63)** — sampled from Moonbreon's own moonlit art; sakura 8.45 (warm but detached from the cool hero art); holo-iridescent 8.2 (conceptually perfect, visually vanishes at restraint scale). All three galleried for John's ratification.
+- **iters 13–14 dark (almost) everywhere:** /deals + /blog index + **/cards/[slug]** (styling ONLY — zero logic/JSON-LD/affiliate changes; guards repinned with citations; hydrated + unhydrated tiers verified HTTP 200 with `data-tone="night"`). **/lines kept cream for eve** — a night-hanami variant PREVIEW (petals + art on dark, directional-only) at `design-loop/gallery/variants/lines-night-hanami.png`; the cream-header-over-dark-body chrome variation John asked for is at `variants/home-cream-header-fold.png` vs `home-dark-chrome-fold.png`.
+- **iter-13 content hygiene:** blog index leads with collector posts, vending posts under a compact "For businesses" section (pages + SEO live); **sv3a Raging Surf unpublished** (`_unpublished-` prefix → out of index/sitemap/route, preserved in-tree for content-trust-hotfix; blog-vending-surface guard repinned).
+- **iter-15 the vault:** /w night register + invitation empty state (subagent execution, gated).
+- **Gates:** tsc clean + full suite green per commit (one EXTERNAL transient: Anthropic `Grammar compilation timed out` on the live vision test — reran 3/0 green, unrelated to the diff) · card-page tier verification live · variants shot-and-reverted cleanly.
+- **John — morning decision list (SUMMARY-ROUND2):** wordmark face ratify · hanko fate · teal ratify · all-dark vs cream-header chrome · /lines tone for eve. **No push.**
+
+---
+
+## 2026-07-02 (overnight) — the design loop: "the lit room" homepage wins the DIVERGE face-off, hits the bar, /start + /deals follow through (branch only, John merges)
+
+**Goal: execute `docs/goals/overnight-design-loop.md` unattended — Anthropic's evaluator-optimizer loop (generate → hostile-evaluate from screenshots → revise) on the homepage-first design overhaul, DIVERGE (two real art directions) → CONVERGE (polish the rubric winner), until avg ≥ 8.5 / min ≥ 7.5 ×2 or the budget caps.** ([ADR-096](DECISIONS.md#adr-096--the-night-register-homepage-as-the-lit-room-dark-direction-wins-the-diverge-face-off-chrome-tone-variables-vermillion-succession-begins); Claude Code, overnight.)
+
+- **ALL work on `design/overnight-loop-2026-07-02` — 8 `design:` commits, NO push, NO deploy, main untouched.** The loop's full memory is on-disk: `design-loop/{RESEARCH,RUBRIC,ITERATION-LOG,SUMMARY}.md` + per-iteration screenshot galleries (`gallery/iter-00-baseline` … `iter-08`) + a puppeteer harness (`shoot.mjs`, reduced-motion-emulated so stills capture the static-truth fallback).
+- **DIVERGE (iters 1–2):** dark "lit room" (night register, cards as light sources) 8.06 vs an honest evolved-warm control ("dealer's daylight table", navy binder inset) 7.81 — **dark won on exactly the ICP + card-spotlight dimensions John's thesis predicted** (holo art visibly dims on cream; galleries prove it side-by-side). Warm stays recoverable at `efc26ac`.
+- **CONVERGE (iters 3–6):** Moonbreon focal + per-section light logic (8.29) → steps as miniature product artifacts telling one internally-consistent Moonbreon hunt (8.41) → the room gets a floor (8.56, bar hit) → sustain pass (8.59) — **bar held ×2, homepage loop terminated on quality.** Holo-tilt verified in a real browser (tilt/sheen/reset OK; touch never tilts; reduced-motion fully static).
+- **What the homepage now is:** pull-model hero ("Tell us the cards you're hunting." · **Start your vault** → `/start?src=home-hero`), arced holo-tilt grail fan with light spill + floor pool, vault binder proof shot, sample-alert email artifact, newsletter demoted to the one closing ask, tiled seal-watermark wallpaper DEAD and guard-forbidden, "Your watchlist" first-class in nav (Host-a-machine footer-only), Baloo 2 soft wordmark in chrome, night register scoped via `data-tone="night"` + `--chrome-*` variables (no layout fork).
+- **Follow-through (iters 7–8):** /start gained three one-tap grail chips with real art (verified end-to-end via puppeteer), plain-words blank-target copy, success-state /deals retention hook, `<noscript>` fallback (8.29); /deals lost the ticker jargon ("Near Mint copies: ~$16.71 this week, usually $19.19"), gained the pull line ("Want them for your cards? Start your vault →", `src=deals`) (8.21). **Vermillion succeeded gold on every touched surface**; gold survives only on untouched surfaces pending their own pass.
+- **Deliberately NOT done** (SUMMARY.md has the full list): /lines + /cards restyles (load-bearing tiered-render surface; night-register extension is John's call — captured in IDEAS), brand-asset re-rolls, emails, GSAP (never needed — native CSS scroll-timeline carried it).
+- **Gates:** `npx tsc --noEmit` clean · `npm test` **1,418 / 0 fail** on every committed iteration (guards updated deliberately: pull-model H1 pin, wallpaper ban, night mechanism, HoloCard eager pattern, reveal/reduced-motion discipline) · `npm run design:lint` findings only on pre-existing untouched files · **/security-review: no credible findings** (visual-only diff; one informational: the founder's personal Gmail now also appears in the /start noscript mailto — consistent with the existing form-error copy, flagged for awareness, not blocking).
+- **DESIGN.md §7a + frontmatter tokens + `.impeccable/design.json` ramps updated to the shipped state; ADR-096; IDEAS +2** (night-register extension, holo-tilt on card pages as a shareable toy). ENV-VARS unchanged.
+- **John — morning path (full commands in `design-loop/SUMMARY.md`):** review branch → compare `gallery/iter-06` (dark winner) vs `gallery/iter-02` (warm control) vs `iter-00-baseline` → merge → post-merge: OG re-verify, live walk (hover the fan, tap a grail chip on your phone), `CONTENT_VERIFY_BASE_URL=https://foiltcg.com npm test`.
+
+---
+
 ## 2026-07-02 — the line tracker: /lines/[pokemon] shareable pages (umbreon + espeon, built for @possiblyeve)
 
 **Goal: execute `docs/goals/eve-line-tracker.md` — a bespoke, beautiful page tracking every Umbreon + Espeon printing with quality sold data, dedicated to @possiblyeve (~50K), built as a REUSABLE config-driven surface (`/lines/[pokemon]`), not a one-off. All three hard prereqs (ADR-091 alert rebuild, ADR-092 hydration, ADR-094 owned brand mark) already landed.** ([ADR-095](DECISIONS.md#adr-095--the-line-tracker-lines pokemon-shareable-pages-sakura-register-accent-null-over-guess-sold-data-the-gift-economy-acquisition-play); Claude Code.)

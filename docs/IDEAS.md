@@ -20,6 +20,32 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 
 ---
 date: 2026-07-02
+category: ux
+status: captured
+---
+## Extend the night register beyond the homepage (one attribute per page)
+
+The overnight design loop shipped the chrome-tone mechanism (`data-tone="night"` + `--chrome-*` vars, ADR-096): any page can join the dark "lit room" register with one attribute. Candidates in order of leverage: /lines/[pokemon] (holo art on dark + sakura could be spectacular for the eve audience), /cards/[slug] hero block (the card IS the light source thesis, per-card), /deals (screenshot-share surface). Counter-argument: the marketing-dark / task-light split is a classic pattern and form legibility is safer on cream. Needs John's eyes on the merged homepage first.
+
+**Context:** overnight-design-loop, 2026-07-02 — the DIVERGE face-off proved holo art dims on cream (design-loop/gallery iter-01 vs iter-02); the mechanism was built page-scoped on purpose.
+
+---
+
+---
+date: 2026-07-02
+category: growth
+status: captured
+---
+## The holo-tilt as a shareable toy (per-card page + OG loop)
+
+HoloCard (the pointer-tracked foil tilt) is currently hero-only. On /cards/[slug] it would make every card page's hero art a small toy collectors play with and screen-record — "the site where the cards actually foil" is an X-clip waiting to happen (pairs with the eve line-tracker reveal). Cheap: the component is built, reduced-motion-safe, and transform-only; the card-page hero image is one wrap away.
+
+**Context:** overnight-design-loop built the component for the homepage fan; the card-page application was deliberately left for a scoped follow-up (tiered-render surface too load-bearing for unattended overnight edits).
+
+---
+
+---
+date: 2026-07-02
 category: monetization
 status: captured
 ---

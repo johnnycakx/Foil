@@ -33,9 +33,9 @@ export function MoversBoard({ movers }: { movers: MarketMovers }) {
 
   if (down.length === 0 && up.length === 0) {
     return (
-      <div className="rounded-2xl border border-foil-navy/10 bg-foil-cream p-8 text-center shadow-sm shadow-foil-navy/5">
-        <p className="text-foil-navy">The market is quiet this week.</p>
-        <p className="mt-2 text-sm text-foil-slate">
+      <div className="rounded-2xl border border-foil-cream/12 bg-foil-night-2 p-8 text-center shadow-sm shadow-foil-navy/5">
+        <p className="text-foil-cream">The market is quiet this week.</p>
+        <p className="mt-2 text-sm text-foil-cream/60">
           We only flag a card when its recent average has moved enough to matter. Nothing cleared the bar
           right now. Check back tomorrow, or get the weekly digest by email below.
         </p>
@@ -46,8 +46,8 @@ export function MoversBoard({ movers }: { movers: MarketMovers }) {
   return (
     <div className="space-y-8">
       {down.length > 0 ? (
-        <div className="overflow-hidden rounded-2xl border border-foil-navy/10 bg-foil-cream shadow-sm shadow-foil-navy/5">
-          <ol className="divide-y divide-foil-navy/10">
+        <div className="overflow-hidden rounded-2xl border border-foil-cream/12 bg-foil-night-2">
+          <ol className="divide-y divide-foil-cream/10">
             {down.map((m) => (
               <li
                 key={m.cardSlug}
@@ -56,43 +56,65 @@ export function MoversBoard({ movers }: { movers: MarketMovers }) {
                 {/* Card identity */}
                 <Link
                   href={`/cards/${m.cardSlug}`}
-                  className="flex min-w-0 items-center gap-3 transition hover:text-foil-coral"
+                  className="flex min-w-0 items-center gap-3 transition hover:text-foil-accent"
                 >
                   {m.imageUrl ? (
                     <Image
                       src={m.imageUrl}
                       alt=""
-                      width={48}
-                      height={67}
+                      width={64}
+                      height={89}
                       unoptimized
-                      className="h-12 w-auto shrink-0 rounded-md border border-foil-navy/10 shadow-sm shadow-foil-navy/10"
+                      className="h-16 w-auto shrink-0 rounded-lg border border-foil-cream/12 shadow-[0_4px_14px_rgba(4,9,18,0.6)]"
                     />
                   ) : (
-                    <span aria-hidden className="h-12 w-9 shrink-0 rounded-md border border-foil-navy/10 bg-foil-cream" />
+                    <span aria-hidden className="h-12 w-9 shrink-0 rounded-md border border-foil-cream/12 bg-foil-night" />
                   )}
                   <span className="min-w-0">
-                    <span className="block truncate font-semibold text-foil-navy">{m.cardName}</span>
-                    <span className="block truncate text-xs text-foil-slate">{m.setName}</span>
-                    <span className="mt-1 block text-xs text-foil-slate">
+                    <span className="block truncate font-semibold text-foil-cream">{m.cardName}</span>
+                    <span className="block truncate text-xs text-foil-cream/60">{m.setName}</span>
+                    {/* Plain-language sweep (fable-design-overhaul): collector
+                        words, never ticker jargon — "NM $16.71 (7d) vs $19.19
+                        (30d)" becomes a sentence a 15-year-old parses. */}
+                    <span className="mt-1 block text-xs text-foil-cream/60">
                       {m.avg7d != null && m.avg30d != null ? (
                         <>
-                          NM {formatUsd(m.avg7d)} (7d) vs {formatUsd(m.avg30d)} (30d) · {m.saleCount} sales
+                          Near Mint copies: ~{formatUsd(m.avg7d)} this week, usually{" "}
+                          {formatUsd(m.avg30d)} · {m.saleCount} recent sales
                         </>
                       ) : (
-                        <>Near Mint · {m.saleCount} sales</>
+                        <>Near Mint · {m.saleCount} recent sales</>
                       )}
                     </span>
                   </span>
                 </Link>
 
-                {/* The hook — how far below the 30-day average. */}
+                {/* The hook — how far below the 30-day average, DRAWN as well
+                    as written (design-round3-fixes §2): a two-point dumbbell —
+                    the cream dot is the usual (30-day) price, the teal dot is
+                    this week, sitting left by the % below. A real two-point
+                    delta from the two real aggregates — never a fake curve. */}
                 <span className="text-right">
-                  <span className="font-display block text-2xl font-bold tabular-nums leading-none text-foil-navy sm:text-3xl">
+                  <span className="font-display block text-2xl font-bold tabular-nums leading-none text-foil-cream sm:text-3xl">
                     {Math.abs(m.momentumPct)}%
                   </span>
-                  <span className="block text-[11px] uppercase tracking-wider text-foil-gold">
-                    below 30-day avg
+                  <span className="block text-[11px] uppercase tracking-wider text-foil-accent">
+                    below its average
                   </span>
+                  {m.avg7d != null && m.avg30d != null ? (
+                    <span aria-hidden className="relative mt-2 ml-auto block h-2 w-24">
+                      <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 rounded bg-foil-cream/15" />
+                      <span
+                        className="absolute top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-foil-accent/50"
+                        style={{ right: "3px", width: `${Math.min(85, Math.abs(m.momentumPct) * 2.4)}%` }}
+                      />
+                      <span className="absolute right-0 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-foil-cream/45" />
+                      <span
+                        className="absolute top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-foil-accent"
+                        style={{ right: `${Math.min(85, Math.abs(m.momentumPct) * 2.4)}%` }}
+                      />
+                    </span>
+                  ) : null}
                 </span>
 
                 {/* Card-level eBay browse (affiliate search) — never a listing. */}
@@ -100,7 +122,7 @@ export function MoversBoard({ movers }: { movers: MarketMovers }) {
                   href={browseHref(m)}
                   target="_blank"
                   rel="sponsored noopener noreferrer"
-                  className="col-span-2 mt-1 inline-flex items-center justify-center rounded-full bg-foil-navy px-4 py-2 text-xs font-semibold text-foil-cream shadow-sm shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-coral hover:ring-2 hover:ring-foil-gold/40 sm:col-span-1 sm:mt-0"
+                  className="col-span-2 mt-1 inline-flex items-center justify-center rounded-full border border-foil-accent/40 px-4 py-2 text-xs font-semibold text-foil-accent transition-all hover:-translate-y-0.5 hover:bg-foil-accent/10 sm:col-span-1 sm:mt-0"
                 >
                   Browse on eBay →
                 </a>
@@ -112,36 +134,37 @@ export function MoversBoard({ movers }: { movers: MarketMovers }) {
 
       {up.length > 0 ? (
         <div>
-          <h3 className="font-display text-lg font-bold text-foil-navy">Heating up</h3>
-          <p className="mt-1 text-sm text-foil-slate">
-            The other side of the same signal: cards trading above their 30-day average.
+          <h3 className="font-display text-lg font-bold text-foil-cream">Heating up</h3>
+          <p className="mt-1 text-sm text-foil-cream/60">
+            The other side of the same signal: cards selling above what they
+            usually go for.
           </p>
-          <ul className="mt-3 divide-y divide-foil-navy/10 overflow-hidden rounded-2xl border border-foil-navy/10 bg-foil-cream shadow-sm shadow-foil-navy/5">
+          <ul className="mt-3 divide-y divide-foil-cream/10 overflow-hidden rounded-2xl border border-foil-cream/12 bg-foil-night-2">
             {up.map((m) => (
               <li key={m.cardSlug} className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
                 <Link
                   href={`/cards/${m.cardSlug}`}
-                  className="min-w-0 transition hover:text-foil-coral"
+                  className="min-w-0 transition hover:text-foil-accent"
                 >
-                  <span className="block truncate font-semibold text-foil-navy">{m.cardName}</span>
-                  <span className="block truncate text-xs text-foil-slate">
+                  <span className="block truncate font-semibold text-foil-cream">{m.cardName}</span>
+                  <span className="block truncate text-xs text-foil-cream/60">
                     {m.setName} · {m.saleCount} sales
                   </span>
                 </Link>
                 <div className="flex shrink-0 items-center gap-3">
                   <span className="text-right">
-                    <span className="font-display block text-lg font-bold tabular-nums leading-none text-foil-navy">
+                    <span className="font-display block text-lg font-bold tabular-nums leading-none text-foil-cream">
                       +{m.momentumPct}%
                     </span>
-                    <span className="block text-[10px] uppercase tracking-wider text-foil-slate">
-                      vs 30-day
+                    <span className="block text-[10px] uppercase tracking-wider text-foil-cream/60">
+                      vs its average
                     </span>
                   </span>
                   <a
                     href={browseHref(m)}
                     target="_blank"
                     rel="sponsored noopener noreferrer"
-                    className="inline-flex items-center justify-center rounded-full border border-foil-navy/20 px-3 py-1.5 text-xs font-semibold text-foil-navy transition-all hover:border-foil-gold/50 hover:text-foil-coral"
+                    className="inline-flex items-center justify-center rounded-full border border-foil-cream/25 px-3 py-1.5 text-xs font-semibold text-foil-cream transition-all hover:border-foil-accent/50 hover:text-foil-accent"
                   >
                     Browse →
                   </a>

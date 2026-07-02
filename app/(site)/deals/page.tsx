@@ -66,21 +66,24 @@ export default async function DealsPage() {
   const trackedCount = CARD_CATALOG.length;
 
   return (
-    <main className="mx-auto w-full max-w-3xl flex-1 px-5 pt-10 pb-20 sm:px-8 sm:pt-14">
+    // Night register (design-loop-round2 §3) — full-bleed dark surface, content
+    // constrained inside; the chrome flips via body:has().
+    <main data-tone="night" className="flex-1 bg-foil-night text-foil-cream">
+      <div className="mx-auto w-full max-w-3xl px-5 pt-10 pb-20 sm:px-8 sm:pt-14">
       {/* Screenshot-friendly header band: title + date + foiltcg.com all in
           frame so every shared screenshot is self-branding. */}
       <header className="text-center">
-        <p className="flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wider text-foil-gold">
+        <p className="flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wider text-foil-accent">
           <span className="relative inline-flex h-1.5 w-1.5" aria-hidden>
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foil-gold opacity-60" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-gold" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foil-accent opacity-60" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-accent" />
           </span>
           foiltcg.com · {boardDate}
         </p>
-        <h1 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl">
+        <h1 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-cream sm:text-4xl">
           Good buys this week
         </h1>
-        <p className="mx-auto mt-3 max-w-xl text-foil-slate">
+        <p className="mx-auto mt-3 max-w-xl text-foil-cream/60">
           Cards whose Near Mint copies are trading below their own 30-day sold average. Each is a
           candidate worth a look, not a guarantee. Every figure is a real recent average, sample-size
           gated so thin or noisy cards never make the list.
@@ -92,7 +95,7 @@ export default async function DealsPage() {
       </div>
 
       {/* Honest framing of the aggregate signal. */}
-      <p className="mt-5 text-center text-xs leading-relaxed text-foil-slate">
+      <p className="mt-5 text-center text-xs leading-relaxed text-foil-cream/60">
         Down versus a card&apos;s 30-day average means it has cooled off lately, which can be a buying
         window or a sign demand is softening. We surface the move and the numbers behind it. The call is
         yours. Built from recent sold data, refreshed daily.
@@ -100,8 +103,8 @@ export default async function DealsPage() {
 
       {/* Demoted secondary: the single-listing below-sold board. */}
       <section className="mt-14">
-        <h2 className="font-display text-xl font-bold text-foil-navy">Below sold right now</h2>
-        <p className="mt-1 text-sm text-foil-slate">
+        <h2 className="font-display text-xl font-bold text-foil-cream">Below sold right now</h2>
+        <p className="mt-1 text-sm text-foil-cream/60">
           Individual live listings priced under their condition-matched recent sold price. We check{" "}
           {trackedCount} cards and only list one when we are confident the listing matches the sold data,
           on the same condition and currency. Fewer deals we trust beats a long list we do not.
@@ -112,19 +115,31 @@ export default async function DealsPage() {
       </section>
 
       {/* Affiliate disclosure (copy doc; FTC + EPN requirement). */}
-      <p className="mx-auto mt-4 max-w-xl rounded-xl border border-foil-navy/10 bg-foil-cream px-4 py-3 text-center text-xs text-foil-slate">
+      <p className="mx-auto mt-4 max-w-xl rounded-xl border border-foil-cream/12 bg-foil-night-2 px-4 py-3 text-center text-xs text-foil-cream/60">
         Foil is free. When you buy through a link on Foil, eBay pays us a commission.
         It costs you nothing, and it does not change which deal we show you. We rank by
         the best deal, not the biggest payout.{" "}
         <Link
           href="/pricing-methodology"
-          className="text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
+          className="text-foil-cream underline decoration-foil-cream/25 underline-offset-4 transition hover:decoration-foil-accent"
         >
           See how we price.
         </Link>
       </p>
 
-      <p className="mt-4 text-center text-[11px] text-foil-slate">
+      {/* The pull promise (fable-design-overhaul §4): this board is everyone's
+          drops — the product is YOUR cards' drops. */}
+      <p className="mt-8 text-center text-sm text-foil-cream/60">
+        These are this week&apos;s drops across the whole market.{" "}
+        <Link
+          href="/start?src=deals"
+          className="font-medium text-foil-cream underline decoration-foil-accent/50 underline-offset-4 transition hover:decoration-foil-accent"
+        >
+          Want them for your cards? Start your vault →
+        </Link>
+      </p>
+
+      <p className="mt-4 text-center text-[11px] text-foil-cream/60">
         Foil TCG, LLC · Built by John Craig
       </p>
 
@@ -135,9 +150,11 @@ export default async function DealsPage() {
         <EmailCapture
           source="deals_board"
           variant="inline"
+          tone="night"
           headline="Get the weekly drop, free."
           subtext="One email a week: the best live card deals right now, the cards on the move, and one sharp valuation note. No spam."
         />
+      </div>
       </div>
     </main>
   );

@@ -1,0 +1,58 @@
+<!doctype html>
+<!-- Round-2 wordmark exploration (design-loop-round2 §1 + §8): genuinely
+     bubbly/balloon faces, cream on night + on a cream header bar, judged at
+     hero scale AND 20px nav scale. All candidates are OFL Google Fonts
+     (shippable). John's taste ref (Skylens Italic et al) is personal-use-only
+     and appears NOWHERE here — vibe-matching only. Screenshot artifact. -->
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Modak&family=Titan+One&family=Bagel+Fat+One&family=Chewy&family=Shrikhand&family=Luckiest+Guy&family=Lilita+One&family=Fredoka:wght@700&family=Lobster+Two:ital,wght@1,700&family=Baloo+2:wght@800&display=block" rel="stylesheet">
+<style>
+  body { margin: 0; background: #0a1322; color: #f8f5f0; font-family: system-ui; padding: 32px 48px; }
+  .row { display: grid; grid-template-columns: 150px 1fr 320px 320px; gap: 24px; align-items: center; border-bottom: 1px solid rgba(248,245,240,0.1); padding: 14px 0; }
+  .meta { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; opacity: .5; }
+  .hero { font-size: 84px; line-height: 1; margin: 0; }
+  .navmock { display: flex; align-items: center; justify-content: space-between; border-radius: 8px; padding: 10px 16px; }
+  .navmock.dark { background: #101d31; }
+  .navmock.cream { background: #f8f5f0; color: #0f1e3a; }
+  .wm { font-size: 20px; }
+  .links { font-size: 12px; opacity: .6; font-family: system-ui; }
+  .ital { font-style: italic; }
+  .obl { transform: skewX(-6deg); display: inline-block; }
+  .modak { font-family: "Modak"; }
+  .titan { font-family: "Titan One"; }
+  .bagel { font-family: "Bagel Fat One"; }
+  .chewy { font-family: "Chewy"; }
+  .shrik { font-family: "Shrikhand"; }
+  .lucky { font-family: "Luckiest Guy"; }
+  .lilita { font-family: "Lilita One"; }
+  .fredoka { font-family: "Fredoka"; font-weight: 700; }
+  .lobster { font-family: "Lobster Two"; font-weight: 700; font-style: italic; }
+  .baloo { font-family: "Baloo 2"; font-weight: 800; }
+  h2 { font: 600 13px system-ui; letter-spacing: .1em; text-transform: uppercase; opacity: .6; margin: 28px 0 4px; }
+</style>
+</head>
+<body>
+  <h2>Round-2 bubbly wordmark face-off — hero 84px · nav 20px (dark + cream chrome)</h2>
+  <div id="rows"></div>
+  <h2>TCG suffix treatment (one look, for the two-file lockup decision)</h2>
+  <p style="margin:8px 0 0"><span class="shrik" style="font-size:64px">Foil</span><span class="titan" style="font-size:24px; opacity:.65; margin-left:10px; letter-spacing:.12em">TCG</span></p>
+  <script>
+    const faces = [
+      ["modak", "Modak"], ["titan", "Titan One"], ["bagel", "Bagel Fat One"],
+      ["chewy", "Chewy"], ["shrik", "Shrikhand (fat italic bubble-script)"],
+      ["lucky", "Luckiest Guy"], ["lilita", "Lilita One"],
+      ["fredoka", "Fredoka 700"], ["lobster", "Lobster Two Bold Italic"],
+      ["baloo obl", "Baloo 2 800 oblique"],
+    ];
+    document.getElementById("rows").innerHTML = faces.map(([cls, name]) => `
+      <div class="row">
+        <span class="meta">${name}</span>
+        <p class="hero ${cls}">Foil</p>
+        <div class="navmock dark"><span class="wm ${cls}">Foil</span><span class="links">Today's deals · Your vault</span></div>
+        <div class="navmock cream"><span class="wm ${cls}">Foil</span><span class="links">Today's deals · Your vault</span></div>
+      </div>`).join("");
+  </script>
+</body>
+</html>

@@ -33,9 +33,9 @@ test("SoldHistoryChart: plots median7d (fallback avg) over real PokeTrace daily 
   assert.match(src, /toLocaleDateString/);
 });
 
-test("SoldHistoryChart: trend-coloured endpoint dot (gold up / coral down) + current dot", () => {
+test("SoldHistoryChart: trend-coloured endpoint dot (accent up / coral down) + current dot", () => {
   const src = read("components/cards/sold-history-chart.tsx");
-  assert.match(src, /color-foil-gold/);
+  assert.match(src, /color-foil-accent/); // design-loop-round2 §3 (night register)
   assert.match(src, /color-foil-coral/);
   assert.match(src, /<circle\b/);
   assert.match(src, /up\s*=|last\s*>=\s*first/);

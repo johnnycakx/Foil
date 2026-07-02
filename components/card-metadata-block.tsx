@@ -55,12 +55,12 @@ export function CardMetadataBlock({ card }: Props) {
 
   return (
     <section
-      className="mt-10 rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-8"
+      className="mt-10 rounded-2xl border border-foil-cream/10 bg-foil-night-2 p-6 sm:p-8"
       aria-labelledby="card-metadata-heading"
     >
       <h2
         id="card-metadata-heading"
-        className="text-sm font-semibold uppercase tracking-wider text-foil-gold"
+        className="text-sm font-semibold uppercase tracking-wider text-foil-accent"
       >
         Card details
       </h2>
@@ -68,11 +68,11 @@ export function CardMetadataBlock({ card }: Props) {
       {rows.length > 0 && (
         <dl className="mt-4 grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
           {rows.map((row) => (
-            <div key={row.label} className="flex items-baseline justify-between gap-3 border-b border-foil-navy/5 pb-2 last:border-b-0">
-              <dt className="font-mono text-[11px] uppercase tracking-wider text-foil-slate">
+            <div key={row.label} className="flex items-baseline justify-between gap-3 border-b border-foil-cream/8 pb-2 last:border-b-0">
+              <dt className="font-mono text-[11px] uppercase tracking-wider text-foil-cream/60">
                 {row.label}
               </dt>
-              <dd className="text-right text-sm font-medium text-foil-navy">{row.value}</dd>
+              <dd className="text-right text-sm font-medium text-foil-cream">{row.value}</dd>
             </div>
           ))}
         </dl>
@@ -80,30 +80,30 @@ export function CardMetadataBlock({ card }: Props) {
 
       {hasAttacks && (
         <div className="mt-6">
-          <h3 className="font-mono text-[11px] uppercase tracking-wider text-foil-slate">
+          <h3 className="font-mono text-[11px] uppercase tracking-wider text-foil-cream/60">
             Attacks
           </h3>
           <ul className="mt-3 space-y-3">
             {card.attacks.map((attack, i) => (
               <li
                 key={`${attack.name}-${i}`}
-                className="rounded-xl border border-foil-navy/10 bg-foil-cream/60 p-3"
+                className="rounded-xl border border-foil-cream/10 bg-foil-night p-3"
               >
                 <div className="flex items-baseline justify-between gap-3">
-                  <p className="font-semibold text-foil-navy">{attack.name}</p>
+                  <p className="font-semibold text-foil-cream">{attack.name}</p>
                   {attack.damage ? (
-                    <span className="font-mono text-sm tabular-nums text-foil-navy">
+                    <span className="font-mono text-sm tabular-nums text-foil-cream">
                       {attack.damage}
                     </span>
                   ) : null}
                 </div>
                 {attack.cost.length > 0 && (
-                  <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-foil-slate">
+                  <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-foil-cream/60">
                     Cost: {attack.cost.join(" · ")}
                   </p>
                 )}
                 {attack.text && (
-                  <p className="mt-2 text-sm leading-relaxed text-foil-slate">{attack.text}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-foil-cream/70">{attack.text}</p>
                 )}
               </li>
             ))}
@@ -113,17 +113,17 @@ export function CardMetadataBlock({ card }: Props) {
 
       {hasWeaknesses && (
         <div className="mt-6">
-          <h3 className="font-mono text-[11px] uppercase tracking-wider text-foil-slate">
+          <h3 className="font-mono text-[11px] uppercase tracking-wider text-foil-cream/60">
             Weaknesses
           </h3>
           <ul className="mt-3 flex flex-wrap gap-2">
             {card.weaknesses.map((w, i) => (
               <li
                 key={`${w.type}-${i}`}
-                className="inline-flex items-center gap-1.5 rounded-full border border-foil-gold/40 bg-foil-gold/10 px-3 py-1 text-xs font-medium text-foil-navy"
+                className="inline-flex items-center gap-1.5 rounded-full border border-foil-accent/40 bg-foil-accent/10 px-3 py-1 text-xs font-medium text-foil-cream"
               >
                 <span>{w.type}</span>
-                <span className="font-mono tabular-nums text-foil-slate">{w.value}</span>
+                <span className="font-mono tabular-nums text-foil-cream/60">{w.value}</span>
               </li>
             ))}
           </ul>

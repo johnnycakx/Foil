@@ -1,0 +1,11 @@
+import puppeteer from "puppeteer";
+const [url, out] = process.argv.slice(2);
+const b = await puppeteer.launch({ headless: "new" });
+const p = await b.newPage();
+await p.setViewport({ width: 390, height: 844 });
+await p.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "reduce" }]);
+await p.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
+await new Promise((r) => setTimeout(r, 2000));
+await p.screenshot({ path: out });
+console.log("OK", out);
+await b.close();

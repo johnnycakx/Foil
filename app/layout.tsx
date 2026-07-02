@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces, Bricolage_Grotesque } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces, Bricolage_Grotesque, Shrikhand } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { siteUrl } from "@/lib/seo/site-url";
 import "./globals.css";
@@ -35,6 +35,20 @@ const bricolage = Bricolage_Grotesque({
   variable: "--font-wordmark",
   subsets: ["latin"],
   weight: ["600", "700"],
+});
+
+// Bubble wordmark cut (design-loop-round2 §1/§8, John's 1am verdict):
+// "Foil" in a genuinely bubbly balloon face, wordmark-first. Shrikhand won the
+// round-2 ten-face bake-off as the closest LICENSED (OFL) match to John's
+// Skylens-Italic taste ref (fat, bouncy, italic-leaning bubble-script —
+// Skylens itself is personal-use-only and must never ship). Supersedes the
+// round-1 Baloo 2 soft cut. Rendered via Logo face="bubble"; Bricolage stays
+// pinned as --font-wordmark for the carved cut + OG surfaces pending John's
+// brand-asset follow-up.
+const shrikhand = Shrikhand({
+  variable: "--font-wordmark-bubble",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 // Brand metadata aligned with the deal-finder positioning (ADR-020) + the
@@ -85,7 +99,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${bricolage.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${bricolage.variable} ${shrikhand.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {/* Impact.com affiliate program site verification - see ADR-020 once landed. */}

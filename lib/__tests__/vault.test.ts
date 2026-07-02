@@ -56,8 +56,14 @@ test("vault token: tampering fails closed (payload swap, signature bitflip, trun
     // Payload swapped for another email, original signature kept.
     const other = mintVaultToken("attacker@example.com")!.split(".")[0];
     assert.equal(verifyVaultToken(`${other}.${sig}`).ok, false);
-    // Signature bitflip.
-    const flipped = sig.slice(0, -1) + (sig.endsWith("A") ? "B" : "A");
+    // Signature bitflip — flip the FIRST char, whose 6 bits are all
+    // significant. The old version flipped the LAST char between "A" and "B",
+    // which differ only in a base64url PADDING bit for a 32-byte HMAC (43
+    // chars ≡ 258 bits, 2 bits padding): the "tampered" string decoded to the
+    // IDENTICAL signature bytes, so the verifier rightly accepted it and the
+    // test flaked whenever the real sig ended in "A" (payload carries iat, so
+    // the sig changes every second). Test bug, not a verifier bug.
+    const flipped = (sig.startsWith("A") ? "B" : "A") + sig.slice(1);
     assert.equal(verifyVaultToken(`${payload}.${flipped}`).ok, false);
     // Truncation + garbage.
     assert.equal(verifyVaultToken(payload).ok, false);

@@ -18,17 +18,17 @@ export function LongTailListingFallback({
 }) {
   return (
     <section
-      className="mt-10 rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-8"
+      className="mt-10 rounded-2xl border border-foil-cream/10 bg-foil-night-2 p-6 sm:p-8"
       aria-labelledby="browse-listings-heading"
     >
       <h2
         id="browse-listings-heading"
-        className="text-xs font-semibold uppercase tracking-wider text-foil-gold"
+        className="text-xs font-semibold uppercase tracking-wider text-foil-accent"
       >
         Live listings
       </h2>
       <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-foil-slate">
+        <p className="text-sm text-foil-cream/70">
           We track {cardName}&apos;s 30-day sold prices above. For current live
           listings, browse eBay — we surface the best curated deal on our most
           popular cards, and we&apos;re adding live listings to more cards over
@@ -38,12 +38,12 @@ export function LongTailListingFallback({
           href={searchUrl}
           target="_blank"
           rel="sponsored noopener noreferrer"
-          className="inline-flex shrink-0 items-center justify-center rounded-full border border-foil-navy/20 bg-foil-cream px-6 py-3 text-sm font-semibold text-foil-navy transition hover:-translate-y-0.5 hover:border-foil-gold/40 hover:bg-foil-gold/5"
+          className="inline-flex shrink-0 items-center justify-center rounded-full bg-foil-cream px-6 py-3 text-sm font-semibold text-foil-navy transition hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-accent/60"
         >
           Browse on eBay →
         </a>
       </div>
-      <p className="mt-5 text-[11px] uppercase tracking-wider text-foil-slate">
+      <p className="mt-5 text-[11px] uppercase tracking-wider text-foil-cream/60">
         Affiliate-tracked search · Foil earns a commission on eBay purchases that originate from this link.
       </p>
     </section>

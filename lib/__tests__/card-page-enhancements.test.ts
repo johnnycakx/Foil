@@ -117,15 +117,15 @@ test("breadcrumbListSchema: returns null on empty input", async () => {
 });
 
 // ---------------------------------------------------------------------------
-// LiveTimestamp — aria-live for assistive tech + foil-gold pulse dot.
+// LiveTimestamp — aria-live for assistive tech + foil-accent pulse dot.
 // ---------------------------------------------------------------------------
 
-test("LiveTimestamp: ships aria-live + foil-gold pulse dot", () => {
+test("LiveTimestamp: ships aria-live + foil-accent pulse dot", () => {
   const src = readFile("components/live-timestamp.tsx");
   assert.match(src, /aria-live="polite"/);
-  // The pulse dot uses the same affordance pattern as the layout's
-  // wordmark and the best-listing block (gold, ping animation).
-  assert.match(src, /animate-ping[^"]*rounded-full[^"]*bg-foil-gold/);
+  // The pulse dot uses the same affordance pattern as the homepage hero and
+  // the best-listing block (accent, ping animation).
+  assert.match(src, /animate-ping[^"]*rounded-full[^"]*bg-foil-accent/); // design-loop-round2 §3 (night register)
 });
 
 test("LiveTimestamp: refreshes via setInterval (not a one-shot)", () => {

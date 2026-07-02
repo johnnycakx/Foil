@@ -180,10 +180,10 @@ export async function SoldHistoryPanel({
   if (!variants || variants.length === 0) {
     return (
       <section className="mt-10" aria-labelledby="sold-history-heading">
-        <h2 id="sold-history-heading" className="text-sm font-semibold uppercase tracking-wider text-foil-gold">
+        <h2 id="sold-history-heading" className="text-sm font-semibold uppercase tracking-wider text-foil-accent">
           Recent sold prices
         </h2>
-        <p className="mt-3 rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 text-sm text-foil-slate shadow-sm shadow-foil-navy/5">
+        <p className="mt-3 rounded-2xl border border-foil-cream/10 bg-foil-night-2 p-6 text-sm text-foil-cream/70">
           Live sold data not yet available for this card. Watching it (below) is
           what queues it for tracking.
         </p>
@@ -220,12 +220,12 @@ export async function SoldHistoryPanel({
 
   return (
     <section className="mt-10" aria-labelledby="sold-history-heading">
-      <h2 id="sold-history-heading" className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-foil-gold">
+      <h2 id="sold-history-heading" className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-foil-accent">
         <SealMark px={13} />
         Recent sold prices
       </h2>
 
-      <div className="mt-4 rounded-2xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-8">
+      <div className="mt-4 rounded-2xl border border-foil-cream/10 bg-foil-night-2 p-6 sm:p-8">
         {/* Variant selector — SSR chips (links re-render with ?v=). */}
         {variants.length > 1 && (
           <div role="radiogroup" aria-label="Print variant" className="flex flex-wrap gap-2">
@@ -240,12 +240,12 @@ export async function SoldHistoryPanel({
                   aria-checked={isSel}
                   className={`flex flex-col rounded-xl border px-3 py-2 text-left transition ${
                     isSel
-                      ? "border-foil-gold/50 bg-foil-gold/10 ring-1 ring-foil-gold/30"
-                      : "border-foil-navy/15 bg-foil-cream hover:border-foil-gold/40 hover:bg-foil-gold/5"
+                      ? "border-foil-accent/50 bg-foil-accent/10 ring-1 ring-foil-accent/30"
+                      : "border-foil-cream/15 bg-foil-night hover:border-foil-accent/40 hover:bg-foil-accent/5"
                   }`}
                 >
-                  <span className="text-sm font-semibold text-foil-navy">{variant.variantLabel}</span>
-                  <span className="mt-0.5 font-mono text-[11px] tabular-nums text-foil-slate">
+                  <span className="text-sm font-semibold text-foil-cream">{variant.variantLabel}</span>
+                  <span className="mt-0.5 font-mono text-[11px] tabular-nums text-foil-cream/60">
                     {nm ? `${money(nm.low)} · ${money(nm.avg30d ?? nm.avg)} · ${money(nm.high)}` : "no sold data"}
                   </span>
                 </a>
@@ -263,18 +263,18 @@ export async function SoldHistoryPanel({
             headline + chart depend on the SELECTED condition having data. */}
         {anyData ? (
           <div className={variants.length > 1 ? "mt-6" : ""}>
-            <p className="text-xs uppercase tracking-wide text-foil-slate">
+            <p className="text-xs uppercase tracking-wide text-foil-cream/60">
               30-day sold avg · {selected.variant.variantLabel}
               {conditionSuffix ? ` · ${conditionSuffix}` : ""}
             </p>
             {headline ? (
               <>
                 <p className="mt-1 flex items-baseline gap-3">
-                  <span className="font-display text-4xl font-semibold tabular-nums text-foil-navy">
+                  <span className="font-display text-4xl font-semibold tabular-nums text-foil-cream">
                     {money(headline.avg30d ?? headline.avg)}
                   </span>
                   {headline.saleCount != null && (
-                    <span className="text-sm text-foil-slate">n={headline.saleCount} sales</span>
+                    <span className="text-sm text-foil-cream/60">n={headline.saleCount} sales</span>
                   )}
                 </p>
 
@@ -284,7 +284,7 @@ export async function SoldHistoryPanel({
                 <SoldHistoryChart series={chartSeries} />
               </>
             ) : (
-              <p className="mt-1 text-sm text-foil-slate">
+              <p className="mt-1 text-sm text-foil-cream/60">
                 No recent sales recorded for {conditionSuffix ?? "this condition"} — see all conditions below.
               </p>
             )}
@@ -292,7 +292,7 @@ export async function SoldHistoryPanel({
             {/* Per-tier table */}
             <table className="mt-5 w-full border-collapse text-sm">
               <thead>
-                <tr className="border-b border-foil-navy/10 text-left text-[11px] uppercase tracking-wider text-foil-slate">
+                <tr className="border-b border-foil-cream/10 text-left text-[11px] uppercase tracking-wider text-foil-cream/60">
                   <th className="py-2 font-medium">Condition</th>
                   <th className="py-2 text-right font-medium">30-day avg</th>
                   <th className="py-2 text-right font-medium">Sales</th>
@@ -303,10 +303,10 @@ export async function SoldHistoryPanel({
                   const s = statFor(sel, key);
                   if (!s) return null;
                   return (
-                    <tr key={key} className="border-b border-foil-navy/5">
-                      <td className="py-2 text-foil-navy">{label}</td>
-                      <td className="py-2 text-right font-mono tabular-nums text-foil-navy">{money(s.avg30d ?? s.avg)}</td>
-                      <td className="py-2 text-right font-mono tabular-nums text-foil-slate">{s.saleCount ?? "—"}</td>
+                    <tr key={key} className="border-b border-foil-cream/8">
+                      <td className="py-2 text-foil-cream">{label}</td>
+                      <td className="py-2 text-right font-mono tabular-nums text-foil-cream">{money(s.avg30d ?? s.avg)}</td>
+                      <td className="py-2 text-right font-mono tabular-nums text-foil-cream/60">{s.saleCount ?? "—"}</td>
                     </tr>
                   );
                 })}
@@ -316,10 +316,10 @@ export async function SoldHistoryPanel({
                   const s = statFor(sel, "AGGREGATED");
                   if (!s) return null;
                   return (
-                    <tr key="AGGREGATED" className="border-b border-foil-navy/5">
-                      <td className="py-2 text-foil-navy">Market average</td>
-                      <td className="py-2 text-right font-mono tabular-nums text-foil-navy">{money(s.avg30d ?? s.avg)}</td>
-                      <td className="py-2 text-right font-mono tabular-nums text-foil-slate">{s.saleCount ?? "—"}</td>
+                    <tr key="AGGREGATED" className="border-b border-foil-cream/8">
+                      <td className="py-2 text-foil-cream">Market average</td>
+                      <td className="py-2 text-right font-mono tabular-nums text-foil-cream">{money(s.avg30d ?? s.avg)}</td>
+                      <td className="py-2 text-right font-mono tabular-nums text-foil-cream/60">{s.saleCount ?? "—"}</td>
                     </tr>
                   );
                 })()}
@@ -327,22 +327,22 @@ export async function SoldHistoryPanel({
                   const s = statFor(sel, gradedTierKey);
                   if (!s) return null;
                   return (
-                    <tr key={gradedTierKey} className="border-b border-foil-gold/20 bg-foil-gold/5">
-                      <td className="py-2 font-medium text-foil-navy">{gradedTierKey.replace("_", " ")}</td>
-                      <td className="py-2 text-right font-mono tabular-nums text-foil-navy">{money(s.avg30d ?? s.avg)}</td>
-                      <td className="py-2 text-right font-mono tabular-nums text-foil-slate">{s.saleCount ?? "—"}</td>
+                    <tr key={gradedTierKey} className="border-b border-foil-accent/20 bg-foil-accent/5">
+                      <td className="py-2 font-medium text-foil-cream">{gradedTierKey.replace("_", " ")}</td>
+                      <td className="py-2 text-right font-mono tabular-nums text-foil-cream">{money(s.avg30d ?? s.avg)}</td>
+                      <td className="py-2 text-right font-mono tabular-nums text-foil-cream/60">{s.saleCount ?? "—"}</td>
                     </tr>
                   );
                 })()}
               </tbody>
             </table>
-            <p className="mt-4 text-[11px] uppercase tracking-wider text-foil-slate">
+            <p className="mt-4 text-[11px] uppercase tracking-wider text-foil-cream/60">
               Sold averages via PokeTrace · refreshed hourly · {cardName} actual completed sales, not active listings.
               {hydratedSince ? <> · Sold data tracked since {formatHydratedDate(hydratedSince)}.</> : null}
             </p>
           </div>
         ) : (
-          <p className={`text-sm text-foil-slate ${variants.length > 1 ? "mt-6" : ""}`}>
+          <p className={`text-sm text-foil-cream/60 ${variants.length > 1 ? "mt-6" : ""}`}>
             Live sold data not yet available for this variant.
           </p>
         )}

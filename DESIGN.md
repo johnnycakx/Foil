@@ -9,6 +9,9 @@ colors:
   coral: "#ff6b5c"
   gold-deep: "#a07d2c"
   gold-light: "#e6c170"
+  night: "#0a1322"
+  night-2: "#101d31"
+  vermillion: "#d85a30"
 typography:
   display:
     fontFamily: "Fraunces, Georgia, serif"
@@ -358,6 +361,59 @@ or any Pokémon-trademark shape.
   and not a panel.
 - **Don't** use side-stripe accents (`border-left`/`border-right` > 1px as a color
   bar) or default to a modal when an inline or progressive reveal would do.
+
+> **ROUND-2 AMENDMENTS (design-loop-round2, John's 1am verdicts — override
+> conflicting lines below):** the night register now covers home, /deals,
+> /blog index, /cards/[slug], and the vault (/w); /lines stays cream-sakura
+> for the eve delivery. **Vermillion is OUT as the UI accent** (hanko ink
+> only) — THE accent is **moon-glow teal** (`--color-foil-accent` #6fd8c5 on
+> night / `--color-foil-accent-deep` #0e7c6b on cream, both AA), sampled from
+> Moonbreon's moonlit art; bake-off vs holo-iridescent + sakura galleried.
+> The register is MATTE Linear-grade ("the dark gallery"): glows pulled back,
+> depth from layering — the cards glow, the page doesn't. Wordmark: "Foil" in
+> **Shrikhand** (`--font-wordmark-bubble`, `Logo face="bubble"`), wordmark-
+> FIRST chrome (seal demoted to favicon + hero-pill glyph). Type scale up:
+> marketing body 18–20px. All pending John's morning ratification
+> (design-loop/SUMMARY-ROUND2.md).
+
+## 7a. Night register (HOMEPAGE — overnight-design-loop, 2026-07-02, pending John's merge)
+
+The homepage runs the **"lit room"** register: a warm near-black surface where
+the card art is the light source of the page. Won the DIVERGE face-off against
+an evolved-warm control (design-loop/ITERATION-LOG.md) on the ICP and
+card-spotlight dimensions — holographic art visibly dims on cream; it pops on
+dark walls. Scoped to the homepage via `data-tone="night"`; every other
+surface keeps its register.
+
+**New tokens (globals.css):**
+- **Night** (`--color-foil-night` #0a1322): the homepage surface. A navy-derived
+  warm near-black — never `#000` (No-Pure-Black holds in spirit).
+- **Night panel** (`--color-foil-night-2` #101d31): raised panels (binder
+  spread, artifact chips, night email capture).
+- **Vermillion** (`--color-foil-vermillion` #d85a30): the hanko ink, now a real
+  token. **Succeeds gold as THE accent** on every surface touched by the
+  overnight loop (homepage, /start, /deals, email-capture, typeahead). Used as
+  a pinprick: live dots, eyebrows, one underline, focus rings, hover fills.
+  Gold remains only on not-yet-migrated surfaces; do not add new gold.
+
+**Chrome tone mechanism:** the shared header/footer read `--chrome-*` variables;
+`body:has([data-tone="night"])` flips them dark. No layout fork, no client JS.
+
+**Signature effect — holo-tilt (`components/cards/holo-card.tsx`):** pointer-
+tracked 3D tilt + foil-sheen gradient following the cursor (pokemon-cards-css
+technique, in-house). Transform/opacity only; touch never tilts;
+`prefers-reduced-motion` = fully static. One signature per page.
+
+**Tier-1 ambience:** CSS scroll-driven reveals (`.reveal-rise`,
+`animation-timeline: view()`) behind `@supports` + reduced-motion exclusion;
+the hero NEVER reveals (paints instantly). Depth is light logic — each
+section's artifact is its light source (glow spills), never tiled textures
+(the seal-watermark wallpaper is dead and guarded against).
+
+**Wordmark soft cut:** "Foil" in **Baloo 2 600** (`--font-wordmark-soft`,
+`Logo face="soft"`) in the site chrome — the cloudy/bubbly warmth that keeps
+the dark register from going sterile. Bricolage (`font-wordmark`) remains the
+carved cut for OG/favicon surfaces pending John's brand-asset follow-up.
 
 ## 7. Vending register (B2B host surfaces) — evolves §§1–6 for `/`, `/host`, `/faq`, `/service-areas`
 

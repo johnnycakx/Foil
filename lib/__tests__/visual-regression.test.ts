@@ -90,8 +90,10 @@ const PUBLIC_SURFACES: readonly string[] = [
   "components/vending/host-lead-form.tsx",
   "components/vending/restock-alert-form.tsx",
   // ADR-093: the vault surface (the token-access watchlist page + its
-  // components + the recovery page + the shared type-ahead). Same cream/navy/
-  // gold register; the no-raw-hex + coral-hover-only invariants cover them so
+  // components + the recovery page + the shared type-ahead). design-loop-round2
+  // §4 (vault night register): both /w pages now carry data-tone="night" —
+  // night/night-2 surfaces, cream ink, teal foil-accent (no gold/coral at
+  // rest); the no-raw-hex + coral-hover-only invariants still cover them so
   // the binder aesthetic can't drift back toward a generic-template look. The
   // pocket's plastic-sleeve inset shadow uses rgba() (a depth cue, not a hex
   // literal), which the no-raw-hex guard doesn't flag.
@@ -143,39 +145,33 @@ test("globals.css: no dark-mode media-query override (ADR-029: cream is consiste
 // Homepage — single-color navy headline + corner-shimmer + Card3D wrap
 // ---------------------------------------------------------------------------
 
-test("Homepage: H1 is single-color navy with no inline coral split (ADR-029)", () => {
+test("Homepage: H1 is a single-color ink headline with no inline color split (overnight-design-loop)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // Find the H1 tag block. The pre-Session-39 implementation split the
-  // headline with an inline <span className="text-[#FF6B5C]">…</span>;
-  // ADR-029 removes the split so the headline reads as one continuous
-  // navy line.
-  const h1Block = src.match(/<h1\b[^>]*text-foil-navy[^>]*>[\s\S]*?<\/h1>/);
-  assert.ok(h1Block, "H1 with text-foil-navy must exist");
+  // The hero sets the headline in ONE continuous ink line — cream on the night
+  // register, navy on the warm register — with no inline
+  // <span className="text-…"> splits (the pre-Session-39 coral split must
+  // never return in any palette). Direction-agnostic during DIVERGE; the
+  // winner's exact ink gets pinned at CONVERGE.
+  const h1Block = src.match(/<h1\b[^>]*text-foil-(?:cream|navy)[^>]*>[\s\S]*?<\/h1>/);
+  assert.ok(h1Block, "H1 with a single foil ink color must exist");
   assert.doesNotMatch(h1Block![0], /<span\b[^>]*text-[^>]*>/);
 });
 
-test("Homepage: email capture is the PRIMARY hero CTA, deal links demoted to secondary (G-EMAIL / ADR-065)", () => {
+test("Homepage: pull-model hero — 'Start your vault' → /start is the primary CTA; newsletter is the demoted secondary ask (fable-design-overhaul §1)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // The newsletter is the primary conversion (STRATEGY-AUDIENCE-MOAT). The
-  // hero must render an EmailCapture tagged homepage_hero, and it must appear
-  // BEFORE the demoted "See today's best deals" deal link so the email field
-  // is visually + structurally the primary action.
-  assert.match(src, /<EmailCapture\s+source="homepage_hero"/, "hero must render EmailCapture source=homepage_hero");
-  const heroCaptureIdx = src.indexOf('source="homepage_hero"');
-  const dealsLinkIdx = src.indexOf("See today&apos;s best deals");
-  assert.ok(heroCaptureIdx > -1 && dealsLinkIdx > -1, "both the hero capture and the deal link must exist");
-  assert.ok(
-    heroCaptureIdx < dealsLinkIdx,
-    "the hero EmailCapture must precede the demoted deal links (primary before secondary)",
-  );
-  // The big navy deal button is gone from the hero — the deal links are now
-  // text links. Pin that the hero no longer leads with a navy CTA button by
-  // checking the deal link is not a rounded navy button fill.
-  assert.doesNotMatch(
-    src,
-    /href="\/deals"\s+className="rounded-xl bg-foil-navy/,
-    "the /deals link must no longer be the primary navy button in the hero",
-  );
+  // The hero promise is PULL (tell us what you hunt), never push ("stop
+  // guessing what your cards are worth"). One primary action: /start.
+  assert.match(src, /Tell us the cards you&apos;re hunting\./, "the pull-model H1 copy must be present");
+  assert.doesNotMatch(src, /Stop guessing what your cards are worth/, "the push-model headline must be gone");
+  assert.match(src, /href="\/start\?src=home-hero"/, "the primary CTA must link /start with src attribution");
+  assert.match(src, /Start your vault/, "the primary CTA copy is 'Start your vault'");
+  // The newsletter survives as the ONE email ask on the page (ADR-066), but
+  // demoted below the fold — the /start CTA must come first in the document.
+  assert.match(src, /<EmailCapture\s+source="homepage_hero"/, "the homepage still renders EmailCapture source=homepage_hero");
+  const startIdx = src.indexOf('href="/start?src=home-hero"');
+  const captureIdx = src.indexOf('source="homepage_hero"');
+  assert.ok(startIdx > -1 && captureIdx > -1, "both the /start CTA and the capture must exist");
+  assert.ok(startIdx < captureIdx, "the /start CTA must precede the demoted newsletter capture");
 });
 
 test("Homepage: no 'Level-4' / 'TCGplayer Verified Seller' jargon anywhere in the file (homepage-v2, ADR-065)", () => {
@@ -308,21 +304,24 @@ test("/cards browse: catalog label uses gold accent (ADR-029)", () => {
   assert.match(src, /text-foil-gold/);
 });
 
-test("/cards/[slug]: best-listing block uses gold border + cream surface (ADR-029)", () => {
-  // The best-listing block moved into the client-hydrated section (ADR-047 v2),
-  // but the gold-border + cream-surface premium treatment is preserved there.
+test("/cards/[slug]: best-listing block uses accent border + night panel (design-loop-round2 §3 night register)", () => {
+  // The best-listing block moved into the client-hydrated section (ADR-047 v2).
+  // Assertions repinned for the night register: accent border + night-2 panel;
+  // bg-foil-cream survives only as the light Buy CTA button on dark.
   const src = readFile("components/cards/live-listing-section.tsx");
-  assert.match(src, /border-foil-gold\/40/);
-  assert.match(src, /bg-foil-cream/);
-  // The page still uses cream surfaces on its remaining sections.
-  assert.match(readFile("app/(site)/cards/[slug]/page.tsx"), /bg-foil-cream/);
+  assert.match(src, /border-foil-accent\/40/); // design-loop-round2 §3 (night register)
+  assert.match(src, /bg-foil-night-2/); // design-loop-round2 §3 (night register)
+  // The page's top-level element opts into the night tone.
+  assert.match(readFile("app/(site)/cards/[slug]/page.tsx"), /data-tone="night"/); // design-loop-round2 §3 (night register)
+  assert.match(readFile("app/(site)/cards/[slug]/page.tsx"), /bg-foil-night/); // design-loop-round2 §3 (night register)
 });
 
-test("/cards/[slug]: Buy CTA uses navy bg with gold hover-ring (ADR-029)", () => {
-  // The Buy CTA moved into the client live-listing section (ADR-047 v2); the
-  // navy-default + gold-hover-ring niche signal is preserved.
+test("/cards/[slug]: Buy CTA is the light cream button with accent hover-ring (design-loop-round2 §3 night register)", () => {
+  // The Buy CTA moved into the client live-listing section (ADR-047 v2); on the
+  // night register the primary button is cream-on-night (homepage hero pattern)
+  // with the accent hover-ring replacing the gold one.
   const src = readFile("components/cards/live-listing-section.tsx");
-  assert.match(src, /bg-foil-navy[^"']*hover:[^"']*ring-foil-gold/);
+  assert.match(src, /bg-foil-cream[^"']*hover:[^"']*ring-foil-accent/); // design-loop-round2 §3 (night register)
 });
 
 // ---------------------------------------------------------------------------
@@ -504,8 +503,9 @@ test("Hero: grail cards are a full-opacity foreground showcase, not a ghosted ba
   // re-ghost the showcase.
   assert.doesNotMatch(src, /opacity:\s*0\.(?:28|5)\b/, "hero cards must not be opacity-ghosted");
   assert.doesNotMatch(src, /filter:\s*["']blur\(/, "hero cards must not be blurred");
-  // Cards render large (up to lg:w-40) as the hero visual.
-  assert.match(src, /lg:w-40/);
+  // Cards render large (up to lg:w-44) as the hero visual — the light sources
+  // of the night register.
+  assert.match(src, /lg:w-44/);
 });
 
 test("Hero: the copy-area scrim is gone (ADR-037 — cards no longer overlap text)", () => {
@@ -593,22 +593,17 @@ test("Hero: the grail showcase renders ABOVE the H1 (ADR-037)", () => {
   assert.ok(cardsIdx < h1Idx, "the HERO_CARDS showcase must render before the H1");
 });
 
-test("How it works: hanko-seal watermark, that section only, no Pokéball or gold (ADR-094)", () => {
+test("Homepage: the tiled seal watermark is DEAD — no wallpaper texture anywhere (John's 2026-07-02 verdict: cheap wallpaper)", () => {
   const src = readFile("app/(site)/page.tsx");
+  // The tiled hanko-seal background (ex-FoilCornerPattern, ex-PokeballPattern)
+  // read as cheap wallpaper. Depth is structural (light, planes, tilt), never
+  // an applied texture. Pin every prior wallpaper form dead.
   assert.doesNotMatch(src, /function PokeballPattern/, "PokeballPattern should be gone");
   assert.doesNotMatch(src, /foil-pokeball/, "the Pokeball pattern id should be gone");
-  assert.doesNotMatch(src, /#e63946/i, "no Pokémon red in the pattern");
-  assert.match(src, /function FoilCornerPattern/, "the watermark pattern component must exist");
-  assert.match(src, /<pattern id="foil-card-pattern"/, "the seal <pattern> tile must exist");
-  // Rendered exactly once — How it works is the only textured section.
-  const uses = (src.match(/<FoilCornerPattern\s*\/>/g) ?? []).length;
-  assert.equal(uses, 1, "the watermark should render exactly once (How it works only)");
-  // The hanko seal glyph: vermillion square + cream knockout, no retired gold.
-  assert.match(src, /fill="#D85A30"/i, "vermillion seal square");
-  assert.match(src, /fill="#f8f5f0"/i, "cream knockout");
-  assert.doesNotMatch(src, /fill="#c9a24b"/i, "the retired gold must be gone from the watermark");
-  // Faint watermark so text on top holds AA contrast.
-  assert.match(src, /opacity-\[0\.0\d\]/, "low-opacity watermark");
+  assert.doesNotMatch(src, /#e63946/i, "no Pokémon red");
+  assert.doesNotMatch(src, /FoilCornerPattern/, "the tiled seal watermark component must be gone");
+  assert.doesNotMatch(src, /<pattern\b/, "no SVG <pattern> tile on the homepage");
+  assert.doesNotMatch(src, /patternUnits/, "no tiled background pattern of any kind");
 });
 
 test("Homepage hero images are self-hosted local webp that exist, no flaky external CDN (ADR-056)", () => {
@@ -647,15 +642,68 @@ function imageBlockContaining(src: string, needle: string): string {
   return src.slice(start, end + 2);
 }
 
-test("Hero showcase: the grail card <Image> loads eagerly, never lazy (blank-on-paint regression)", () => {
+test("Hero showcase: the grail cards load eagerly through HoloCard, never lazy (blank-on-paint regression)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // Anchor on the src expression (unique to the <Image>), not the bare "/hero/"
-  // string — that also appears in the HERO_CARDS comment above the array.
-  const heroImg = imageBlockContaining(src, "/hero/${c.id");
-  assert.match(heroImg, /loading="eager"/, "hero cards must be loading=eager (above the fold)");
-  assert.match(heroImg, /fetchPriority="high"/, "hero cards should hint fetchPriority=high");
-  assert.doesNotMatch(heroImg, /loading="lazy"/, "hero cards must not be lazy");
-  assert.doesNotMatch(heroImg, /priority=\{false\}/, "the lazy priority={false} misfire must be gone");
+  // The hero cards now render through HoloCard (the holo-tilt signature).
+  // The page must pass `eager`, and HoloCard must translate that into the
+  // documented above-the-fold pattern (loading="eager" + fetchPriority="high").
+  const at = src.indexOf("/hero/${c.id");
+  assert.ok(at > -1, "the hero card src expression must exist");
+  const start = src.lastIndexOf("<HoloCard", at);
+  const end = src.indexOf("/>", at);
+  assert.ok(start > -1 && end > -1, "could not isolate the <HoloCard> block");
+  const block = src.slice(start, end + 2);
+  assert.match(block, /\beager\b/, "hero HoloCards must receive the eager flag");
+  const holo = readFile("components/cards/holo-card.tsx");
+  assert.match(holo, /loading=\{eager \? "eager" : "lazy"\}/, "HoloCard maps eager → loading=eager");
+  assert.match(holo, /fetchPriority=\{eager \? "high" : undefined\}/, "HoloCard maps eager → fetchPriority=high");
+});
+
+// ---------------------------------------------------------------------------
+// overnight-design-loop — night register + holo-tilt + scroll-reveal guards.
+// ---------------------------------------------------------------------------
+
+test("Night register: the tone mechanism exists — tokens + body:has() chrome flip (overnight-design-loop)", () => {
+  // Whether the homepage opts in (dark direction) is a DIVERGE-phase choice;
+  // the MECHANISM must exist and stay coherent either way. The winner's
+  // homepage opt-in state gets pinned at CONVERGE.
+  const css = readFile("app/globals.css");
+  assert.match(css, /--color-foil-night:\s*#0a1322/i, "the night surface token exists");
+  assert.match(css, /--color-foil-night-2:\s*#101d31/i, "the night panel token exists");
+  assert.match(css, /--color-foil-vermillion:\s*#d85a30/i, "the vermillion accent token exists");
+  assert.match(css, /body:has\(\[data-tone="night"\]\)/, "the chrome flips via body:has(), no layout fork");
+  const layout = readFile("app/(site)/layout.tsx");
+  assert.match(layout, /var\(--chrome-bg\)/, "the header reads the chrome tone variables");
+  assert.match(layout, /var\(--chrome-surface\)/, "the shell reads the chrome surface variable");
+});
+
+test("Nav: /start is a first-class item; 'Host a machine' is footer-only (fable-design-overhaul §1)", () => {
+  const layout = readFile("app/(site)/layout.tsx");
+  const headerBlock = layout.slice(layout.indexOf("function SiteHeader"), layout.indexOf("function SiteFooter"));
+  assert.match(headerBlock, /href="\/start"/, "the header nav must link /start");
+  assert.doesNotMatch(headerBlock, /href="\/host"/, "'Host a machine' must be out of the header nav");
+  const footerBlock = layout.slice(layout.indexOf("function SiteFooter"));
+  assert.match(footerBlock, /href="\/host"/, "'Host a machine' stays in the footer (SEO pages live)");
+});
+
+test("HoloCard: pointer-driven tilt is reduced-motion-gated and transform-only (fable-design-overhaul Tier 2)", () => {
+  const holo = readFile("components/cards/holo-card.tsx");
+  assert.match(holo, /prefers-reduced-motion:\s*reduce/, "HoloCard must check prefers-reduced-motion before tilting");
+  assert.match(holo, /pointerType === "touch"/, "touch pointers must not drive the tilt");
+  const css = readFile("app/globals.css");
+  assert.match(css, /\.holo-card\s*\{[\s\S]*?perspective/, "the holo tilt transform lives in globals.css");
+  assert.doesNotMatch(css.match(/\.holo-card\s*\{[\s\S]*?\}/)?.[0] ?? "", /(width|height|top|left|margin):/, "the tilt is transform-only, no layout properties");
+});
+
+test("Scroll reveals: animation-timeline is progressive-enhancement + reduced-motion-excluded (Tier 1 ambience)", () => {
+  const css = readFile("app/globals.css");
+  assert.match(css, /@supports\s*\(animation-timeline:\s*view\(\)\)/, "scroll reveals gate on @supports");
+  const supportsBlock = css.slice(css.indexOf("@supports (animation-timeline: view())"));
+  assert.match(supportsBlock, /prefers-reduced-motion:\s*no-preference/, "reveals only run for no-preference users");
+  // The hero must NOT reveal — it paints instantly (LCP guard).
+  const page = readFile("app/(site)/page.tsx");
+  const heroBlock = page.slice(page.indexOf("function Hero"), page.indexOf("function VaultMoment"));
+  assert.doesNotMatch(heroBlock, /reveal-rise/, "the hero never carries a scroll-reveal class");
 });
 
 test("Hero founder avatar: loads eagerly, never lazy (blank-on-paint regression)", () => {
@@ -731,6 +779,47 @@ test("Sakura petals: motion lives ONLY in motion-safe: — reduced-motion users 
   // mismatch). Match the call form so the "no Math.random" note in the file's
   // own comment doesn't trip the guard.
   assert.doesNotMatch(src, /Math\.random\s*\(/, "petals must be deterministic (no Math.random() call)");
+  // design-round3-fixes §3: the sway layer is motion too — same motion-safe bar.
+  assert.match(src, /motion-safe:animate-\[sakura-sway/, "the petal sway must be motion-safe-gated");
+  assert.doesNotMatch(
+    src.replace(/motion-safe:animate-\[sakura-sway[^\]]*\]/g, ""),
+    /(^|[\s"'`])animate-\[sakura-sway/,
+    "no un-gated sakura-sway animation",
+  );
+  // design-round3-fixes §3: real petal silhouettes (SVG path) in two depth
+  // layers (far layer blurred), not the old 3-4px border-radius dots.
+  assert.match(src, /<path/, "petals must be real SVG petal shapes");
+  assert.match(src, /blur-\[2px\]/, "the far petal layer must carry the depth blur");
+});
+
+test("Line page: the sold-vs-ask pair is DRAWN — spread chip only on good buys, designed pending chip, era headers (design-round3-fixes §2 + §6)", () => {
+  const src = readFile("app/(site)/lines/[pokemon]/page.tsx");
+  // §2: the spread chip exists, its math is presentation-only from the two
+  // existing figures, and it renders ONLY when buy < sold (a good buy).
+  assert.match(src, /% under recent sales/, "the spread chip copy must exist");
+  assert.match(
+    src,
+    /card\.marketCents\s*<\s*card\.soldCents/,
+    "the spread chip must gate on buy < sold (neutral otherwise)",
+  );
+  // §2: the pending state is a designed chip, never the broken-looking italic line.
+  assert.match(src, /Sold data pending/, "the honest pending chip label must render");
+  assert.doesNotMatch(src, /italic/, "the pending state must not be italic gray text");
+  // §2: figures use tabular-nums so the price columns align.
+  assert.match(src, /tabular-nums/, "figures must be tabular-nums");
+  // §6: the printings are grouped into labeled eras with quiet headers.
+  assert.match(src, /Modern grails/, "the modern era header must exist");
+  assert.match(src, /Vintage &(amp;)? classics/, "the vintage era header must exist");
+  assert.match(src, /Promos/, "the promos era header must exist");
+  // §6: grouping is presentation-only — empty eras don't render.
+  assert.match(src, /era\.cards\.length > 0/, "empty era buckets must not render");
+});
+
+test("Line card rail: unified tile height, navy-tinted shadow, edge-fade mask (design-round3-fixes §6)", () => {
+  const src = readFile("components/lines/line-card-rail.tsx");
+  assert.match(src, /mask-image:linear-gradient\(90deg,transparent,black_4%,black_96%,transparent\)/, "the rail must edge-fade");
+  assert.match(src, /shadow-foil-navy\/10/, "rail tiles carry the navy-tinted shadow");
+  assert.match(src, /h-\[134px\]/, "rail tiles must share a fixed height");
 });
 
 test("Line card rail: no auto-scroll, smooth-scroll is user-click-driven only (ADR-095)", () => {

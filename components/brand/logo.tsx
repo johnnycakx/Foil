@@ -19,9 +19,15 @@
 // app/layout.tsx as the `--font-wordmark` next/font var.
 
 type Size = "sm" | "md" | "lg";
-/** "onCream" (default, header): navy "Foil". "onNavy" (footer/dark/OG): cream "Foil". */
-type Tone = "onCream" | "onNavy";
+/** "onCream" (default, header): navy "Foil". "onNavy" (footer/dark/OG): cream "Foil".
+ *  "chrome": follows the shared header/footer tone via var(--chrome-ink), so the
+ *  lockup flips with the chrome on night-toned pages (overnight-design-loop). */
+type Tone = "onCream" | "onNavy" | "chrome";
 type MarkVariant = "vermillion" | "mono";
+/** "carved" (default): Bricolage Grotesque (ADR-094). "bubble": Shrikhand —
+ *  the balloon-letter identity cut from John's round-2 verdict (closest OFL
+ *  match to the personal-use-only Skylens Italic taste ref), live text only. */
+type Face = "carved" | "bubble";
 
 const MARK_PX: Record<Size, number> = { sm: 18, md: 22, lg: 32 };
 const WORDMARK_CLASS: Record<Size, string> = { sm: "text-base", md: "text-xl", lg: "text-3xl" };
@@ -96,19 +102,32 @@ export function Logo({
   size = "md",
   tone = "onCream",
   withMark = true,
+  face = "carved",
 }: {
   size?: Size;
   tone?: Tone;
   withMark?: boolean;
+  face?: Face;
 }) {
-  const foilColor = tone === "onNavy" ? "text-foil-cream" : "text-foil-navy";
+  const foilColor =
+    tone === "chrome"
+      ? "text-[var(--chrome-ink)]"
+      : tone === "onNavy"
+        ? "text-foil-cream"
+        : "text-foil-navy";
+  const faceClass = face === "bubble" ? "font-wordmark-bubble font-normal" : "font-wordmark";
+  // Round-3 fix 5: the bubble wordmark is pure lettering at presence size —
+  // one step up from the carved ladder (md chrome renders ~24px), identical
+  // treatment on night and cream.
+  const wordmarkClass =
+    face === "bubble" && size === "md" ? "text-2xl" : WORDMARK_CLASS[size];
   return (
     <span
       aria-label="Foil home"
-      className={`font-wordmark inline-flex items-center font-semibold leading-none tracking-tight ${GAP_CLASS[size]}`}
+      className={`${faceClass} inline-flex items-center font-semibold leading-none tracking-tight ${GAP_CLASS[size]}`}
     >
       {withMark && <SealMark px={MARK_PX[size]} />}
-      <span aria-hidden className={`${WORDMARK_CLASS[size]} ${foilColor}`}>
+      <span aria-hidden className={`${wordmarkClass} ${foilColor}`}>
         Foil
       </span>
     </span>

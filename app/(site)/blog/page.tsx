@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getAllPosts } from "./posts-meta";
+import { getAllPosts, isVendingPost } from "./posts-meta";
 import { EmailCapture } from "@/components/email-capture";
 
 const TITLE = "Foil Blog — Pokémon TCG deals, pricing, and market reads";
@@ -44,27 +44,34 @@ function formatDate(iso: string): string {
 }
 
 export default function BlogIndexPage() {
+  // Collector posts lead the index; vending posts move to a compact
+  // "For businesses" section below (design-loop-round2 §5: a collector must
+  // never land on a vending blog — the PAGES stay live + linked for SEO,
+  // they just stop leading). Partition is ADR-063's pillar gate.
   const posts = getAllPosts();
+  const collectorPosts = posts.filter((p) => !isVendingPost(p));
+  const vendingPosts = posts.filter(isVendingPost);
 
   return (
-    <>
-      <main className="mx-auto w-full max-w-4xl flex-1 px-5 pt-12 pb-20 sm:px-8 sm:pt-20">
-        <p className="text-xs font-medium uppercase tracking-wider text-foil-gold">
+    // Night register (design-loop-round2 §3) — the chrome flips via body:has().
+    <main data-tone="night" className="bg-foil-night text-foil-cream">
+      <div className="mx-auto w-full max-w-4xl flex-1 px-5 pt-12 pb-20 sm:px-8 sm:pt-20">
+        <p className="text-xs font-medium uppercase tracking-wider text-foil-accent">
           Field notes
         </p>
-        <h1 className="font-display mt-3 text-4xl font-bold tracking-[-0.02em] text-foil-navy sm:text-5xl">
+        <h1 className="font-display mt-3 text-4xl font-bold tracking-[-0.02em] text-foil-cream sm:text-5xl">
           Foil Blog
         </h1>
-        <p className="mt-4 max-w-2xl text-lg text-foil-slate">
+        <p className="mt-4 max-w-2xl text-lg text-foil-cream/70">
           Posts on Pokémon card deals, market pricing, condition grading, and
           what&apos;s actually worth buying right now — from the team building Foil.
         </p>
 
-        {posts.length === 0 ? (
-          <p className="mt-12 text-foil-slate">No posts yet. Check back soon.</p>
+        {collectorPosts.length === 0 ? (
+          <p className="mt-12 text-foil-cream/60">No posts yet. Check back soon.</p>
         ) : (
-          <ul className="mt-12 divide-y divide-foil-navy/10 border-y border-foil-navy/10">
-            {posts.map((post) => (
+          <ul className="mt-12 divide-y divide-foil-cream/10 border-y border-foil-cream/10">
+            {collectorPosts.map((post) => (
               <li key={post.slug} className="py-6">
                 <Link
                   href={`/blog/${post.slug}`}
@@ -73,7 +80,7 @@ export default function BlogIndexPage() {
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     <time
                       dateTime={post.date}
-                      className="font-mono text-xs uppercase tracking-wider text-foil-slate"
+                      className="font-mono text-xs uppercase tracking-wider text-foil-cream/50"
                     >
                       {formatDate(post.date)}
                     </time>
@@ -82,7 +89,7 @@ export default function BlogIndexPage() {
                         {post.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="rounded-full bg-foil-gold/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-foil-navy"
+                            className="rounded-full bg-foil-cream/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-foil-cream/70"
                           >
                             {tag}
                           </span>
@@ -90,10 +97,10 @@ export default function BlogIndexPage() {
                       </span>
                     )}
                   </div>
-                  <h2 className="font-display mt-2 text-xl font-bold tracking-[-0.02em] text-foil-navy transition group-hover:text-foil-coral sm:text-2xl">
+                  <h2 className="font-display mt-2 text-xl font-bold tracking-[-0.02em] text-foil-cream transition group-hover:text-foil-accent sm:text-2xl">
                     {post.title}
                   </h2>
-                  <p className="mt-2 text-sm text-foil-slate">
+                  <p className="mt-2 text-base text-foil-cream/60">
                     {post.description}
                   </p>
                 </Link>
@@ -101,11 +108,35 @@ export default function BlogIndexPage() {
             ))}
           </ul>
         )}
-      </main>
 
-      <section className="mx-auto w-full max-w-4xl px-5 pb-12 sm:px-8">
-        <EmailCapture source="blog-index-footer" variant="footer" />
-      </section>
-    </>
+        {vendingPosts.length > 0 && (
+          <section className="mt-14">
+            <h2 className="font-display text-lg font-semibold text-foil-cream/80">
+              For businesses
+            </h2>
+            <p className="mt-1 text-sm text-foil-cream/50">
+              Hosting one of our card vending machines — a different audience,
+              kept out of the collector feed.
+            </p>
+            <ul className="mt-4 space-y-2">
+              {vendingPosts.map((post) => (
+                <li key={post.slug}>
+                  <Link
+                    href={`/blog/${post.slug}`}
+                    className="text-sm text-foil-cream/70 underline decoration-foil-cream/20 underline-offset-4 transition hover:text-foil-cream hover:decoration-foil-accent"
+                  >
+                    {post.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <section className="mt-16">
+          <EmailCapture source="blog-index-footer" variant="footer" tone="night" />
+        </section>
+      </div>
+    </main>
   );
 }
