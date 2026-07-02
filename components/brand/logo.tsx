@@ -19,9 +19,15 @@
 // app/layout.tsx as the `--font-wordmark` next/font var.
 
 type Size = "sm" | "md" | "lg";
-/** "onCream" (default, header): navy "Foil". "onNavy" (footer/dark/OG): cream "Foil". */
-type Tone = "onCream" | "onNavy";
+/** "onCream" (default, header): navy "Foil". "onNavy" (footer/dark/OG): cream "Foil".
+ *  "chrome": follows the shared header/footer tone via var(--chrome-ink), so the
+ *  lockup flips with the chrome on night-toned pages (overnight-design-loop). */
+type Tone = "onCream" | "onNavy" | "chrome";
 type MarkVariant = "vermillion" | "mono";
+/** "carved" (default): Bricolage Grotesque (ADR-094). "soft": Baloo 2 — the
+ *  cloudy/bubbly rounded cut from John's 2026-07-02 wordmark brief, explored
+ *  in-page as live text. */
+type Face = "carved" | "soft";
 
 const MARK_PX: Record<Size, number> = { sm: 18, md: 22, lg: 32 };
 const WORDMARK_CLASS: Record<Size, string> = { sm: "text-base", md: "text-xl", lg: "text-3xl" };
@@ -96,16 +102,24 @@ export function Logo({
   size = "md",
   tone = "onCream",
   withMark = true,
+  face = "carved",
 }: {
   size?: Size;
   tone?: Tone;
   withMark?: boolean;
+  face?: Face;
 }) {
-  const foilColor = tone === "onNavy" ? "text-foil-cream" : "text-foil-navy";
+  const foilColor =
+    tone === "chrome"
+      ? "text-[var(--chrome-ink)]"
+      : tone === "onNavy"
+        ? "text-foil-cream"
+        : "text-foil-navy";
+  const faceClass = face === "soft" ? "font-wordmark-soft" : "font-wordmark";
   return (
     <span
       aria-label="Foil home"
-      className={`font-wordmark inline-flex items-center font-semibold leading-none tracking-tight ${GAP_CLASS[size]}`}
+      className={`${faceClass} inline-flex items-center font-semibold leading-none tracking-tight ${GAP_CLASS[size]}`}
     >
       {withMark && <SealMark px={MARK_PX[size]} />}
       <span aria-hidden className={`${WORDMARK_CLASS[size]} ${foilColor}`}>

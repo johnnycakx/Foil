@@ -165,9 +165,9 @@ test("Homepage Hero: solid cream — no gradient/Card3D/Magnetic/Sparkles (ADR-0
   assert.doesNotMatch(src, /<Card3D\b/);
   assert.doesNotMatch(src, /<MagneticLink\b/);
   assert.doesNotMatch(src, /<Sparkles\b/);
-  // The hero keeps a plain Link to /start (now a demoted *secondary* link —
-  // the primary CTA is the EmailCapture, G-EMAIL / ADR-065).
-  assert.match(src, /<Link[^>]*href=["']\/start["']/);
+  // The hero keeps a Link to /start — now the PRIMARY pull-model CTA with
+  // src attribution (overnight-design-loop; supersedes the ADR-065 demotion).
+  assert.match(src, /<Link[^>]*href=["']\/start\?src=home-hero["']/);
 });
 
 test("Homepage Hero: H1 carries font-display class (Fraunces)", () => {

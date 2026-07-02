@@ -39,8 +39,10 @@ test("does NOT embed the heavy official X/Twitter widget (LCP/CWV guard)", () =>
 
 test("the X link stays calm + token-styled (ADR-066: secondary to the email ask, no loud color)", () => {
   const anchor = layout.slice(layout.indexOf('href="https://x.com/FoilTCG"'), layout.indexOf("</a>", layout.indexOf("x.com/FoilTCG")));
-  // navy ink on hover, like the sibling footer links — no raw hex, no resting coral.
-  assert.match(anchor, /hover:text-foil-navy/);
+  // Chrome ink on hover, like the sibling footer links (the footer reads the
+  // --chrome-* tone variables since the overnight-design-loop night register) —
+  // no raw hex, no resting coral.
+  assert.match(anchor, /hover:text-\[var\(--chrome-ink\)\]/);
   assert.doesNotMatch(anchor, /#[0-9a-fA-F]{3,6}/);
   assert.doesNotMatch(anchor, /(?<!hover:)(?:text|bg)-foil-coral/);
 });

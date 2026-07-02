@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces, Bricolage_Grotesque } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces, Bricolage_Grotesque, Baloo_2 } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { siteUrl } from "@/lib/seo/site-url";
 import "./globals.css";
@@ -33,6 +33,17 @@ const fraunces = Fraunces({
 // the `font-wordmark` utility via globals.css.
 const bricolage = Bricolage_Grotesque({
   variable: "--font-wordmark",
+  subsets: ["latin"],
+  weight: ["600", "700"],
+});
+
+// Soft wordmark cut (overnight-design-loop, John's 2026-07-02 wordmark brief):
+// "Foil" in a cloudy/bubbly rounded display face, judged in-page as live text.
+// Baloo 2 won the three-way face-off (vs Fredoka: less toy-like; vs Comfortaa:
+// holds weight at nav size). Rendered via Logo face="soft"; Bricolage stays
+// pinned as --font-wordmark for the carved cut + OG surfaces.
+const baloo = Baloo_2({
+  variable: "--font-wordmark-soft",
   subsets: ["latin"],
   weight: ["600", "700"],
 });
@@ -85,7 +96,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${bricolage.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${bricolage.variable} ${baloo.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {/* Impact.com affiliate program site verification - see ADR-020 once landed. */}

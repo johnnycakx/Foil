@@ -4,6 +4,11 @@ import { useEffect, useState, useTransition } from "react";
 import { subscribeAction, type SubscribeActionResult } from "@/app/actions/subscribe";
 
 type Variant = "inline" | "footer";
+// Surface tone (overnight-design-loop): "cream" is the default everywhere;
+// "night" restyles the capture for the dark homepage register. Gold is retired
+// (John, 2026-07-01) — the accents here are vermillion, the hanko ink that
+// succeeds it (ADR-094).
+type Tone = "cream" | "night";
 
 const DEFAULT_HEADLINES: Record<Variant, string> = {
   inline: "Get a Pokémon TCG market read once a week.",
@@ -15,6 +20,7 @@ export function EmailCapture({
   variant,
   headline,
   subtext,
+  tone = "cream",
 }: {
   source: string;
   variant: Variant;
@@ -23,6 +29,7 @@ export function EmailCapture({
   // Lets a surface state its own concrete "what lands in your inbox" promise
   // instead of the generic default. Defaults to the existing copy.
   subtext?: string;
+  tone?: Tone;
 }) {
   const [state, setState] = useState<SubscribeActionResult | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -58,19 +65,24 @@ export function EmailCapture({
 
   const heading = headline ?? DEFAULT_HEADLINES[variant];
   const isFooter = variant === "footer";
+  const isNight = tone === "night";
 
   if (state?.ok) {
     return (
       <div
         className={
-          isFooter
-            ? "rounded-2xl border border-foil-gold/40 bg-foil-gold/10 p-4 text-sm text-foil-navy"
-            : "mt-12 rounded-2xl border border-foil-gold/40 bg-foil-gold/10 p-5 text-sm text-foil-navy"
+          isNight
+            ? "rounded-2xl border border-foil-vermillion/40 bg-foil-vermillion/10 p-5 text-sm text-foil-cream"
+            : isFooter
+              ? "rounded-2xl border border-foil-vermillion/40 bg-foil-vermillion/10 p-4 text-sm text-foil-navy"
+              : "mt-12 rounded-2xl border border-foil-vermillion/40 bg-foil-vermillion/10 p-5 text-sm text-foil-navy"
         }
         aria-live="polite"
       >
-        <p className="font-medium text-foil-navy">You&apos;re in.</p>
-        <p className="mt-1 text-foil-slate">
+        <p className={isNight ? "font-medium text-foil-cream" : "font-medium text-foil-navy"}>
+          You&apos;re in.
+        </p>
+        <p className={isNight ? "mt-1 text-foil-cream/70" : "mt-1 text-foil-slate"}>
           We&apos;ll send a Pokémon TCG market read once a week. Watch your inbox.
         </p>
       </div>
@@ -83,22 +95,26 @@ export function EmailCapture({
   return (
     <section
       className={
-        isFooter
-          ? "rounded-2xl border border-foil-navy/10 bg-foil-cream p-5 shadow-sm shadow-foil-navy/5"
-          : "mt-14 rounded-2xl border border-foil-gold/40 bg-foil-cream p-6 shadow-lg shadow-foil-navy/10 sm:p-8"
+        isNight
+          ? "rounded-2xl border border-foil-cream/12 bg-foil-night-2 p-6 sm:p-8"
+          : isFooter
+            ? "rounded-2xl border border-foil-navy/10 bg-foil-cream p-5 shadow-sm shadow-foil-navy/5"
+            : "mt-14 rounded-2xl border border-foil-navy/15 bg-foil-cream p-6 shadow-lg shadow-foil-navy/10 sm:p-8"
       }
     >
       <h2
         className={
-          isFooter
-            ? "font-display text-base font-bold tracking-[-0.02em] text-foil-navy"
-            : "font-display text-xl font-bold tracking-[-0.02em] text-foil-navy sm:text-2xl"
+          isNight
+            ? "font-display text-xl font-bold tracking-[-0.02em] text-foil-cream sm:text-2xl"
+            : isFooter
+              ? "font-display text-base font-bold tracking-[-0.02em] text-foil-navy"
+              : "font-display text-xl font-bold tracking-[-0.02em] text-foil-navy sm:text-2xl"
         }
       >
         {heading}
       </h2>
       {!isFooter && (
-        <p className="mt-2 text-sm text-foil-slate">
+        <p className={isNight ? "mt-2 text-sm text-foil-cream/70" : "mt-2 text-sm text-foil-slate"}>
           {subtext ??
             "Card price moves, Japanese-set drops, and one sharp valuation note in your inbox. No spam."}
         </p>
@@ -124,14 +140,22 @@ export function EmailCapture({
           required
           placeholder="you@gmail.com"
           disabled={isPending}
-          className="min-w-0 flex-1 rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/70 outline-none transition focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30 disabled:opacity-60"
+          className={
+            isNight
+              ? "min-w-0 flex-1 rounded-xl border border-foil-cream/20 bg-foil-night px-4 py-3 text-base text-foil-cream placeholder:text-foil-cream/40 outline-none transition focus:border-foil-vermillion focus:ring-2 focus:ring-foil-vermillion/30 disabled:opacity-60"
+              : "min-w-0 flex-1 rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/70 outline-none transition focus:border-foil-vermillion focus:ring-2 focus:ring-foil-vermillion/30 disabled:opacity-60"
+          }
           aria-invalid={state?.ok === false}
           aria-describedby={state?.ok === false ? errorId : undefined}
         />
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-xl bg-foil-navy px-5 py-3 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-coral hover:shadow-lg hover:shadow-foil-navy/30 hover:ring-2 hover:ring-foil-gold/40 disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:bg-foil-navy disabled:hover:ring-0"
+          className={
+            isNight
+              ? "rounded-xl bg-foil-cream px-5 py-3 text-base font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-vermillion/60 disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:ring-0"
+              : "rounded-xl bg-foil-navy px-5 py-3 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-vermillion hover:shadow-lg hover:shadow-foil-navy/30 disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:bg-foil-navy"
+          }
         >
           {isPending ? "Subscribing…" : "Subscribe"}
         </button>
@@ -140,7 +164,11 @@ export function EmailCapture({
         <p
           id={errorId}
           role="alert"
-          className="mt-2 flex items-start gap-1.5 text-sm text-foil-navy"
+          className={
+            isNight
+              ? "mt-2 flex items-start gap-1.5 text-sm text-foil-cream"
+              : "mt-2 flex items-start gap-1.5 text-sm text-foil-navy"
+          }
         >
           <svg
             aria-hidden
