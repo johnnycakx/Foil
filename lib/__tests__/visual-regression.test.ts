@@ -612,8 +612,11 @@ test("Homepage hero images are self-hosted local webp that exist, no flaky exter
   // the row as broken images in prod). Local /hero/*.webp only.
   assert.doesNotMatch(src, /https:\/\/images\.pokemontcg\.io/, "hero must not fetch from the external SDK CDN");
   assert.match(src, /\/hero\/\$\{c\.id\.replace\("\/", "-"\)\}\.webp/, "hero src must be a local /hero/*.webp path");
-  // Every HERO_CARDS id must have a real file in public/hero/ — no broken refs.
-  const ids = [...src.matchAll(/\{\s*id:\s*"([^"]+)"/g)].map((m) => m[1]);
+  // Every HERO_CARDS id must have a real file in public/hero/ — no broken
+  // refs. Scope the extraction to the HERO_CARDS block: VAULT_POCKETS ids
+  // live in /binder and are checked by their own guard (binder-aesthetic-pass).
+  const heroBlock = src.slice(src.indexOf("const HERO_CARDS"), src.indexOf("];", src.indexOf("const HERO_CARDS")));
+  const ids = [...heroBlock.matchAll(/\{\s*id:\s*"([^"]+)"/g)].map((m) => m[1]);
   assert.ok(ids.length >= 8, `expected >=8 HERO_CARDS ids, found ${ids.length}`);
   for (const id of ids) {
     const file = join(ROOT, "public/hero", `${id.replace("/", "-")}.webp`);
@@ -696,6 +699,41 @@ test("Hero fan + vault pockets: every card is a slug-verified link to its card p
   const fanIdx = src.indexOf("HERO_CARDS.map");
   const heroBlock = src.slice(src.indexOf("function Hero"), fanIdx);
   assert.doesNotMatch(heroBlock.slice(heroBlock.lastIndexOf("<div")), /aria-hidden/, "the fan wrapper must not be aria-hidden");
+});
+
+test("Vault pockets: the SV-151 starter evolution lines in order, self-hosted art (binder-aesthetic-pass)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  // The sequencing IS the aesthetic: Bulbasaur→Venusaur ex, Charmander→
+  // Charizard ex, Squirtle→Blastoise ex — pinned in evolution order.
+  const order = ["sv3pt5/166", "sv3pt5/167", "sv3pt5/198", "sv3pt5/168", "sv3pt5/169", "sv3pt5/199", "sv3pt5/170", "sv3pt5/171", "sv3pt5/200"];
+  let at = src.indexOf("VAULT_POCKETS");
+  for (const id of order) {
+    const next = src.indexOf(`"${id}"`, at);
+    assert.ok(next > -1, `pocket ${id} present and in evolution order`);
+    at = next;
+  }
+  // Self-hosted pocket art (ADR-056 rationale) — every file must exist.
+  assert.match(src, /\/binder\/\$\{p\.id\.replace\("\/", "-"\)\}\.webp/, "pockets render local /binder art");
+  for (const id of order) {
+    assert.ok(existsSync(join(ROOT, "public/binder", `${id.replace("/", "-")}.webp`)), `missing public/binder/${id.replace("/", "-")}.webp`);
+  }
+});
+
+test("Sakura ambience: deterministic, motion-safe, layered — mounted on home + /deals + vault (binder-aesthetic-pass)", () => {
+  const amb = readFile("components/sakura-ambience.tsx");
+  assert.doesNotMatch(amb, /Math\.random/, "petal specs are deterministic");
+  assert.match(amb, /motion-safe:animate-\[sakura-fall/, "fall is motion-safe gated");
+  assert.match(amb, /motion-safe:animate-\[sakura-sway/, "sway is motion-safe gated");
+  assert.match(amb, /blur-\[2px\]/, "the far depth layer blurs");
+  assert.match(amb, /pointer-events-none/, "petals never intercept input");
+  // Density ladder: /lines (28) > home night (16) > headers (9).
+  // Entry-shaped matches only (the AmbientSpec type union also contains the
+  // literal): spec entries close with `layer: "..." }`.
+  assert.equal((amb.match(/layer: "near" \}/g) ?? []).length, 6, "night mode: 6 near petals");
+  assert.equal((amb.match(/layer: "far" \}/g) ?? []).length, 19, "10 night-far + 9 header-far petals");
+  assert.match(readFile("app/(site)/page.tsx"), /<SakuraAmbience mode="night"/, "homepage mounts the night ambience");
+  assert.match(readFile("app/(site)/deals/page.tsx"), /<SakuraAmbience mode="header"/, "/deals mounts the header ambience");
+  assert.match(readFile("app/(site)/w/[token]/page.tsx"), /<SakuraAmbience mode="header"/, "the vault mounts the header ambience");
 });
 
 test("Nav: /start is a first-class item; 'Host a machine' is footer-only (fable-design-overhaul §1)", () => {

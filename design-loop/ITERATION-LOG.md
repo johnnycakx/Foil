@@ -355,3 +355,15 @@ token pair itself).
 **iter-18 - sakura hanami + /lines structure [fixes 2-lines/3/6]** (subagent under strict brief; see commit + report): real SVG petals in two depth layers with density gradient + hero wash, drift motion-safe only; spread/pending chips on tiles; era grouping; lineup strip unified + edge-faded; empty-slot verdict recorded.
 
 **ROUND-3 FINAL SCORES (rubric a-e):** (a) hero depth 9.0 - the fan is lit + grounded, mobile included · (b) data-viz 8.6 - dumbbells/bars/chips drawn from real aggregates only · (c) sakura 8.8 - hanami at a glance; root-cause keyframe bug found + fixed · (d) rhythm 8.5 - dead band gone, cascade holds at 1440 + 390 · (e) coherence 8.6 - one system night+cream, no stock tells left on touched surfaces. **avg 8.70 · min 8.5 - BAR HIT (>= 8.5 / >= 8.0) with all six fixes visibly landed in gallery shots. Round 3 exits on quality at 3 of 6 iterations.**
+
+---
+
+## iter-21 - binder-aesthetic-pass (bar hit iteration 1 of 2)
+
+**Fix 1 - the binder page:** VAULT_POCKETS = the SV-151 Gen-1 starter evolution lines in order (Bulbasaur->Venusaur ex / Charmander->Charizard ex / Squirtle->Blastoise ex, IR/SIR printings) - one curated painterly composition instead of clashing rainbow chase cards. All nine slug-verified in the catalog with baked market data (spot-checked two pages rendering prices); targets sit 10-12% under the real holofoil market figures (bake 2026-07-01); art self-hosted under public/binder/ (ADR-056 rationale); the tenth pocket stays the invitation.
+
+**Fix 2 - hanami comes home:** components/sakura-ambience.tsx ports the /lines petal machinery (notched-teardrop SVG + breeze/amp/wobble physics) at ambient density: homepage night mode 16 petals (6 near brighter-tinted for charcoal, 10 far), /deals + vault headers 9 far-only. Density ladder 28 (/lines flagship) > 16 > 9. All deterministic, motion-safe gated, pointer-events-none, under content.
+
+**Skill trace:** impeccable-quieter -> the density ladder + the restraint verdict on the /deals shot (petals read as atmosphere, none touch a data row); soft-skill -> kept the physics identical to /lines (mass-plausible drift, no new motion grammar); frontend-design -> the sequencing-is-the-aesthetic pocket order + plain card names (dropped IR/SIR abbreviations from captions - the art says it).
+
+**Shots:** gallery/iter-21-binder/ (home full + 1152 + 390, deals fold + mobile). Guards: pocket evolution order + /binder art existence + ambience determinism/mounts/density pinned. Gates: 1,428 tests (1,410 pass incl. 2 new guards) / 0 fail - build 208/208 - lint clean on touched surfaces.

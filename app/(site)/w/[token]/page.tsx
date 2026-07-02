@@ -36,6 +36,7 @@ import {
 } from "@/app/actions/vault";
 import { VaultAddCard } from "@/components/vault/vault-add-card";
 import { VaultSettle } from "@/components/vault/vault-settle";
+import { SakuraAmbience } from "@/components/sakura-ambience";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -139,8 +140,13 @@ export default async function VaultPage({
   return (
     // design-loop-round2 §4: the vault gets the night register — binder pockets
     // on the night surface, card art as the only bright thing.
-    <main data-tone="night" className="mx-auto w-full max-w-5xl flex-1 bg-foil-night px-5 pt-10 pb-20 text-foil-cream sm:px-8 sm:pt-14">
-      <header className="flex flex-wrap items-end justify-between gap-4">
+    <main data-tone="night" className="relative mx-auto w-full max-w-5xl flex-1 bg-foil-night px-5 pt-10 pb-20 text-foil-cream sm:px-8 sm:pt-14">
+      {/* Sparse far-layer hanami over the vault header (binder-aesthetic-pass)
+          — the most personal room gets the motif, at whisper density. */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[300px] overflow-hidden">
+        <SakuraAmbience mode="header" />
+      </div>
+      <header className="relative flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs font-medium uppercase tracking-widest text-foil-accent">Your vault</p>
           <h1 className="font-display mt-1 text-4xl font-bold tracking-[-0.02em] text-foil-cream sm:text-5xl">

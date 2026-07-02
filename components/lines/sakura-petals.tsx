@@ -70,8 +70,10 @@ const PETALS: readonly PetalSpec[] = [
   { left: "88%", top: "52%", delay: "-12.5s", dur: "27s", sway: "9.7s", amp: "8px",  wob: "13deg", breeze: "3.5vw",  size: 10, rot: 52,  tint: 0.33, layer: "far" },
 ] as const;
 
-/** A single cherry-blossom petal — a real notched-teardrop SVG silhouette. */
-function Petal({ size, rot, tint }: { size: number; rot: number; tint: number }) {
+/** A single cherry-blossom petal — a real notched-teardrop SVG silhouette.
+ *  Exported for components/sakura-ambience.tsx (binder-aesthetic-pass: the
+ *  hanami motif goes site-ambient); /lines rendering is unchanged. */
+export function Petal({ size, rot, tint }: { size: number; rot: number; tint: number }) {
   return (
     <svg
       aria-hidden

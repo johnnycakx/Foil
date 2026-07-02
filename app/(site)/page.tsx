@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { EmailCapture } from "@/components/email-capture";
 import { HoloCard } from "@/components/cards/holo-card";
+import { SakuraAmbience } from "@/components/sakura-ambience";
 import { CARD_CATALOG, setIdsInCatalog } from "@/lib/cards/catalog";
 import { SealMark } from "@/components/brand/logo";
 
@@ -141,6 +142,10 @@ function Hero() {
   const setCount = setIdsInCatalog().length;
   return (
     <section className="relative isolate overflow-hidden">
+      {/* Hanami comes home (binder-aesthetic-pass): the /lines petal physics
+          at ambient density on the charcoal — atmosphere, not weather. Sits
+          under all content; static scatter under reduced-motion. */}
+      <SakuraAmbience mode="night" />
       {/* The light spill — a warm glow rising from behind the card fan, as if
           the cards themselves light the room. Pure CSS, aria-hidden, zero
           critical-path cost. */}
@@ -284,18 +289,27 @@ function Hero() {
 }
 
 // The vault moment (fable-design-overhaul §1): show-don't-tell — a binder
-// spread with tracked cards, the product's proof shot. Targets are
-// illustrative but PLAUSIBLE against real sold data (a collector smells a fake
-// number instantly); the ninth pocket is the invitation.
+// spread with tracked cards, the product's proof shot. Binder-aesthetic-pass
+// (John's reference photo): the Gen 1 STARTER EVOLUTION LINES from SV-151,
+// Illustration Rare printings, in evolution order — the sequencing IS the
+// aesthetic, and the painterly IR register reads as one curated page instead
+// of clashing rainbow chase cards. Targets are illustrative but PLAUSIBLE
+// against the baked market data (holofoil market as of the 2026-07-01 bake:
+// Bulbasaur $87.90 · Ivysaur $52.69 · Venusaur ex $124.60 · Charmander
+// $112.03 · Charmeleon $77.94 · Charizard ex $420.01 · Squirtle $110.59 ·
+// Wartortle $72.30 · Blastoise ex $158.06) — each target sits ~10-12% under.
+// Art is SELF-HOSTED under public/binder/ (ADR-056 rationale). The tenth
+// pocket is the invitation.
 const VAULT_POCKETS: { id: string; name: string; target: string }[] = [
-  { id: "swsh7/215",  name: "Umbreon VMAX alt", target: "emails you at $1,900" },
-  { id: "swsh7/218",  name: "Rayquaza VMAX alt", target: "emails you at $400" },
-  { id: "base1/4",    name: "Charizard, Base Set", target: "emails you at $450" },
-  { id: "swsh11/186", name: "Giratina V alt", target: "emails you at $170" },
-  { id: "swsh12/186", name: "Lugia V alt", target: "emails you at $110" },
-  { id: "swsh35/74",  name: "Charizard VMAX rainbow", target: "emails you at $210" },
-  { id: "swsh8/269",  name: "Mew VMAX alt", target: "emails you at $95" },
-  { id: "swsh4/188",  name: "Pikachu VMAX rainbow", target: "emails you at $75" },
+  { id: "sv3pt5/166", name: "Bulbasaur", target: "emails you at $78" },
+  { id: "sv3pt5/167", name: "Ivysaur", target: "emails you at $46" },
+  { id: "sv3pt5/198", name: "Venusaur ex", target: "emails you at $110" },
+  { id: "sv3pt5/168", name: "Charmander", target: "emails you at $99" },
+  { id: "sv3pt5/169", name: "Charmeleon", target: "emails you at $69" },
+  { id: "sv3pt5/199", name: "Charizard ex", target: "emails you at $375" },
+  { id: "sv3pt5/170", name: "Squirtle", target: "emails you at $98" },
+  { id: "sv3pt5/171", name: "Wartortle", target: "emails you at $64" },
+  { id: "sv3pt5/200", name: "Blastoise ex", target: "emails you at $140" },
 ];
 
 function VaultMoment() {
@@ -345,7 +359,7 @@ function VaultMoment() {
                   <>
                     <div className="aspect-[5/7] overflow-hidden rounded-lg ring-1 ring-foil-cream/10 transition group-hover:-translate-y-0.5 group-hover:ring-foil-cream/30">
                       <Image
-                        src={`/hero/${p.id.replace("/", "-")}.webp`}
+                        src={`/binder/${p.id.replace("/", "-")}.webp`}
                         alt={p.name}
                         width={280}
                         height={392}

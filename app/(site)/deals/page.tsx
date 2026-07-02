@@ -16,6 +16,7 @@ import { getMarketMovers } from "@/lib/deals/market-movers-read";
 import { DealsBoard } from "@/components/deals/deals-board";
 import { MoversBoard } from "@/components/deals/movers-board";
 import { EmailCapture } from "@/components/email-capture";
+import { SakuraAmbience } from "@/components/sakura-ambience";
 import { CARD_CATALOG } from "@/lib/cards/catalog";
 
 export const runtime = "nodejs";
@@ -68,8 +69,13 @@ export default async function DealsPage() {
   return (
     // Night register (design-loop-round2 §3) — full-bleed dark surface, content
     // constrained inside; the chrome flips via body:has().
-    <main data-tone="night" className="flex-1 bg-foil-night text-foil-cream">
-      <div className="mx-auto w-full max-w-3xl px-5 pt-10 pb-20 sm:px-8 sm:pt-14">
+    <main data-tone="night" className="relative flex-1 bg-foil-night text-foil-cream">
+      {/* Sparse far-layer hanami over the header band (binder-aesthetic-pass)
+          — atmosphere only, never competing with the data rows below. */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[380px] overflow-hidden">
+        <SakuraAmbience mode="header" />
+      </div>
+      <div className="relative mx-auto w-full max-w-3xl px-5 pt-10 pb-20 sm:px-8 sm:pt-14">
       {/* Screenshot-friendly header band: title + date + foiltcg.com all in
           frame so every shared screenshot is self-branding. */}
       <header className="text-center">
