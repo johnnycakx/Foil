@@ -20,6 +20,39 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 
 ---
 date: 2026-07-02
+category: monetization
+status: captured
+---
+## "Foil for sellers" — the agent-SaaS B2B lane (Greg Isenberg playbook applied to the TCG niche)
+
+The collector product is B2C with no paycheck attached; the paycheck in this niche sits with card shops and volume sellers who pay real hours for repricing, sourcing underpriced listings, and buylist decisions. An agent that watches the market and drafts repricing/sourcing actions (draft-and-approve first, per the ladder) sold like labor — setup fee + monthly, eventually outcome pricing — scores 5/5 on the workflow filter (hourly frequency, clear finish line, touches TCGplayer/eBay, learnable edge cases, felt loss). John IS the human to shadow (L4 seller). The collector product becomes the data moat + distribution wedge. Explicitly Layer 4: after free-product validation → eve → concierge v0. Full playbook: youtube.com/watch?v=83fWzQSWB10 ("sell the pilot like labor, productize the repeated parts").
+
+**Context:** John found the Isenberg "agents are the new SaaS" episode 2026-07-01; Cowork's read — it validates the current pull-model/concierge trajectory (wrapper=trust, approve gates, autonomy ladder are already our architecture) rather than requiring a rename/repivot; the genuinely new piece is this B2B lane. Sunday review.
+
+---
+date: 2026-07-02
+category: product
+status: captured
+---
+## Reference-agreement benchmark vs CardLadder (+ partnership email, + PSA public API)
+
+CardLadder has NO public API (consumer sub, PSA/Collectors-owned; scraping = ToS + trust suicide). What we actually need is AGREEMENT with the reference collectors price against at conventions: add a CardLadder column to the ~Aug-10 data benchmark (25 cards, our 30d sold avg vs CL value, manual via a normal sub — ToS-clean). Agreement → marketing claim ("same sold reality the reference tools use"); divergence → find out why before a vendor mocks a Foil number publicly. Side doors: partnership email (support@cardladder.com, post-traction), and the PSA PUBLIC API (real, free — cert verification + pop counts) for graded-card depth later.
+
+**Context:** John, 2026-07-01 — "CardLadder and Collectr are what vendors reference at conventions, where most deals happen." Also seeds the buy-signal/at-the-table market-check surface (#388) as the eventual convention wedge.
+
+---
+date: 2026-07-02
+category: ux
+status: captured
+---
+## Design-tooling research: give the build loop professional-grade design leverage
+
+John is underwhelmed with the site's visual bar (2026-07-01, pre-design-overhaul homepage). Research track for Cowork: (a) design-capable MCPs/plugins for the Claude Code loop — Figma MCP (already installed as a plugin), component registries (shadcn/21st.dev-class), Playwright screenshot design-review loop (already an IDEAS/repo concept — promote it); (b) three.js/R3F for ONE hero showpiece once traction justifies it (deferred in the overhaul spec, reconsider after eve); (c) AI creative-asset tooling for social/OG/video (Higgsfield-class video gen, Adobe plugin already connected in Cowork) — the X market-card and banner assets are the near-term consumers. Deliverable: a recommended toolchain + what to install where (Cowork vs Claude Code), THEN the design overhaul runs with it.
+
+**Context:** John, 2026-07-01 session close — "we should research better design tools… whatever would make this website and all our creative assets look more professional." Cowork to research at next session start, before fable-design-overhaul runs.
+
+---
+date: 2026-07-02
 category: growth
 status: captured
 ---

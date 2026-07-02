@@ -1,38 +1,29 @@
-# Next-Session Brief — 2026-07-01 (evening) — THROUGH-LINE: the Fable-5 surgical overhaul (audit done; foundation KEEP; 3 Phase-1/2 goals specced)
+# Next-Session Brief — 2026-07-02 (overnight close) — THROUGH-LINE: eve delivery is BUILT and gated only on the design bar + 5 data rows; design-tooling research FIRST, then the overhaul, then the send
 
 > Read first: current state + prioritized plan. (Cowork edits this; commits on John's machine.)
 
-## What just happened
-Fable 5 came back; John upgraded to the $200/mo plan. Full six-branch audit ran (**docs/AUDIT-2026-07-01-FABLE.md** — the canonical findings doc). Grades: live surfaces C+ · SEO D+ · **funnel D** · content C- · code/ops B- · X C+. John proposed a ground-up rebuild; **decision: KEEP the foundation, rebuild surgically** — the audit showed architecture is the strongest layer and every 🔴 is a wiring/content/copy fix. Rebuild-from-the-goal is reserved for the two subsystems that failed at design level: the alert engine and the bake/render data pipeline. The paused `card-page-perf-regression` goal is **SUPERSEDED** (its Part B premise was false: the baked snapshot has had ZERO prices for all cards since ≥May 30 — stale duplicate parseCard in the bake script; tsc never saw it because tsconfig excludes scripts/).
+## The single biggest fact
+**2026-07-01 was the biggest build day in Foil's history — SEVEN goals shipped and live-verified in prod:** perf/data foundation (`c5090a5`: baked-first, 30s→sub-1s TTFB, price-empty snapshot fixed, sitemap 2,034 URLs), start-funnel integrity (`e8742de`: tri-store opt-ins, UTM attribution, upsert, unsubscribe-stops-alerts, abuse guards), alert-engine rebuild (`ddf4873`: honest event model, armed/fired + hysteresis, FIXED_PRICE/US/USD, sentinel dead, evidence-line thin-ping emails — first live alert verified in Primary), demand-driven hydration (`dad3dca`: watch→hydrate, top-100 seed, snapshot 1,189→1,270 variated), the VAULT (`e965bb0`: /w/<token> binder-pocket page, no login wall, live-verified), brand-mark Stage 2 (`ad28a52`: hanko seal everywhere, gold-"TCG" wordmark retired), and the EVE LINE TRACKER (`724819e`: /lines/umbreon + /lines/espeon LIVE — 82 cards, sakura register, "Made for @possiblyeve," null-over-guess sold data, outlier moat killed the $499k/$320k traps). All pushed, deployed, live-verified. Fable-5 audit doc: docs/AUDIT-2026-07-01-FABLE.md.
 
-## Headline audit discoveries (full detail in AUDIT-2026-07-01-FABLE.md)
-1. Baked snapshot price-empty 5+ weeks (bake parser drift — 2nd R-015-class incident).
-2. /start funnel is a black hole: newsletter opt-ins write only to Beehiiv (which doesn't send); zero UTM; duplicate re-submit 500s; alert-email unsubscribe stops nothing (CAN-SPAM); no rate limit; blank-target sentinel renders "you wanted ≤ $100,000" alerts by default; alert prices can be live auction bids (no FIXED_PRICE filter).
-3. Live content fabrications: sv3a post (fake set structure/numbers/cards), Moonbreon 12x contradiction across 3 posts, deals-page first-click integrity failure (Poor-condition listing sold as "23% below, condition-matched"). Gates check form, not facts — entity-grounding gate vs the baked catalog is the fix.
-4. Catalog expansion did NOT unblock movers (3 blockers: variants requirement, tier filter, 460 cap). Movers signal dies ~Jul 15 without PokeTrace renewal.
-5. SEO: sitemap omits the 159 fast set pages + /cards hub; lastmod fabricated; cache hierarchy inverted (live-first, baked-fallback). TTFB fix urgency = DAYS (GSC refetch wave from the Jul 1 resubmit).
+## What gates the eve send (JOHN'S DECISION 2026-07-01: design bar first — he's underwhelmed, and one first impression is the whole play)
+1. **Cowork: design-tooling research (next session, FIRST, before any goal).** John wants professional-grade design leverage in the loop: design MCPs/plugins for Claude Code (Figma MCP is already installed), component registries, the Playwright screenshot design-review loop (promote from IDEAS), three.js/R3F verdict for one hero showpiece, AI creative-asset tooling (Higgsfield-class) for social/OG/banner assets. Deliverable: recommended toolchain + install plan → THEN the overhaul runs armed with it. IDEAS entry 2026-07-02 (ux).
+2. **`fable-design-overhaul.md` — now runs BEFORE the send** (promoted from post-eve). Spec is current: pull-model hero ("Start your vault"), gold→vermillion palette succession (resolved by the hanko pick), site-wide plain-language sweep, depth system (CSS scroll-timeline ambience + THE signature holo-tilt foil cards + sakura/vault set pieces; WebGL deferred), /start in nav, Host-a-machine → footer, vault-moment section. **Add from tonight's screenshot: the homepage tiled seal-watermark background reads as cheap wallpaper — kill or drastically quiet it.**
+3. **Line-page touch-ups (small Claude Code task, needs John's seller-eye verdicts first):** 5 flagged sold-vs-market rows (Umbreon Sandstorm #24 "$29 sold/$200 market" is the worst; Neo Discovery #32 $175 non-holo; Espeon Plasma Freeze #48; Majestic Dawn #18; Dark Explorers #61) — suppress any wrong-condition comps to "pending"; + fix the "| Foil · Foil" double-title regression on /lines pages (og:title is clean, tab/SERP shows it); re-run `scripts/seed-line-sold.ts` if sending >a few days out (point-in-time snapshot, R-066).
+4. **Off-repo checklist** (docs/brand-mark-offrepo-checklist.md): Discord + Beehiiv logos; X = keep FACE avatar (Cowork call, 2026-07-01), seal goes in the BANNER (banner asset generation folded into the market-card goal).
+5. **THEN the send:** reply to eve linking `/lines/umbreon?utm_source=x&utm_medium=eve` + espeon; send when she's active + John can be responsive 2–3h; then post + PIN the @FoilTCG reveal with the card-request CTA ("Hunting a card you don't see? Reply with it and I'll get it tracked").
 
-## THE plan (Fable overhaul, surgical — goal files ready in docs/goals/)
-- **Phase 0 — DONE 2026-07-01:** goal cleared ✅ · `pre-fable-overhaul` tag pushed ✅ · **PokeTrace: "Don't cancel" clicked (CORRECTED — not a fresh renewal payment; it was scheduled to cancel Jul 16 at $98/mo and now continues)**. Spine secure short-term; benchmark decision ~Aug 10 (R-062): Scrydex $99/mo (owns pokemontcg.io now) vs PriceCharting cross-check vs eBay MI application.
-- **Phase 1 — `perf-and-data-foundation.md` (RUN FIRST, days-urgent):** timeout guard + bake-parser fix (variant-wipe guarded) + FULL re-bake + baked-first rendering + sitemap hygiene (add hub/set pages, real lastmod) + title/canonical fixes.
-- **Phase 2a — `start-funnel-integrity.md`:** tri-store opt-in from /start + UTM attribution + upsert + working unsubscribe + minimal abuse guard. The conversion counter must work before ANY traffic push.
-- **Phase 2b — `alert-engine-rebuild.md`:** from-the-goal event model (state transitions, hysteresis re-arm, 30d-sold reference floor, FIXED_PRICE/US/USD filters, sentinel killed, sold-comp evidence line). Supersedes watchlist-alert-quality-overhaul; absorbs trust-hardening Bug 1 (trim that goal).
-- **Phase 3 — Fable design/UI/copy overhaul (Cowork specs next):** pull-model hero + /start UX + card/deals pages + emails; folds in homepage-reposition (verdict: good as-is + add /start to nav) and the Pokeball-logo IP refresh (IDEAS #295) — must precede creator traffic.
-- **Phase 4 — content trust:** unpublish/regenerate sv3a, fix 2 stale Moonbreon posts, sweep scanner CTAs from post bodies + seo-strategy template, deals re-verify + "verified Xh ago" stamp, then entity-grounding + price-sanity + cross-post gates.
-- **THEN eve** (reply drafted in prior brief — do NOT send her to the current funnel).
-- **Post-eve wave (unlocked ideas):** buy-signal (#388, partly ships in the alert evidence line), Foil as AI-cited data layer/MCP (#282/#375), Scoreboard series (#111), programmatic 25K-card SEO (#414/#494, crawl-budget-gated).
+## After the send (queue)
+`blog-approval-loop.md` (Discord Approve/Skip + fact-grounding gates; AUTO_PUBLISH stays false BY DESIGN — one-click publish is the end state) → `x-reply-desk.md` (3x/day mention/reply cards, API-reply on user-initiated contact only, intent-links for cold engagement, alias fix, bio-UTM verify) → `content-engine-market-card-upgrade.md` (AMENDED: hanko-branded artifact template + X banner asset + mover-pool wiring gap) → trust-hardening remainder → content-trust-hotfix (sv3a fabrication, Moonbreon stale posts, scanner-CTA sweep — still live breaches, do not forget).
 
-## Other queued-goal verdicts (from the audit)
-`homepage-reposition-watchlist` resume as-is (+nav /start, folds into Phase 3) · `content-engine-market-card-upgrade` AMEND (premise-check value-rank's data source — baked prices were empty; movers wiring gap is the real unblock) · `trust-hardening` AMEND (strip Bug 1, keep affiliate render-guard + add loud-fail on missing EBAY_CAMPAIGN_ID).
+## Standing decisions + dates
+- **PokeTrace: "Don't cancel" clicked 2026-07-01** ($98/mo continues; NOT a fresh payment — earlier note corrected). **~Aug 10: data-source benchmark** (Scrydex $99 [owns pokemontcg.io now] vs PriceCharting [key already in env] vs eBay MI application [submit this week — free lottery ticket]) **+ CardLadder reference-agreement column** (IDEAS 2026-07-02). R-062/R-066 current.
+- Fable 5 promo pool: 50% weekly cap until Jul 7, burns faster than Opus — Fable for judgment/design goals, consider `/model opus` for mechanical ones.
+- Daily human contract STARTS NOW: check @FoilTCG replies/mentions daily (manual until x-reply-desk). 6 followers; eve in "You might like."
+- "Foil for sellers" agent-SaaS B2B lane captured (IDEAS 2026-07-02, monetization) — Sunday review, NOT before eve.
+- AUTO_PUBLISH_WEEKLY_POSTS=false is now INTENTIONAL (approve-gated end state per John; supersedes the old "ON is intended" hard rule; blog-approval-loop implements). Jun-25 `_pending` draft ships through the new loop, not by hand.
 
-## Token-allocation doctrine (new, John 2026-07-01)
-Fable = judgment/design/specs/audits, never bulk execution. Claude Code = execution from goal files. Research agents staggered 2–3 max (the six-wide audit burned ~800K tokens in one shot — worked, but don't repeat).
+## Watch items (first week of the new machinery)
+Alert cron's Discord counters (`rearmed/skippedNonUsd/heldNoBasis` — skippedNonUsd>0 = filter/payload disagreement); hydration cron `#errors` for HydrationExhausted; GSC Discovered climbing toward ~2,034; first organic /start signups by source (`npm run subscriber-sources`).
 
-## Standing
-PokeTrace renews ~Jul 15 (**decision now dated, on John**). AUTO_PUBLISH reconciliation needed (docs say ON; Jun 25 draft landed in _pending — behavior says OFF). @FoilTCG 4 followers; replies = the lever; verify bio link carries UTM params (30-sec check). Cowork cannot commit/push — hand-offs below.
-
-## Hand-offs for John (in order)
-1. Claude Code: `clear the goal`
-2. `git tag pre-fable-overhaul && git push origin pre-fable-overhaul`
-3. `git add docs/NEXT-SESSION-BRIEF.md docs/AUDIT-2026-07-01-FABLE.md docs/COWORK-CONTEXT.md && git commit -m "docs: fable-5 six-branch audit + surgical overhaul plan" && git push`
-4. `/goal Read docs/goals/perf-and-data-foundation.md and execute it, closing all gates before commit.`
+## Session-close hygiene
+This brief + IDEAS (3 new entries) + COWORK-CONTEXT (2 new learnings) are edited on disk, uncommitted — John commits via the one-liner Cowork handed him. Line-tracker goal committed AND pushed (`724819e`); nothing stranded.
