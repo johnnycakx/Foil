@@ -10,6 +10,8 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ## 2026-07-02 (pre-send) — lines-petals-and-type: hanami density (14→28 petals, per-petal breeze/amp/wobble via CSS vars — no straight-down falls), /lines type up a step across the hierarchy (sold/ask lines 12→14px, names 14→16px, subtitle 18→20px). Gates green (1,402/0, build 208/208, lint clean); shots in gallery/iter-19-petals; IDEAS +2 (/lines index, line-page expansion program). NO push — John's push is the eve send trigger.
 
+**Addendum (83cadf1, pushed + live-verified):** the pre-send live OG check caught that every /lines share card 404'd in prod — the page hand-wrote `og:image` as the unhashed `/lines/<p>/opengraph-image` while Next 16 serves the sibling file route at a HASHED url. Fix: drop the manual `images` entries (the file convention injects the hashed url — verified live: both lines' og:image → 200 image/png); og-image guard now FAILS any page that hand-references the OG path on a file-convention route. Broken since the line-tracker shipped — prerender success masked the meta-tag mismatch (blank-share-card class, R-015-adjacent).
+
 ---
 
 ## 2026-07-02 (round 3) — make the dark gallery earn its name: the six execution-quality fixes before the eve send (branch only, John merges)
