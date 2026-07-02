@@ -65,6 +65,21 @@ export function WatchlistForm({
           We&apos;ll email you the moment {cardName}
           {targeting ? ` (${targeting})` : ""} hits your target price.
         </p>
+        {state.vaultUrl ? (
+          <p className="mt-2">
+            <a
+              href={state.vaultUrl}
+              className="font-medium text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
+            >
+              Open your vault →
+            </a>{" "}
+            <span className="text-foil-slate">— every card you track, on one private page.</span>
+          </p>
+        ) : state.vaultLinkEmailed ? (
+          <p className="mt-2 text-foil-slate">
+            Your private vault link is in your inbox — it&apos;s the one page with everything you track.
+          </p>
+        ) : null}
       </div>
     );
   }

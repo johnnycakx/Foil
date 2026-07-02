@@ -31,6 +31,7 @@ function inputs(over: Partial<AlertEmailInputs> = {}): AlertEmailInputs {
     comp: null,
     cardPageUrl: "https://foiltcg.com/cards/base1-4-charizard",
     unsubscribeUrl: "https://foiltcg.com/api/unsubscribe?token=tok",
+    manageUrl: "https://foiltcg.com/w/vault-tok",
     ...over,
   };
 }
@@ -79,7 +80,7 @@ test("body honesty per kind: 'just dropped' only for dropped; already_below says
   assert.doesNotMatch(already, /just dropped/);
 });
 
-test("thin ping doctrine: no images, no button styling, exactly the card-page link + unsubscribe", () => {
+test("thin ping doctrine: no images, no buttons; card-page + manage-vault + unsubscribe links only", () => {
   const html = emailBody(inputs());
   assert.doesNotMatch(html, /<img/i, "no images (Primary-safe, ADR-079)");
   assert.doesNotMatch(html, /display:\s*inline-block;\s*background/, "no button-styled CTA");
@@ -88,8 +89,16 @@ test("thin ping doctrine: no images, no button styling, exactly the card-page li
   const links = [...html.matchAll(/<a href="([^"]+)"/g)].map((m) => m[1]);
   assert.deepEqual(links, [
     "https://foiltcg.com/cards/base1-4-charizard",
+    "https://foiltcg.com/w/vault-tok",
     "https://foiltcg.com/api/unsubscribe?token=tok",
   ]);
+});
+
+test("footer carries the manage-your-watchlist vault link (ADR-093); omitted cleanly when unmintable", () => {
+  const withLink = emailBody(inputs());
+  assert.match(withLink, /Manage your watchlist/);
+  const without = emailBody(inputs({ manageUrl: null }));
+  assert.doesNotMatch(without, /Manage your watchlist/);
 });
 
 test("no sentinel can render: blank target produces market copy, never $100000.00", () => {

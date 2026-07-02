@@ -19,6 +19,8 @@ import { getCatalogEntry } from "@/lib/cards/catalog";
 import { getCardMetadata } from "@/lib/cards/sdk";
 import { deriveAvailableVariants } from "@/lib/poketrace/variant";
 import { getHydratedVariants } from "@/lib/poketrace/hydration";
+import { buildVaultUrl } from "@/lib/vault-token";
+import { sendVaultLinkEmail } from "@/lib/wishlist/vault-email";
 import { upsertWatchlist } from "@/lib/wishlist/upsert";
 import { validateWatchlistSubmission } from "@/lib/wishlist/validate";
 
@@ -29,6 +31,12 @@ export type WatchlistFormState = {
   status: "idle" | "success" | "error";
   /** Short tag for the error case — rendered as friendly copy client-side. */
   error?: string;
+  /** Private vault link (ADR-093) — inline ONLY for a first-watch (brand-new)
+   *  vault; null for an existing vault (delivered by email instead). */
+  vaultUrl?: string | null;
+  /** True when the vault link was emailed (first watch) — drives the
+   *  "check your inbox" success copy when no inline link is returned. */
+  vaultLinkEmailed?: boolean;
 };
 
 function dollarsToCents(raw: FormDataEntryValue | null): number | null {
@@ -91,11 +99,33 @@ export async function createWatchlist(
     return { status: "error", error: "unavailable" };
   }
 
+  // First watch for this address? (checked BEFORE the upsert so the welcome
+  // email fires exactly once — ADR-093.) Soft-fail: a count error just skips
+  // the welcome; the vault link still lands via the success state + alerts.
+  let isFirstWatch = false;
+  try {
+    const { count, error: countError } = await admin
+      .from("watchlists")
+      .select("id", { count: "exact", head: true })
+      .eq("email", parsed.value.email);
+    isFirstWatch = !countError && (count ?? 0) === 0;
+  } catch {
+    /* skip the welcome */
+  }
+
   const res = await upsertWatchlist(admin, { ...parsed.value, src: sanitizeSrc(formData.get("src")) });
   if (!res.ok) {
     console.warn("[create-watchlist] upsert failed:", res.error);
     return { status: "error", error: "save_failed" };
   }
+  if (isFirstWatch) {
+    await sendVaultLinkEmail(parsed.value.email, "welcome");
+  }
+  // The vault link is a bearer credential (ADR-093 / security-review HIGH):
+  // return it inline ONLY for a brand-new vault — there's nothing
+  // pre-existing to leak, and the submitter just created it. An address that
+  // already had a vault gets the link by email only (the inbox is the proof
+  // of control the token assumes); its watch was still saved.
 
   // Newsletter opt-in — soft-fail. A Beehiiv outage can never block the watch.
   if (formData.get("opt_in_newsletter") != null) {
@@ -107,5 +137,9 @@ export async function createWatchlist(
     }
   }
 
-  return { status: "success" };
+  return {
+    status: "success",
+    vaultUrl: isFirstWatch ? buildVaultUrl(parsed.value.email) : null,
+    vaultLinkEmailed: isFirstWatch,
+  };
 }

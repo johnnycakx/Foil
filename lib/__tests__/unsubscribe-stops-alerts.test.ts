@@ -56,7 +56,7 @@ test("pauseWatchlistAlerts: flips every active row for the (normalized) email", 
   assert.equal(calls.length, 1);
   assert.deepEqual(calls[0].eq, ["email", "collector@gmail.com"], "email must be normalized");
   assert.deepEqual(calls[0].is, ["alerts_paused_at", null], "gate on still-active rows (idempotent replay)");
-  assert.deepEqual(calls[0].payload, { alerts_paused_at: "2026-07-01T00:00:00.000Z" });
+  assert.deepEqual(calls[0].payload, { alerts_paused_at: "2026-07-01T00:00:00.000Z", paused_source: "unsubscribe" });
 });
 
 test("pauseWatchlistAlerts: replay / unknown email is a noop, DB failure is 'error', neither throws", async () => {
@@ -112,7 +112,7 @@ test("wishlist-alert cron: scan excludes paused rows", () => {
 test("resend webhook: a spam complaint pauses watchlist alerts too", () => {
   const src = read("app/api/webhooks/resend/route.ts");
   assert.match(src, /event\.type === "email\.complained"/);
-  assert.match(src, /pauseWatchlistAlerts\(email\)/);
+  assert.match(src, /pauseWatchlistAlerts\(email, \{ source: "complaint" \}\)/);
 });
 
 test("shared watchlist upsert: suppression is STICKY — no unauthenticated path clears a pause", () => {
@@ -125,17 +125,20 @@ test("shared watchlist upsert: suppression is STICKY — no unauthenticated path
   const src = read("lib/wishlist/upsert.ts");
   assert.doesNotMatch(src, /alerts_paused_at:\s*null/, "the unauthenticated write path must never clear a pause");
   assert.match(src, /getAlertSuppression/, "the upsert must check per-email suppression");
-  assert.match(src, /alerts_paused_at:\s*suppressedPauseIso/, "suppressed emails' rows inherit the pause");
+  assert.match(src, /alerts_paused_at: suppression\.pausedAtIso, paused_source: suppression\.source/, "suppressed emails' rows inherit the pause AND its source (ADR-093)");
 });
 
 test("/api/start: precomputes suppression once per batch and passes it to every upsert", () => {
   const src = read("app/api/start/route.ts");
-  assert.match(src, /const suppressedPauseIso = await getAlertSuppression\(admin, email\)/);
-  assert.match(src, /\{ suppressedPauseIso \}/);
+  assert.match(src, /const suppression = await getAlertSuppression\(admin, email\)/);
+  assert.match(src, /\{ suppression \}/);
 });
 
-// Fake for the select().eq().not().limit() suppression-check chain.
-function fakeSuppressionClient(result: { data: { alerts_paused_at: string | null }[] | null; error: { message: string } | null }) {
+// Fake for the select().eq().not().in().order().limit() suppression chain.
+function fakeSuppressionClient(result: {
+  data: { alerts_paused_at: string | null; paused_source?: string | null }[] | null;
+  error: { message: string } | null;
+}) {
   return {
     from() {
       return {
@@ -144,7 +147,15 @@ function fakeSuppressionClient(result: { data: { alerts_paused_at: string | null
             eq() {
               return {
                 not() {
-                  return { limit: async () => result };
+                  return {
+                    in() {
+                      return {
+                        order() {
+                          return { limit: async () => result };
+                        },
+                      };
+                    },
+                  };
                 },
               };
             },
@@ -155,12 +166,15 @@ function fakeSuppressionClient(result: { data: { alerts_paused_at: string | null
   } as unknown as SupabaseClient<Database>;
 }
 
-test("getAlertSuppression: returns the pause ISO for a suppressed email, null otherwise, never throws", async () => {
+test("getAlertSuppression: returns the suppression record for a suppressed email, null otherwise, never throws", async () => {
   const paused = await getAlertSuppression(
-    fakeSuppressionClient({ data: [{ alerts_paused_at: "2026-07-01T00:00:00.000Z" }], error: null }),
+    fakeSuppressionClient({
+      data: [{ alerts_paused_at: "2026-07-01T00:00:00.000Z", paused_source: "complaint" }],
+      error: null,
+    }),
     "Victim@Example.com",
   );
-  assert.equal(paused, "2026-07-01T00:00:00.000Z");
+  assert.deepEqual(paused, { pausedAtIso: "2026-07-01T00:00:00.000Z", source: "complaint" });
 
   const active = await getAlertSuppression(
     fakeSuppressionClient({ data: [], error: null }),

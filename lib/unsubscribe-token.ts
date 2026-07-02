@@ -122,6 +122,18 @@ export function verifyUnsubscribeToken(token: string): VerifyResult {
     return { ok: false, reason: "bad_signature" };
   }
 
+  // Explicit audience guard (ADR-093 / security-review): a token from another
+  // context (e.g. a vault token, whose signature is HMAC over
+  // "foil-vault.v1|"+payload) can be repackaged so its bytes are
+  // "foil-vault.v1|{...}" and pass the SIGNATURE check here — HMAC(secret,
+  // prefix+payload) is what this verifier computes for that byte string. It's
+  // then rejected only because the JSON.parse below throws. Make that
+  // rejection explicit rather than an accident: a real unsubscribe payload is
+  // a bare JSON object, so require the first byte to be '{'.
+  if (payloadBytes.length === 0 || payloadBytes[0] !== 0x7b /* '{' */) {
+    return { ok: false, reason: "bad_payload" };
+  }
+
   let parsed: unknown;
   try {
     parsed = JSON.parse(payloadBytes.toString("utf8"));

@@ -29,6 +29,7 @@ import { getCardMetadata, type CardMetadata } from "../cards/sdk.ts";
 import { emailBody, subjectLine, type AlertEmailInputs } from "./alert-email.ts";
 import { decideAlert, type AlertState, type SoldComp } from "./alert-decision.ts";
 import { buildUnsubscribeUrl } from "../unsubscribe-token.ts";
+import { buildVaultUrl } from "../vault-token.ts";
 import { labelForVariantKey, DEFAULT_VARIANT_KEY } from "../poketrace/variant.ts";
 import { conditionLabel, DEFAULT_CONDITION } from "../cards/conditions.ts";
 import { buildCustomId } from "../affiliate/epn.ts";
@@ -340,6 +341,7 @@ export async function scanWatchlists(input: ScanWatchlistsInput): Promise<ScanRe
           comp,
           cardPageUrl: `${input.siteUrl.replace(/\/$/, "")}/cards/${slug}`,
           unsubscribeUrl: buildUnsubscribeUrl(row.email, { baseUrl: input.siteUrl }),
+          manageUrl: buildVaultUrl(row.email, { baseUrl: input.siteUrl }),
           variantLabel,
           conditionLabel: condLabel,
         };

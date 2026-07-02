@@ -43,6 +43,12 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // and the service-role client gates the insert.
   { kind: "exact", path: "/api/watchlist" },
 
+  // The vault — the no-login watchlist page (ADR-093). The HMAC token in the
+  // URL IS the auth (constant-time verified; failures render 404). /w exact
+  // is the link-recovery form; /w/<token> is the page. Supabase-auth accounts
+  // arrive with the Pro tier, not now.
+  { kind: "prefix", path: "/w" },
+
   // Auth surface — login form (exact) + magic-link callback tree. /auth/*
   // MUST be public or the magic-link redirect loops back through the auth
   // gate and consumes the OTP token before /auth/callback can exchange it

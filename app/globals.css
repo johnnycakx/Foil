@@ -74,3 +74,19 @@ body {
   font-optical-sizing: auto;
   font-variation-settings: "SOFT" 30;
 }
+
+/*
+ * The vault's first-open settle (ADR-093). ONE ~300ms transform-only easing
+ * on the binder grid, first visit only (components/vault/vault-settle.tsx
+ * gates it behind localStorage + Tailwind's motion-safe variant). No opacity
+ * gate — the grid is visible from the first frame; this is a settle, not a
+ * reveal.
+ */
+@keyframes vault-settle {
+  from {
+    transform: translateY(6px) scale(0.995);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
+}

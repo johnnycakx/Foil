@@ -2600,6 +2600,30 @@ The full evolved canon lives in **DESIGN.md §7** + the vending-audience notes i
 
 **Cross-refs.** `lib/poketrace/hydrate-core.ts`, `lib/poketrace/hydration.ts`, `app/api/cron/hydrate-cards/route.ts`, `supabase/migrations/20260702010000_card_hydration.sql`, `scripts/seed-hydration.ts`, `scripts/bake-poketrace-uuids.ts` (refactored), `lib/__tests__/hydration.test.ts`, [ADR-088](#adr-088--catalog-breadth-expansion-every-english-sets-top-5-by-value-chase-card-coverage), [ADR-091](#adr-091--alert-engine-rebuilt-as-an-honest-event-model-armedfired-state-market-floor-evidence-line-emails), [ADR-069](#adr-069--insight-led-market-movers--good-buys-signal-aggregate-momentum-over-fragile-single-listings--the-like-for-like-currency-gate).
 
+## ADR-093 — The vault: token-access watchlist page (no login wall, binder-structural, the "house" half of the SaaS synthesis)
+
+**Date:** 2026-07-01
+**Status:** Accepted. John's directive 2026-07-01 — a non-negotiable product surface; the "page is the house" half of ADR-091's delivery doctrine (alert emails = the doorbell). Sequenced after alert-engine-rebuild + demand-driven-data, before the eve delivery. Extends ADR-090 (pause machinery), ADR-091 (state rules), ADR-092 (add-card rides the hydration trigger).
+
+**Context.** Users must be able to build and manage their watchlist in the web app — but the funnel promises "no account required," and Supabase-auth accounts don't arrive until the Pro tier. The alert emails' one link needs somewhere rich to land.
+
+**Decision.**
+1. **Access = a private signed-token URL (`/w/<token>`).** Token = HMAC-SHA256 over the email payload, **context-separated** from the unsubscribe token (`"foil-vault.v1|" + payload` in the HMAC input) — SAME `UNSUBSCRIBE_TOKEN_SECRET` (no new env var), but the audiences are cryptographically disjoint: an unsubscribe token can never open a vault and vice versa (test-pinned both directions). Constant-time verification; every failure renders 404 (the URL space is indistinguishable from not-found); the email never appears in the URL. `/w` prefix added to PUBLIC_ROUTES (segment-scoped; proxy test).
+2. **Link-sharing risk accepted for v1** (RISKS R-064): anyone with the link can view/edit that watchlist — the private-calendar-link class. Every distribution point says so plainly.
+3. **Distribution:** the /start success screen + `/api/start` response (`vault_url`), the card-page form success, a first-watch welcome email, the alert-email footer ("Manage your watchlist"), and a `/w` recovery form that re-sends the link with a UNIFORM response (never discloses whether an email exists).
+4. **The binder is structural, not theatrical:** 3×3 desktop / 2-col mobile pocket grid (9 = the platonic binder page), faint plastic-pocket inset depth, pagination as a page-turn link, ONE first-open ~300ms settle (localStorage-gated, `motion-safe:` only). NO loading gate — daily-visit surface; the sub-second load IS the feature. Art-forward tiles, market data set quietly beneath; "vault" is the product noun; warm possessive copy.
+5. **Pause provenance (`paused_source`, migration `20260702030000`, applied):** 'vault' | 'unsubscribe' | 'complaint'. Vault pause/resume is the user's own toggle; unsubscribe-sourced pauses ARE resumable from the vault (the token holder received it by email — verified email control, stronger re-consent than ADR-090's knowing-an-address concern); **complaint-sourced pauses are NOT resumable** from the vault. Per-email suppression (the ADR-090 sticky rule) now counts ONLY unsubscribe/complaint — a vault pause is a per-card preference and never makes new watches born dead. Suppression inheritance carries the SOURCE, so a complaint-inherited row keeps its lock. Pre-existing pauses backfilled to 'unsubscribe'. `alert_state` is never touched by vault edits — ADR-091's armed/fired rules alone govern firing.
+6. **Quota + speed discipline (a deliberate deviation from the goal sketch, documented):** the vault does NO live eBay resolve. Nine curated tiles doing nine resolves per view would dwarf the card page's Browse budget (R-012) and break the sub-second requirement. Each pocket shows the alert engine's **last verified observation** (`last_seen_price_cents`, at most one scan old, labeled "Last verified listing") + the movers-cache sold average ("sold for ~$92 recently") and links to the card page for the live block. Sort = closest-to-target using the same observation.
+7. **Add-in-place uses the SHARED type-ahead** — extracted from /start into `components/cards/card-typeahead.tsx`; both surfaces import it (fork structurally forbidden by test). The vault's add rides `upsertWatchlist`, so suppression-inherit + demand-driven hydration come along free.
+
+**Consequences.**
+- The alert email finally has a house to point at; every capture surface hands users their vault immediately.
+- Anyone with the URL can edit — revisit at the first support incident or with Pro accounts (R-064's trigger).
+- Secret rotation invalidates vault links in old emails (same trade as unsubscribe links; recovery form is the path back).
+- The last-verified price can be up to a scan old and absent before a card's first scan — labeled honestly rather than fetched live.
+
+**Cross-refs.** `lib/vault-token.ts`, `app/(site)/w/[token]/page.tsx`, `app/(site)/w/page.tsx`, `app/actions/vault.ts`, `lib/wishlist/{pause,upsert,vault-email,alert-email,scan-batch}.ts`, `components/cards/card-typeahead.tsx`, `components/vault/*`, `supabase/migrations/20260702030000_watchlists_paused_source.sql`, `lib/__tests__/vault.test.ts`, [ADR-090](#adr-090--start-funnel-integrity-tri-store-opt-in-idempotent-watches-attribution-and-an-unsubscribe-that-stops-alerts), [ADR-091](#adr-091--alert-engine-rebuilt-as-an-honest-event-model-armedfired-state-market-floor-evidence-line-emails), [ADR-092](#adr-092--demand-driven-poketrace-hydration-watches-allocate-the-data-budget), [R-064](RISKS.md).
+
 ## How to add an ADR
 
 1. Pick the next number (don't reuse).

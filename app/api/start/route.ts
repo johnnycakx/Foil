@@ -45,6 +45,8 @@ import {
   exceedsWatchCap,
   isHoneypotTripped,
 } from "@/lib/start/guards";
+import { buildVaultUrl } from "@/lib/vault-token";
+import { sendVaultLinkEmail } from "@/lib/wishlist/vault-email";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -201,7 +203,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   // paused — an unauthenticated submission can't resume email to an address
   // that unsubscribed or spam-complained (ADR-090 hardening). The response is
   // indistinguishable from a normal success, so suppression state never leaks.
-  const suppressedPauseIso = await getAlertSuppression(admin, email);
+  const suppression = await getAlertSuppression(admin, email);
   let upserted = 0;
   const failedSlugs: string[] = [];
   for (const row of accepted) {
@@ -215,7 +217,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         target_price_cents: row.target_price_cents,
         src,
       },
-      { suppressedPauseIso },
+      { suppression },
     );
     if (ok) upserted += 1;
     else failedSlugs.push(row.slug);
@@ -272,9 +274,29 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
   }
 
+  // The vault (ADR-093). The link is a bearer credential for the whole
+  // address's watchlist, so it is returned inline ONLY when this is the
+  // FIRST watch for the email — i.e. there is no PRE-EXISTING vault to leak
+  // (the submitter just created everything in it). For an address that
+  // already had a vault, echoing the link back to an unauthenticated
+  // submitter would turn "knows your email" into "reads/edits your existing
+  // watchlist" (/security-review HIGH). Those get the link by EMAIL only —
+  // the inbox is the proof of control the token's threat model assumes.
+  // The welcome email fires on that same first-watch condition.
+  const isFirstWatch = !countError && (existingCount ?? 0) === 0;
+  if (isFirstWatch) {
+    await sendVaultLinkEmail(email, "welcome");
+  }
+
   return NextResponse.json({
     ok: true,
     count: upserted,
+    // Inline link only for a brand-new vault (nothing pre-existing to expose);
+    // existing vaults are inbox-only.
+    vault_url: isFirstWatch ? (buildVaultUrl(email) ?? undefined) : undefined,
+    // Tell the client an inbox link is coming even when we don't hand one back,
+    // so the success screen can say "check your inbox" instead of going quiet.
+    vault_link_emailed: isFirstWatch,
     rejected: rejected.length > 0 ? rejected : undefined,
   });
 }

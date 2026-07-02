@@ -73,7 +73,8 @@ export async function POST(request: Request): Promise<NextResponse> {
     emails.map(async (email) => {
       const [sync] = await Promise.all([
         syncUnsubscribe(email),
-        isComplaint ? pauseWatchlistAlerts(email) : Promise.resolve(null),
+        // 'complaint' source: NOT resumable from the vault (ADR-093).
+        isComplaint ? pauseWatchlistAlerts(email, { source: "complaint" }) : Promise.resolve(null),
       ]);
       return sync;
     }),

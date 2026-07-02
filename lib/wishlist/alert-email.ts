@@ -40,6 +40,9 @@ export type AlertEmailInputs = {
   cardPageUrl: string;
   /** RFC 8058 one-click unsubscribe URL (null → mailto fallback line). */
   unsubscribeUrl: string | null;
+  /** Private vault URL (ADR-093) — "manage your watchlist" in the footer.
+   *  Null when the token secret is unavailable; the line is omitted. */
+  manageUrl: string | null;
   /** Human variant label ("1st Edition Holofoil") when the watch targets one. */
   variantLabel?: string;
   /** Human condition label ("PSA 10"). Omitted for the any-raw default. */
@@ -139,7 +142,11 @@ export function emailBody(input: AlertEmailInputs): string {
     `<p style="font-size: 14px; color: #334; margin: 0 0 20px; padding: 10px 14px; border-left: 3px solid #C9A24B; background: #faf7f0;">${escapeHtml(evidenceLine(input))}</p>`,
     `<p style="font-size: 15px; margin: 0 0 24px;"><a href="${safeCardPageUrl}" style="color: #0F1E3A; text-decoration: underline; text-underline-offset: 3px; font-weight: 600;">See the live listing and sold history on Foil →</a></p>`,
     `<hr style="border: none; border-top: 1px solid #eee; margin: 24px 0 12px;" />`,
-    `<p style="font-size: 11px; color: #99a; line-height: 1.5; margin: 0;">You're getting this because you set a price alert at foiltcg.com. You'll hear about this card again only after its price moves back up and drops again.</p>`,
+    `<p style="font-size: 11px; color: #99a; line-height: 1.5; margin: 0;">You're getting this because you set a price alert at foiltcg.com. You'll hear about this card again only after its price moves back up and drops again.${
+      input.manageUrl
+        ? ` <a href="${escapeHtml(input.manageUrl)}" style="color: #99a; text-decoration: underline;">Manage your watchlist</a> — change targets, pause, or add cards.`
+        : ""
+    }</p>`,
     unsubscribeFooter(input.unsubscribeUrl),
     `</body></html>`,
   ].join("\n");

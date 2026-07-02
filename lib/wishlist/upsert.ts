@@ -33,10 +33,10 @@ export type WatchlistUpsertInput = {
 
 export type WatchlistUpsertOpts = {
   /** Precomputed suppression state for batch callers (/api/start checks once
-   *  for up to 50 rows): the pause ISO when the email is suppressed, null when
-   *  known-unsuppressed. OMIT (undefined) to have the upsert check itself —
-   *  the safe default every caller gets for free. */
-  suppressedPauseIso?: string | null;
+   *  for up to 50 rows): the suppression record when the email is suppressed,
+   *  null when known-unsuppressed. OMIT (undefined) to have the upsert check
+   *  itself — the safe default every caller gets for free. */
+  suppression?: import("./pause.ts").AlertSuppression | null;
 };
 
 /**
@@ -64,10 +64,8 @@ export async function upsertWatchlist(
   // /api/watchlist caller passed the email verbatim; normalizing HERE fixes
   // every caller at once. Backfill: 20260701235000_watchlists_email_lower.sql.
   const email = input.email.trim().toLowerCase();
-  const suppressedPauseIso =
-    opts.suppressedPauseIso !== undefined
-      ? opts.suppressedPauseIso
-      : await getAlertSuppression(admin, email);
+  const suppression =
+    opts.suppression !== undefined ? opts.suppression : await getAlertSuppression(admin, email);
   const { error } = await admin.from("watchlists").upsert(
     {
       email,
@@ -75,10 +73,14 @@ export async function upsertWatchlist(
       variant: input.variant,
       condition: input.condition,
       target_price_cents: input.target_price_cents,
-      // Suppressed email → the row (new or updated) carries the pause.
-      // Unsuppressed → the field is OMITTED entirely: new rows default to
-      // active, and a conflict update leaves the stored value untouched.
-      ...(suppressedPauseIso ? { alerts_paused_at: suppressedPauseIso } : {}),
+      // Suppressed email → the row (new or updated) carries the pause AND its
+      // source (so a complaint-inherited row keeps the not-vault-resumable
+      // property, ADR-093). Unsuppressed → the fields are OMITTED entirely:
+      // new rows default to active, and a conflict update leaves the stored
+      // values untouched.
+      ...(suppression
+        ? { alerts_paused_at: suppression.pausedAtIso, paused_source: suppression.source }
+        : {}),
       // Only set src when present so an existing watch's source isn't
       // overwritten with null on a later target-price update (the conflict
       // path). Absent src column values stay null by default.

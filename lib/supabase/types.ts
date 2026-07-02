@@ -294,6 +294,7 @@ export type Database = {
           last_notified_at: string | null;
           src: string | null;
           alerts_paused_at: string | null;
+          paused_source: "vault" | "unsubscribe" | "complaint" | null;
           last_seen_price_cents: number | null;
           last_alerted_price_cents: number | null;
           alert_state: "armed" | "fired";
@@ -309,6 +310,7 @@ export type Database = {
           last_notified_at?: string | null;
           src?: string | null;
           alerts_paused_at?: string | null;
+          paused_source?: "vault" | "unsubscribe" | "complaint" | null;
           last_seen_price_cents?: number | null;
           last_alerted_price_cents?: number | null;
           alert_state?: "armed" | "fired";
@@ -324,6 +326,7 @@ export type Database = {
           last_notified_at: string | null;
           src: string | null;
           alerts_paused_at: string | null;
+          paused_source: "vault" | "unsubscribe" | "complaint" | null;
           last_seen_price_cents: number | null;
           last_alerted_price_cents: number | null;
           alert_state: "armed" | "fired";

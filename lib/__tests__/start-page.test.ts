@@ -48,11 +48,13 @@ test("/start page: headline uses the display font class", () => {
 // StartPageForm (Client component) — drift guards
 // ---------------------------------------------------------------------------
 
-test("StartPageForm: debounces search at 300ms and caps results at 8", () => {
-  const src = readFile("components/start-page-form.tsx");
+test("shared CardTypeahead: debounces search at 300ms and caps results at 8 (ADR-093 extraction)", () => {
+  const src = readFile("components/cards/card-typeahead.tsx");
   assert.match(src, /SEARCH_DEBOUNCE_MS\s*=\s*300/);
-  // The form fetches /api/cards/search; the route caps results at 8 server-side.
+  // The typeahead fetches /api/cards/search; the route caps results at 8 server-side.
   assert.match(src, /\/api\/cards\/search\?q=/);
+  // /start consumes the SHARED component, not a fork.
+  assert.match(readFile("components/start-page-form.tsx"), /from "@\/components\/cards\/card-typeahead"/);
 });
 
 test("StartPageForm: enforces MAX_SELECTED ≤ 50 client-side", () => {
@@ -67,9 +69,9 @@ test("StartPageForm: newsletter opt-in checkbox starts checked (US CAN-SPAM, ADR
   assert.match(src, /weekly deals newsletter/i);
 });
 
-test("StartPageForm: only catalogued cards are selectable (defense-in-depth before the route also re-validates)", () => {
-  const src = readFile("components/start-page-form.tsx");
-  // The addCard helper gates on cataloguedSet.has(hit.id).
+test("shared CardTypeahead: only catalogued cards are pickable (defense-in-depth before the route also re-validates)", () => {
+  const src = readFile("components/cards/card-typeahead.tsx");
+  // The pick handler gates on cataloguedSet.has(hit.id).
   assert.match(src, /cataloguedSet\.has\(hit\.id\)/);
 });
 

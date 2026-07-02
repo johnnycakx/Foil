@@ -11,17 +11,11 @@
 // badge — the user is still encouraged to subscribe to the newsletter so
 // they hear about additions.
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import { CardTypeahead, type CardSearchHit } from "@/components/cards/card-typeahead";
 
-type SearchHit = {
-  id: string;
-  name: string;
-  setName: string;
-  setId: string;
-  number: string;
-  image: string;
-};
+type SearchHit = CardSearchHit;
 
 type Selected = SearchHit & {
   targetPriceUsd: string; // user-input dollars, empty = "any drop"
@@ -30,18 +24,12 @@ type Selected = SearchHit & {
 type Submission =
   | { state: "idle" }
   | { state: "submitting" }
-  | { state: "success"; count: number }
+  | { state: "success"; count: number; vaultUrl: string | null; vaultLinkEmailed: boolean }
   | { state: "error"; message: string };
 
 const MAX_SELECTED = 50;
-const SEARCH_DEBOUNCE_MS = 300;
 
 export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
-  const cataloguedSet = useMemo(() => new Set(cataloguedIds), [cataloguedIds]);
-
-  const [query, setQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchHit[]>([]);
-  const [searching, setSearching] = useState(false);
   const [selected, setSelected] = useState<Selected[]>([]);
   const [email, setEmail] = useState("");
   const [optInNewsletter, setOptInNewsletter] = useState(true);
@@ -65,58 +53,13 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
     });
   }, []);
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastQueryRef = useRef<string>("");
-  const abortRef = useRef<AbortController | null>(null);
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    const q = query.trim();
-    if (q.length < 2) {
-      setSearchResults([]);
-      setSearching(false);
-      return;
-    }
-    debounceRef.current = setTimeout(async () => {
-      lastQueryRef.current = q;
-      setSearching(true);
-      if (abortRef.current) abortRef.current.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
-      try {
-        const res = await fetch(`/api/cards/search?q=${encodeURIComponent(q)}`, {
-          signal: controller.signal,
-        });
-        if (!res.ok) {
-          setSearchResults([]);
-          return;
-        }
-        const body = (await res.json()) as { hits?: SearchHit[] };
-        // Only update if this is still the latest query — protects against
-        // out-of-order responses on slow networks.
-        if (lastQueryRef.current === q) {
-          setSearchResults(Array.isArray(body.hits) ? body.hits : []);
-        }
-      } catch (err) {
-        if ((err as { name?: string }).name !== "AbortError") {
-          setSearchResults([]);
-        }
-      } finally {
-        if (lastQueryRef.current === q) setSearching(false);
-      }
-    }, SEARCH_DEBOUNCE_MS);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [query]);
-
-  const selectedIds = useMemo(() => new Set(selected.map((s) => s.id)), [selected]);
+  const selectedIds = useMemo(() => selected.map((s) => s.id), [selected]);
 
   function addCard(hit: SearchHit) {
-    if (selectedIds.has(hit.id)) return;
     if (selected.length >= MAX_SELECTED) return;
-    if (!cataloguedSet.has(hit.id)) return;
-    setSelected((prev) => [...prev, { ...hit, targetPriceUsd: "" }]);
+    setSelected((prev) =>
+      prev.some((s) => s.id === hit.id) ? prev : [...prev, { ...hit, targetPriceUsd: "" }],
+    );
   }
 
   function removeCard(id: string) {
@@ -174,7 +117,13 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
           website: website || undefined,
         }),
       });
-      const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; count?: number };
+      const body = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        error?: string;
+        count?: number;
+        vault_url?: string;
+        vault_link_emailed?: boolean;
+      };
       if (!res.ok || !body.ok) {
         setSubmission({
           state: "error",
@@ -182,7 +131,12 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
         });
         return;
       }
-      setSubmission({ state: "success", count: body.count ?? selected.length });
+      setSubmission({
+        state: "success",
+        count: body.count ?? selected.length,
+        vaultUrl: body.vault_url ?? null,
+        vaultLinkEmailed: body.vault_link_emailed ?? false,
+      });
     } catch {
       setSubmission({
         state: "error",
@@ -204,12 +158,21 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
           Foil checks eBay every hour. The first time one of your cards drops to a price worth buying, the email lands. <span className="text-foil-slate/80">Add <code className="rounded bg-foil-navy/10 px-1.5 py-0.5 text-sm text-foil-navy">alerts@foiltcg.com</code> to your contacts so Gmail doesn&apos;t hide it.</span>
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-3">
-          <a
-            href="/cards"
-            className="inline-flex items-center justify-center rounded-xl bg-foil-navy px-5 py-2.5 text-sm font-semibold text-foil-cream transition hover:bg-foil-coral"
-          >
-            Browse the catalog →
-          </a>
+          {submission.vaultUrl ? (
+            <a
+              href={submission.vaultUrl}
+              className="inline-flex items-center justify-center rounded-xl bg-foil-navy px-5 py-2.5 text-sm font-semibold text-foil-cream transition hover:bg-foil-coral"
+            >
+              Open your vault →
+            </a>
+          ) : (
+            <a
+              href="/cards"
+              className="inline-flex items-center justify-center rounded-xl bg-foil-navy px-5 py-2.5 text-sm font-semibold text-foil-cream transition hover:bg-foil-coral"
+            >
+              Browse the catalog →
+            </a>
+          )}
           <a
             href="/newsletter"
             className="text-sm text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-gold"
@@ -217,6 +180,12 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
             Or read the newsletter
           </a>
         </div>
+        {submission.vaultUrl && (
+          <p className="mt-3 text-xs text-foil-slate">
+            Your vault is the private page with everything you track — the link is also in
+            your welcome email. Keep it handy.
+          </p>
+        )}
       </section>
     );
   }
@@ -240,69 +209,14 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
         </label>
       </div>
 
-      {/* SEARCH — section header (ADR-029: dropped numeric prefix). */}
-      <label className="block">
-        <span className="font-display text-base font-bold text-foil-navy">Tell me a card</span>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="charizard, pikachu, lugia…"
-          className="mt-2 w-full rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/60 outline-none transition focus:border-foil-gold focus:ring-2 focus:ring-foil-gold/30"
-          autoFocus
-        />
-      </label>
-
-      {/* RESULTS */}
-      {(searching || searchResults.length > 0) && (
-        <ul className="mt-4 space-y-2">
-          {searching && searchResults.length === 0 && (
-            <li className="text-sm text-foil-slate">Searching…</li>
-          )}
-          {searchResults.map((hit) => {
-            const isCatalogued = cataloguedSet.has(hit.id);
-            const isSelected = selectedIds.has(hit.id);
-            return (
-              <li key={hit.id}>
-                <button
-                  type="button"
-                  onClick={() => isCatalogued && addCard(hit)}
-                  disabled={!isCatalogued || isSelected}
-                  className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-left transition ${
-                    isSelected
-                      ? "border-foil-gold/40 bg-foil-gold/5 opacity-60"
-                      : isCatalogued
-                        ? "border-foil-navy/10 bg-foil-cream hover:border-foil-gold/50 hover:bg-foil-gold/5"
-                        : "border-foil-navy/5 bg-foil-cream/50 opacity-50 cursor-not-allowed"
-                  }`}
-                >
-                  <Image
-                    src={hit.image}
-                    alt={`${hit.name} (${hit.setName})`}
-                    width={48}
-                    height={67}
-                    unoptimized
-                    className="h-16 w-12 rounded-md object-cover ring-1 ring-foil-navy/10"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-medium text-foil-navy">{hit.name}</p>
-                    <p className="truncate text-xs text-foil-slate">
-                      {hit.setName} · #{hit.number}
-                    </p>
-                  </div>
-                  {isSelected ? (
-                    <span className="text-xs font-medium text-foil-gold">Selected ✓</span>
-                  ) : isCatalogued ? (
-                    <span className="text-xs font-medium text-foil-navy">+ Track</span>
-                  ) : (
-                    <span className="text-xs text-foil-slate">Not yet tracked</span>
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      {/* SEARCH — the shared type-ahead (ADR-093; extracted so the vault's
+          add-in-place uses the same component, never a fork). */}
+      <CardTypeahead
+        cataloguedIds={cataloguedIds}
+        pickedIds={selectedIds}
+        onPick={addCard}
+        autoFocus
+      />
 
       {/* SELECTED CARDS — section header (no number). Only renders once
           the user has picked at least one card. */}

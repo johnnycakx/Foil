@@ -89,6 +89,16 @@ const PUBLIC_SURFACES: readonly string[] = [
   "app/(site)/service-areas/[city]/page.tsx",
   "components/vending/host-lead-form.tsx",
   "components/vending/restock-alert-form.tsx",
+  // ADR-093: the vault surface (the token-access watchlist page + its
+  // components + the recovery page + the shared type-ahead). Same cream/navy/
+  // gold register; the no-raw-hex + coral-hover-only invariants cover them so
+  // the binder aesthetic can't drift back toward a generic-template look. The
+  // pocket's plastic-sleeve inset shadow uses rgba() (a depth cue, not a hex
+  // literal), which the no-raw-hex guard doesn't flag.
+  "app/(site)/w/[token]/page.tsx",
+  "app/(site)/w/page.tsx",
+  "components/vault/vault-add-card.tsx",
+  "components/cards/card-typeahead.tsx",
 ];
 
 // ---------------------------------------------------------------------------
@@ -268,9 +278,11 @@ test("/start form: drops numeric step-numbering (1./2./3.) in favor of named sec
   assert.doesNotMatch(src, />\s*3\.\s*Your\s+email/);
 });
 
-test("/start form: renders the three named section headers (ADR-029)", () => {
+test("/start form: renders the named section headers (ADR-029)", () => {
   const src = readFile("components/start-page-form.tsx");
-  assert.match(src, /Tell me a card/);
+  // "Tell me a card" moved into the shared CardTypeahead's default label
+  // (ADR-093 extraction); the other two headers stay in the form.
+  assert.match(readFile("components/cards/card-typeahead.tsx"), /Tell me a card/);
   assert.match(src, /Set target prices/);
   assert.match(src, /Where to email you/);
 });

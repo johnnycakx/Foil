@@ -369,6 +369,21 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 **Mitigation playbook.** The cron result now carries `rearmed` / `skippedNonUsd` / `heldNoBasis` counters in the Discord summary path; watch them for the first weeks of real traffic. Flip to `resolved` after the first month of live watches with zero trigger events.
 
+## R-064 — Vault link sharing: anyone with the URL can view/edit that watchlist
+
+**Severity:** Low (today: watchlists hold card names + targets, no payment or identity data; the email itself never renders on the page)
+**Status:** `accepted` (2026-07-01, [ADR-093](DECISIONS.md#adr-093--the-vault-token-access-watchlist-page-no-login-wall-binder-structural-the-house-half-of-the-saas-synthesis))
+
+**The risk.** The vault (`/w/<token>`) is a no-login surface: the HMAC-signed URL IS the auth. Anyone the link is forwarded to (or who reads it over a shoulder, or finds it in a shared browser history) can view the watchlist, change targets, pause/resume, add or remove cards — the private-calendar-link class of exposure. The token is unguessable (HMAC-SHA256, constant-time verified, 404 on any failure) and context-separated from unsubscribe tokens, so the risk is strictly link-handling, not cryptographic.
+
+**Why accepted.** The funnel promises "no account required"; a login wall would break the core conversion promise for ≈0-user-scale exposure. Blast radius is a scrambled watchlist, recoverable in minutes; alerts still go only to the owner's email. Every distribution point (welcome email, success screens, page footer) says plainly that the link is private.
+
+**Pre-registration foothold sub-risk (surfaced by /security-review, kept for honesty).** Vault tokens carry no TTL and are never invalidated, and the /start + card-form success screens return the inline link on a FIRST watch (no pre-existing vault to leak — the reported HIGH is closed). Residual: an attacker who submits a victim's *never-before-used-on-Foil* email FIRST keeps a durable token; if the victim later adopts that exact address and adds watches, the retained token reads/edits them. Narrow precondition chain (unused email + attacker-first + victim-later-adopts + token-retained) + low-sensitivity data → rated **Low**, accepted for v1 with the directive's success-screen-inline delivery. **Eliminate it fully** by either going inbox-only for the success screen (the welcome email already carries the link on first watch) OR adding the token `iat` freshness window (below) — do the first at the earliest whiff of abuse.
+
+**Trigger to escalate.** First user-reported vault tampering incident OR the Pro tier ships (Supabase-auth accounts absorb this surface) OR watchlists start carrying anything beyond card/target data OR any evidence of email pre-registration abuse.
+
+**Mitigation playbook.** (1) Go inbox-only on the success screens (drops the pre-registration foothold entirely; one line of copy). (2) Rotate `UNSUBSCRIBE_TOKEN_SECRET` (invalidates every outstanding link; recovery form re-issues). (3) Add an `iat` freshness window on vault tokens (the claim is already in the payload). (4) Promote to authed accounts with the Pro tier.
+
 ## How to log a new risk
 
 1. Next available ID (`R-NNN`, monotonically increasing).
