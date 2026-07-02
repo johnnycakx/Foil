@@ -90,8 +90,10 @@ const PUBLIC_SURFACES: readonly string[] = [
   "components/vending/host-lead-form.tsx",
   "components/vending/restock-alert-form.tsx",
   // ADR-093: the vault surface (the token-access watchlist page + its
-  // components + the recovery page + the shared type-ahead). Same cream/navy/
-  // gold register; the no-raw-hex + coral-hover-only invariants cover them so
+  // components + the recovery page + the shared type-ahead). design-loop-round2
+  // §4 (vault night register): both /w pages now carry data-tone="night" —
+  // night/night-2 surfaces, cream ink, teal foil-accent (no gold/coral at
+  // rest); the no-raw-hex + coral-hover-only invariants still cover them so
   // the binder aesthetic can't drift back toward a generic-template look. The
   // pocket's plastic-sleeve inset shadow uses rgba() (a depth cue, not a hex
   // literal), which the no-raw-hex guard doesn't flag.
