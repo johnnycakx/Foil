@@ -429,3 +429,17 @@ token pair itself).
 Rubric: (a) alive-but-calm 8.7 (48px/s gallery walk, edge dissolve) · (b) premium faces 8.6 (hires self-hosted webps, vintage stars lead) · (c) zero jank — measured 177/197/115fps with petals · (d) register untouched 9.0 · (e) click affordance 8.3 (shine + lift on hover; static shots can't show it — John's felt review is the real gate). avg 8.72 / min 8.3... wait, bar is min ≥ 8.0 — met.
 
 **MOTION IS FELT, NOT SCREENSHOT-JUDGED: John reviews live motion on localhost before any push (the closure contract).**
+
+---
+
+## iter-26 - homepage-hero-simplify (bar hit iteration 1 of 2)
+
+**Skills (in-context, per-change attribution):**
+- **impeccable (quieter/distill)** → the subtraction IS the design: stats chip dead (the belt is the proof of coverage; a counter chip is template flex), secondary CTA dead (the hero stops hedging; /deals keeps its nav entry), and the rhythm re-balanced after the removals (container pt-8/sm:pt-12, CTA mt-10 px-9 py-4 weighted for the room it now owns, no orphaned gaps).
+- **frontend-design** → one decisive action as the thesis: "Start your vault" centered and alone; the follow widget styled as a service affordance (quiet bordered card, monochrome official X glyph via currentColor, never blue never gold), subordinate by size and tone.
+
+**Both widget options shot for John's morning pick (`gallery/hero-simplify/`, 390/768/1440/2560 each):**
+- option-a: "Follow along on X" (committed default, John's stated directive)
+- option-b: "Built by a card-store seller. Follow along on X" (one-line flip: `FOLLOW_TRUST_LINE = true`)
+
+Rubric: (a) one calm decisive moment 8.8 · (b) widget findable-but-subordinate 8.7 · (c) rhythm intentional 8.6 · (d) register untouched 9.0 — avg 8.78 / min 8.6, bar met iteration 1.

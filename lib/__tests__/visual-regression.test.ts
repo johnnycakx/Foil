@@ -234,21 +234,41 @@ test("lib/social: no 'Level 4' / 'Level-4' jargon anywhere — the X bot posts p
   assert.deepEqual(offenders, [], `'Level 4'/'Level-4' jargon found in: ${offenders.join(", ")}`);
 });
 
-test("Homepage: founder credit renders the headshot with descriptive alt text (homepage-v2, ADR-065)", () => {
-  const src = readFile("app/(site)/page.tsx");
-  // The founder presence is the trust signal that replaced the jargon badge —
-  // a face beats a credential nobody parses, and it seeds the X content pipeline.
-  assert.match(src, /src=["']\/founder\/john-craig\.webp["']/, "founder headshot src must be /founder/john-craig.webp");
-  assert.match(src, /alt=["']John Craig, founder of Foil["']/, "founder image needs descriptive alt text");
-  assert.match(src, /Built by John Craig/, "founder byline must name John Craig");
-  // The headshot file must actually exist (no broken ref).
+test("Founder credit: moved OFF the homepage hero (homepage-hero-simplify); the footer keeps the face", () => {
+  // History: ADR-065 put the founder byline in the hero as the trust signal;
+  // homepage-hero-simplify succeeded it with the X follow widget. The human
+  // trust presence lives on in the (site)/layout footer.
+  const page = readFile("app/(site)/page.tsx");
+  assert.doesNotMatch(page, /founder\/john-craig\.webp/, "no founder headshot in the homepage anymore");
+  assert.doesNotMatch(page, /Built by John Craig/, "the hero founder byline is retired");
+  const layout = readFile("app/(site)/layout.tsx");
+  assert.match(layout, /founder\/john-craig\.webp/, "the footer keeps the founder face");
   const file = join(ROOT, "public/founder/john-craig.webp");
   assert.ok(existsSync(file), "founder headshot must exist at public/founder/john-craig.webp");
-  // And the stray @512 variant must be gone (goal cleanup).
   assert.ok(
     !existsSync(join(ROOT, "public/founder/john-craig@512.webp")),
     "the stray john-craig@512.webp must be deleted",
   );
+});
+
+test("Hero simplify tripwire: stats chip + hedging CTA are GONE; the follow widget owns the tail (homepage-hero-simplify)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  const hero = src.slice(src.indexOf("function Hero"), src.indexOf("function VaultMoment"));
+  // The chip read like a template flex — the belt IS the proof of coverage.
+  assert.doesNotMatch(src, /Live · watching/, "the stats chip must not resurrect");
+  assert.doesNotMatch(src, /cards across .* sets/, "no coverage-count copy on the homepage");
+  // The hero stops hedging: one decisive CTA (the deals page keeps its nav entry).
+  assert.doesNotMatch(hero, /best drops/, "no secondary deals CTA in the hero");
+  assert.match(hero, /Start your vault/, "the single CTA stays");
+  // The follow loop: one-tap intent, new tab, monochrome official glyph.
+  assert.match(src, /https:\/\/x\.com\/intent\/follow\?screen_name=FoilTCG/, "one-tap follow intent URL");
+  assert.match(src, /Follow along on X/, "the follow copy (voice: plain words)");
+  const widget = src.slice(src.indexOf("x.com/intent/follow"), src.indexOf("Follow along on X"));
+  assert.match(widget, /target="_blank"/, "follow opens a new tab");
+  assert.match(widget, /rel="noopener noreferrer"/, "noopener on the outbound intent");
+  assert.match(src, /function XGlyph/, "the official X mark renders as an inline glyph");
+  assert.match(src, /fill-current/, "the glyph is monochrome (currentColor) — never blue, never gold");
+  assert.match(src, /const FOLLOW_TRUST_LINE = false/, "option (a) is the committed default; (b) is the one-line flip");
 });
 
 test("Homepage: hero has no BackgroundGradientAnimation / corner-shimmer (ADR-038 — solid cream)", () => {
@@ -567,13 +587,12 @@ test("Home page: orphan CardPeek decorations removed (ADR-038)", () => {
   assert.doesNotMatch(src, /CardPeek/, "CardPeek (component + invocations) should be gone");
 });
 
-test("Hero pills: seal-free (hero-polish-followups closed the ADR-099 class), no Pokéball", () => {
+test("Hero: seal-free and pill-free (hero-polish-followups closed the seal class; homepage-hero-simplify removed the chip)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // History: ADR-094 put <SealMark /> in the Live pill; hero-polish-followups
-  // retired the seal across ALL UI (the tripwire below owns the ban). The
-  // pill keeps its pulsing accent dot; no mark glyphs return.
+  // History: ADR-094's Live pill carried <SealMark /> + a pulse dot; the seal
+  // died with hero-polish-followups and the whole chip died with
+  // homepage-hero-simplify. Neither returns.
   assert.doesNotMatch(src, /<SealMark\b/, "the seal mark is retired from the homepage");
-  assert.match(src, /animate-ping/, "the Live pill keeps its pulse dot");
   assert.doesNotMatch(src, /<PokeballMark\b/, "no PokeballMark bullets remain");
 });
 
@@ -927,14 +946,9 @@ test("Scroll reveals: animation-timeline is progressive-enhancement + reduced-mo
   assert.doesNotMatch(heroBlock, /reveal-rise/, "the hero never carries a scroll-reveal class");
 });
 
-test("Hero founder avatar: loads eagerly, never lazy (blank-on-paint regression)", () => {
-  const src = readFile("app/(site)/page.tsx");
-  // The HOMEPAGE founder avatar — NOT the footer avatar (that one lives in
-  // (site)/layout.tsx and correctly stays lazy, below the fold).
-  const founderImg = imageBlockContaining(src, "/founder/john-craig.webp");
-  assert.match(founderImg, /loading="eager"/, "the above-the-fold founder avatar must be eager");
-  assert.doesNotMatch(founderImg, /loading="lazy"/, "founder avatar must not be lazy");
-});
+// (The "hero founder avatar loads eagerly" pin died with the hero founder
+// avatar itself — homepage-hero-simplify. The footer avatar stays lazy by
+// design, below the fold.)
 
 // ---------------------------------------------------------------------------
 // ADR-095 — line-tracker (/lines/[pokemon]) sakura register + trust guards.

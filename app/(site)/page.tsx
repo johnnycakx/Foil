@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { EmailCapture } from "@/components/email-capture";
 import { HoloCard } from "@/components/cards/holo-card";
 import { SakuraAmbience } from "@/components/sakura-ambience";
-import { CARD_CATALOG, setIdsInCatalog } from "@/lib/cards/catalog";
+import { CARD_CATALOG } from "@/lib/cards/catalog";
 import { getSnapshotSold } from "@/lib/vault-seeds";
 import { getHeroBeltPool } from "@/lib/hero-belt/pool";
 import { HeroBelt } from "@/components/hero-belt";
@@ -171,9 +171,23 @@ function cardSlug(id: string): string | null {
   return CARD_CATALOG.find((e) => e.pokemonTcgId === tcgId)?.slug ?? null;
 }
 
+// Option (b) of the follow widget (homepage-hero-simplify): true prepends
+// "Built by a card-store seller." inside the widget. John picks by eye from
+// the shots; (a) = false is his stated directive and the default.
+const FOLLOW_TRUST_LINE = false;
+
+/** The official X logo mark, monochrome (currentColor) per X brand rules —
+ *  never blue, never gold. Standard 24x24 brand path, aria-hidden (the link
+ *  text carries the meaning). */
+function XGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" width={15} height={15} aria-hidden className="shrink-0 fill-current">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
 function Hero() {
-  const cardCount = CARD_CATALOG.length;
-  const setCount = setIdsInCatalog().length;
   // hero-chase-belt (ADR-102): the motion hero is the chase wheel — the top
   // ~200 chase cards drifting past, each a real market-page link. The
   // composed fan below survives as the prefers-reduced-motion fallback (and
@@ -273,22 +287,13 @@ function Hero() {
         />
       </div>
 
-      {/* The pitch — pull-model (fable-design-overhaul §1): the plain promise
-          first, ONE primary action. "Vault" never leads; it charms in the CTA
-          after the promise earns comprehension. */}
-      {/* Round-3 fix 4: tightened tail padding — the vault section enters
-          before the viewport empties (no dead black band after the founder
-          note). */}
-      <div className="relative mx-auto w-full max-w-3xl px-5 pt-6 pb-12 text-center sm:px-8 sm:pt-8 sm:pb-16">
-        <p className="inline-flex items-center gap-2 rounded-full border border-foil-cream/15 bg-foil-night-2/80 px-3 py-1 text-xs font-medium text-foil-cream/80 backdrop-blur-sm">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-foil-accent opacity-75 motion-safe:animate-ping" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-accent" />
-          </span>
-          Live · watching {cardCount} cards across {setCount} sets
-        </p>
-
-        <h1 className="font-display mx-auto mt-6 max-w-3xl text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.015em] text-foil-cream [text-wrap:balance] sm:text-6xl md:text-7xl">
+      {/* The pitch (homepage-hero-simplify): one calm decisive moment — the
+          belt is the proof of coverage, the headline is the promise, ONE
+          action. The stats chip and the hedging secondary CTA are gone (the
+          deals page keeps its nav entry); the founder byline is succeeded by
+          the quiet X follow widget below (the footer keeps the face). */}
+      <div className="relative mx-auto w-full max-w-3xl px-5 pt-8 pb-12 text-center sm:px-8 sm:pt-12 sm:pb-16">
+        <h1 className="font-display mx-auto max-w-3xl text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.015em] text-foil-cream [text-wrap:balance] sm:text-6xl md:text-7xl">
           Tell us the cards you&apos;re chasing.
         </h1>
 
@@ -297,18 +302,12 @@ function Hero() {
           price — judged against what cards really sell for, not asking prices.
         </p>
 
-        <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <div className="mt-10 flex justify-center">
           <Link
             href="/start?src=home-hero"
-            className="rounded-xl bg-foil-cream px-7 py-3.5 text-lg font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-accent/60"
+            className="rounded-xl bg-foil-cream px-9 py-4 text-lg font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-accent/60"
           >
             Start your vault
-          </Link>
-          <Link
-            href="/deals?src=home-hero"
-            className="text-base text-foil-cream/60 underline decoration-foil-cream/25 underline-offset-4 transition hover:text-foil-cream hover:decoration-foil-accent"
-          >
-            or see today&apos;s best drops →
           </Link>
         </div>
 
@@ -316,25 +315,24 @@ function Hero() {
           Free · no account needed · one email when it matters, not a feed to check
         </p>
 
-        {/* Founder presence: a face + a plain byline (ADR-065) — trust signal,
-            not a credential badge. */}
-        <div className="mx-auto mt-12 flex max-w-xl items-center gap-3 text-left">
-          <Image
-            src="/founder/john-craig.webp"
-            alt="John Craig, founder of Foil"
-            width={44}
-            height={44}
-            className="h-11 w-11 shrink-0 rounded-full object-cover ring-1 ring-foil-cream/20"
-            // Above-the-fold + trust-critical. Eager-load so it never paints
-            // blank (Next 16: loading="eager" + fetchPriority="high").
-            loading="eager"
-            fetchPriority="high"
-          />
-          <p className="text-base text-foil-cream/60">
-            <span className="font-medium text-foil-cream">Built by John Craig.</span>{" "}
-            I run a Pokémon card store and got tired of digging through eBay junk
-            to find the real deals, so I built Foil to do it for me.
-          </p>
+        {/* The follow loop (homepage-hero-simplify): a quiet one-tap X follow
+            where the founder byline sat. Monochrome X glyph per X brand rules
+            (never blue, never gold). FOLLOW_TRUST_LINE = option (b): keeps a
+            thread of the founder trust signal inside the widget — John picks
+            by eye; (a) is the default directive. */}
+        <div className="mt-12 flex justify-center">
+          <a
+            href="https://x.com/intent/follow?screen_name=FoilTCG"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-2.5 rounded-xl border border-foil-cream/12 bg-foil-night-2/70 px-5 py-2.5 text-sm text-foil-cream/70 transition hover:border-foil-accent/40 hover:text-foil-cream"
+          >
+            {FOLLOW_TRUST_LINE && (
+              <span className="text-foil-cream/55">Built by a card-store seller.</span>
+            )}
+            <XGlyph />
+            <span className="font-medium">Follow along on X</span>
+          </a>
         </div>
       </div>
     </section>
