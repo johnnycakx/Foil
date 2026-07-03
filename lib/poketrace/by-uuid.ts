@@ -23,7 +23,20 @@ export type SoldStat = {
   avg1d: number | null;
   avg7d: number | null;
   avg30d: number | null;
+  /** PokeTrace's rolling medians (median30d backs the windowed value when
+   *  avg30d is null — observed upstream when a window holds a single sale). */
+  median7d: number | null;
+  median30d: number | null;
+  /** ALL-TIME sales on record for the tier — NOT a 30-day count. Empirically
+   *  verified against /cards/{uuid}/listings (records span years). Any surface
+   *  labeling this as a windowed count is lying (the xy4-122 incident). */
   saleCount: number | null;
+  /** ISO timestamp of the tier's most recent recorded sale. avg30d is anchored
+   *  to THIS date, not to today — a tier whose last sale is months old still
+   *  carries an avg30d. Freshness gating lives in lib/cards/sold-coherence. */
+  lastUpdated: string | null;
+  /** PokeTrace marks eBay tier counts approximate. */
+  approxSaleCount: boolean;
 };
 
 // ebay/tcgplayer carry per-condition US sold tiers; cardmarket carries the
@@ -55,7 +68,11 @@ function parseSnap(snap: RawSnap): SoldStat {
     avg1d: num(snap.avg1d),
     avg7d: num(snap.avg7d),
     avg30d: num(snap.avg30d),
+    median7d: num(snap.median7d),
+    median30d: num(snap.median30d),
     saleCount: num(snap.saleCount),
+    lastUpdated: typeof snap.lastUpdated === "string" && snap.lastUpdated.length > 0 ? snap.lastUpdated : null,
+    approxSaleCount: snap.approxSaleCount === true,
   };
 }
 

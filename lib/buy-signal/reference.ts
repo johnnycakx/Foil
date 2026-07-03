@@ -17,20 +17,16 @@
 import { getSoldHistory, type SoldHistory, type SoldStat, type SoldSource } from "../poketrace/by-uuid.ts";
 import type { PoketraceVariant } from "../poketrace/variant.ts";
 import { RAW_POKETRACE_TIERS } from "../cards/conditions.ts";
+import { freshWindowedValue, statFor as coherenceStatFor } from "../cards/sold-coherence.ts";
 import type { ListingConditionTier } from "./condition-infer.ts";
 
 // ebay/tcgplayer first (per-condition US tiers); cardmarket last (EU AGGREGATED
 // roll-up). Mirrors SoldHistoryPanel's SOURCES order.
 const SOURCES: readonly SoldSource[] = ["ebay", "tcgplayer", "cardmarket"];
 
-/** First source carrying a stat for `tier`. Mirrors the panel's statFor. */
+/** First source carrying a stat for `tier` (shared coherence statFor). */
 function statFor(history: SoldHistory | null, tier: string): SoldStat | null {
-  if (!history) return null;
-  for (const src of SOURCES) {
-    const s = history.bySource[src]?.[tier];
-    if (s) return s;
-  }
-  return null;
+  return coherenceStatFor(history, tier)?.stat ?? null;
 }
 
 /** "How actively traded" score for ranking the default variant (panel parity). */
@@ -55,11 +51,18 @@ export type SoldReference = {
 };
 
 /**
- * Pure: the raw-condition, saleCount-weighted 30-day average + total sale count
- * for one variant's sold history. Graded slabs are excluded by construction (we
+ * Pure: the raw-condition, saleCount-weighted 30-day average + sale count for
+ * one variant's sold history. Graded slabs are excluded by construction (we
  * only walk RAW_POKETRACE_TIERS), satisfying the condition-filter requirement.
+ *
+ * Freshness (sold-data-integrity, 2026-07-03): only tiers with a FRESH
+ * windowed value participate — PokeTrace's avg30d is anchored to the tier's
+ * lastUpdated, not to today, so a tier whose last sale was months ago must not
+ * feed a "recently sold for" reference (the xy4-122 class). Honesty caveat:
+ * saleCount is PokeTrace's ALL-TIME count for the tier — the best available
+ * sample-size proxy, restricted here to tiers that are actually trading.
  */
-export function rawReferenceFromHistory(history: SoldHistory | null): SoldReference {
+export function rawReferenceFromHistory(history: SoldHistory | null, nowMs: number = Date.now()): SoldReference {
   const stats = RAW_POKETRACE_TIERS
     .map((t) => statFor(history, t))
     .filter((s): s is SoldStat => s != null);
@@ -68,10 +71,10 @@ export function rawReferenceFromHistory(history: SoldHistory | null): SoldRefere
   let weightDen = 0;
   let sampleSize = 0;
   for (const s of stats) {
-    const v = s.avg30d ?? s.avg;
+    const v = freshWindowedValue(s, nowMs);
+    if (v == null) continue; // stale or unwindowed tier: no value, no sample
     const w = s.saleCount && s.saleCount > 0 ? s.saleCount : 0;
     sampleSize += s.saleCount ?? 0;
-    if (v == null) continue;
     // Weight by sale count so NM (the busiest tier) dominates naturally; fall
     // back to an equal weight for a tier that priced but reported no count.
     const weight = w > 0 ? w : 1;
@@ -119,7 +122,9 @@ const LISTING_TIER_TO_POKETRACE: Record<"NM" | "LP" | "MP" | "HP" | "DMG", strin
   DMG: "DAMAGED",
 };
 
-const stat30d = (s: SoldStat | null): number | null => (s ? (s.avg30d ?? s.avg) : null);
+/** Fresh windowed value only (sold-data-integrity): a stale tier returns null
+ *  → the caller emits UNKNOWN instead of comparing against months-old data. */
+const stat30d = (s: SoldStat | null, nowMs: number): number | null => freshWindowedValue(s, nowMs);
 
 export type ConditionMatchedReference = {
   /** 30-day sold avg for the tier that matches the listing's inferred condition.
@@ -142,12 +147,16 @@ const EMPTY_MATCH: ConditionMatchedReference = {
   lowestRawTier: null,
 };
 
-/** Lowest present raw-tier 30-day avg (+ its key). null when no raw tier priced. */
-export function lowestRawReferenceFromHistory(history: SoldHistory | null): { reference: number | null; tier: string | null } {
+/** Lowest present FRESH raw-tier 30-day avg (+ its key). null when no raw tier
+ *  is actively trading. */
+export function lowestRawReferenceFromHistory(
+  history: SoldHistory | null,
+  nowMs: number = Date.now(),
+): { reference: number | null; tier: string | null } {
   let lowest: number | null = null;
   let lowestTier: string | null = null;
   for (const t of RAW_POKETRACE_TIERS) {
-    const v = stat30d(statFor(history, t));
+    const v = stat30d(statFor(history, t), nowMs);
     if (v == null || v <= 0) continue;
     if (lowest == null || v < lowest) {
       lowest = v;
@@ -170,8 +179,9 @@ export function conditionMatchedReferenceFromHistory(
   history: SoldHistory | null,
   listingTier: ListingConditionTier,
   gradeKey?: string,
+  nowMs: number = Date.now(),
 ): ConditionMatchedReference {
-  const lowest = lowestRawReferenceFromHistory(history);
+  const lowest = lowestRawReferenceFromHistory(history, nowMs);
   const base: ConditionMatchedReference = {
     ...EMPTY_MATCH,
     lowestRawReference: lowest.reference,
@@ -190,14 +200,14 @@ export function conditionMatchedReferenceFromHistory(
     // that cross-grade blend was the #32.3 false-BELOW bug.
     if (!gradeKey) return base;
     const s = statFor(history, gradeKey);
-    const v = stat30d(s);
+    const v = stat30d(s, nowMs);
     if (v == null || v <= 0) return base;
     return { ...base, conditionReference: v, conditionSampleSize: s?.saleCount ?? 0, matchedTier: gradeKey };
   }
 
   const key = LISTING_TIER_TO_POKETRACE[listingTier];
   const s = statFor(history, key);
-  const v = stat30d(s);
+  const v = stat30d(s, nowMs);
   if (v == null || v <= 0) return base;
   return { ...base, conditionReference: v, conditionSampleSize: s?.saleCount ?? 0, matchedTier: key };
 }

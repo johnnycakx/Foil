@@ -25,8 +25,22 @@ import type { SoldHistory, SoldStat } from "../poketrace/by-uuid.ts";
 import type { CardMetadata } from "../cards/sdk.ts";
 import { rankMovers, toMoverRow, type MoverRow } from "../deals/market-movers-read.ts";
 
-function nmStat(avg7d: number | null, avg30d: number | null, saleCount: number | null): SoldStat {
-  return { avg: avg30d, low: null, high: null, avg1d: null, avg7d, avg30d, saleCount };
+function nmStat(avg7d: number | null, avg30d: number | null, saleCount: number | null, lastUpdated?: string): SoldStat {
+  return {
+    avg: avg30d,
+    low: null,
+    high: null,
+    avg1d: null,
+    avg7d,
+    avg30d,
+    median7d: null,
+    median30d: null,
+    saleCount,
+    // Fresh by default — the freshness gate (sold-data-integrity) is exercised
+    // by the dedicated staleness test below.
+    lastUpdated: lastUpdated ?? new Date().toISOString(),
+    approxSaleCount: false,
+  };
 }
 
 function history(uuid: string, stat: SoldStat | null): SoldHistory {
@@ -93,6 +107,17 @@ test("classifyMomentum: thresholds → down / up / flat", () => {
 test("classifyMomentum: null stat / unusable windows → null", () => {
   assert.equal(classifyMomentum(null), null);
   assert.equal(classifyMomentum(nmStat(null, 100, 20)), null);
+});
+
+test("classifyMomentum: stale stat → null (windows are lastUpdated-anchored, sold-data-integrity)", () => {
+  // A card whose last NM sale was months ago still carries avg7d/avg30d
+  // (anchored to that old sale) — it must never surface as a current mover.
+  assert.equal(classifyMomentum(nmStat(80, 100, 20, "2026-01-30T00:00:00.000Z"), Date.parse("2026-07-03T00:00:00Z")), null);
+  // The same stat fresh classifies normally.
+  assert.ok(classifyMomentum(nmStat(80, 100, 20, "2026-06-28T00:00:00.000Z"), Date.parse("2026-07-03T00:00:00Z")));
+  // No lastUpdated at all → not provably fresh → null.
+  const noDate = { ...nmStat(80, 100, 20), lastUpdated: null };
+  assert.equal(classifyMomentum(noDate, Date.parse("2026-07-03T00:00:00Z")), null);
 });
 
 test("classifyMomentum: materiality gate excludes sub-$10 bulk (ADR-070)", () => {

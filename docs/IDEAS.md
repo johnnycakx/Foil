@@ -19,6 +19,17 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-07-03
+category: product
+status: captured
+---
+## Per-sale robust sold stats via the PokeTrace /listings endpoint (median + IQR trim + language filter)
+
+The sold-data-integrity diagnosis discovered `/cards/{uuid}/listings` exposes every per-sale record (title, price, date, grader/grade, condition, anomalyFlag) — the raw material for computing our OWN robust per-tier stats: true windowed medians with IQR outlier trimming, title-based language filtering (kills the Brazilian-printing pollution PokeTrace pools in upstream, ~22% of xy4-122's raw records), and honest per-window sale counts. Would replace the aggregate-field trust problem entirely on the cards that matter (watched + curated), at ~17 paginated calls per card — demand-driven per ADR-092 doctrine, never bulk.
+
+**Context:** sold-data-integrity goal (ADR-104) — the coherence gate defends against incoherence, but per-sale stats are the only path to catching wrong-but-coherent figures (R-068 residual). PokeTrace filing: docs/goals/_results/poketrace-h2-filing.md.
+
+---
 date: 2026-07-02
 category: growth
 status: captured

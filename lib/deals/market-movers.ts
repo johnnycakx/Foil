@@ -25,6 +25,7 @@
 
 import type { CardMetadata } from "../cards/sdk.ts";
 import type { SoldHistory, SoldStat, SoldSource } from "../poketrace/by-uuid.ts";
+import { isFreshStat } from "../cards/sold-coherence.ts";
 
 /** Curated catalog entry the cron iterates (slug + SDK id). Same shape as the
  *  deals-refresh batch so the route builds one entry list for both. */
@@ -177,8 +178,13 @@ export function computeMomentumPct(avg7d: number | null, avg30d: number | null):
  * Pure classification of one NM stat into a mover. Returns null when the data is
  * unusable (no avg7d/avg30d) or the sample is below MOVER_MIN_SALES — a missing
  * mover is correct; a thin-sample "good buy" is the failure we're avoiding.
+ *
+ * Freshness (sold-data-integrity, 2026-07-03): PokeTrace's avg7d/avg30d are
+ * anchored to the tier's lastUpdated, not to today — a card whose last NM sale
+ * is months old would otherwise surface stale momentum as a current "good
+ * buy". Stale stats classify to null (no mover).
  */
-export function classifyMomentum(stat: SoldStat | null): {
+export function classifyMomentum(stat: SoldStat | null, nowMs: number = Date.now()): {
   avg7d: number;
   avg30d: number;
   saleCount: number;
@@ -186,6 +192,7 @@ export function classifyMomentum(stat: SoldStat | null): {
   direction: MoverDirection;
 } | null {
   if (!stat) return null;
+  if (!isFreshStat(stat, nowMs)) return null;
   const saleCount = typeof stat.saleCount === "number" && stat.saleCount > 0 ? stat.saleCount : 0;
   if (saleCount < MOVER_MIN_SALES) return null;
   const momentumPct = computeMomentumPct(stat.avg7d, stat.avg30d);

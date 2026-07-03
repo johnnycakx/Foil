@@ -428,6 +428,20 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 **Mitigation / recovery.** (1) Timing: John sends the reply when eve is likely active (she asked the question — she's primed to act first); stronger variant per the /security-review M-1 recommendation: DM her the link a beat BEFORE the public reply so she has the head start. (2) Recovery: delete the `seeded_vault_claims` row for the slug + the squatter's `src='eve-vault'` watchlists rows; the vault re-arms and is claimable again. (3) If it ever matters at scale (creator-gift play, IDEAS), add a claim code delivered in DM instead of first-come — deliberately NOT built for v1.
 
+## R-068 — Sold-data trust: the page's own "what it really sells for" numbers (the surface the pitch depends on)
+
+**Severity:** High (the entire buyer-side pitch is "sold data to prove the deal is real"; a wrong sold figure in front of an L4 seller — or a creator's audience — burns the trust moat directly)
+
+**Status:** `mitigating` (2026-07-03, [ADR-104](DECISIONS.md#adr-104--sold-data-honesty-freshness-gated-windowed-figures--a-render-time-coherence-gate-sold-data-integrity)). The xy4-122 incident (30-day avg $391/n=63 on a card with ~3 raw sales in 30 days) was root-caused H3-primary (our rollup fabricated the windowed framing from all-time counts and lastUpdated-anchored windows) + H2-secondary (PokeTrace pools other-language printings into English cards). Shipped: freshness-gated windowed figures + honest last-sale degradation + all-time count labeling; the render-time coherence gate (cross-source disputed tiers dropped, ladder-incoherent panels suppressed to the honest empty state, #errors ping per violation); the same freshness gate on every computation basis (buy signals, alert plausibility basis, ADR-091 market floor, movers momentum). Scan baseline: 71.6% of pages had a ladder inversion pre-fix; post-fix 2.9% suppress / 4.6% drop a tier / 93.1% keep a fresh headline (docs/goals/_results/sold-coherence-scan.md).
+
+**The residual risk.** (1) H2 upstream: within-language pollution that produces a COHERENT-looking but wrong ladder passes the gate (a fresh Brazilian NM sale inside an otherwise-quiet window still renders); the upstream filing (docs/goals/_results/poketrace-h2-filing.md) is the real fix. (2) The freshness window (35d) trades staleness for coverage — a legitimate figure 36 days old degrades to "last recorded", which is honest but thinner. (3) tcgplayer-vs-ebay population differences below the 2.5x dispute threshold still mix silently in the ladder (different rows can come from different sources).
+
+**Trigger to escalate.** John (or any user) catches a rendered sold figure that is wrong-but-coherent (passes the gate); OR the #errors `sold-data-suppressed` stream shows a sustained burst on curated/belt cards (upstream data shifted); OR PokeTrace answers the filing with semantics that contradict what we verified empirically (re-verify immediately).
+
+**Mitigation candidates.** Per-sale robust stats via `/cards/{uuid}/listings` (median + IQR trim + language filtering on titles — we already pull this endpoint in diagnosis; IDEAS entry); re-run `scripts/sold-coherence-scan.ts --from-cache`-refreshed monthly as a standing probe; surface the per-row source (ebay/tcgplayer) in the UI if mixing keeps confusing readers.
+
+---
+
 ## How to log a new risk
 
 1. Next available ID (`R-NNN`, monotonically increasing).

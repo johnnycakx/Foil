@@ -5,7 +5,7 @@ import { parseSoldHistory, getSoldHistory, __clearSoldHistoryCache } from "../po
 const SAMPLE_CARD = {
   prices: {
     ebay: {
-      NEAR_MINT: { avg: 313.51, low: 300, high: 330, avg1d: 655, avg7d: 482.28, avg30d: 508.15, saleCount: 34, approxSaleCount: true },
+      NEAR_MINT: { avg: 313.51, low: 300, high: 330, avg1d: 655, avg7d: 482.28, avg30d: 508.15, median7d: 500, median30d: 505.5, saleCount: 34, approxSaleCount: true, lastUpdated: "2026-06-30T00:00:00.000Z" },
       LIGHTLY_PLAYED: { avg: 435.99, avg30d: 418.66, saleCount: 76 },
       PSA_10: { avg: 30100, avg30d: 30100, saleCount: 3 },
     },
@@ -39,6 +39,14 @@ test("parseSoldHistory builds bySource for ebay + tcgplayer + cardmarket (Sessio
   assert.equal(h.bySource.ebay!.NEAR_MINT.avg30d, 508.15);
   assert.equal(h.bySource.ebay!.NEAR_MINT.saleCount, 34);
   assert.equal(h.bySource.ebay!.PSA_10.avg30d, 30100);
+  // Honesty fields (sold-data-integrity): freshness + approximation signals
+  // must survive the parse — dropping them was how the xy4-122 staleness lie
+  // became invisible to the render.
+  assert.equal(h.bySource.ebay!.NEAR_MINT.lastUpdated, "2026-06-30T00:00:00.000Z");
+  assert.equal(h.bySource.ebay!.NEAR_MINT.approxSaleCount, true);
+  assert.equal(h.bySource.ebay!.NEAR_MINT.median30d, 505.5);
+  assert.equal(h.bySource.ebay!.LIGHTLY_PLAYED.lastUpdated, null);
+  assert.equal(h.bySource.ebay!.LIGHTLY_PLAYED.approxSaleCount, false);
 });
 
 test("parseSoldHistory: EU/cardmarket-only card surfaces its AGGREGATED tier", () => {

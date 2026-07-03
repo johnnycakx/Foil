@@ -37,12 +37,30 @@ test("SoldHistoryPanel: variant selector + graceful degradation", () => {
 
 test("SoldHistoryPanel: falls back to the cardmarket AGGREGATED tier (Session 49.2)", () => {
   const src = read("components/cards/sold-history-panel.tsx");
-  // EU-only cards have only cardmarket/AGGREGATED data; the panel must read
-  // cardmarket and render an aggregated "Market average" row when no
-  // per-condition tiers exist.
-  assert.match(src, /"cardmarket"/, "cardmarket included as a source");
-  assert.match(src, /AGGREGATED/, "AGGREGATED tier fallback present");
+  // EU-only cards have only cardmarket/AGGREGATED data; the resolver reads
+  // cardmarket (SOLD_SOURCES) and the panel renders the aggregated
+  // "Market average" row when no per-condition tiers exist.
+  const coherence = read("lib/cards/sold-coherence.ts");
+  assert.match(coherence, /"cardmarket"/, "cardmarket included as a SOLD_SOURCE");
+  assert.match(src, /aggregatedRow/, "AGGREGATED tier fallback rendered");
   assert.match(src, /Market average/, "aggregated row labelled");
+});
+
+test("SoldHistoryPanel: honesty contract — resolver-gated figures, no pooled blends, no fabricated windowed n (sold-data-integrity)", () => {
+  const src = read("components/cards/sold-history-panel.tsx");
+  // Every figure flows through the one coherence resolver.
+  assert.match(src, /resolveSoldPanel/, "figures resolve through lib/cards/sold-coherence");
+  // The pooled mixed-condition aggregate (the $391 xy4-122 headline) is dead.
+  assert.doesNotMatch(src, /aggregateStat|wavg\(/, "no pooled cross-tier aggregation in the panel");
+  // Sale counts are labeled as what they are: all-time counts on record.
+  assert.match(src, /sales on record/i, "counts labeled all-time, never a windowed n");
+  assert.match(src, /Sales on record/, "table column header labeled honestly");
+  // Stale tiers render as dated last sales, never as current 30-day figures.
+  assert.match(src, /last\s*\{money\(row\.display\.value\)\}|last-sale/, "dated last-sale rendering present");
+  // Suppression: the honest empty state + the #errors ping.
+  assert.match(src, /Sold data pending/, "honest empty state copy");
+  assert.match(src, /sold-data-suppressed/, "#errors suppression ping wired");
+  assert.match(src, /postError/, "routes through lib/notifications/discord (ADR-014)");
 });
 
 test("SoldHistoryPanel: headline reacts to the selected condition (Session 49c bug fix)", () => {
