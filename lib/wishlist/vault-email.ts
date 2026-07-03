@@ -35,9 +35,9 @@ export function vaultEmailBody(input: {
   const intro =
     input.kind === "welcome"
       ? `<p style="font-size: 16px; margin: 0 0 8px;"><strong>Your vault is open.</strong></p>
-<p style="font-size: 14px; color: #445; margin: 0 0 16px;">Every card you track lives on one page — see live prices, tune targets, pause or add cards any time. Keep this link; it's yours.</p>
+<p style="font-size: 14px; color: #445; margin: 0 0 16px;">Every card you track lives on one page: see live prices, tune targets, pause or add cards any time. Keep this link; it's yours.</p>
 <p style="font-size: 14px; color: #445; margin: 0 0 16px;">What to expect: about one email a week on the market, plus an alert when a card you're watching genuinely dips.</p>
-<p style="font-size: 14px; color: #445; margin: 0 0 16px;">One favor: hit reply and tell me the one card you're chasing right now — I read every reply. — John</p>`
+<p style="font-size: 14px; color: #445; margin: 0 0 16px;">One favor: hit reply and tell me the one card you're chasing right now. I read every reply. Talk soon, John.</p>`
       : `<p style="font-size: 16px; margin: 0 0 8px;"><strong>Here's your vault link.</strong></p>
 <p style="font-size: 14px; color: #445; margin: 0 0 16px;">This is the private link to the cards you're watching on Foil.</p>`;
   const footer = input.unsubscribeUrl
@@ -48,7 +48,7 @@ export function vaultEmailBody(input: {
     `<html><body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; line-height: 1.6; color: #1a2333; background: #ffffff;">`,
     intro,
     `<p style="font-size: 15px; margin: 0 0 24px;"><a href="${safeUrl}" style="color: #0F1E3A; text-decoration: underline; text-underline-offset: 3px; font-weight: 600;">Open your vault →</a></p>`,
-    `<p style="font-size: 11px; color: #99a; line-height: 1.5; margin: 0;">Anyone with this link can view and edit your vault — treat it like a private calendar link.</p>`,
+    `<p style="font-size: 11px; color: #99a; line-height: 1.5; margin: 0;">Anyone with this link can view and edit your vault, so treat it like a private calendar link.</p>`,
     footer,
     `</body></html>`,
   ].join("\n");

@@ -167,6 +167,9 @@ test("vault link email: welcome + recovery subjects, one link, private-link warn
   });
   assert.doesNotMatch(recovery, /what to expect/i);
   assert.doesNotMatch(recovery, /hit reply/i);
+  // John's inbox verdict (2026-07-02 live test): no em dashes in email copy.
+  assert.doesNotMatch(welcome, /—/, "no em dashes in the vault welcome");
+  assert.doesNotMatch(recovery, /—/, "no em dashes in the vault recovery email");
   assert.equal(vaultEmailSubject("welcome"), "Your Foil vault is open");
   assert.equal(vaultEmailSubject("recovery"), "Your Foil vault link");
 });
