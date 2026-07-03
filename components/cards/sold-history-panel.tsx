@@ -22,36 +22,24 @@
 // Graceful degradation: no variants → a muted footer; a variant with no
 // PokeTrace data → the same honest empty state.
 
-import { getSoldHistory, type SoldHistory } from "@/lib/poketrace/by-uuid";
+import { getSoldHistory } from "@/lib/poketrace/by-uuid";
 import { getPriceHistory, chartTierForCondition } from "@/lib/poketrace/price-history";
 import type { PoketraceVariant } from "@/lib/poketrace/variant";
 import { ConditionPicker } from "@/components/cards/condition-picker";
+import { DetailSection } from "@/components/cards/detail-section";
 import { SoldHistoryChart } from "@/components/cards/sold-history-chart";
 import { conditionToTier, conditionLabel, DEFAULT_CONDITION } from "@/lib/cards/conditions";
 import {
   resolveSoldPanel,
   describeViolations,
-  statFor,
-  windowedValue,
-  SOLD_SOURCES,
   type SoldPanelModel,
   type SoldRowModel,
 } from "@/lib/cards/sold-coherence";
+// Variant selection + tier labels are shared with the card-page hero
+// (lib/cards/sold-headline.ts) so the hero's one trust number and this
+// panel's default selection can never disagree (card-page-vault-first goal).
+import { pickSelectedVariant, tierLabel } from "@/lib/cards/sold-headline";
 import { postError } from "@/lib/notifications/discord";
-
-const RAW_TIER_LABELS: Record<string, string> = {
-  NEAR_MINT: "Near Mint",
-  LIGHTLY_PLAYED: "Lightly Played",
-  MODERATELY_PLAYED: "Moderately Played",
-  HEAVILY_PLAYED: "Heavily Played",
-  DAMAGED: "Damaged",
-  // EU/cardmarket-only cards headline their AGGREGATED market roll-up.
-  AGGREGATED: "Market average",
-};
-
-function tierLabel(tierKey: string): string {
-  return RAW_TIER_LABELS[tierKey] ?? tierKey.replace(/_/g, " ");
-}
 
 /** "2026-07-02T…" → "Jul 2, 2026". Deterministic (UTC) so SSR is stable. */
 function formatDate(iso: string): string {
@@ -78,20 +66,6 @@ function money(n: number | null | undefined): string {
 function countLabel(row: { saleCount: number | null; approxSaleCount: boolean }): string {
   if (row.saleCount == null) return "—";
   return `${row.approxSaleCount ? "~" : ""}${row.saleCount}`;
-}
-
-/** A rough "how actively traded" score for ranking the default variant. */
-function tradedScore(history: SoldHistory | null): number {
-  if (!history) return 0;
-  let score = 0;
-  for (const src of SOLD_SOURCES) {
-    const tiers = history.bySource[src];
-    if (!tiers) continue;
-    for (const s of Object.values(tiers)) {
-      score += (s.saleCount ?? 0) * (windowedValue(s) ?? s.avg ?? 0);
-    }
-  }
-  return score;
 }
 
 // Suppression pings are deduped in-process so a hot card page can't spam
@@ -154,13 +128,13 @@ export async function SoldHistoryPanel({
 }) {
   if (!variants || variants.length === 0) {
     return (
-      <section className="mt-10" aria-labelledby="sold-history-heading">
+      <section className="mt-6" aria-labelledby="sold-history-heading">
         <h2 id="sold-history-heading" className="text-sm font-semibold uppercase tracking-wider text-foil-accent">
           Recent sold prices
         </h2>
         <p className="mt-3 rounded-2xl border border-foil-cream/10 bg-foil-night-2 p-6 text-sm text-foil-cream/70">
-          Live sold data not yet available for this card. Watching it (below) is
-          what queues it for tracking.
+          Live sold data not yet available for this card. Adding it to your
+          vault (the button above) is what queues it for tracking.
         </p>
       </section>
     );
@@ -181,10 +155,9 @@ export async function SoldHistoryPanel({
     model: resolveSoldPanel(histories[i], { kind: "raw-agg" }, nowMs),
   }));
 
-  // Selected variant: ?v= match, else the most-traded one.
-  const explicit = selectedKey ? pairs.find((p) => p.variant.variantKey === selectedKey) : undefined;
-  const ranked = [...pairs].sort((a, b) => tradedScore(b.history) - tradedScore(a.history));
-  const selected = explicit ?? ranked[0];
+  // Selected variant: ?v= match, else the most-traded one. Shared with the
+  // hero stat (pickSelectedVariant) so both surfaces show the same variant.
+  const selected = pickSelectedVariant(pairs, selectedKey);
 
   const model = resolveSoldPanel(selected.history, target, nowMs);
   const anyData = model.rows.length > 0 || model.aggregatedRow != null || model.gradedRow != null;
@@ -209,13 +182,12 @@ export async function SoldHistoryPanel({
     ? await getPriceHistory({ uuid: selected.variant.poketraceId, tier: chartTier, period: "all" })
     : null;
 
+  // Vault-first hierarchy: the sold panel is depth, OPEN by default (the
+  // chart is the page's strongest supporting evidence) with the per-condition
+  // table one level deeper, collapsed. All of it stays in the server DOM.
   return (
-    <section className="mt-10" aria-labelledby="sold-history-heading">
-      <h2 id="sold-history-heading" className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-foil-accent">
-        Recent sold prices
-      </h2>
-
-      <div className="mt-4 rounded-2xl border border-foil-cream/10 bg-foil-night-2 p-6 sm:p-8">
+    <DetailSection title="Recent sold prices" headingId="sold-history-heading" open>
+      <div>
         {/* Variant selector — SSR chips (links re-render with ?v=). */}
         {variants.length > 1 && (
           <div role="radiogroup" aria-label="Print variant" className="flex flex-wrap gap-2">
@@ -292,8 +264,21 @@ export async function SoldHistoryPanel({
             )}
 
             {/* Per-tier table. Fresh tiers show a true 30-day figure; stale
-                tiers show their dated last sale; counts are all-time. */}
-            <table className="mt-5 w-full border-collapse text-sm">
+                tiers show their dated last sale; counts are all-time.
+                Collapsed by default (vault-first: tables are depth); native
+                <details> keeps every row in the server-rendered DOM. */}
+            <details className="group/conditions mt-5">
+              <summary className="flex cursor-pointer select-none list-none items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-foil-cream/60 outline-none transition hover:text-foil-cream focus-visible:ring-2 focus-visible:ring-foil-accent/40 [&::-webkit-details-marker]:hidden">
+                <svg
+                  aria-hidden
+                  viewBox="0 0 16 16"
+                  className="h-3 w-3 shrink-0 transition-transform duration-200 ease-out group-open/conditions:rotate-90"
+                >
+                  <path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Every condition &amp; grade
+              </summary>
+              <table className="mt-3 w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-foil-cream/10 text-left text-[11px] uppercase tracking-wider text-foil-cream/60">
                   <th className="py-2 font-medium">Condition</th>
@@ -336,7 +321,8 @@ export async function SoldHistoryPanel({
                   </tr>
                 )}
               </tbody>
-            </table>
+              </table>
+            </details>
             <p className="mt-4 text-[11px] uppercase tracking-wider text-foil-cream/60">
               Sold prices via PokeTrace · refreshed hourly · {cardName} actual completed sales, not active listings.
               {hydratedSince ? <> · Sold data tracked since {formatDate(hydratedSince)}.</> : null}
@@ -344,6 +330,6 @@ export async function SoldHistoryPanel({
           </div>
         )}
       </div>
-    </section>
+    </DetailSection>
   );
 }

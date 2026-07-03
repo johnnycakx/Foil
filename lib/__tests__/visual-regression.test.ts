@@ -112,6 +112,11 @@ const PUBLIC_SURFACES: readonly string[] = [
   "components/lines/sakura-petals.tsx",
   "components/lines/line-card-rail.tsx",
   "components/lines/line-track-form.tsx",
+  // card-page-vault-first: the hero action + the collapsible depth shell on
+  // /cards/[slug]. Night register (charcoal/sakura); the no-raw-hex +
+  // coral-hover-only invariants cover both.
+  "components/cards/add-to-vault.tsx",
+  "components/cards/detail-section.tsx",
 ];
 
 // ---------------------------------------------------------------------------
@@ -1066,4 +1071,82 @@ test("Line card rail: no auto-scroll, smooth-scroll is user-click-driven only (A
   // reduced-motion query can't stop).
   assert.match(src, /onClick=\{\(\)\s*=>/, "rail navigation is click-driven");
   assert.doesNotMatch(src, /setInterval|requestAnimationFrame/, "no auto-scroll timer on the rail");
+});
+
+// ---------------------------------------------------------------------------
+// card-page-vault-first — the card page leads with the service, the data
+// supports it. Four structural guards: button-above-fold, collapsed-content-
+// in-DOM (SEO), one-write-path, honest fallback copy.
+// ---------------------------------------------------------------------------
+
+test("Card page: Add to vault is the hero action, above the proof and the depth (card-page-vault-first)", () => {
+  const src = readFile("app/(site)/cards/[slug]/page.tsx");
+  const vaultIdx = src.indexOf("<AddToVault");
+  const buyIdx = src.indexOf("<LiveListingSection");
+  const panelIdx = src.indexOf("<SoldHistoryPanel");
+  const variantsIdx = src.indexOf("<CardVariantsSection");
+  const metaIdx = src.indexOf("<CardMetadataBlock");
+  assert.ok(vaultIdx > -1, "the page must mount AddToVault");
+  assert.ok(vaultIdx < buyIdx, "Add to vault renders above the best-listing proof module");
+  assert.ok(vaultIdx < panelIdx && vaultIdx < variantsIdx && vaultIdx < metaIdx, "Add to vault renders above every depth section");
+  // The proof (affiliate module) stays in plain sight ABOVE the depth — never
+  // demoted behind a dropdown (goal tier 2).
+  assert.ok(buyIdx < panelIdx && buyIdx < variantsIdx, "the best-listing module sits above the collapsible depth");
+  // The button copy is the brand noun, verbatim, ONE noun sitewide.
+  const button = readFile("components/cards/add-to-vault.tsx");
+  assert.match(button, />\s*Add to vault\s*</, "the button says 'Add to vault' verbatim");
+  assert.doesNotMatch(button, /\+ Watchlist|Watchlist\b(?![A-Za-z])/, "no 'Watchlist' in user-facing vault copy (identifiers excluded by word-boundary check)");
+});
+
+test("Card page: collapsed depth stays in the server-rendered DOM — native <details>, no client fetch-on-expand (SEO)", () => {
+  const shell = readFile("components/cards/detail-section.tsx");
+  assert.match(shell, /<details/, "the depth shell is native <details>");
+  assert.match(shell, /<summary/, "with a native <summary> disclosure");
+  assert.doesNotMatch(shell, /"use client"/, "the shell is a Server Component (content always in the HTML)");
+  assert.doesNotMatch(shell, /fetch\(/, "no fetch in the depth shell");
+  // Every depth section renders server-side: none of them may become a client
+  // component or fetch on expand.
+  for (const rel of [
+    "components/cards/sold-history-panel.tsx",
+    "components/card-variants-section.tsx",
+    "components/card-metadata-block.tsx",
+  ]) {
+    const src = readFile(rel);
+    assert.doesNotMatch(src, /"use client"/, `${rel} must stay a Server Component`);
+    assert.match(src, /DetailSection|<details/, `${rel} renders through the details shell`);
+  }
+  // Defaults: sold panel open (the chart is the evidence), variants + card
+  // details collapsed, the per-condition table nested + collapsed.
+  const panel = readFile("components/cards/sold-history-panel.tsx");
+  assert.match(panel, /headingId="sold-history-heading" open/, "sold panel is open by default");
+  assert.match(panel, /<details className="group\/conditions/, "condition table is a nested collapsed details");
+  const variants = readFile("components/card-variants-section.tsx");
+  assert.doesNotMatch(variants, /DetailSection[^>]*\bopen\b/, "variants section is collapsed by default");
+});
+
+test("Card page: ONE watch write path — AddToVault wraps WatchlistForm, no second creation path (card-page-vault-first P0)", () => {
+  const button = readFile("components/cards/add-to-vault.tsx");
+  assert.match(button, /import \{ WatchlistForm \} from "@\/components\/cards\/watchlist-form"/, "AddToVault reuses the existing form");
+  assert.doesNotMatch(button, /fetch\(|supabase|createWatchlist/, "AddToVault carries no write logic of its own");
+  const page = readFile("app/(site)/cards/[slug]/page.tsx");
+  const mounts = page.match(/<AddToVault/g) ?? [];
+  assert.equal(mounts.length, 1, "exactly one AddToVault entry point on the page");
+  assert.doesNotMatch(page, /<WatchlistForm/, "the page never mounts a second raw WatchlistForm");
+  // The form's submit carries the same noun as the entry button.
+  const form = readFile("components/cards/watchlist-form.tsx");
+  assert.match(form, /"Add to vault"/, "the submit button says 'Add to vault'");
+});
+
+test("Card page: honest fallback on thin-data cards — pending copy, no invented figures (null-over-guess in the CTA)", () => {
+  const page = readFile("app/(site)/cards/[slug]/page.tsx");
+  // The hero stat is coherence-gated and the button state derives from it.
+  assert.match(page, /hasSoldData=\{heroStat != null\}/, "the button's fallback state derives from the gated hero stat");
+  assert.match(page, /Sold data pending for this card/, "the hero renders the honest pending line when the stat is null");
+  const button = readFile("components/cards/add-to-vault.tsx");
+  assert.match(button, /hasSoldData\s*\?/, "the reveal copy branches on hasSoldData");
+  assert.match(button, /Sold data is still pending for this card/, "the fallback reveal says so in plain words");
+  // Voice rules: no em dashes anywhere in the new hero/action copy.
+  for (const rel of ["components/cards/add-to-vault.tsx", "components/cards/detail-section.tsx"]) {
+    assert.ok(!readFile(rel).includes("—"), `${rel} contains no em dash`);
+  }
 });

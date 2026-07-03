@@ -6,6 +6,18 @@ Append new entries at the top. When an entry is promoted, leave it here with a `
 
 ---
 
+## I-013 — The JSX compiler can eat the space after an `{expression}`; render name-adjacent sentences as ONE template expression
+
+**Spotted:** card-page-vault-first, 2026-07-03 (iter-27).
+
+**Shape.** `metadata-only-listing.tsx` rendered `...deal data for {cardName} yet...` — a same-line space between the expression and the following text, which per JSX semantics should survive. The live SSR HTML said otherwise: `for <!-- -->Chikorita<!-- -->yet.` — "Chikoritayet", the space gone, in this repo's Next 16 / Turbopack toolchain. Nothing errored: not tsc, not tests (they assert on source, not rendered output), not the build. Only reading the rendered copy in a screenshot caught it, and only fetching the SSR HTML proved it wasn't a screenshot artifact.
+
+**The general fix.** When a dynamic value sits inside a sentence, render the whole sentence as one template expression — `` {`...deal data for ${cardName} yet...`} `` — so no JSX whitespace rule (or compiler deviation from it) can touch the interior spacing. React escapes the interpolated string identically, so there's no XSS trade-off. Also: content-marker-style verification reads RENDERED output for exactly this class of bug; source-level string tests can't see it.
+
+**Promotion trigger.** Second confirmed space-eating site → sweep every user-facing `{expr} word` seam into template expressions + consider a rendered-DOM copy test.
+
+---
+
 ## I-012 — CSS custom-property math is TYPED; number+length invalidates silently and UNSETS every dependent declaration
 
 **Spotted:** hero-fan-widescreen-fix, 2026-07-03 (iter-23).

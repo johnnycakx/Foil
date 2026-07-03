@@ -9,6 +9,7 @@
 // Session 41 / ADR-030.
 
 import { PriceRangeBar } from "@/components/price-range-bar";
+import { DetailSection } from "@/components/cards/detail-section";
 import type { CardMetadata } from "@/lib/cards/sdk";
 
 const VARIANT_LABELS: Record<string, string> = {
@@ -56,30 +57,28 @@ export function CardVariantsSection({ card, currentBestPriceUsd, currentBestVari
     }
   }
 
+  // Vault-first hierarchy (card-page-vault-first goal): the depth data lives
+  // in a collapsed DetailSection. The rows below still render server-side in
+  // the DOM (native <details>), so crawlers and the SEO price-checker persona
+  // lose nothing; the page just no longer reads as a dashboard first.
   return (
-    <section
-      className="mt-10 rounded-2xl border border-foil-cream/10 bg-foil-night-2 p-6 sm:p-8"
-      aria-labelledby="card-variants-heading"
-    >
-      <div className="flex items-baseline justify-between gap-3">
-        <h2
-          id="card-variants-heading"
-          className="text-sm font-semibold uppercase tracking-wider text-foil-accent"
-        >
-          Variants &amp; market range
-        </h2>
+    <DetailSection
+      title="Variants & market range"
+      headingId="card-variants-heading"
+      meta={
         <span className="font-mono text-[10px] uppercase tracking-wider text-foil-cream/60">
           Source: TCGplayer
         </span>
-      </div>
-      <p className="mt-2 text-sm text-foil-cream/70">
+      }
+    >
+      <p className="text-sm text-foil-cream/70">
         The TCGplayer low / mid / high range per printing.
         {currentBestVariantKey && currentBestPriceUsd != null
           ? " The dark marker shows the verified live eBay listing on its matching printing."
           : null}
       </p>
 
-      <ul className="mt-6 space-y-6">
+      <ul className="mt-5 space-y-6">
         {entries.map(([variant, price]) => {
           const isHighest = variant === highestVariant;
           return (
@@ -118,6 +117,6 @@ export function CardVariantsSection({ card, currentBestPriceUsd, currentBestVari
           );
         })}
       </ul>
-    </section>
+    </DetailSection>
   );
 }

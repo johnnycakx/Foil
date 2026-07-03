@@ -443,3 +443,18 @@ Rubric: (a) alive-but-calm 8.7 (48px/s gallery walk, edge dissolve) · (b) premi
 - option-b: "Built by a card-store seller. Follow along on X" (one-line flip: `FOLLOW_TRUST_LINE = true`)
 
 Rubric: (a) one calm decisive moment 8.8 · (b) widget findable-but-subordinate 8.7 · (c) rhythm intentional 8.6 · (d) register untouched 9.0 — avg 8.78 / min 8.6, bar met iteration 1.
+
+---
+
+## iter-27 - card-page-vault-first (bar hit iteration 2 of 3; John's phone review = the real gate, pre-push)
+
+**Skills invoked + the concrete change each drove:**
+- **impeccable (shape lens)** → the hierarchy inversion itself: three tiers made structural. Tier 1 hero = identity + ONE coherence-gated trust number + "Add to vault"; tier 2 = the affiliate proof module lifted ABOVE the data (it was below variants+sold+chart); tier 3 = the depth demoted into native `<details>` (sold panel open, variants + card details collapsed, per-condition table nested-collapsed). Also the no-modal law: the watch form reveals INLINE, swapping the button so the page keeps one primary object.
+- **frontend-design** → the fold as thesis on mobile: card art rides compact (w-26) beside the identity instead of a 300px centerpiece, so name + $ stat + button all land inside 390×844 with zero scroll; type badges hidden at mobile (the fold belongs to the stat and the action). Copy written from the user's side: "We watch every listing and email you when the price is right. No account needed."
+- **emil-design-eng** → press + reveal choreography: `active:scale-[0.98]` (150ms ease-out, transform-only) on the primary button; the revealed panel enters with a one-shot 200ms strong-ease-out rise (`vault-reveal`, motion-safe gated); every `<details>` body re-enters with the same 180ms rise gated behind `prefers-reduced-motion`; chevrons rotate via interruptible transform transitions; email autofocus on reveal (tap → typing in two gestures).
+- **ux-copy discipline (impeccable clarify + goal voice rules)** → one noun end-to-end: button "Add to vault", submit "Add to vault", success "Added to your vault."; every em dash swept from the touched copy; the ConditionPicker's stale "price alert below" → "vault alert on this card"; the metadata-only fallback in plain words ("Sold data is still pending... we start watching right away").
+
+**Iter-1 (build) shots via same-origin iframe harness (390/768/1440, window wouldn't resize):** rich-data sv8pt5-161 Umbreon ex ($1,245 NM ~314 sales hero), longtail xy4-122 Dialga-EX ($565 NM post-ADR-104 coherent), metadata-only neo1-54 Chikorita (honest pending line + fallback reveal copy + hydration-backed promise). Fold verified: button at ~y370 of 844 on 390px.
+**Iter-2 (fixes surfaced by the shots):** submit-button two-line wrap → `shrink-0 whitespace-nowrap`; "Chikoritayet" — the JSX compiler ate the space after `{cardName}` (SSR-HTML verified `Chikorita<!-- -->yet`) → single template expression; em dash swept from long-tail fallback + metadata-only copy; long-tail "sold prices above" → "below" (the panel moved).
+
+Rubric: (a) stranger-on-phone add < 15s without scrolling 9.0 (tap → autofocused email inside the fold) · (b) "what's it really worth" one tap away 8.6 (hero stat instant; chart one scroll in the open panel) · (c) affiliate module visibility 8.8 (moved UP, plain sight, never collapsed) · (d) charcoal/sakura register + gold rules 9.0 (no new gold, sakura stays accent-ink) · (e) no orphaned spacing 8.5 (uniform mt-6 depth rhythm). avg 8.78 / min 8.5 — bar met at iteration 2, plateau rule not tripped.

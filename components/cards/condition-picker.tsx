@@ -93,7 +93,7 @@ export function ConditionPicker() {
           </div>
         </details>
       </div>
-      <p className="mt-2 text-[11px] text-foil-cream/60">Used for your price alert below.</p>
+      <p className="mt-2 text-[11px] text-foil-cream/60">Used for your vault alert on this card.</p>
     </div>
   );
 }

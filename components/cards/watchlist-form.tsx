@@ -24,11 +24,11 @@ const initialWatchlistState: WatchlistFormState = { status: "idle" };
 const ERROR_COPY: Record<string, string> = {
   invalid_email: "Enter a valid email address.",
   invalid_target_price: "Enter a target price.",
-  invalid_card_slug: "Something went wrong — try again.",
-  invalid_variant: "That printing isn't available for alerts — try again.",
-  invalid_condition: "That condition isn't available — try again.",
-  unavailable: "Alerts are briefly unavailable — try again shortly.",
-  save_failed: "Couldn't save your alert — try again.",
+  invalid_card_slug: "Something went wrong. Try again.",
+  invalid_variant: "That printing isn't available for alerts. Try again.",
+  invalid_condition: "That condition isn't available. Try again.",
+  unavailable: "Alerts are briefly unavailable. Try again shortly.",
+  save_failed: "Couldn't save your alert. Try again.",
 };
 
 export function WatchlistForm({
@@ -60,7 +60,7 @@ export function WatchlistForm({
   if (state.status === "success") {
     return (
       <div className="mt-4 rounded-xl border border-foil-accent/40 bg-foil-accent/10 p-4 text-sm text-foil-cream">
-        <p className="font-medium text-foil-cream">You&apos;re on the list.</p>
+        <p className="font-medium text-foil-cream">Added to your vault.</p>
         <p className="mt-1 text-foil-cream/70">
           We&apos;ll email you the moment {cardName}
           {targeting ? ` (${targeting})` : ""} hits your target price.
@@ -73,11 +73,11 @@ export function WatchlistForm({
             >
               Open your vault →
             </a>{" "}
-            <span className="text-foil-cream/70">— every card you track, on one private page.</span>
+            <span className="text-foil-cream/70">Every card you track, on one private page.</span>
           </p>
         ) : state.vaultLinkEmailed ? (
           <p className="mt-2 text-foil-cream/70">
-            Your private vault link is in your inbox — it&apos;s the one page with everything you track.
+            Your private vault link is in your inbox. It&apos;s the one page with everything you track.
           </p>
         ) : null}
       </div>
@@ -111,9 +111,9 @@ export function WatchlistForm({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-xl bg-foil-cream px-6 py-3 text-sm font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-accent/60 disabled:opacity-60 disabled:hover:translate-y-0"
+          className="shrink-0 whitespace-nowrap rounded-xl bg-foil-cream px-6 py-3 text-sm font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-accent/60 disabled:opacity-60 disabled:hover:translate-y-0"
         >
-          {pending ? "Saving…" : "Notify me"}
+          {pending ? "Saving…" : "Add to vault"}
         </button>
       </div>
 
@@ -135,7 +135,7 @@ export function WatchlistForm({
 
       {state.status === "error" && (
         <p className="text-xs text-foil-coral" role="alert">
-          {ERROR_COPY[state.error ?? ""] ?? "Something went wrong — try again."}
+          {ERROR_COPY[state.error ?? ""] ?? "Something went wrong. Try again."}
         </p>
       )}
     </form>

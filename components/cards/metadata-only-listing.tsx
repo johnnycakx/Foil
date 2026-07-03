@@ -26,9 +26,11 @@ export function MetadataOnlyListing({
       <h2 id="find-card-heading" className="text-xs font-semibold uppercase tracking-wider text-foil-accent">
         Find this card
       </h2>
+      {/* One template expression, not JSX text around {cardName}: the JSX
+          compiler was eating the space after the expression ("Chikoritayet"),
+          live-verified in the SSR HTML during the vault-first pass. */}
       <p className="mt-3 text-sm text-foil-cream/70">
-        We don&apos;t have live deal data for {cardName} yet — it&apos;s a lower-volume
-        printing. Check current listings on the major marketplaces:
+        {`We don't have live deal data for ${cardName} yet. It's a lower-volume printing. Check current listings on the major marketplaces:`}
       </p>
       <div className="mt-4 flex flex-col gap-3 sm:flex-row">
         <a

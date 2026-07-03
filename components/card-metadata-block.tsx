@@ -7,6 +7,7 @@
 // entries are loaded, missing fields are simply skipped. The block
 // never renders an empty row.
 
+import { DetailSection } from "@/components/cards/detail-section";
 import type { CardMetadata } from "@/lib/cards/sdk";
 
 type Props = {
@@ -53,20 +54,12 @@ export function CardMetadataBlock({ card }: Props) {
     return null;
   }
 
+  // Vault-first hierarchy: reference data is depth, collapsed by default.
+  // Content still renders server-side inside the native <details> DOM.
   return (
-    <section
-      className="mt-10 rounded-2xl border border-foil-cream/10 bg-foil-night-2 p-6 sm:p-8"
-      aria-labelledby="card-metadata-heading"
-    >
-      <h2
-        id="card-metadata-heading"
-        className="text-sm font-semibold uppercase tracking-wider text-foil-accent"
-      >
-        Card details
-      </h2>
-
+    <DetailSection title="Card details" headingId="card-metadata-heading">
       {rows.length > 0 && (
-        <dl className="mt-4 grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
+        <dl className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
           {rows.map((row) => (
             <div key={row.label} className="flex items-baseline justify-between gap-3 border-b border-foil-cream/8 pb-2 last:border-b-0">
               <dt className="font-mono text-[11px] uppercase tracking-wider text-foil-cream/60">
@@ -129,6 +122,6 @@ export function CardMetadataBlock({ card }: Props) {
           </ul>
         </div>
       )}
-    </section>
+    </DetailSection>
   );
 }

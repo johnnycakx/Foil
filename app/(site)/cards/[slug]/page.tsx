@@ -32,7 +32,9 @@ import { Breadcrumb, type BreadcrumbItem } from "@/components/breadcrumb";
 import { CardMetadataBlock } from "@/components/card-metadata-block";
 import { CardVariantsSection } from "@/components/card-variants-section";
 import { SoldHistoryPanel } from "@/components/cards/sold-history-panel";
-import { WatchlistForm } from "@/components/cards/watchlist-form";
+import { AddToVault } from "@/components/cards/add-to-vault";
+import { aboutListingCopy } from "@/lib/cards/about-copy";
+import { getHeroSoldStat } from "@/lib/cards/sold-headline";
 import { deriveAvailableVariants } from "@/lib/poketrace/variant";
 import { getHydratedVariants } from "@/lib/poketrace/hydration";
 
@@ -70,7 +72,7 @@ function titleFor(card: CardMetadata): string {
 }
 
 function descriptionFor(card: CardMetadata): string {
-  return `Live ${card.name} (${card.setName}) listings on eBay, sorted to surface the best current deal. Watchlist alerts when prices drop to your target.`;
+  return `Live ${card.name} (${card.setName}) listings on eBay, sorted to surface the best current deal. Add it to your vault and we email you when it drops to your target.`;
 }
 
 export async function generateMetadata({
@@ -137,6 +139,17 @@ export default async function CardPage({
     hydratedSince = hydrated.hydratedAt;
   }
 
+  // Vault-first hero (card-page-vault-first goal): the one headline trust
+  // number, coherence-gated through the same resolver + variant selection the
+  // sold panel below uses (lib/cards/sold-headline.ts). Null on thin-data
+  // cards → the hero renders the honest pending line, never a figure.
+  // getSoldHistory is in-process cached, so this adds no network call beyond
+  // the panel's own fetch.
+  const heroStat =
+    tier === "metadata-only"
+      ? null
+      : await getHeroSoldStat(variants, selectedVariant, selectedCondition, Date.now());
+
   // The curated-tier LIVE listing + buy-signal are NO LONGER fetched in this
   // server render (the ~38s eBay block that throttled crawl). They hydrate
   // client-side via the LiveListingSection client component (/api/listing/[slug]). This page
@@ -185,6 +198,7 @@ export default async function CardPage({
   const jsonLd = schemaGraph(productSchema, breadcrumbSchema);
 
   const related = relatedCardsForSlug(slug, 6);
+  const aboutCopy = aboutListingCopy(tier);
 
   // The buy-signal badge (condition-matched ask-vs-sold read, ADR-053) is now
   // computed in /api/listing/[slug] alongside the verified listing (ONE
@@ -205,8 +219,13 @@ export default async function CardPage({
       <Breadcrumb items={breadcrumbItems} />
 
       <article>
-        <div className="grid gap-10 sm:grid-cols-[16rem_1fr] sm:items-start sm:gap-12">
-          <div className="flex justify-center sm:justify-start">
+        {/* Vault-first hero (card-page-vault-first goal): identity + ONE
+            headline trust number + the Add to vault action, all above the
+            fold at 390px. The card art rides compact beside the identity on
+            mobile so the action stays thumb-reachable without scrolling;
+            desktop keeps the full-art column. */}
+        <div className="grid grid-cols-[6.5rem_1fr] items-start gap-x-5 sm:grid-cols-[16rem_1fr] sm:gap-x-12">
+          <div className="flex justify-start sm:row-span-2">
             {card.image ? (
               <Image
                 src={card.image}
@@ -214,13 +233,13 @@ export default async function CardPage({
                 width={400}
                 height={558}
                 priority
-                sizes="(min-width: 640px) 16rem, 14rem"
-                className="w-56 rounded-2xl border border-foil-cream/10 shadow-[0_24px_60px_-28px_rgba(4,9,18,0.85)] sm:w-64"
+                sizes="(min-width: 640px) 16rem, 6.5rem"
+                className="w-26 rounded-lg border border-foil-cream/10 shadow-[0_24px_60px_-28px_rgba(4,9,18,0.85)] sm:w-64 sm:rounded-2xl"
               />
             ) : (
               <div
                 aria-hidden
-                className="w-56 rounded-2xl border border-foil-cream/10 bg-foil-night-2 sm:w-64"
+                className="w-26 rounded-lg border border-foil-cream/10 bg-foil-night-2 sm:w-64 sm:rounded-2xl"
                 style={{ aspectRatio: "245 / 342" }}
               />
             )}
@@ -230,13 +249,14 @@ export default async function CardPage({
               {card.setName} · #{card.number}
               {card.rarity ? <> · {card.rarity}</> : null}
             </p>
-            <h1 className="font-display mt-2 text-4xl font-bold leading-tight tracking-[-0.02em] text-foil-cream sm:text-5xl">
+            <h1 className="font-display mt-2 text-3xl font-bold leading-tight tracking-[-0.02em] text-foil-cream sm:text-5xl">
               {card.name}
             </h1>
-            {/* Variant badges — types + subtypes — render adjacent to the
-                title for at-a-glance card identity. Session 41. */}
+            {/* Variant badges — types + subtypes — at-a-glance identity
+                (Session 41). Hidden on mobile: the fold belongs to the stat
+                and the action; the badges return at sm+. */}
             {(card.types.length > 0 || card.subtypes.length > 0) && (
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-3 hidden flex-wrap gap-2 sm:flex">
                 {card.types.map((t) => (
                   <span
                     key={`type-${t}`}
@@ -255,42 +275,51 @@ export default async function CardPage({
                 ))}
               </div>
             )}
-            <p className="mt-4 text-base text-foil-cream/70 sm:text-lg">
-              Live listings on eBay, sorted to surface the best current deal.
-              Set a target price and we&apos;ll email you when one drops.
-            </p>
+            {/* The ONE headline trust number: 30-day sold avg, coherence-
+                gated. Thin data renders the honest pending line instead
+                (null-over-guess extends to the hero). */}
+            {heroStat ? (
+              <div className="mt-4 sm:mt-6">
+                <p className="text-xs uppercase tracking-wide text-foil-cream/60">
+                  30-day sold avg · {heroStat.variantLabel} · {heroStat.tierLabel}
+                </p>
+                <p className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span className="font-display text-4xl font-semibold tabular-nums text-foil-cream sm:text-5xl">
+                    {formatUsd(heroStat.value)}
+                  </span>
+                  {heroStat.saleCount != null && (
+                    <span className="text-sm text-foil-cream/60">
+                      {heroStat.approxSaleCount ? "~" : ""}
+                      {heroStat.saleCount} sales on record
+                    </span>
+                  )}
+                </p>
+              </div>
+            ) : (
+              <p className="mt-4 text-sm text-foil-cream/60 sm:mt-6">
+                Sold data pending for this card. We only show figures we can
+                stand behind.
+              </p>
+            )}
+          </div>
+          {/* ONE AddToVault instance for every viewport: full-width under the
+              identity row on mobile (col-span-2, thumb-sized inside the 390px
+              fold); in the identity column on sm+. */}
+          <div className="col-span-2 sm:col-span-1 sm:col-start-2">
+            <AddToVault
+              cardSlug={slug}
+              cardName={card.name}
+              availableVariantKeys={deriveAvailableVariants({ variants })}
+              hasSoldData={heroStat != null}
+            />
           </div>
         </div>
 
-        {/* Variants + sold-history are data-bearing surfaces — skipped on the
-            metadata-only tier (no priced/sold data; ADR-047). */}
-        {tier !== "metadata-only" && (
-          <>
-            {/* Variants + market range (TCGplayer) — Session 41 / ADR-030.
-                The live "current best" marker moved to client hydration with the
-                listing (ADR-047 v2); SSR shows the baked TCGplayer ranges. */}
-            <CardVariantsSection
-              card={card}
-              currentBestPriceUsd={null}
-              currentBestVariantKey={null}
-            />
-
-            {/* Sold-history (PokeTrace) — Session 49 / ADR-042. Variant-aware
-                30-day sold averages. SSR-only; ?v= chip links re-render. */}
-            <SoldHistoryPanel
-              slug={slug}
-              cardName={card.name}
-              variants={variants}
-              hydratedSince={hydratedSince}
-              selectedKey={selectedVariant}
-              selectedCondition={selectedCondition}
-            />
-          </>
-        )}
-
-        {/* Listing block (ADR-046/047). metadata-only → 2 search CTAs, no
-            Browse call, no live block. longtail → affiliate search fallback +
-            sold-history above. curated → live eBay best-listing. */}
+        {/* The proof (tier 2 of the vault-first hierarchy): the best-live-deal
+            module stays in plain sight right under the action — it's the
+            revenue path AND the "we found this for you" evidence. Never
+            behind a dropdown. (ADR-046/047: metadata-only → 2 search CTAs,
+            longtail → affiliate search fallback, curated → live best-listing.) */}
         {tier === "metadata-only" ? (
           <MetadataOnlyListing
             cardName={card.name}
@@ -318,26 +347,33 @@ export default async function CardPage({
           Foil TCG, LLC · Built by John Craig
         </p>
 
-        <section
-          className="mt-10 rounded-2xl border border-foil-cream/10 bg-foil-night-2 p-6 sm:p-8"
-          aria-labelledby="watchlist-heading"
-        >
-          <h2 id="watchlist-heading" className="text-sm font-semibold uppercase tracking-wider text-foil-accent">
-            Email me when it drops
-          </h2>
-          <p className="mt-3 text-sm text-foil-cream/70">
-            Set a target price; we&apos;ll email you the moment a {card.name}{" "}
-            listing meets it. No account required.
-          </p>
-          <WatchlistForm
-            cardSlug={slug}
-            cardName={card.name}
-            availableVariantKeys={deriveAvailableVariants({ variants })}
-          />
-          <p className="mt-3 text-[11px] uppercase tracking-wider text-foil-cream/60">
-            One-shot email · No spam · Unsubscribe by clicking the link in any email we send.
-          </p>
-        </section>
+        {/* The depth (tier 3): sold history open by default (the chart is the
+            strongest supporting evidence), variants and reference data
+            collapsed. All of it native <details> — every row stays in the
+            server-rendered DOM for crawlers; nothing fetches on expand. */}
+        {tier !== "metadata-only" && (
+          <>
+            {/* Sold-history (PokeTrace) — Session 49 / ADR-042. Variant-aware
+                30-day sold averages. SSR-only; ?v= chip links re-render. */}
+            <SoldHistoryPanel
+              slug={slug}
+              cardName={card.name}
+              variants={variants}
+              hydratedSince={hydratedSince}
+              selectedKey={selectedVariant}
+              selectedCondition={selectedCondition}
+            />
+
+            {/* Variants + market range (TCGplayer) — Session 41 / ADR-030.
+                The live "current best" marker moved to client hydration with the
+                listing (ADR-047 v2); SSR shows the baked TCGplayer ranges. */}
+            <CardVariantsSection
+              card={card}
+              currentBestPriceUsd={null}
+              currentBestVariantKey={null}
+            />
+          </>
+        )}
 
         {/* Reference-data layer (Session 41 / ADR-030). Renders only the
             fields the SDK exposes; gracefully skips rows it doesn't have. */}
@@ -347,6 +383,10 @@ export default async function CardPage({
           <h2 className="text-sm font-semibold uppercase tracking-wider text-foil-accent">
             About this card
           </h2>
+          {/* Tier-honest copy (Cowork live audit 2026-07-04): fallback-tier
+              pages render the Browse-on-eBay module, not a verified block, so
+              the paragraph only promises the surface this tier actually has.
+              lib/cards/about-copy.ts owns both variants; pinned by test. */}
           <div className="mt-3 space-y-4 leading-relaxed">
             <p>
               {card.name} from {card.setName}
@@ -354,18 +394,9 @@ export default async function CardPage({
               {" "}is a Pokemon TCG single tracked on Foil. Card #{card.number}
               {card.rarity ? <> in the set, printed as {card.rarity}</> : null}.
               Pricing varies widely by condition, print run, and grading
-              authority — the Best Current Listing block above shows the
-              lowest live eBay listing we could verify is this exact card
-              (set, collector number, and language checked against the
-              listing&apos;s own item specifics).
+              authority. {aboutCopy.lead}
             </p>
-            <p>
-              Foil verifies the lowest current eBay listing on every page
-              load — no caching of listing data, no stale snapshots. When no
-              listing passes verification, we say so instead of showing a
-              maybe-wrong one. The block above reflects live state at the
-              moment you opened this page.
-            </p>
+            <p>{aboutCopy.verify}</p>
           </div>
         </section>
 
@@ -412,4 +443,12 @@ function formatReleaseYear(release: string): string {
   // Pokemon TCG SDK uses "YYYY/MM/DD" — pull the year for a casual mention.
   const m = release.match(/^(\d{4})/);
   return m ? m[1] : release;
+}
+
+function formatUsd(n: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: n >= 100 ? 0 : 2,
+  }).format(n);
 }

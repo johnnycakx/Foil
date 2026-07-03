@@ -97,21 +97,21 @@ test("page passes selectedCondition (?c) into the panel", () => {
   assert.match(src, /c:\s*selectedCondition/);
 });
 
-test("/cards/[slug]: mounts SoldHistoryPanel between variants and the buy CTA", () => {
+test("/cards/[slug]: mounts SoldHistoryPanel in the depth layer, below the buy CTA (vault-first)", () => {
   const src = read("app/(site)/cards/[slug]/page.tsx");
   assert.match(src, /<SoldHistoryPanel\b/);
   // ADR-092: the page passes the MERGED variants (baked → hydrated fallback),
   // not the raw baked field.
   assert.match(src, /variants=\{variants\}/);
   assert.match(src, /selectedKey=\{selectedVariant\}/);
-  // Order: CardVariantsSection before SoldHistoryPanel, before the curated buy
-  // CTA — now the client-hydrated <LiveListingSection> (ADR-047 v2; the
-  // best-listing markup + its `best-deal-heading` moved into that component).
+  // Vault-first hierarchy (card-page-vault-first goal): the proof module
+  // (LiveListingSection buy CTA) sits ABOVE the depth; within the depth the
+  // sold panel (open by default) leads and the variants table follows.
   const variantsIdx = src.indexOf("<CardVariantsSection");
   const panelIdx = src.indexOf("<SoldHistoryPanel");
   const buyIdx = src.indexOf("<LiveListingSection");
   assert.ok(variantsIdx > -1 && panelIdx > -1 && buyIdx > -1);
-  assert.ok(variantsIdx < panelIdx && panelIdx < buyIdx, "panel must sit between variants and the buy CTA");
+  assert.ok(buyIdx < panelIdx && panelIdx < variantsIdx, "buy CTA above the depth; sold panel leads the depth, variants follow");
 });
 
 test("baked-metadata: PokeTrace variants are populated with UUIDs", () => {

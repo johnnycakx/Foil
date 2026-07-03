@@ -29,8 +29,8 @@ export function LongTailListingFallback({
       </h2>
       <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-foil-cream/70">
-          We track {cardName}&apos;s 30-day sold prices above. For current live
-          listings, browse eBay — we surface the best curated deal on our most
+          We track {cardName}&apos;s 30-day sold prices below. For current live
+          listings, browse eBay. We surface the best curated deal on our most
           popular cards, and we&apos;re adding live listings to more cards over
           time.
         </p>

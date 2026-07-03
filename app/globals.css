@@ -228,6 +228,33 @@ body {
   }
 }
 
+/*
+ * Card-page vault-first micro-motion (emil-design-eng):
+ * - vault-reveal: one-shot entrance for the inline Add to vault form
+ *   (opacity + 6px rise, 200ms strong ease-out). Applied via the Tailwind
+ *   motion-safe: arbitrary-animation utility in add-to-vault.tsx, so
+ *   reduced-motion users get an instant swap.
+ * - .detail-body: the same quiet entrance each time a <details> depth section
+ *   opens (transform/opacity only, off the layout path). Gated behind
+ *   prefers-reduced-motion here since <details> re-runs the animation on
+ *   every open.
+ */
+@keyframes vault-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  details[open] > .detail-body {
+    animation: vault-reveal 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+}
+
 /* Sakura drift (ADR-095, reshaped design-round3-fixes §3): transform-only.
    Fall is viewport-relative (the old own-box % barely moved a 10px petal —
    the "screen dust" bug); sway/rotation lives on a nested layer so the two
