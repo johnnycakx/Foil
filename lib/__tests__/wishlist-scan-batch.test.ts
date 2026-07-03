@@ -236,8 +236,13 @@ test("unknown condition token → error logged, combo skipped, no resolve", asyn
 });
 
 test("bgs-10-bl narrows by Black Label title — a plain BGS 10 slab never alerts", async () => {
+  // Target sized realistically vs the $50 listing: the ADR-103 plausibility
+  // guard suppresses basis-less fires deeper than 65% under the user's own
+  // target, and the old 9_999_999 "alert on anything" fixture target was
+  // exactly that (correctly) suppressed class. $55 target isolates the
+  // Black-Label narrowing this test is about.
   const mk = () =>
-    fakeSupabase(rows([{ id: "bl", email: "bl@x.com", condition: "bgs-10-bl", target_price_cents: 9_999_999 }]));
+    fakeSupabase(rows([{ id: "bl", email: "bl@x.com", condition: "bgs-10-bl", target_price_cents: 5_500 }]));
   const plain = await scanWatchlists(
     baseInput({
       supabase: mk().supabase,

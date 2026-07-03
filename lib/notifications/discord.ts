@@ -509,6 +509,9 @@ export type WishlistAlertRunInput = {
    *  digest entry. */
   subscribersEmailed: number;
   dupesMerged: number;
+  /** ADR-103 plausibility guard: fires suppressed as too-good-to-be-true
+   *  this run (junk-class listings logged, never mailed). */
+  suppressedImplausible: number;
 };
 
 /**
@@ -529,6 +532,7 @@ export async function postWishlistAlertRun(
     { name: "Subscribers emailed", value: String(ev.subscribersEmailed), inline: true },
     { name: "Cards fired", value: String(ev.alerted), inline: true },
     { name: "Dupes merged", value: String(ev.dupesMerged), inline: true },
+    { name: "Suspicious suppressed", value: String(ev.suppressedImplausible), inline: true },
     { name: "Errors", value: String(ev.errorCount), inline: true },
     { name: "Duration", value: `${(ev.durationMs / 1000).toFixed(1)}s`, inline: true },
   ];

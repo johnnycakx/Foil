@@ -39,13 +39,13 @@ function inputs(over: Partial<AlertEmailInputs> = {}): AlertEmailInputs {
 test("subject, dropped + target basis: names the drop and the user's target", () => {
   assert.equal(
     subjectLine(inputs()),
-    "Charizard (Base) dropped to $38.00 — at your $40.00 target",
+    "Charizard (Base) dropped to $38.00, at your $40.00 target",
   );
 });
 
 test("subject, already_below: 'is', never 'dropped' — a drop that wasn't observed is never claimed", () => {
   const s = subjectLine(inputs({ kind: "already_below" }));
-  assert.equal(s, "Charizard (Base) is $38.00 — at your $40.00 target");
+  assert.equal(s, "Charizard (Base) is $38.00, at your $40.00 target");
   assert.doesNotMatch(s, /dropped/);
 });
 
@@ -53,7 +53,7 @@ test("subject, market basis: cites the percent under the 30-day sold average", (
   const s = subjectLine(
     inputs({ kind: "dropped", basis: "market", targetPriceCents: null, currentPriceCents: 7500, comp: COMP }),
   );
-  assert.match(s, /dropped to \$75\.00 — 18% under its 30-day sold average/);
+  assert.match(s, /dropped to \$75\.00, 18% under its 30-day sold average/);
 });
 
 test("evidence line cites the comp with tier + figures; discloses plainly when no comp exists", () => {
@@ -62,7 +62,7 @@ test("evidence line cites the comp with tier + figures; discloses plainly when n
   const overAvg = evidenceLine(inputs({ currentPriceCents: 10000, comp: COMP }));
   assert.match(overAvg, /9% over/);
   const noComp = evidenceLine(inputs({ comp: null }));
-  assert.equal(noComp, "No recent sold data for this card — this alert is against your target only.");
+  assert.equal(noComp, "No recent sold data for this card. This alert is against your target only.");
 });
 
 test("body ALWAYS carries the evidence line or the disclosure (the acceptance criterion)", () => {

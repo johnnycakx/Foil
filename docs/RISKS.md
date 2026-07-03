@@ -369,6 +369,8 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 **Mitigation playbook.** The cron result now carries `rearmed` / `skippedNonUsd` / `heldNoBasis` counters in the Discord summary path; watch them for the first weeks of real traffic. Flip to `resolved` after the first month of live watches with zero trigger events.
 
+**2026-07-03 live trigger event + amendment ([ADR-103](DECISIONS.md#adr-103--alert-plausibility-guard-too-good-to-be-true-is-a-red-flag-not-a-deal)).** A fourth dishonesty class fired live before real traffic: the 03:08 AM "$57.24, 95% under its $1,244.86 sold average" alert (Umbreon ex SIR) — a same-name cheap-printing/junk admission through the number-absence identity gate, mailed as a win to test aliases. ADR-091's classes were all about the alert being WRONG about its own data; this class is the data being right about the WRONG LISTING. Closed at the send boundary: the plausibility band (suppress > 65% under the condition-matched sold basis; basis-less dramatic deltas suppressed per null-over-guess), fixture 13 pinned end-to-end, `suppressedImplausible` counter in the cron summary + a #errors ping per suppression. Stays `mitigating`; new escalation trigger: any mailed alert whose price is under 35% of its cited basis (the band and prod disagree), or a sustained stream of suppressions on one slug (an identity gap worth closing upstream — see the SESSION-LOG follow-up on extending sold-basis coherence to the card-page/deals surfaces).
+
 ## R-064 — Vault link sharing: anyone with the URL can view/edit that watchlist
 
 **Severity:** Low (today: watchlists hold card names + targets, no payment or identity data; the email itself never renders on the page)

@@ -1,0 +1,13 @@
+{
+  "_observed": "LIVE INCIDENT FIXTURE (alert-plausibility-guard, ADR-103; reconstructed). 2026-07-03 03:08 AM: the wishlist cron mailed 'Umbreon ex (Prismatic Evolutions) dropped to $57.24, 95% under its 30-day sold average ($1,244.86)' to John's test aliases. Even DAMAGED copies of the SIR (sv8pt5-161) average ~$1,006; $57.24 was never this card (same-name cheap-printing / junk class: the regular non-SIR Umbreon ex from the same set prices ~$57). Admission mechanism (Cowork-traced, verified at lib/listing/identity.ts:200): the Card Number aspect is CORROBORATING, absence passes, so a listing aspected only name+set with no number aspect clears identity and prices like the cheap printing. RECONSTRUCTION NOTE: the live listing was gone by root-cause time (the resolver's current top-k for sv8pt5-161 is all $1,150+, correctly rejected on other gates); this fixture reconstructs the admission-shaped listing from the alert email's own evidence + the traced mechanism. The plausibility band (ADR-103) must suppress this fire: $57.24 = 4.6% of the $1,244.86 basis, 20x under the 35%-of-basis floor.",
+  "itemId": "v1|000000000000|0",
+  "title": "Pokemon TCG Umbreon ex Prismatic Evolutions NM",
+  "price": { "value": "57.24", "currency": "USD" },
+  "topCondition": "Ungraded",
+  "localizedAspects": [
+    { "type": "STRING", "name": "Character", "value": "Umbreon" },
+    { "type": "STRING", "name": "Set", "value": "Prismatic Evolutions" },
+    { "type": "STRING", "name": "Language", "value": "English" },
+    { "type": "STRING", "name": "Graded", "value": "No" }
+  ]
+}

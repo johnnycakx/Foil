@@ -70,6 +70,15 @@ test("email templates: voice — 'chasing', never 'hunting' (welcome-email-overh
   }
 });
 
+test("email templates: voice — no em dashes in rendered copy (alert-plausibility-guard extended the ban)", () => {
+  // John's standing rule, applied template-wide: periods/commas/colons in
+  // everything a subscriber reads. Comments may still use them (stripped).
+  for (const rel of TEMPLATE_FILES) {
+    const src = stripComments(readFileSync(join(ROOT, rel), "utf8"));
+    assert.doesNotMatch(src, /—/, `${rel}: em dash in rendered email copy`);
+  }
+});
+
 test("RETIRED-ASSET TRIPWIRE: the old identities are dead in every email template (extends ADR-099)", () => {
   for (const rel of TEMPLATE_FILES) {
     const src = stripComments(readFileSync(join(ROOT, rel), "utf8"));

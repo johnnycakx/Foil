@@ -34,6 +34,7 @@ import {
   type AlertEmailInputs,
 } from "./alert-email.ts";
 import { decideAlert, type AlertState, type SoldComp } from "./alert-decision.ts";
+import { assessAlertPlausibility } from "./alert-plausibility.ts";
 import { buildUnsubscribeUrl } from "../unsubscribe-token.ts";
 import { buildVaultUrl } from "../vault-token.ts";
 import { labelForVariantKey, DEFAULT_VARIANT_KEY } from "../poketrace/variant.ts";
@@ -159,6 +160,16 @@ export type ScanResult = {
    *  run (the two-Blastoise-emails class — different variant/condition combos
    *  firing independently for one card). */
   dupesMerged: number;
+  /** Fires suppressed by the plausibility guard (ADR-103): too-good-to-be-
+   *  true listings logged + counted here, never mailed. One entry per
+   *  suppressed (slug, price) — the caller posts these to #errors. */
+  suppressedImplausible: {
+    cardSlug: string;
+    priceCents: number;
+    basisCents: number;
+    reason: string;
+    detail: string;
+  }[];
 };
 
 /**
@@ -180,6 +191,7 @@ export async function scanWatchlists(input: ScanWatchlistsInput): Promise<ScanRe
     capHit: false,
     subscribersEmailed: 0,
     dupesMerged: 0,
+    suppressedImplausible: [],
   };
 
   // Per-run send buffer (alert-digest-batching): fired alerts collect here,
@@ -352,6 +364,33 @@ export async function scanWatchlists(input: ScanWatchlistsInput): Promise<ScanRe
           const wrote = await input.supabase.updateWatchState(row.id, patch);
           if (wrote.error) {
             result.errors.push({ rowId: row.id, cardSlug: slug, stage: "update_state", error: wrote.error });
+          }
+          continue;
+        }
+
+        // PLAUSIBILITY GUARD (ADR-103) — the filter in front of the send.
+        // Too-good-to-be-true is a red flag, not a deal: a fire whose price
+        // is implausible against the condition-matched sold basis (or,
+        // basis-less, against the user's own target) is suppressed + logged,
+        // never mailed. The observation still records (we DID see the price);
+        // the row stays armed (fired stamps only happen at flush) — engine
+        // hysteresis untouched.
+        const verdict = assessAlertPlausibility({
+          currentPriceCents,
+          comp,
+          targetPriceCents: row.target_price_cents,
+        });
+        if (!verdict.plausible) {
+          result.suppressedImplausible.push({
+            cardSlug: slug,
+            priceCents: currentPriceCents,
+            basisCents: verdict.basisCents,
+            reason: verdict.reason,
+            detail: verdict.detail,
+          });
+          const seen = await input.supabase.updateWatchState(row.id, patch);
+          if (seen.error) {
+            result.errors.push({ rowId: row.id, cardSlug: slug, stage: "update_state", error: seen.error });
           }
           continue;
         }

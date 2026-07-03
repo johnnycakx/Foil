@@ -14,7 +14,7 @@
 // itself is in PUBLIC_ROUTES so the auth gate is purely the bearer check.
 
 import { NextResponse } from "next/server";
-import { postWishlistAlertRun } from "@/lib/notifications/discord";
+import { postWishlistAlertRun, postError } from "@/lib/notifications/discord";
 import { sendTransactionalEmail } from "@/lib/notifications/resend";
 import { resolveVerifiedListing } from "@/lib/listing/resolve";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -144,7 +144,23 @@ export async function GET(request: Request): Promise<NextResponse> {
       durationMs,
       subscribersEmailed: result.subscribersEmailed,
       dupesMerged: result.dupesMerged,
+      suppressedImplausible: result.suppressedImplausible.length,
     });
+  }
+
+  // ADR-103: every suppressed-as-implausible fire pings #errors — a junk
+  // listing surviving identity is a signal worth eyes, even though it was
+  // never mailed. Soft-fail; a Discord outage cannot break the cron.
+  const errorsWebhook = process.env.DISCORD_WEBHOOK_ERRORS;
+  if (errorsWebhook) {
+    for (const s of result.suppressedImplausible) {
+      await postError(errorsWebhook, {
+        source: "wishlist-alerts-cron",
+        errorType: "SuspiciousListingSuppressed",
+        message: `suspicious listing suppressed: ${s.cardSlug} at $${(s.priceCents / 100).toFixed(2)} vs $${(s.basisCents / 100).toFixed(2)} basis (${s.detail})`,
+        context: { cardSlug: s.cardSlug, reason: s.reason },
+      }).catch(() => {});
+    }
   }
 
   return NextResponse.json({

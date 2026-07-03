@@ -79,9 +79,9 @@ function triggerClause(input: AlertEmailInputs): string {
 }
 
 /**
- * Subject line. Two honest shapes:
- *   dropped:       "Charizard (Base) dropped to $38.00 — at your $40.00 target"
- *   already_below: "Charizard (Base) is $38.00 — at your $40.00 target"
+ * Subject line. Two honest shapes (no em dashes, John's standing rule):
+ *   dropped:       "Charizard (Base) dropped to $38.00, at your $40.00 target"
+ *   already_below: "Charizard (Base) is $38.00, at your $40.00 target"
  * "dropped" appears ONLY when the decision observed a real cross.
  */
 export function subjectLine(input: AlertEmailInputs): string {
@@ -89,7 +89,7 @@ export function subjectLine(input: AlertEmailInputs): string {
   const namePart = qualifier ? `${input.cardName} ${qualifier}` : input.cardName;
   const price = formatUsd(input.currentPriceCents);
   const verb = input.kind === "dropped" ? `dropped to ${price}` : `is ${price}`;
-  return `${namePart} (${input.setName}) ${verb} — ${triggerClause(input)}`;
+  return `${namePart} (${input.setName}) ${verb}, ${triggerClause(input)}`;
 }
 
 /** The trust payoff: cite the comp, or disclose its absence plainly. */
@@ -99,7 +99,7 @@ export function evidenceLine(input: AlertEmailInputs): string {
     const rel = pct >= 0 ? `${pct}% under` : `${Math.abs(pct)}% over`;
     return `30-day avg sold (${input.comp.tierLabel}): ${formatUsd(input.comp.avg30dCents)} · this listing: ${formatUsd(input.currentPriceCents)} (${rel})`;
   }
-  return `No recent sold data for this card — this alert is against your target only.`;
+  return `No recent sold data for this card. This alert is against your target only.`;
 }
 
 function escapeHtml(s: string): string {
@@ -125,7 +125,7 @@ export function emailBody(input: AlertEmailInputs): string {
   const headline =
     input.kind === "dropped"
       ? `${safeName} (${safeSet}) just dropped to ${price}.`
-      : `${safeName} (${safeSet}) is already at ${price} — below where you asked to be told.`;
+      : `${safeName} (${safeSet}) is already at ${price}, below where you asked to be told.`;
 
   const reason = `That's ${escapeHtml(triggerClause(input))}.`;
 
@@ -144,7 +144,7 @@ export function emailBody(input: AlertEmailInputs): string {
     `<hr style="border: none; border-top: 1px solid #eee; margin: 24px 0 12px;" />`,
     `<p style="font-size: 11px; color: #99a; line-height: 1.5; margin: 0;">You're getting this because you set a price alert at foiltcg.com. You'll hear about this card again only after its price moves back up and drops again.${
       input.manageUrl
-        ? ` <a href="${escapeHtml(input.manageUrl)}" style="color: #99a; text-decoration: underline;">Manage your watchlist</a> — change targets, pause, or add cards.`
+        ? ` <a href="${escapeHtml(input.manageUrl)}" style="color: #99a; text-decoration: underline;">Manage your watchlist</a>: change targets, pause, or add cards.`
         : ""
     }</p>`,
     unsubscribeFooter(input.unsubscribeUrl),
@@ -191,10 +191,10 @@ export function batchEmailBody(unsorted: readonly AlertEmailInputs[]): string {
         : "Already below where you asked to be told";
     return [
       `<div style="margin: 0 0 20px; padding-bottom: 16px; border-bottom: 1px solid #eee;">`,
-      `<p style="font-size: 15px; margin: 0 0 4px;"><strong>${safeName} (${safeSet}) — ${price}</strong>${
+      `<p style="font-size: 15px; margin: 0 0 4px;"><strong>${safeName} (${safeSet}) · ${price}</strong>${
         qualifier ? ` <span style="color: #556; font-size: 13px;">· ${escapeHtml(qualifier)}</span>` : ""
       }</p>`,
-      `<p style="font-size: 13px; color: #445; margin: 0 0 6px;">${escapeHtml(kindClause)} — ${escapeHtml(triggerClause(input))}.</p>`,
+      `<p style="font-size: 13px; color: #445; margin: 0 0 6px;">${escapeHtml(kindClause)}, ${escapeHtml(triggerClause(input))}.</p>`,
       `<p style="font-size: 13px; color: #334; margin: 0 0 8px;">${escapeHtml(evidenceLine(input))}</p>`,
       `<p style="font-size: 14px; margin: 0;"><a href="${escapeHtml(input.cardPageUrl)}" style="color: #0F1E3A; text-decoration: underline; text-underline-offset: 3px; font-weight: 600;">See the live listing and sold history →</a></p>`,
       `</div>`,
@@ -211,7 +211,7 @@ export function batchEmailBody(unsorted: readonly AlertEmailInputs[]): string {
     ...sections,
     `<p style="font-size: 11px; color: #99a; line-height: 1.5; margin: 12px 0 0;">You're getting this because you set price alerts at foiltcg.com. Each card goes quiet until its price moves back up and drops again.${
       first.manageUrl
-        ? ` <a href="${escapeHtml(first.manageUrl)}" style="color: #99a; text-decoration: underline;">Manage your watchlist</a> — change targets, pause, or add cards.`
+        ? ` <a href="${escapeHtml(first.manageUrl)}" style="color: #99a; text-decoration: underline;">Manage your watchlist</a>: change targets, pause, or add cards.`
         : ""
     }</p>`,
     unsubscribeFooter(first.unsubscribeUrl),
@@ -222,7 +222,7 @@ export function batchEmailBody(unsorted: readonly AlertEmailInputs[]): string {
 function unsubscribeFooter(url: string | null): string {
   if (url) {
     const safe = escapeHtml(url);
-    return `<p style="font-size: 11px; color: #99a; line-height: 1.5; margin-top: 8px;">Don't want these? <a href="${safe}" style="color: #99a; text-decoration: underline;">Unsubscribe in one click</a> — it stops every alert.</p>`;
+    return `<p style="font-size: 11px; color: #99a; line-height: 1.5; margin-top: 8px;">Don't want these? <a href="${safe}" style="color: #99a; text-decoration: underline;">Unsubscribe in one click</a>. It stops every alert.</p>`;
   }
   return `<p style="font-size: 11px; color: #99a; line-height: 1.5; margin-top: 8px;">Don't want these? Email john.c.craig24@gmail.com to be removed.</p>`;
 }
