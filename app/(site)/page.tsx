@@ -14,7 +14,7 @@ import { HeroBelt } from "@/components/hero-belt";
 
 const SITE_TITLE = "Foil: the best price on any Pokémon card";
 const SITE_DESCRIPTION =
-  "Tell Foil the cards you're chasing. We watch the market and email you the moment one drops to your price — judged against what cards really sell for, not asking prices. Free.";
+  "Tell me the cards you're chasing. Foil watches the market and emails you the moment one drops to your price. Judged against what cards really sell for, not asking prices. Free.";
 
 export const metadata: Metadata = {
   title: SITE_TITLE,

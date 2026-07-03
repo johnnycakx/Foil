@@ -198,7 +198,7 @@ export default async function VaultPage({
             Nine pockets, waiting for your first card.
           </p>
           <p className="mx-auto mt-3 max-w-md text-base text-foil-cream/70 sm:text-lg">
-            Tell us the card you&apos;re chasing and the price you&apos;d be happy to pay.
+            Tell me the card you&apos;re chasing and the price you&apos;d be happy to pay.
             We&apos;ll watch eBay around the clock and email you the moment a verified
             listing hits your number — no tabs left open, no daily scrubbing.
           </p>

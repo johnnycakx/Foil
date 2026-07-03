@@ -22,7 +22,7 @@ export const revalidate = 86400;
 const PAGE_TITLE = "Pokémon card deal alerts + weekly market notes";
 
 const PAGE_DESCRIPTION =
-  "Tell us a card; we email you when it drops to your target price. Weekly market notes from John Craig, who runs a Pokémon card store. One email a week.";
+  "Tell me a card; we email you when it drops to your target price. Weekly market notes from John Craig, who runs a Pokémon card store. One email a week.";
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
