@@ -282,3 +282,26 @@ body {
   from { transform: translateX(-16px) rotate(-24deg); }
   to { transform: translateX(16px) rotate(24deg); }
 }
+
+/* Hero chase belt (hero-chase-belt, ADR-102). The holo shine is an ORIGINAL
+   two-stop diagonal light band (sheen + sakura tint) — independent
+   implementation; no code from simeydotme/pokemon-cards-css (GPL-3.0).
+   Opacity-only reveal (compositor-safe), gated to real pointers so touch
+   taps never strand a stuck hover state (emil-design-eng). */
+.belt-shine {
+  background: linear-gradient(
+    115deg,
+    transparent 34%,
+    rgba(248, 245, 240, 0.13) 46%,
+    rgba(217, 138, 160, 0.16) 53%,
+    transparent 66%
+  );
+}
+@media (hover: hover) and (pointer: fine) {
+  .belt-card:hover .belt-shine {
+    opacity: 1;
+  }
+  .belt-card:hover {
+    box-shadow: 0 10px 40px -12px rgba(217, 138, 160, 0.35);
+  }
+}

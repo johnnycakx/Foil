@@ -415,3 +415,17 @@ token pair itself).
 **Class closed:** UI-wide retired-asset tripwire (visual-regression) — NO file under app/ or components/ may reference SealMark/FoilCornerMark/SEAL_VERMILLION/#d85a30 except the logo.tsx definition site; swept the two other survivors it caught (hero live-pill, sold-history-panel heading). Mock-figures guard: no `$<digit>` literal in SampleAlert + data-level pin that the snapshot carries real sold data for the featured slug.
 
 **Flagged, not crept:** the PullLoop step-chips carry hand-written Moonbreon figures ($1,900 target / $1,845 / 17%-under) — currently ~accurate against the real $2,214 basis, but the same literals class; candidate follow-up to extend the derive-from-snapshot discipline.
+
+---
+
+## iter-25 - hero-chase-belt (bar hit iteration 1 of 4; motion felt-review = John, pre-push)
+
+**Skills invoked + the concrete change each drove:**
+- **emil-design-eng** → the three motion laws of the belt: LINEAR drift (constant-motion class, never eased), pause-as-deceleration (speed proxy tweened to 0 over 0.45s power2.out on hover/focus/offscreen/hidden — nothing halts instantly), and hover shine gated to `(hover:hover) and (pointer:fine)` so touch taps never strand a stuck state. Also: transform written directly to the track by the ticker (no per-frame CSS vars — I-011).
+- **frontend-design** → the hero-as-thesis: the wheel IS the claim ("everything you'd chase, we're already watching") — 200 real chase cards, no mascot, self-updating with each bake; the fan survives only as the reduced-motion fallback.
+- **impeccable** → honesty + restraint: every face links a real data-bearing page (catalog-join enforced at selection), the widget is a quiet service card (sakura accent, no gold, not a billboard), adjacency-arranged so the wheel reads like the hobby drifting past.
+
+**Iter-1 (bar hit):** 26-node windowed recycling over the 200-pool; faces never morph in view (the wrap instant renders an identical scene). Shots `gallery/hero-belt/iter-1/`: belt-390/768/1152/1440/1920/2560 + request-widget-1440 + reduced-motion-fan-1440.
+Rubric: (a) alive-but-calm 8.7 (48px/s gallery walk, edge dissolve) · (b) premium faces 8.6 (hires self-hosted webps, vintage stars lead) · (c) zero jank — measured 177/197/115fps with petals · (d) register untouched 9.0 · (e) click affordance 8.3 (shine + lift on hover; static shots can't show it — John's felt review is the real gate). avg 8.72 / min 8.3... wait, bar is min ≥ 8.0 — met.
+
+**MOTION IS FELT, NOT SCREENSHOT-JUDGED: John reviews live motion on localhost before any push (the closure contract).**

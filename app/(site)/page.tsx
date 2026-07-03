@@ -9,6 +9,8 @@ import { HoloCard } from "@/components/cards/holo-card";
 import { SakuraAmbience } from "@/components/sakura-ambience";
 import { CARD_CATALOG, setIdsInCatalog } from "@/lib/cards/catalog";
 import { getSnapshotSold } from "@/lib/vault-seeds";
+import { getHeroBeltPool } from "@/lib/hero-belt/pool";
+import { HeroBelt } from "@/components/hero-belt";
 
 const SITE_TITLE = "Foil: the best price on any Pokémon card";
 const SITE_DESCRIPTION =
@@ -56,6 +58,7 @@ export default async function Home() {
       <VaultMoment />
       <PullLoop />
       <SampleAlert />
+      <RequestCard />
       <NewsletterBand />
     </main>
   );
@@ -171,6 +174,12 @@ function cardSlug(id: string): string | null {
 function Hero() {
   const cardCount = CARD_CATALOG.length;
   const setCount = setIdsInCatalog().length;
+  // hero-chase-belt (ADR-102): the motion hero is the chase wheel — the top
+  // ~200 chase cards drifting past, each a real market-page link. The
+  // composed fan below survives as the prefers-reduced-motion fallback (and
+  // the honest degradation when the pool artifact is missing). Both are
+  // server-rendered; CSS motion variants pick one — no hydration swap.
+  const beltPool = getHeroBeltPool();
   return (
     <section className="relative isolate overflow-hidden">
       {/* Hanami comes home (binder-aesthetic-pass): the /lines petal physics
@@ -187,16 +196,27 @@ function Hero() {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-[560px] bg-[radial-gradient(ellipse_58%_46%_at_50%_16%,rgba(248,245,240,0.07),transparent_62%)]"
       />
-      {/* The grail fan — a real lit fan (round-3 fix 1): the focal Moonbreon
-          leads at ~1.35x with a teal rim-glow; neighbors step down in size,
-          rotate away, and soften into the dark (depth of field); the whole
-          hand fades at the edges instead of hard-cropping. Each card still
-          holo-tilts under the pointer. Decorative → aria-hidden. */}
-      {/* NOT aria-hidden anymore (pre-send-coherence §4): every fan card is a
-          real link to its card page — focusable, labeled, holo-tilt preserved. */}
+      {/* THE CHASE WHEEL (hero-chase-belt): the top ~200 chase cards drifting
+          past at gallery-walk speed, every face a real link. Motion-safe
+          only; hidden entirely under prefers-reduced-motion. */}
+      {beltPool.length > 0 && (
+        <div className="relative mx-auto hidden max-w-[110rem] pt-10 sm:pt-14 motion-safe:block">
+          <HeroBelt pool={beltPool} />
+          {/* The floor: the wheel stands on the same grounded shadow language
+              as the fan it succeeds. */}
+          <div
+            aria-hidden
+            className="pointer-events-none mx-auto -mt-4 h-8 w-[72%] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(4,4,5,0.9),rgba(4,4,5,0.35)_55%,transparent_75%)] blur-[6px]"
+          />
+        </div>
+      )}
+      {/* The composed grail fan — now the prefers-reduced-motion fallback
+          (and the no-pool degradation). Same links, no belt, no drift. */}
       <div
         style={FAN_FLUID_VARS}
-        className="relative mx-auto max-w-[calc(72rem*var(--fan-s,1))] [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]"
+        className={`relative mx-auto max-w-[calc(72rem*var(--fan-s,1))] [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)] ${
+          beltPool.length > 0 ? "motion-safe:hidden" : ""
+        }`}
       >
         <div className="flex items-start justify-center px-2 pt-10 sm:pt-14 lg:pt-[calc(3.5rem*var(--fan-s,1))]">
           {HERO_CARDS.map((c, i) => {
@@ -635,6 +655,47 @@ function SampleAlert() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// The request widget (hero-chase-belt, ADR-102): the site-to-X intake loop.
+// A quiet service promise, not a promo — missing data becomes a public
+// @FoilTCG mention, which becomes demand-hydration, which becomes data the
+// visitor watches land. The "front of the queue" line is a HUMAN CONTRACT:
+// front-of-queue requests get same-day-ish hydration via the demand pipeline
+// (the x-reply-desk goal triages the mentions). Voice: no em dashes.
+const REQUEST_INTENT_URL = `https://x.com/intent/post?text=${encodeURIComponent(
+  "@FoilTCG chasing this card, can you get data on it?",
+)}`;
+
+function RequestCard() {
+  return (
+    <section className="relative border-t border-foil-cream/10">
+      <div className="mx-auto w-full max-w-3xl px-5 py-14 sm:px-8">
+        <div className="rounded-2xl border border-foil-cream/12 bg-foil-night-2/70 p-7 sm:p-8">
+          <h2 className="font-display text-2xl font-semibold text-foil-cream sm:text-3xl">
+            Chasing a card we don&apos;t have data on yet?
+          </h2>
+          <p className="mt-3 max-w-xl text-base leading-relaxed text-foil-cream/70">
+            Post it at{" "}
+            <a
+              href="https://x.com/FoilTCG"
+              className="text-foil-cream underline decoration-foil-accent/50 underline-offset-4 transition hover:decoration-foil-accent"
+            >
+              @FoilTCG
+            </a>{" "}
+            on X with a pic of the card and we&apos;ll move it to the front of
+            the queue.
+          </p>
+          <a
+            href={REQUEST_INTENT_URL}
+            className="mt-5 inline-block rounded-xl border border-foil-accent/40 px-5 py-2.5 text-sm font-semibold text-foil-cream transition hover:border-foil-accent hover:bg-foil-accent/10"
+          >
+            Post your card 🌸
+          </a>
         </div>
       </div>
     </section>
