@@ -467,19 +467,24 @@ test("Wordmark font Bricolage Grotesque is pinned + exposed as font-wordmark (AD
   assert.match(css, /--font-wordmark:\s*var\(--font-wordmark\)/, "the font-wordmark utility token exists");
 });
 
-test("Brand assets: favicon + icon + OG carry the seal mark / 'Foil' wordmark, no Pokéball or gold TCG (ADR-094)", () => {
+test("Brand assets: favicon + icon are the petal-on-charcoal; OG runs the shared Shrikhand block (brand-og-unification, supersedes the ADR-094 seal pins)", () => {
   const fav = readFile("public/favicon.svg");
   assert.doesNotMatch(fav, /#e63946/i, "favicon must not be the red Pokéball");
-  assert.match(fav, /#D85A30/i, "favicon is the vermillion seal");
+  assert.doesNotMatch(fav, /#D85A30/i, "the retired vermillion seal is gone from the favicon");
+  assert.match(fav, /#0d0d0e/i, "favicon ground is the charcoal");
+  assert.match(fav, /#d98aa0/i, "favicon glyph is the sakura petal");
   assert.doesNotMatch(fav, /M 17 4 L 26 13/, "the retired foil-corner fold path is gone");
   const icon = readFile("public/icon.svg");
-  assert.match(icon, /#D85A30/i, "icon.svg carries the vermillion seal");
-  assert.match(icon, />Foil<\/text>/, "icon.svg carries the 'Foil' wordmark");
-  assert.doesNotMatch(icon, /TCG<\/(?:text|tspan)>/, "no 'TCG' rendered in the icon wordmark");
+  assert.doesNotMatch(icon, /#D85A30/i, "the retired seal is gone from icon.svg");
+  assert.match(icon, /#d98aa0/i, "icon.svg carries the petal glyph");
+  assert.doesNotMatch(icon, /<text/, "no font-dependent <text> in icon contexts (never rendered reliably)");
+  assert.doesNotMatch(icon, /TCG<\/(?:text|tspan)>/, "no 'TCG' rendered in the icon");
   const og = readFile("app/opengraph-image.tsx");
   assert.doesNotMatch(og, /#FF6B5C/i, "OG must not use the retired coral");
-  assert.match(og, /Bricolage Grotesque/, "OG loads the Bricolage wordmark cut");
-  assert.match(og, /#D85A30/i, "OG mark is the vermillion seal");
+  assert.match(og, /OgWordmark/, "OG renders the shared Shrikhand wordmark block");
+  assert.doesNotMatch(og, /#D85A30/i, "the retired seal ink is gone from the OG");
+  const manifest = readFile("app/manifest.ts");
+  assert.match(manifest, /theme_color: "#0d0d0e"/, "manifest theme is the charcoal ground");
 });
 
 test("Site header: uses the <Logo /> brand component (ADR-032)", () => {

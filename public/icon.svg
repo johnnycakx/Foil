@@ -1,11 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 80" width="200" height="80">
-  <rect width="200" height="80" fill="#f8f5f0"/>
-  <!-- Foil hanko seal mark (ADR-094) -->
-  <g transform="translate(16 16) scale(2)">
-    <rect x="3.2" y="3.2" width="17.6" height="17.6" rx="4.6" fill="#D85A30"/>
-    <rect x="8.9" y="5.4" width="6.2" height="9.6" rx="1.1" fill="none" stroke="#f8f5f0" stroke-width="1.5"/>
-    <path d="M6 14.4h12v1.5a2.9 2.9 0 0 1-2.9 2.9H8.9A2.9 2.9 0 0 1 6 15.9z" fill="#f8f5f0"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+  <!-- Foil app icon (brand-og-unification): the sakura petal on charcoal,
+       same glyph as favicon.svg — one identity at every size. The old
+       Bricolage text-element wordmark never rendered reliably in icon
+       contexts (no font available); the petal is a pure vector. -->
+  <rect width="24" height="24" rx="5" fill="#0d0d0e"/>
+  <g transform="translate(12 12.4) rotate(-18) scale(0.84) translate(-10 -10)">
+    <path d="M10 2.6 L8.7 0.8 C5.2 3.9 3.1 8.6 4.6 13 C5.7 16.3 8 18.5 10 19.2 C12 18.5 14.3 16.3 15.4 13 C16.9 8.6 14.8 3.9 11.3 0.8 L10 2.6 Z" fill="#d98aa0"/>
   </g>
-  <!-- "Foil" wordmark (Bricolage Grotesque where available; grotesque fallback). Display wordmark is Foil only; the domain keeps the longer form. -->
-  <text x="72" y="52" font-family="'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif" font-weight="600" font-size="40" letter-spacing="-1" fill="#0f1e3a">Foil</text>
 </svg>

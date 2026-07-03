@@ -20,6 +20,32 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 
 ---
 date: 2026-07-02
+category: product
+status: captured
+---
+## Shrikhand letterform favicon (glyph-path tooling)
+
+The favicon/app icon succeeded to the sakura petal on charcoal (brand-og-unification) because a Shrikhand "F" letterform favicon needs the glyph traced to an SVG path (no font rendering in icon contexts). If John wants the letterform instead of the petal, the tool chain is: extract the F outline from assets/og/Shrikhand-Regular.ttf (e.g. fonttools/opentype.js) -> hand-tune at 16px -> drop into public/favicon.svg + rerun scripts/generate-brand-icons.mjs.
+
+**Context:** brand-og-unification Phase 2.3 — the petal shipped as the owned vector rather than half-shipping a fake letterform.
+
+---
+
+---
+date: 2026-07-02
+category: ux
+status: captured
+---
+## Heavier self-hosted headline cut for the OG cards
+
+OG headlines render in Geist 400 (the only self-hosted body weight). A self-hosted Bricolage Grotesque 600 TTF (or Geist SemiBold) in assets/og/ would give share-card headlines the display weight the site header has — one more `loadOgFonts` entry, mind the edge bundle size (card art is already ~550KB inlined).
+
+**Context:** brand-og-unification quality pass — the old Google-css2 fetch never actually loaded a font (woff2/Satori), so 400-weight matches what prod always rendered; noted honestly rather than fetched at request time.
+
+---
+
+---
+date: 2026-07-02
 category: growth
 status: captured
 ---

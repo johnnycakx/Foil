@@ -1,0 +1,14 @@
+Geist-Regular.ttf
+Copyright 2023 Vercel, in collaboration with basement.studio
+
+Licensed under the SIL Open Font License, Version 1.1 (OFL-1.1).
+Full license text: https://openfontlicense.org
+Source: https://vercel.com/font (https://github.com/vercel/geist-font)
+
+Self-hosted here for the Satori/ImageResponse OG runtime as the BODY font of
+the share cards (brand-og-unification, 2026-07-02). This is byte-identical to
+the fallback TTF next/og itself bundles (node_modules/next/dist/compiled/
+@vercel/og/Geist-Regular.ttf) — self-hosting it lets the OG surfaces pass it
+EXPLICITLY alongside Shrikhand, because supplying any `fonts` array to
+ImageResponse replaces the bundled fallback entirely. The site's page-visible
+body text loads the same family via next/font in app/layout.tsx.

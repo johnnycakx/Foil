@@ -1,0 +1,11 @@
+Shrikhand-Regular.ttf
+Copyright 2015 The Shrikhand Project Authors (Jonny Pinhorn, jonpinhorn.typedesign@gmail.com)
+
+Licensed under the SIL Open Font License, Version 1.1 (OFL-1.1).
+Full license text: https://openfontlicense.org
+Source: Google Fonts (https://fonts.google.com/specimen/Shrikhand)
+
+Self-hosted here for the Satori/ImageResponse OG runtime (Satori does not
+support woff2; the OG brand block loads this TTF explicitly —
+brand-og-unification, 2026-07-02). The site's page-visible wordmark loads the
+same family via next/font in app/layout.tsx.

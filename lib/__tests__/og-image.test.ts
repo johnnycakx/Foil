@@ -34,20 +34,71 @@ test("opengraph-image.tsx: renders the card-art fan, the wordmark, and the text-
   // Inlined card art (no fs/sharp/fetch at edge request time).
   assert.match(src, /import \{ OG_CARD_ART \} from "\.\/og-card-art\.generated"/);
   assert.match(src, /src=\{c\.dataUrl\}/, "the fan renders the card-art data-URLs");
-  // Wordmark lockup (the brand) stays — the hanko seal + "Foil" (ADR-094);
-  // "TCG" is dropped from the display wordmark.
-  assert.match(src, /MARK_DATA_URL/);
+  // Identity block (brand-og-unification): the SHARED brand component — the
+  // Shrikhand wordmark, no seal mark, self-hosted TTF (Satori can't parse
+  // woff2; the old Google-css2 fetch never actually loaded a font).
+  assert.match(src, /from "\.\.\/lib\/og\/brand"/, "must import the shared OG brand block");
+  assert.match(src, /<OgWordmark\b/, "the wordmark renders via the shared component");
   assert.doesNotMatch(src, />TCG<\/span>/, "no gold 'TCG' in the OG wordmark (ADR-094)");
-  assert.match(src, /fontSize: 56[^}]*color: CREAM \}\}>\s*Foil/, "cream 'Foil' wordmark");
   // Never-500 soft-fall: empty art -> text-only (left column goes full width,
-  // the fan block is omitted) + the font still falls back to sans-serif.
+  // the fan block is omitted); font failure falls back to styled text, never
+  // the retired mark (enforced inside lib/og/brand).
   assert.match(src, /const hasArt = art\.length > 0/);
   assert.match(src, /width: hasArt \? 660 : "100%"/, "left column goes full-width when there's no art");
   assert.match(src, /hasArt \? \(/, "the fan block is gated on hasArt");
-  assert.match(src, /wordmark \? "Bricolage Grotesque" : "sans-serif"/, "font soft-fall retained");
   // Edge config unchanged.
   assert.match(src, /export const runtime = "edge"/);
   assert.match(src, /width: 1200, height: 630/);
+});
+
+// --- brand unification: every OG surface shares the brand block; the retired
+// --- seal is a build-failing tripwire on ALL share/meta surfaces ---
+
+test("every ImageResponse surface imports the shared OG brand block (brand-og-unification)", () => {
+  // The lines card is the other generator (twitter-image re-exports the root).
+  const lines = read("app/(site)/lines/[pokemon]/opengraph-image.tsx");
+  assert.match(lines, /from "@\/lib\/og\/brand"/, "lines OG must import the shared brand block");
+  assert.match(lines, /<OgWordmark\b/, "lines OG renders the shared wordmark");
+  assert.match(lines, /loadOgFonts\(/, "lines OG loads fonts via the shared helper");
+  const root = read("app/opengraph-image.tsx");
+  assert.match(root, /loadOgFonts\(/, "root OG loads fonts via the shared helper");
+  // The shared block itself: self-hosted TTFs + the never-the-seal fallback.
+  const brand = read("lib/og/brand.tsx");
+  assert.match(brand, /Shrikhand-Regular\.ttf/, "the brand block loads the self-hosted wordmark TTF");
+  assert.match(brand, /Geist-Regular\.ttf/, "the brand block loads the self-hosted body TTF");
+  // The regression this pins: a remote css2 fetch whose response is a woff2
+  // Satori can't parse (the comment may MENTION woff2; code may not fetch it).
+  assert.doesNotMatch(brand, /\.woff2|fonts\.googleapis|fonts\.gstatic/, "never the remote css2/woff2 fetch path");
+  // nodejs runtime must NOT fetch the asset (undici rejects file: URLs — the
+  // build-breaking bug this goal caught): the loader branches on NEXT_RUNTIME
+  // and reads via fs on node.
+  assert.match(brand, /process\.env\.NEXT_RUNTIME === "edge"/, "runtime-branched loader");
+  assert.match(brand, /readFile\b/, "nodejs branch reads the TTF via fs, not fetch");
+  // Never `fonts: []` — ImageResponse does `options.fonts || defaultFonts`,
+  // so an empty array disables its bundled-Geist fallback and satori throws
+  // "No fonts are loaded" (prerender/build failure).
+  assert.match(brand, /fonts\.length \? fonts : undefined/, "empty font set must collapse to undefined");
+});
+
+test("RETIRED-ASSET TRIPWIRE: the seal mark is dead on every OG/meta surface (brand-og-unification)", () => {
+  // A brand succession that misses a share surface must fail the build. The
+  // page-visible SealMark (components/brand/logo.tsx, hero pill) is UI scope
+  // and intentionally NOT swept here.
+  const surfaces = [
+    "app/opengraph-image.tsx",
+    "app/twitter-image.tsx",
+    "app/(site)/lines/[pokemon]/opengraph-image.tsx",
+    "lib/og/brand.tsx",
+    "public/favicon.svg",
+    "public/icon.svg",
+    "app/manifest.ts",
+  ];
+  for (const rel of surfaces) {
+    const src = read(rel);
+    assert.doesNotMatch(src, /#d85a30/i, `${rel}: the retired vermillion seal ink must be gone`);
+    assert.doesNotMatch(src, /MARK_DATA_URL|SEAL_DATA_URL/, `${rel}: no seal data-url`);
+    assert.doesNotMatch(src, /x="3\.2" y="3\.2"/, `${rel}: no seal square geometry`);
+  }
 });
 
 test("twitter-image.tsx: still re-exports the OG renderer (single source for both)", () => {

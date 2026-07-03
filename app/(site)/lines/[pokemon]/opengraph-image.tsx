@@ -1,12 +1,14 @@
 // Per-line OG/social card (eve-line-tracker, ADR-095) — THIS page gets shared,
-// so the card must stop the scroll. LEFT: the seal + "Foil", "Every <Pokémon>
-// card", a value line, sakura petal accent on cream. RIGHT: a fan of the top-3
-// priciest printings' art. nodejs runtime (not edge) so it can read the baked
-// snapshot via lib/lines/data + fetch the card art; NEVER 500s — if the art or
-// font fetch fails it falls back to the text-only sakura card.
+// so the card must stop the scroll. LEFT: the Shrikhand "Foil" wordmark
+// (shared lib/og/brand block), "Every <Pokémon> card", a value line, sakura
+// petal accent on cream. RIGHT: a fan of the top-3 priciest printings' art.
+// nodejs runtime (not edge) so it can read the baked snapshot via
+// lib/lines/data + fetch the card art; NEVER 500s — if the art or font load
+// fails it falls back to the text-only sakura card.
 
 import { ImageResponse } from "next/og";
 import { getLineConfig, LAUNCH_LINES } from "@/lib/lines/config";
+import { loadOgFonts, OgWordmark, OG_BODY_FONT } from "@/lib/og/brand";
 import { getLineData } from "@/lib/lines/data";
 
 export const runtime = "nodejs";
@@ -23,21 +25,9 @@ const SAKURA = "#d98aa0";
 const SAKURA_WASH = "#f6e6ea";
 const SLATE = "#8B97B5";
 
-// The seal mark as a data-URL SVG (ADR-094), rendered via <img>.
-const SEAL = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64"><rect x="3.2" y="3.2" width="17.6" height="17.6" rx="4.6" fill="#D85A30"/><rect x="8.9" y="5.4" width="6.2" height="9.6" rx="1.1" fill="none" stroke="${CREAM}" stroke-width="1.5"/><path d="M6 14.4h12v1.5a2.9 2.9 0 0 1-2.9 2.9H8.9A2.9 2.9 0 0 1 6 15.9z" fill="${CREAM}"/></svg>`;
-const SEAL_DATA_URL = `data:image/svg+xml;base64,${Buffer.from(SEAL).toString("base64")}`;
-
-async function loadFont(): Promise<ArrayBuffer | null> {
-  try {
-    const css = await fetch("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600", {
-      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
-    }).then((r) => r.text());
-    const url = css.match(/src:\s*url\((https:\/\/[^)]+\.(?:woff2?|ttf))\)/)?.[1];
-    return url ? await fetch(url).then((r) => r.arrayBuffer()) : null;
-  } catch {
-    return null;
-  }
-}
+// Identity block: the shared Shrikhand wordmark (lib/og/brand — the seal is
+// retired from brand surfaces; the old Google-css2 font fetch never worked in
+// Satori anyway, see brand-og-unification).
 
 /** Fetch a card image → base64 data URL. Null on any failure (soft-fall). */
 async function loadArt(url: string): Promise<string | null> {
@@ -60,8 +50,8 @@ async function loadArt(url: string): Promise<string | null> {
 export default async function Image({ params }: { params: Promise<{ pokemon: string }> }) {
   const { pokemon } = await params;
   const config = getLineConfig(pokemon);
-  const [font] = await Promise.all([loadFont()]);
-  const wordmarkFont = font ? "Bricolage Grotesque" : "sans-serif";
+  const { fonts, wordmarkLoaded } = await loadOgFonts();
+  const bodyFont = OG_BODY_FONT; // headline/body: Geist, the site's body font
 
   const cards = config ? getLineData(config).cards : [];
   const topArt = (await Promise.all(cards.slice(0, 3).map((c) => loadArt(c.image)))).filter(
@@ -80,7 +70,7 @@ export default async function Image({ params }: { params: Promise<{ pokemon: str
 
   return new ImageResponse(
     (
-      <div style={{ width: "100%", height: "100%", display: "flex", backgroundColor: CREAM, fontFamily: "sans-serif" }}>
+      <div style={{ width: "100%", height: "100%", display: "flex", backgroundColor: CREAM, fontFamily: bodyFont }}>
         {/* soft sakura wash top-right */}
         <div
           style={{
@@ -119,13 +109,9 @@ export default async function Image({ params }: { params: Promise<{ pokemon: str
 
         {/* LEFT — wordmark + headline */}
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", padding: 72, width: hasArt ? 660 : "100%" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={SEAL_DATA_URL} width={60} height={60} alt="" />
-            <div style={{ display: "flex", fontFamily: wordmarkFont, fontWeight: 600, fontSize: 40, letterSpacing: -1, color: NAVY }}>Foil</div>
-          </div>
+          <OgWordmark size={58} tone="navy" fontLoaded={wordmarkLoaded} />
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div style={{ display: "flex", fontFamily: wordmarkFont, fontWeight: 600, fontSize: hasArt ? 68 : 88, lineHeight: 1.02, letterSpacing: -2, color: NAVY, maxWidth: hasArt ? 520 : 1000 }}>
+            <div style={{ display: "flex", fontFamily: bodyFont, fontWeight: 600, fontSize: hasArt ? 68 : 88, lineHeight: 1.02, letterSpacing: -2, color: NAVY, maxWidth: hasArt ? 520 : 1000 }}>
               Every {name} card, tracked.
             </div>
             <div style={{ display: "flex", fontSize: 27, color: "#5b6b86", maxWidth: hasArt ? 500 : 900, lineHeight: 1.3 }}>
@@ -133,7 +119,7 @@ export default async function Image({ params }: { params: Promise<{ pokemon: str
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 24, color: SLATE }}>
-            <span style={{ color: SAKURA, fontWeight: 600, fontFamily: wordmarkFont }}>foiltcg.com/lines/{pokemon}</span>
+            <span style={{ color: SAKURA, fontWeight: 600, fontFamily: bodyFont }}>foiltcg.com/lines/{pokemon}</span>
           </div>
         </div>
 
@@ -158,6 +144,6 @@ export default async function Image({ params }: { params: Promise<{ pokemon: str
         ) : null}
       </div>
     ),
-    { ...size, fonts: font ? [{ name: "Bricolage Grotesque", data: font, weight: 600 as const, style: "normal" as const }] : [] },
+    { ...size, fonts },
   );
 }
