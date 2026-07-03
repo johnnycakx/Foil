@@ -399,3 +399,19 @@ token pair itself).
 **Rubric (a: one lit grounded object · b: no bunching/tucking/slivers · c: page uses its width · d: sub-1440 unchanged):**
 390: 9.0 · 768: 8.7 · 1024: 8.7 · 1152: 8.7 · 1280: 8.7 · 1440: 8.7 (vars ≡ 1, the John-approved tuned composition) · 1680: 8.7 · 1920: 8.8 · 2560: 8.4.
 **avg 8.71 / min 8.4 — bar (≥8.5 / ≥8.0) MET.** Petals verified coexisting at 2560 (field scales with the hero, none over text at rest). Shots: `gallery/hero-widescreen/iter-2/`.
+
+---
+
+## iter-24 - hero-polish-followups (bar hit iteration 1 of 2)
+
+**John's post-deploy verdicts (2026-07-03 ~01:15, ~2100px):** (1) Rayquaza VMAX still tucked to a sliver behind Giratina; (2) the alert mock wears the retired seal + old lockup; (addendum) (3) the mock's figures are invented ($162/$189 vs Giratina's real market).
+
+**Skills (loaded in-session, per-change trace):**
+- **frontend-design** → REMOVAL over re-spread: a 7-card fan that composes beats 8 with a sliver — judged on the matrix, both wings now 3 cards with mirrored depth/tilt/arc cadence (Pikachu inherits the far-edge slot with its luminance-equalized treatment, mirroring Base Charizard). Also the mock-as-artifact principle: the sample alert mirrors what the REAL alert renders (ADR-091 evidence line, ADR-079 text-forward, one quiet underlined link — the navy button pill dies).
+- **impeccable (craft/honesty)** → figures derive from the data path, never literals: `getSnapshotSold("swsh7-215...")` (the same committed outlier-suppressed basis the vault/lines read), listing computed at the exact ADR-091 market floor (`soldCents * 0.85`); featured card switched to Moonbreon (snapshot-guaranteed sold basis + the fan's focal — narrative coherence). Honest soft-fail: no snapshot → copy without invented numbers.
+
+**Shots (`gallery/hero-widescreen/polish/`):** hero-2100 (every card reads, no sliver — 8.8) · hero-1440 (tighter 7-card balance — 8.7) · hero-390 (5-card mobile fan, unchanged breathing — 8.8) · alert-section-1440 (real $2,214 sold avg → $1,882 floor listing, plain "Foil" from-row, quiet link — pass). Bar met iteration 1.
+
+**Class closed:** UI-wide retired-asset tripwire (visual-regression) — NO file under app/ or components/ may reference SealMark/FoilCornerMark/SEAL_VERMILLION/#d85a30 except the logo.tsx definition site; swept the two other survivors it caught (hero live-pill, sold-history-panel heading). Mock-figures guard: no `$<digit>` literal in SampleAlert + data-level pin that the snapshot carries real sold data for the featured slug.
+
+**Flagged, not crept:** the PullLoop step-chips carry hand-written Moonbreon figures ($1,900 target / $1,845 / 17%-under) — currently ~accurate against the real $2,214 basis, but the same literals class; candidate follow-up to extend the derive-from-snapshot discipline.

@@ -176,12 +176,13 @@ test("Homepage Hero: H1 carries font-display class (Fraunces)", () => {
   assert.match(src, /<h1[^>]*font-display/);
 });
 
-test("Homepage Hero: includes the 8-card grail showcase", () => {
+test("Homepage Hero: includes the 7-card grail showcase", () => {
   const src = readFile("app/(site)/page.tsx");
-  // 8 hand-curated entries in HERO_CARDS. Count only entries with a
+  // 7 hand-curated entries in HERO_CARDS (hero-polish-followups removed the
+  // tucked Rayquaza — 3 per wing + the focal). Count only entries with a
   // string id literal (not the type annotation's `{ id: string;`).
   const heroCardsBlock = src.match(/HERO_CARDS[^]*?\];/);
   assert.ok(heroCardsBlock, "HERO_CARDS array must exist");
   const matches = (heroCardsBlock![0].match(/\{\s*id:\s*["']/g) ?? []).length;
-  assert.equal(matches, 8, "HERO_CARDS should have exactly 8 entries");
+  assert.equal(matches, 7, "HERO_CARDS should have exactly 7 entries");
 });

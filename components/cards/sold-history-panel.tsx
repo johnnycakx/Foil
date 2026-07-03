@@ -13,7 +13,6 @@
 // Graceful degradation: no variants → a muted footer; a variant with no
 // PokeTrace data → "—" cells.
 
-import { SealMark } from "@/components/brand/logo";
 import { getSoldHistory, type SoldHistory, type SoldSource, type SoldStat } from "@/lib/poketrace/by-uuid";
 import { getPriceHistory, chartTierForCondition } from "@/lib/poketrace/price-history";
 import type { PoketraceVariant } from "@/lib/poketrace/variant";
@@ -220,8 +219,9 @@ export async function SoldHistoryPanel({
 
   return (
     <section className="mt-10" aria-labelledby="sold-history-heading">
+      {/* hero-polish-followups: the seal glyph is retired everywhere in UI
+          (ADR-099 class closed) — the accent heading stands alone. */}
       <h2 id="sold-history-heading" className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-foil-accent">
-        <SealMark px={13} />
         Recent sold prices
       </h2>
 

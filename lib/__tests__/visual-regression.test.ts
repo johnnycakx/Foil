@@ -523,14 +523,13 @@ test("Hero: the copy-area scrim is gone (ADR-037 — cards no longer overlap tex
   assert.doesNotMatch(src, /radial-gradient\(ellipse_at_top_left/, "the ADR-033 radial scrim should be gone");
 });
 
-test("Hero: HERO_CARDS array swapped to the modern-grail seed list (ADR-033)", () => {
+test("Hero: HERO_CARDS is the 7-card modern-grail seed list (ADR-033; Rayquaza removed by hero-polish-followups)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // Pin the 8 grail IDs so a future "let's freshen the hero" refactor
-  // doesn't silently drop the moonbreon/rayquaza/charizard-rainbow
-  // signal that anchors the launch surface.
+  // Pin the 7 grail IDs so a future "let's freshen the hero" refactor
+  // doesn't silently drop the moonbreon/charizard-rainbow signal that
+  // anchors the launch surface.
   for (const id of [
     "swsh7/215",
-    "swsh7/218",
     "swsh35/74",
     "swsh11/186",
     "swsh12/186",
@@ -540,6 +539,10 @@ test("Hero: HERO_CARDS array swapped to the modern-grail seed list (ADR-033)", (
   ]) {
     assert.match(src, new RegExp(id.replace("/", "\\/")), `HERO_CARDS missing ${id}`);
   }
+  // Rayquaza VMAX was REMOVED (John, 2026-07-03): as the 4th right-wing card
+  // it rendered as a sliver behind Giratina — 7 cards compose, 3 per wing.
+  const heroBlock = src.slice(src.indexOf("const HERO_CARDS"), src.indexOf("];", src.indexOf("const HERO_CARDS")));
+  assert.doesNotMatch(heroBlock, /swsh7\/218/, "the tucked Rayquaza must stay out of the fan");
 });
 
 // ---------------------------------------------------------------------------
@@ -564,14 +567,13 @@ test("Home page: orphan CardPeek decorations removed (ADR-038)", () => {
   assert.doesNotMatch(src, /CardPeek/, "CardPeek (component + invocations) should be gone");
 });
 
-test("Hero pills: bullets use the seal mark, no Pokéball (ADR-094)", () => {
+test("Hero pills: seal-free (hero-polish-followups closed the ADR-099 class), no Pokéball", () => {
   const src = readFile("app/(site)/page.tsx");
-  // The Live pill uses <SealMark /> as its bullet (the retired foil-corner /
-  // Pokéball bullets are gone). Homepage-v2 (ADR-065) removed the second
-  // "Verified Seller" pill, so the bar is >=1 mark.
-  const marks = (src.match(/<SealMark\b/g) ?? []).length;
-  assert.ok(marks >= 1, "expected >=1 SealMark bullet (the Live pill)");
-  assert.match(src, /import \{ SealMark \} from "@\/components\/brand\/logo"/);
+  // History: ADR-094 put <SealMark /> in the Live pill; hero-polish-followups
+  // retired the seal across ALL UI (the tripwire below owns the ban). The
+  // pill keeps its pulsing accent dot; no mark glyphs return.
+  assert.doesNotMatch(src, /<SealMark\b/, "the seal mark is retired from the homepage");
+  assert.match(src, /animate-ping/, "the Live pill keeps its pulse dot");
   assert.doesNotMatch(src, /<PokeballMark\b/, "no PokeballMark bullets remain");
 });
 
@@ -623,7 +625,7 @@ test("Homepage hero images are self-hosted local webp that exist, no flaky exter
   // live in /binder and are checked by their own guard (binder-aesthetic-pass).
   const heroBlock = src.slice(src.indexOf("const HERO_CARDS"), src.indexOf("];", src.indexOf("const HERO_CARDS")));
   const ids = [...heroBlock.matchAll(/\{\s*id:\s*"([^"]+)"/g)].map((m) => m[1]);
-  assert.ok(ids.length >= 8, `expected >=8 HERO_CARDS ids, found ${ids.length}`);
+  assert.ok(ids.length === 7, `expected exactly 7 HERO_CARDS ids (hero-polish-followups), found ${ids.length}`);
   for (const id of ids) {
     const file = join(ROOT, "public/hero", `${id.replace("/", "-")}.webp`);
     assert.ok(existsSync(file), `missing self-hosted hero image: public/hero/${id.replace("/", "-")}.webp`);
@@ -735,6 +737,49 @@ test("Hero fan: fluid widescreen composition derives from clamped vars, sub-1440
   // edge-dissolve mask stays.
   assert.match(src, /max-w-\[calc\(72rem\*var\(--fan-s,1\)\)\]/, "container max-width derives from --fan-s");
   assert.match(src, /mask-image:linear-gradient\(90deg,transparent,black_10%,black_90%,transparent\)/, "edge dissolve mask intact");
+});
+
+test("RETIRED-ASSET TRIPWIRE (UI scope): the seal/pocket mark is dead in every app/components surface (hero-polish-followups, extends ADR-099)", () => {
+  // ADR-099 killed the seal on OG/meta surfaces; the alert mock proved the
+  // class was still open in page components. Close it: NO file under app/ or
+  // components/ may reference the retired seal/pocket mark — except its
+  // definition site (components/brand/logo.tsx, kept so `Logo withMark`
+  // call sites type-check; the header/footer render withMark={false}).
+  const walk = (dir: string): string[] =>
+    readdirSync(join(ROOT, dir), { withFileTypes: true }).flatMap((e) => {
+      const rel = `${dir}/${e.name}`;
+      if (e.isDirectory()) return e.name === "node_modules" ? [] : walk(rel);
+      return e.name.endsWith(".tsx") || e.name.endsWith(".ts") ? [rel] : [];
+    });
+  const files = [...walk("app"), ...walk("components")].filter(
+    (f) => f !== "components/brand/logo.tsx",
+  );
+  for (const rel of files) {
+    const src = readFile(rel);
+    assert.doesNotMatch(src, /SealMark|FoilCornerMark/, `${rel}: retired seal mark reference`);
+    assert.doesNotMatch(src, /SEAL_VERMILLION|#d85a30/i, `${rel}: retired seal ink reference`);
+  }
+});
+
+test("Alert mock: figures DERIVE from the sold snapshot — no hand-written dollars (hero-polish-followups)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  // The mock reads the same committed sold basis the vault/lines surfaces
+  // use, and computes the example listing at the ADR-091 market floor.
+  assert.match(src, /import \{ getSnapshotSold \} from "@\/lib\/vault-seeds"/, "mock must import the snapshot reader");
+  assert.match(src, /const MOCK_ALERT_SLUG = "swsh7-215-umbreon-vmax-alt-art"/, "featured card pinned to a snapshot-backed slug");
+  assert.match(src, /getSnapshotSold\(MOCK_ALERT_SLUG\)/, "figures come from the data path");
+  assert.match(src, /soldCents \* 0\.85/, "example listing computed at the ADR-091 market floor (15% under)");
+  // No $<digit> literal anywhere in the SampleAlert component — a rebrand or
+  // copy edit can't quietly reintroduce invented figures.
+  const mockBlock = src.slice(src.indexOf("function SampleAlert"), src.indexOf("function NewsletterBand"));
+  assert.doesNotMatch(mockBlock, /\$\d/, "no hand-written dollar figures in the alert mock");
+  // And the data actually resolves at build time: the snapshot carries a
+  // non-zero sold basis for the featured slug (data-level, I-010 discipline).
+  const snapshot = JSON.parse(readFile("lib/lines/sold-snapshot.generated.json")) as {
+    cards?: Record<string, { soldCents?: number }>;
+  };
+  const entry = snapshot.cards?.["swsh7-215-umbreon-vmax-alt-art"];
+  assert.ok((entry?.soldCents ?? 0) > 0, "the featured mock card must have real sold data in the committed snapshot");
 });
 
 test("Vault pockets: the SV-151 starter evolution lines in order, self-hosted art (binder-aesthetic-pass)", () => {

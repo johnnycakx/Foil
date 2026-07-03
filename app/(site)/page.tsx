@@ -8,7 +8,7 @@ import { EmailCapture } from "@/components/email-capture";
 import { HoloCard } from "@/components/cards/holo-card";
 import { SakuraAmbience } from "@/components/sakura-ambience";
 import { CARD_CATALOG, setIdsInCatalog } from "@/lib/cards/catalog";
-import { SealMark } from "@/components/brand/logo";
+import { getSnapshotSold } from "@/lib/vault-seeds";
 
 const SITE_TITLE = "Foil: the best price on any Pokémon card";
 const SITE_DESCRIPTION =
@@ -130,9 +130,9 @@ const FAN_FLUID_VARS = {
 // flanking the focal so no card is ever crushed to a sliver behind Moonbreon.
 // `fx` overrides equalize edge brightness (the Base Charizard + Pikachu
 // artworks differ wildly in luminance; the treatment compensates per-card so
-// both edges READ equally dim). Pikachu sits as the far-right fourth card of
-// an 8-card hand — it takes the deepest treatment so the visual mass still
-// balances around the focal.
+// both edges READ equally dim). Pikachu mirrors the Base Charizard as the
+// far-right edge of the 7-card hand — it keeps the deepest treatment so the
+// visual mass balances around the focal.
 const HERO_CARDS: {
   id: string;
   alt: string;
@@ -153,8 +153,11 @@ const HERO_CARDS: {
   // a sliver peeking out from behind Moonbreon's edge.
   { id: "swsh8/269",  alt: "Mew VMAX Alt Art, Fusion Strike",                  tilt: "rotate-[4deg] lg:rotate-[calc(4deg*var(--fan-r,1))]",     arc: "translate-y-2 lg:translate-y-[calc(0.5rem*var(--fan-w,1))]",  depth: 1, gap: "-ml-3 sm:-ml-4 md:-ml-5 lg:ml-[calc(-1.25rem*var(--fan-s,1))]" },
   { id: "swsh11/186", alt: "Giratina V Alt Art, Lost Origin",                  tilt: "rotate-[8deg] lg:rotate-[calc(8deg*var(--fan-r,1))]",     arc: "translate-y-6 lg:translate-y-[calc(1.5rem*var(--fan-w,1))]",  depth: 2 },
-  { id: "swsh7/218",  alt: "Rayquaza VMAX Alt Art, Evolving Skies",            tilt: "rotate-[12deg] lg:rotate-[calc(12deg*var(--fan-r,1))]",   arc: "translate-y-10 lg:translate-y-[calc(2.5rem*var(--fan-w,1))]", depth: 3 },
-  { id: "swsh4/188",  alt: "Pikachu VMAX Rainbow, Vivid Voltage",              tilt: "rotate-[15deg] lg:rotate-[calc(15deg*var(--fan-r,1))]",   arc: "translate-y-14 lg:translate-y-[calc(3.5rem*var(--fan-w,1))]", depth: 3, edge: true, fx: "brightness-[0.45] blur-[1.6px]" },
+  // hero-polish-followups: Rayquaza VMAX removed — as the 4th right-wing card
+  // it rendered almost fully occluded (a sliver, not a fan member; John's
+  // live verdict at ~2100px). Seven cards compose: 3 per wing, mirrored
+  // depth/tilt/arc cadence, no card below the ~40%-visible invariant.
+  { id: "swsh4/188",  alt: "Pikachu VMAX Rainbow, Vivid Voltage",              tilt: "rotate-[12deg] lg:rotate-[calc(12deg*var(--fan-r,1))]",   arc: "translate-y-10 lg:translate-y-[calc(2.5rem*var(--fan-w,1))]", depth: 3, edge: true, fx: "brightness-[0.45] blur-[1.6px]" },
 ];
 
 /** Resolve a HERO_CARDS/VAULT_POCKETS id ("swsh7/215") to its catalog slug.
@@ -258,7 +261,6 @@ function Hero() {
           note). */}
       <div className="relative mx-auto w-full max-w-3xl px-5 pt-6 pb-12 text-center sm:px-8 sm:pt-8 sm:pb-16">
         <p className="inline-flex items-center gap-2 rounded-full border border-foil-cream/15 bg-foil-night-2/80 px-3 py-1 text-xs font-medium text-foil-cream/80 backdrop-blur-sm">
-          <SealMark px={13} />
           <span className="relative flex h-1.5 w-1.5">
             <span className="absolute inline-flex h-full w-full rounded-full bg-foil-accent opacity-75 motion-safe:animate-ping" />
             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-accent" />
@@ -540,7 +542,25 @@ function PullLoop() {
 // The email IS the product — render one, honestly labeled as a sample, with
 // internally consistent numbers (a $162 listing against a $189 30-day sold
 // average is 14% under; a collector checks the math).
+// hero-polish-followups: the mock mirrors what an alert ACTUALLY looks like
+// now (ADR-091 evidence-line shape, ADR-079 text-forward: no logo image, no
+// button — one quiet link), and its dollar figures DERIVE from the committed
+// sold snapshot (the same honest basis the vault/lines surfaces read) — never
+// hand-written literals. Moonbreon is the featured card: it's the fan's focal,
+// and the snapshot guarantees it a real outlier-suppressed sold basis (pinned
+// by the vault-seeds navigation-promise test). The example listing price is
+// computed at the ADR-091 market floor (15% under the 30-day sold average) —
+// the exact threshold a real market-basis alert fires at.
+const MOCK_ALERT_SLUG = "swsh7-215-umbreon-vmax-alt-art";
+
+function usd(cents: number): string {
+  return `$${Math.round(cents / 100).toLocaleString("en-US")}`;
+}
+
 function SampleAlert() {
+  const sold = getSnapshotSold(MOCK_ALERT_SLUG);
+  const soldLine = sold ? usd(sold.soldCents) : null;
+  const listingLine = sold ? usd(sold.soldCents * 0.85) : null;
   return (
     <section className="relative border-t border-foil-cream/10">
       {/* The cream email is the one light object in this section — a faint
@@ -575,33 +595,42 @@ function SampleAlert() {
           </ul>
         </div>
 
-        {/* The sample alert, styled as the artifact it is. */}
+        {/* The sample alert, styled as the artifact it is: text-forward like
+            the real thing — plain wordmark from-row, evidence line, one quiet
+            link. Figures derive from the committed sold snapshot (soft-fail:
+            no snapshot → the copy stays honest without inventing numbers). */}
         <div aria-label="A sample Foil price alert email" className="rounded-2xl border border-foil-cream/12 bg-foil-cream p-1 shadow-[0_20px_60px_-20px_rgba(248,245,240,0.10)]">
           <div className="rounded-xl p-5 sm:p-6">
             <div className="flex items-center gap-2 border-b border-foil-navy/10 pb-3">
-              <SealMark px={16} />
-              <span className="text-sm font-semibold text-foil-navy">Foil</span>
+              <span className="font-wordmark text-sm font-semibold text-foil-navy">Foil</span>
               <span className="ml-auto text-xs text-foil-slate">to: you</span>
             </div>
             <p className="mt-4 text-base font-semibold text-foil-navy">
-              Giratina V (alt art) just hit $162 — 14% under what it usually
-              sells for
+              {listingLine
+                ? `Umbreon VMAX (alt art) dropped to ${listingLine} — 15% under its 30-day sold average`
+                : "Umbreon VMAX (alt art) just dipped below its 30-day sold average"}
             </p>
             <div className="mt-4 flex items-center gap-4">
               <Image
-                src="/hero/swsh11-186.webp"
-                alt="Giratina V Alt Art, Lost Origin"
+                src="/hero/swsh7-215.webp"
+                alt="Umbreon VMAX Alt Art (Moonbreon), Evolving Skies"
                 width={72}
                 height={101}
                 className="w-[72px] shrink-0 rounded-md ring-1 ring-foil-navy/10"
               />
               <div className="min-w-0 text-sm text-foil-slate">
                 <p className="text-foil-navy">
-                  Live listing: <span className="font-semibold">$162</span> · near mint
+                  Live listing:{" "}
+                  <span className="font-semibold">{listingLine ?? "a verified price"}</span> · near
+                  mint
                 </p>
-                <p className="mt-1">Sold for ~$189 on average this month</p>
-                <p className="mt-3 inline-block rounded-lg bg-foil-navy px-3 py-1.5 text-xs font-semibold text-foil-cream">
-                  See the listing →
+                <p className="mt-1">
+                  {soldLine
+                    ? `Sold for ~${soldLine} on average over the last 30 days`
+                    : "Judged against what it really sells for, not asking prices"}
+                </p>
+                <p className="mt-3 text-xs font-semibold text-foil-navy underline decoration-foil-navy/40 underline-offset-4">
+                  See the live listing →
                 </p>
               </div>
             </div>
