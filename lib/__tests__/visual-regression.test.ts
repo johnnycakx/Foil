@@ -726,19 +726,100 @@ test("Vault pockets: the SV-151 starter evolution lines in order, self-hosted ar
 
 test("Sakura ambience: deterministic, motion-safe, layered — mounted on home + /deals + vault (binder-aesthetic-pass)", () => {
   const amb = readFile("components/sakura-ambience.tsx");
-  assert.doesNotMatch(amb, /Math\.random/, "petal specs are deterministic");
-  assert.match(amb, /motion-safe:animate-\[sakura-fall/, "fall is motion-safe gated");
-  assert.match(amb, /motion-safe:animate-\[sakura-sway/, "sway is motion-safe gated");
-  assert.match(amb, /blur-\[2px\]/, "the far depth layer blurs");
-  assert.match(amb, /pointer-events-none/, "petals never intercept input");
-  // Density ladder: /lines (28) > home night (16) > headers (9).
-  // Entry-shaped matches only (the AmbientSpec type union also contains the
-  // literal): spec entries close with `layer: "..." }`.
-  assert.equal((amb.match(/layer: "near" \}/g) ?? []).length, 6, "night mode: 6 near petals");
-  assert.equal((amb.match(/layer: "far" \}/g) ?? []).length, 19, "10 night-far + 9 header-far petals");
+  const petals = readFile("components/lines/sakura-petals.tsx");
+  const shapes = readFile("components/lines/petal-shapes.ts");
+  // Call-form match — the files' own "no Math.random" comments must not trip.
+  for (const [name, src] of [["sakura-ambience", amb], ["sakura-petals", petals], ["petal-shapes", shapes]] as const) {
+    assert.doesNotMatch(src, /Math\.random\s*\(/, `${name}: petal specs are deterministic (seeded builder only)`);
+  }
+  assert.match(petals, /motion-safe:animate-\[sakura-fall/, "fall is motion-safe gated");
+  assert.match(petals, /motion-safe:animate-\[sakura-sway/, "sway is motion-safe gated");
+  assert.match(petals, /blur-\[1px\]/, "the far depth layer blurs (1px — the 2px original cost ~5fps at 4x throttle)");
+  assert.match(amb, /pointer-events-none/, "ambience petals never intercept input");
+  assert.match(petals, /pointer-events-none/, "/lines petals never intercept input");
   assert.match(readFile("app/(site)/page.tsx"), /<SakuraAmbience mode="night"/, "homepage mounts the night ambience");
   assert.match(readFile("app/(site)/deals/page.tsx"), /<SakuraAmbience mode="header"/, "/deals mounts the header ambience");
   assert.match(readFile("app/(site)/w/[token]/page.tsx"), /<SakuraAmbience mode="header"/, "the vault mounts the header ambience");
+});
+
+test("Petal fidelity: one shape source of truth + density ladder + min size (petal-fidelity-pass)", () => {
+  const shapes = readFile("components/lines/petal-shapes.ts");
+  const petals = readFile("components/lines/sakura-petals.tsx");
+  const amb = readFile("components/sakura-ambience.tsx");
+
+  // Canonical geometry: the classic notched-teardrop + blossom petal paths.
+  const classic = shapes.match(/classic:\s*\n?\s*"(M[^"]+)"/)?.[1];
+  const curl = shapes.match(/curl:\s*"(M[^"]+)"/)?.[1];
+  const slender = shapes.match(/slender:\s*\n?\s*"(M[^"]+)"/)?.[1];
+  const blossom = shapes.match(/BLOSSOM_PETAL_PATH\s*=\s*\n?\s*"(M[^"]+)"/)?.[1];
+  assert.ok(classic && curl && slender && blossom, "petal-shapes.ts exports the three petal paths + blossom petal");
+
+  // Every petal consumer derives from the ONE module — never a second
+  // implementation again (the pre-pass state was THREE: the React path, a
+  // border-radius blob in the lines OG, and a stale path in the favicon).
+  assert.match(petals, /from "\.\/petal-shapes"/, "sakura-petals renders the shared shapes");
+  assert.match(amb, /from "\.\/lines\/petal-shapes"/, "sakura-ambience builds fields from the shared module");
+  assert.match(
+    readFile("app/(site)/lines/[pokemon]/opengraph-image.tsx"),
+    /petalMarkup.*from "@\/components\/lines\/petal-shapes"|from "@\/components\/lines\/petal-shapes"/,
+    "the lines OG renders shared-shape petals (no border-radius blobs)",
+  );
+  assert.doesNotMatch(readFile("app/(site)/lines/[pokemon]/opengraph-image.tsx"), /borderRadius: "70% 30%/, "the OG blob petal is retired");
+  for (const asset of ["public/favicon.svg", "public/icon.svg"]) {
+    assert.ok(readFile(asset).includes(classic), `${asset} carries the canonical classic petal path`);
+  }
+  // The banner artifact carries ONE synced copy of the geometry (it can't
+  // import TS) — byte-identical or this trips.
+  const banner = readFile("design-loop/banner/banner.html");
+  for (const [label, p] of [["classic", classic], ["curl", curl], ["slender", slender], ["blossom", blossom]] as const) {
+    assert.ok(banner.includes(p!), `banner.html ${label} path is byte-synced to petal-shapes.ts`);
+  }
+
+  // Min rendered size: below ~9px a petal is a dot, whatever the geometry.
+  assert.match(shapes, /MIN_PETAL_PX = 9/, "the 9px floor is pinned");
+  assert.match(petals, /Math\.max\(size, MIN_PETAL_PX\)/, "the Petal component enforces the floor");
+  assert.match(shapes, /Math\.max\(Math\.round\(lerp\(rand\(\), zone\.size\)\), MIN_PETAL_PX\)/, "the field builder enforces the floor");
+
+  // Density ladder (petal-fidelity-pass: 3x, ladder preserved):
+  // /lines 78 (flagship) > homepage 48 > headers 30.
+  const sumCounts = (src: string, constName: string) => {
+    const block = src.slice(src.indexOf(constName), src.indexOf("];", src.indexOf(constName)));
+    return (block.match(/count: (\d+)/g) ?? []).reduce((a, m) => a + Number(m.slice(7)), 0);
+  };
+  assert.equal(sumCounts(petals, "LINES_ZONES"), 84, "/lines runs 84 petals (full 3x — the quantized-keyframe fix paid for it)");
+  assert.equal(sumCounts(amb, "NIGHT_ZONES"), 48, "homepage runs 48 petals (3x the pre-pass 16)");
+  assert.equal(sumCounts(amb, "HEADER_ZONES"), 30, "headers run 30 petals (3x the pre-pass 9-10)");
+  // Headers keep a small SHARP minority — a far-only field on charcoal reads
+  // as smudges (the pink-dot bug); five near petals anchor the motif.
+  const headerBlock = amb.slice(amb.indexOf("HEADER_ZONES"), amb.indexOf("];", amb.indexOf("HEADER_ZONES")));
+  assert.match(headerBlock, /layer: "near"/, "headers carry a sharp anchor minority");
+
+  // Blossoms stay SPARING: 1-2 per viewport max, none on headers.
+  const countBlossoms = (src: string, constName: string) => {
+    const idx = src.indexOf(constName);
+    if (idx === -1) return 0;
+    const block = src.slice(idx, src.indexOf("];", idx));
+    return (block.match(/\{ left:/g) ?? []).length;
+  };
+  assert.equal(countBlossoms(petals, "LINES_BLOSSOMS"), 2, "/lines: exactly 2 blossoms");
+  assert.equal(countBlossoms(amb, "NIGHT_BLOSSOMS"), 1, "homepage: exactly 1 blossom");
+  assert.doesNotMatch(headerBlock, /blossom/i, "headers carry no blossom");
+  assert.match(amb, /<PetalField petals=\{HEADER_PETALS\} tone="night" \/>/, "header mode passes no blossoms");
+
+  // Perf contract: the sakura keyframes are QUANTIZED LITERALS. A var()
+  // inside a keyframe forces the animation onto the main thread (style
+  // recalc every frame) — at 3x density that measured ~54fps on a 4x-CPU
+  // throttle; literal keyframes composite and restored 60+.
+  const css = readFile("app/globals.css");
+  for (const v of ["a", "b", "c", "d"]) {
+    for (const kind of ["fall", "sway"]) {
+      const name = `@keyframes sakura-${kind}-${v}`;
+      const start = css.indexOf(name);
+      assert.ok(start > -1, `${name} exists`);
+      const body = css.slice(start, css.indexOf("\n}", start));
+      assert.doesNotMatch(body, /var\(/, `${name} keyframe body is var()-free (compositor-friendly)`);
+    }
+  }
 });
 
 test("Nav: /start is a first-class item; 'Host a machine' is footer-only (fable-design-overhaul §1)", () => {
@@ -853,7 +934,9 @@ test("Sakura petals: motion lives ONLY in motion-safe: — reduced-motion users 
   // design-round3-fixes §3: real petal silhouettes (SVG path) in two depth
   // layers (far layer blurred), not the old 3-4px border-radius dots.
   assert.match(src, /<path/, "petals must be real SVG petal shapes");
-  assert.match(src, /blur-\[2px\]/, "the far petal layer must carry the depth blur");
+  // petal-fidelity-pass: 2px → 1px (the 2px blur cost ~5fps at 4x CPU
+  // throttle across the 3x-density field; 1px keeps the depth read).
+  assert.match(src, /blur-\[1px\]/, "the far petal layer must carry the depth blur");
 });
 
 test("Line page: the sold-vs-ask pair is DRAWN — spread chip only on good buys, designed pending chip, era headers (design-round3-fixes §2 + §6)", () => {

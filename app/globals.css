@@ -228,37 +228,57 @@ body {
   }
 }
 
-/* Sakura drift (ADR-095, reshaped design-round3-fixes §3): transform-only,
-   GPU-cheap. Fall is viewport-relative (the old own-box % barely moved a 10px
-   petal — the "screen dust" bug); sway/rotation lives on a nested layer so the
-   two compose. Both are applied ONLY via motion-safe: utilities. */
-/* Natural fall (lines-petals-and-type): petals never drop straight down —
-   the fall carries a per-petal breeze drift (--breeze, net horizontal
-   displacement over the descent) while the nested sway layer oscillates with
-   per-petal amplitude (--amp) and rotation wobble (--wob). All transform/
-   opacity, all driven by CSS custom properties set per petal — no JS loop. */
-@keyframes sakura-fall {
-  0% {
-    transform: translateY(-6vh) translateX(0);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  68% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(56vh) translateX(var(--breeze, 3vw));
-    opacity: 0;
-  }
+/* Sakura drift (ADR-095, reshaped design-round3-fixes §3): transform-only.
+   Fall is viewport-relative (the old own-box % barely moved a 10px petal —
+   the "screen dust" bug); sway/rotation lives on a nested layer so the two
+   compose. Both are applied ONLY via motion-safe: utilities. */
+/* QUANTIZED variants (petal-fidelity-pass): the old single keyframe pair
+   read per-petal breeze/amp/wobble from CSS custom properties INSIDE the
+   keyframes — var() in a keyframe forces the animation onto the main thread
+   (style recalc every frame), and at 3x density that cost ~55fps on a 4x-CPU
+   throttle. Four fall breezes x four sway amplitudes as LITERAL keyframes
+   composite off the main thread; per-petal duration/delay (var() in the
+   animation SHORTHAND is resolved once, so it stays compositor-friendly) +
+   size/rotation/tint/shape keep no two petals alike. Measured: /lines went
+   ~54fps -> 60+ at FULL density after this change alone. */
+@keyframes sakura-fall-a {
+  0% { transform: translateY(-6vh) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  68% { opacity: 1; }
+  100% { transform: translateY(56vh) translateX(2.5vw); opacity: 0; }
+}
+@keyframes sakura-fall-b {
+  0% { transform: translateY(-6vh) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  68% { opacity: 1; }
+  100% { transform: translateY(56vh) translateX(4vw); opacity: 0; }
+}
+@keyframes sakura-fall-c {
+  0% { transform: translateY(-6vh) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  68% { opacity: 1; }
+  100% { transform: translateY(56vh) translateX(5.5vw); opacity: 0; }
+}
+@keyframes sakura-fall-d {
+  0% { transform: translateY(-6vh) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  68% { opacity: 1; }
+  100% { transform: translateY(56vh) translateX(7vw); opacity: 0; }
 }
 
-@keyframes sakura-sway {
-  from {
-    transform: translateX(calc(var(--amp, 8px) * -1)) rotate(calc(var(--wob, 15deg) * -1));
-  }
-  to {
-    transform: translateX(var(--amp, 8px)) rotate(var(--wob, 15deg));
-  }
+@keyframes sakura-sway-a {
+  from { transform: translateX(-6px) rotate(-9deg); }
+  to { transform: translateX(6px) rotate(9deg); }
+}
+@keyframes sakura-sway-b {
+  from { transform: translateX(-9px) rotate(-13deg); }
+  to { transform: translateX(9px) rotate(13deg); }
+}
+@keyframes sakura-sway-c {
+  from { transform: translateX(-13px) rotate(-18deg); }
+  to { transform: translateX(13px) rotate(18deg); }
+}
+@keyframes sakura-sway-d {
+  from { transform: translateX(-16px) rotate(-24deg); }
+  to { transform: translateX(16px) rotate(24deg); }
 }

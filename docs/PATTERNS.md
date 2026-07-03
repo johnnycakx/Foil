@@ -6,6 +6,16 @@ Append new entries at the top. When an entry is promoted, leave it here with a `
 
 ---
 
+## I-011 — var() inside a CSS keyframe forces the animation onto the main thread; quantize to literal keyframe variants
+
+**Spotted:** petal-fidelity-pass, 2026-07-02. The sakura drift rig fed per-petal variety (breeze/amplitude/wobble) through CSS custom properties referenced INSIDE `@keyframes` (`translateX(var(--breeze))`). Elegant authoring — one keyframe pair, N petals — but a keyframe that references var() cannot be resolved ahead of time, so the browser re-evaluates it in style recalc EVERY FRAME on the main thread for EVERY animated element. Invisible at 28 petals; at 3x density (84 petals × 2 nested animations) a 4x-CPU-throttled scroll measured ~50-55fps, and a reduced-motion baseline of 240fps pinned the cost to the animation rig itself, not the page.
+
+**The general fix.** Quantize: a small set of LITERAL keyframe variants (four fall breezes × four sway amplitudes) that the compositor can run off the main thread, with per-element variety carried by properties that stay compositor-safe — `animation-duration`/`animation-delay` via var() in the animation SHORTHAND are resolved once at style time and are fine; size/rotation/opacity/shape carry the rest. 4×4 variants + unique duration/delay per element ≈ visually indistinguishable from fully-continuous variety. Homepage scroll went 63 → 76fps at 4x throttle from this change alone. Corollary for profiling: measure the real device matrix, not a synthetic worst case — a phone-class CPU never renders the desktop layout, so "1440px at 4x throttle" is a layout/CPU combination no user has.
+
+**Promotion trigger.** Second surface that adopts the quantized-keyframe recipe for an N-element ambient animation → promote to a dedicated ADR.
+
+---
+
 ## I-010 — Committed data artifacts need DATA-level tests; duplicated parsers WILL drift
 
 **Spotted:** perf-and-data-foundation goal, 2026-07-01 ([ADR-089](DECISIONS.md#adr-089--baked-first-card-rendering--the-one-parser-bake-fix-perf-and-data-foundation), incident record [R-061](RISKS.md)).

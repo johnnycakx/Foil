@@ -10,6 +10,7 @@ import { ImageResponse } from "next/og";
 import { getLineConfig, LAUNCH_LINES } from "@/lib/lines/config";
 import { loadOgFonts, OgWordmark, OG_BODY_FONT } from "@/lib/og/brand";
 import { getLineData } from "@/lib/lines/data";
+import { blossomMarkup, petalMarkup, type PetalShape } from "@/components/lines/petal-shapes";
 
 export const runtime = "nodejs";
 export const size = { width: 1200, height: 630 };
@@ -84,28 +85,41 @@ export default async function Image({ params }: { params: Promise<{ pokemon: str
             display: "flex",
           }}
         />
-        {/* petals */}
-        {[
-          { l: 90, t: 70, s: 26 },
-          { l: 640, t: 40, s: 20 },
-          { l: 520, t: 470, s: 22 },
-          { l: 200, t: 520, s: 18 },
-        ].map((p, i) => (
-          <div
+        {/* petals — the shared shape library (petal-fidelity-pass: a static
+            share card needs MORE shape fidelity than the live page, so the
+            real notched silhouettes + gradient, never a border-radius blob).
+            Satori can't render SVG children, so each petal ships as a
+            data-URI <img>. */}
+        {(
+          [
+            { l: 306, t: 132, s: 32, r: -24, shape: "classic", o: 0.85 },
+            { l: 640, t: 40, s: 26, r: 40, shape: "curl", o: 0.75 },
+            { l: 520, t: 466, s: 28, r: 15, shape: "classic", o: 0.75 },
+            { l: 200, t: 518, s: 24, r: -52, shape: "slender", o: 0.65 },
+            { l: 56, t: 420, s: 22, r: 66, shape: "classic", o: 0.6 },
+          ] as const
+        ).map((p, i) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             key={i}
-            style={{
-              position: "absolute",
-              left: p.l,
-              top: p.t,
-              width: p.s,
-              height: p.s * 0.82,
-              background: SAKURA,
-              opacity: 0.55,
-              borderRadius: "70% 30% 62% 38% / 62% 40% 60% 38%",
-              display: "flex",
-            }}
+            src={`data:image/svg+xml,${encodeURIComponent(
+              petalMarkup({ shape: p.shape as PetalShape, size: p.s, rot: p.r, tone: "day", id: `og-p${i}` }),
+            )}`}
+            width={p.s}
+            height={p.s}
+            alt=""
+            style={{ position: "absolute", left: p.l, top: p.t, opacity: p.o }}
           />
         ))}
+        {/* one five-petal blossom (the sparing accent) anchoring the motif */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`data:image/svg+xml,${encodeURIComponent(blossomMarkup({ size: 34, rot: 14, tone: "day", id: "og-bl" }))}`}
+          width={34}
+          height={37}
+          alt=""
+          style={{ position: "absolute", left: 596, top: 88, opacity: 0.8 }}
+        />
 
         {/* LEFT — wordmark + headline */}
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", padding: 72, width: hasArt ? 660 : "100%" }}>
