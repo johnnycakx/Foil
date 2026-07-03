@@ -30,6 +30,17 @@ const nextConfig: NextConfig = {
   // ride-alongs Session 39 because the failure is blocking the visual-
   // identity deploy.
   staticPageGenerationTimeout: 300,
+  // design-loop/ is screenshot artifacts + local tooling — never read by any
+  // route at runtime, yet output file tracing was sweeping ALL of it (442
+  // files incl. the 246MB gallery) into every serverless function bundle.
+  // The petal-fidelity-pass gallery (+50MB) tipped api/cron/engagement-brief
+  // from just-under-250MB to 281MB uncompressed and Vercel refused the
+  // 4edbce2 deploy. Keys are route globs; both forms so every route matches.
+  // Values resolve from the project root.
+  outputFileTracingExcludes: {
+    "/*": ["./design-loop/**"],
+    "*": ["./design-loop/**"],
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "cdn.poketrace.com" },
