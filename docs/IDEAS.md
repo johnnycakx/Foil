@@ -20,6 +20,19 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 
 ---
 date: 2026-07-02
+category: growth
+status: captured
+---
+## Seeded gift vaults as a repeatable creator play
+
+The eve vault (ADR-100) generalizes: for any creator with a known chase list, mint a seeded vault (config entry + one tweet reply), dedication chip + their grails + smart targets, claimable by them, fork CTA for their audience. Marginal cost per gift is one lib/vault-seeds.ts entry; the machinery (token context, claim, funnel, guards) is built. Candidate follow-ons: the same six-pocket format for binder-community micro-influencers; a "request a vault" reply hook.
+
+**Context:** eve-vault build — the fork mechanic (`src=eve-vault-fork`) makes each gift self-distributing; measure via subscriber-sources before scaling.
+
+---
+
+---
+date: 2026-07-02
 category: product
 status: captured
 ---

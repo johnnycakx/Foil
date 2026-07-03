@@ -122,3 +122,93 @@ export function buildVaultUrl(email: string, opts: { baseUrl?: string; now?: () 
   const base = (opts.baseUrl ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
   return `${base}/w/${encodeURIComponent(token)}`;
 }
+
+// ---------------------------------------------------------------------------
+// SEEDED vault tokens (eve-vault). A seeded vault is a pre-made GIFT vault
+// that exists before any email: the token carries a vault ID (a slug into
+// lib/vault-seeds.ts), not an email. Claiming it (app/actions/seeded-vault.ts)
+// binds an email via the normal /start funnel machinery.
+//
+// Own context string → cryptographic audience separation from BOTH the email
+// vault token and the unsubscribe token: a seeded token can never verify as
+// an email vault token (and vice versa) because the context is inside the
+// MAC. Same secret, same 404-on-failure posture at the page.
+// ---------------------------------------------------------------------------
+
+/** Context prefix for seeded-vault tokens. Never reuse for another type. */
+const SEEDED_VAULT_CONTEXT = "foil-seeded-vault.v1|";
+
+type SeededVaultPayload = {
+  /** Seeded vault id (key into SEEDED_VAULTS). */
+  v: string;
+  /** Issued-at, unix seconds. No TTL — the link lives in a tweet. */
+  iat: number;
+};
+
+function signSeeded(payloadBytes: Buffer, secret: string): Buffer {
+  return createHmac("sha256", secret)
+    .update(SEEDED_VAULT_CONTEXT)
+    .update(payloadBytes)
+    .digest();
+}
+
+/** Mint a seeded-vault token for a vault id. Null when the secret is missing. */
+export function mintSeededVaultToken(vaultId: string, opts: { now?: () => Date } = {}): string | null {
+  const secret = getSecret();
+  if (!secret) return null;
+  const trimmed = vaultId.trim().toLowerCase();
+  if (!trimmed) return null;
+  const payload: SeededVaultPayload = {
+    v: trimmed,
+    iat: Math.floor((opts.now?.() ?? new Date()).getTime() / 1000),
+  };
+  const payloadBytes = Buffer.from(JSON.stringify(payload), "utf8");
+  return `${base64urlEncode(payloadBytes)}.${base64urlEncode(signSeeded(payloadBytes, secret))}`;
+}
+
+export type SeededVaultVerifyResult =
+  | { ok: true; vaultId: string; issuedAt: number }
+  | { ok: false; reason: "missing_secret" | "malformed" | "bad_signature" | "bad_payload" };
+
+/** Verify a seeded-vault token. Constant-time compare; the page maps every
+ *  failure to the same uniform 404 as the email-vault path. */
+export function verifySeededVaultToken(token: string): SeededVaultVerifyResult {
+  const secret = getSecret();
+  if (!secret) return { ok: false, reason: "missing_secret" };
+  if (!token || typeof token !== "string") return { ok: false, reason: "malformed" };
+  const dot = token.indexOf(".");
+  if (dot <= 0 || dot === token.length - 1) return { ok: false, reason: "malformed" };
+
+  let payloadBytes: Buffer;
+  let receivedSig: Buffer;
+  try {
+    payloadBytes = base64urlDecode(token.slice(0, dot));
+    receivedSig = base64urlDecode(token.slice(dot + 1));
+  } catch {
+    return { ok: false, reason: "malformed" };
+  }
+
+  const expectedSig = signSeeded(payloadBytes, secret);
+  if (expectedSig.length !== receivedSig.length) return { ok: false, reason: "bad_signature" };
+  if (!timingSafeEqual(expectedSig, receivedSig)) return { ok: false, reason: "bad_signature" };
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(payloadBytes.toString("utf8"));
+  } catch {
+    return { ok: false, reason: "bad_payload" };
+  }
+  if (!parsed || typeof parsed !== "object") return { ok: false, reason: "bad_payload" };
+  const obj = parsed as Record<string, unknown>;
+  if (typeof obj.v !== "string" || !obj.v) return { ok: false, reason: "bad_payload" };
+  if (typeof obj.iat !== "number" || !Number.isFinite(obj.iat)) return { ok: false, reason: "bad_payload" };
+  return { ok: true, vaultId: obj.v, issuedAt: obj.iat };
+}
+
+/** Absolute seeded-vault URL for a vault id, or null when it can't be minted. */
+export function buildSeededVaultUrl(vaultId: string, opts: { baseUrl?: string; now?: () => Date } = {}): string | null {
+  const token = mintSeededVaultToken(vaultId, { now: opts.now });
+  if (!token) return null;
+  const base = (opts.baseUrl ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  return `${base}/w/${encodeURIComponent(token)}`;
+}

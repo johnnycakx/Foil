@@ -412,6 +412,18 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 - **Accuracy-pass closure gate:** the top-10-by-value end-to-end spot-check is now a required step for this surface (it's what caught the `cents`/`soldCents` field-name desync that had silently blanked every sold figure — a passing build did not).
 - **Residual:** the snapshot is point-in-time, labeled "as of <date>"; refresh = re-run the seed script. A scheduled refresh is the follow-up if lines multiply.
 
+## R-067 — Seeded gift vault claim-squatting (the tweeted link is publicly claimable, first-come)
+
+**Severity:** Low (embarrassing, not damaging: the gift moment is dented if a stranger claims eve's vault before she does; no data is exposed and it's founder-recoverable in one delete)
+
+**Status:** `monitoring`. Inherent to the eve-vault design ([ADR-100](DECISIONS.md#adr-100--seeded-gift-vaults-pre-made-claimable-vaults-on-a-second-token-context-eve-vault)) — "the first email submitted CLAIMS the vault" is the activation mechanic, and the link ships in a public reply thread. A squatter gains nothing sensitive (the page shows only their own masked email; alerts go to their inbox; the claimant's personal vault link travels by email only), but the dedication would be watching the wrong inbox.
+
+**The risk.** Anyone in the thread can claim before the recipient does. Probability is highest in the minutes after the reply posts, before eve sees it.
+
+**Trigger to escalate.** A seeded vault claimed by an email the founder can't attribute to the intended recipient (check: `select * from seeded_vault_claims` + the `src`-tagged watchlists rows).
+
+**Mitigation / recovery.** (1) Timing: John sends the reply when eve is likely active (she asked the question — she's primed to act first); stronger variant per the /security-review M-1 recommendation: DM her the link a beat BEFORE the public reply so she has the head start. (2) Recovery: delete the `seeded_vault_claims` row for the slug + the squatter's `src='eve-vault'` watchlists rows; the vault re-arms and is claimable again. (3) If it ever matters at scale (creator-gift play, IDEAS), add a claim code delivered in DM instead of first-come — deliberately NOT built for v1.
+
 ## How to log a new risk
 
 1. Next available ID (`R-NNN`, monotonically increasing).

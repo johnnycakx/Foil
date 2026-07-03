@@ -360,3 +360,29 @@ test("bio link /x is public and 302s to the homepage with bio attribution (x-pro
   assert.equal(r.status, 302, "temporary 302, never 301/308");
   assert.equal(r.headers.get("location"), "https://foiltcg.com/?utm_source=x&utm_medium=bio");
 });
+
+test("/eve is public and 302s to the seeded gift vault with eve UTMs; soft-falls to /start when the secret is missing (eve-vault)", async () => {
+  // Lives in the SAME reply thread as /umbreon — permanence stakes identical.
+  assert.equal(isPublicRoute("/eve"), true);
+  assert.equal(isPublicRoute("/evex"), false, "exact rule - no stem bleed");
+  const { GET } = await import("../../app/eve/route.ts");
+
+  const prev = process.env.UNSUBSCRIBE_TOKEN_SECRET;
+  try {
+    // With the secret: mint + 302 to /w/<seeded-token> carrying the UTMs.
+    process.env.UNSUBSCRIBE_TOKEN_SECRET = "test-secret-key-that-is-long-enough";
+    const r = GET(new Request("https://foiltcg.com/eve"));
+    assert.equal(r.status, 302, "temporary 302, never 301/308");
+    const loc = r.headers.get("location") ?? "";
+    assert.match(loc, /^https:\/\/foiltcg\.com\/w\/.+\?utm_source=x&utm_medium=eve$/, "seeded vault + UTMs");
+
+    // Without the secret: a tweeted link must NEVER 404 — soft-fall to /start.
+    delete process.env.UNSUBSCRIBE_TOKEN_SECRET;
+    const fallback = GET(new Request("https://foiltcg.com/eve"));
+    assert.equal(fallback.status, 302);
+    assert.match(fallback.headers.get("location") ?? "", /\/start\?/, "soft-fall keeps the link alive");
+  } finally {
+    if (prev === undefined) delete process.env.UNSUBSCRIBE_TOKEN_SECRET;
+    else process.env.UNSUBSCRIBE_TOKEN_SECRET = prev;
+  }
+});

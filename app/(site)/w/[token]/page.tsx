@@ -21,7 +21,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { verifyVaultToken } from "@/lib/vault-token";
+import { verifySeededVaultToken, verifyVaultToken } from "@/lib/vault-token";
+import { getSeededVault } from "@/lib/vault-seeds";
+import { SeededVaultView } from "./seeded-vault-view";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { CARD_CATALOG, getCatalogEntry } from "@/lib/cards/catalog";
 import { getBakedCardMetadata } from "@/lib/cards/sdk";
@@ -73,12 +75,21 @@ export default async function VaultPage({
   searchParams,
 }: {
   params: Promise<{ token: string }>;
-  searchParams: Promise<{ p?: string }>;
+  searchParams: Promise<{ p?: string; c?: string }>;
 }) {
   const { token } = await params;
-  const { p } = await searchParams;
-  const verified = verifyVaultToken(decodeURIComponent(token));
-  if (!verified.ok) notFound();
+  const { p, c } = await searchParams;
+  const decoded = decodeURIComponent(token);
+  const verified = verifyVaultToken(decoded);
+  if (!verified.ok) {
+    // Not an email-vault token — maybe a SEEDED gift vault (eve-vault,
+    // ADR-100; context-separated token, lib/vault-token.ts). Both failing
+    // renders the same uniform 404 as before.
+    const seeded = verifySeededVaultToken(decoded);
+    const seed = seeded.ok ? getSeededVault(seeded.vaultId) : null;
+    if (!seeded.ok || !seed) notFound();
+    return <SeededVaultView vault={seed} token={decoded} claimFlag={c} />;
+  }
   const email = verified.email;
 
   const admin = supabaseAdmin();

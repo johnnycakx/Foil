@@ -62,6 +62,10 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // The @FoilTCG bio link (x-profile-banner addendum) — same live-link
   // permanence stakes as the tweet shortcuts above.
   { kind: "exact", path: "/x" },
+  // Eve's seeded gift vault (eve-vault, ADR-100) — mints the seeded token at
+  // request time and 302s to /w/<token>. Lives in the SAME reply thread as
+  // /umbreon; same permanence stakes.
+  { kind: "exact", path: "/eve" },
 
   // Auth surface — login form (exact) + magic-link callback tree. /auth/*
   // MUST be public or the magic-link redirect loops back through the auth

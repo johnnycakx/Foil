@@ -104,7 +104,11 @@ test("/w is PUBLIC (token IS the auth) — segment-scoped so /whatever stays gat
 
 test("vault page: bad token → notFound(); private URL space is noindexed (structural)", () => {
   const src = read("app/(site)/w/[token]/page.tsx");
-  assert.match(src, /if \(!verified\.ok\) notFound\(\)/);
+  // Since eve-vault (ADR-100) the page tries the SEEDED context after the
+  // email context; a token failing BOTH still renders the same uniform 404
+  // (the URL space stays indistinguishable from not-found for a guesser).
+  assert.match(src, /if \(!seeded\.ok \|\| !seed\) notFound\(\)/);
+  assert.match(src, /verifySeededVaultToken/);
   assert.match(src, /robots: \{ index: false/);
   assert.match(src, /force-dynamic/);
 });
