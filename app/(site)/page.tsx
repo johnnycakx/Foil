@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -73,28 +74,55 @@ export default async function Home() {
 // the light source); 1–3 step progressively smaller, more rotated, dimmer and
 // softer toward the edges (depth of field), with z-order stacking down from
 // the center. Widths are per-slot so the silhouette curves.
+// hero-fan-widescreen-fix: at lg+ every composition dimension derives from the
+// fluid scale vars defined on the fan container (see FAN_FLUID_VARS) —
+// `--fan-s` (card scale + overlap + floor), `--fan-w` (wing spread: arc
+// amplitude), `--fan-r` (rotation cadence, damped off --fan-w). All three
+// clamp to 1 at ≤1440px, so 1024–1440 renders byte-identical to the tuned
+// composition and everything below lg is untouched. Above 1440 the fan grows
+// and OPENS continuously, capped where the composition stops improving.
 const DEPTH_SLOTS: Record<number, { size: string; z: string; fx: string }> = {
   0: {
-    size: "w-32 sm:w-40 md:w-48 lg:w-[15rem]",
+    size: "w-32 sm:w-40 md:w-48 lg:w-[calc(15rem*var(--fan-s,1))]",
     z: "z-40",
     fx: "",
   },
   1: {
-    size: "w-[6.5rem] sm:w-32 md:w-[9.5rem] lg:w-44",
+    size: "w-[6.5rem] sm:w-32 md:w-[9.5rem] lg:w-[calc(11rem*var(--fan-s,1))]",
     z: "z-30",
     fx: "brightness-[0.92]",
   },
   2: {
-    size: "w-24 sm:w-28 md:w-32 lg:w-40",
+    size: "w-24 sm:w-28 md:w-32 lg:w-[calc(10rem*var(--fan-s,1))]",
     z: "z-20",
     fx: "brightness-[0.8] blur-[0.6px]",
   },
   3: {
-    size: "w-20 sm:w-24 md:w-28 lg:w-[8.5rem]",
+    size: "w-20 sm:w-24 md:w-28 lg:w-[calc(8.5rem*var(--fan-s,1))]",
     z: "z-10",
     fx: "brightness-[0.65] blur-[1.2px]",
   },
 };
+
+// The fluid composition vars (hero-fan-widescreen-fix). Continuous, no
+// breakpoints: ≤1440px all three resolve to 1 (sub-1440 pinned identical);
+// above, the fan scales and the wings spread slightly faster so the hand
+// OPENS as it grows — capped at 1.34 / 1.45 around ~2200px, the width where
+// the composition stops improving (judged on the shot matrix, not guessed).
+// Rotation rides --fan-w damped to 55% so edge cards lean without tipping.
+//
+// tan(atan2(a, b)) is exactly a/b as a unitless NUMBER — the only way CSS
+// lets two lengths divide into a number factor (naive `1 + (100vw - X)/N`
+// is type-invalid: number + length nukes every dependent declaration to
+// unset, which rendered the fan as giant flat naturals). Baseline-2023
+// functions; every consumer carries a `var(--fan-*, 1)` fallback so an old
+// browser that drops these declarations gets today's 1440 composition, not
+// a broken one.
+const FAN_FLUID_VARS = {
+  "--fan-s": "calc(1 + 0.34 * clamp(0, tan(atan2(100vw - 1440px, 884px)), 1))",
+  "--fan-w": "calc(1 + 0.45 * clamp(0, tan(atan2(100vw - 1440px, 765px)), 1))",
+  "--fan-r": "calc(1 + (var(--fan-w, 1) - 1) * 0.55)",
+} as CSSProperties;
 
 // Pre-send-coherence §3+§4: the fan is SYMMETRIC (three cards per wing,
 // mirrored tilt/arc cadence, edges dimmed EQUALLY) and every card is a real
@@ -115,18 +143,18 @@ const HERO_CARDS: {
   gap?: string;
   fx?: string;
 }[] = [
-  { id: "base1/4",    alt: "Charizard, Base Set (vintage anchor)",             tilt: "rotate-[-12deg]", arc: "translate-y-10", depth: 3, edge: true },
-  { id: "swsh35/74",  alt: "Charizard VMAX Rainbow Rare, Champions Path",      tilt: "rotate-[-8deg]",  arc: "translate-y-6",  depth: 2 },
-  { id: "swsh12/186", alt: "Lugia V Alt Art, Silver Tempest",                  tilt: "rotate-[-4deg]",  arc: "translate-y-2",  depth: 1 },
+  { id: "base1/4",    alt: "Charizard, Base Set (vintage anchor)",             tilt: "rotate-[-12deg] lg:rotate-[calc(-12deg*var(--fan-r,1))]", arc: "translate-y-10 lg:translate-y-[calc(2.5rem*var(--fan-w,1))]", depth: 3, edge: true },
+  { id: "swsh35/74",  alt: "Charizard VMAX Rainbow Rare, Champions Path",      tilt: "rotate-[-8deg] lg:rotate-[calc(-8deg*var(--fan-r,1))]",   arc: "translate-y-6 lg:translate-y-[calc(1.5rem*var(--fan-w,1))]",  depth: 2 },
+  { id: "swsh12/186", alt: "Lugia V Alt Art, Silver Tempest",                  tilt: "rotate-[-4deg] lg:rotate-[calc(-4deg*var(--fan-r,1))]",   arc: "translate-y-2 lg:translate-y-[calc(0.5rem*var(--fan-w,1))]",  depth: 1 },
   // Moonbreon is the FOCAL card — the community's grail leads the fan at
   // ~1.35x its neighbors with the sakura rim-glow (the "whoa" of the fold).
-  { id: "swsh7/215",  alt: "Umbreon VMAX Alt Art (Moonbreon), Evolving Skies", tilt: "rotate-[0.5deg]", arc: "-translate-y-1", depth: 0 },
+  { id: "swsh7/215",  alt: "Umbreon VMAX Alt Art (Moonbreon), Evolving Skies", tilt: "rotate-[0.5deg]", arc: "-translate-y-1 lg:translate-y-[calc(-0.25rem*var(--fan-w,1))]", depth: 0 },
   // Right of the focal: extra clearance so Mew is a legible fan member, never
   // a sliver peeking out from behind Moonbreon's edge.
-  { id: "swsh8/269",  alt: "Mew VMAX Alt Art, Fusion Strike",                  tilt: "rotate-[4deg]",   arc: "translate-y-2",  depth: 1, gap: "-ml-3 sm:-ml-4 md:-ml-5" },
-  { id: "swsh11/186", alt: "Giratina V Alt Art, Lost Origin",                  tilt: "rotate-[8deg]",   arc: "translate-y-6",  depth: 2 },
-  { id: "swsh7/218",  alt: "Rayquaza VMAX Alt Art, Evolving Skies",            tilt: "rotate-[12deg]",  arc: "translate-y-10", depth: 3 },
-  { id: "swsh4/188",  alt: "Pikachu VMAX Rainbow, Vivid Voltage",              tilt: "rotate-[15deg]",  arc: "translate-y-14", depth: 3, edge: true, fx: "brightness-[0.45] blur-[1.6px]" },
+  { id: "swsh8/269",  alt: "Mew VMAX Alt Art, Fusion Strike",                  tilt: "rotate-[4deg] lg:rotate-[calc(4deg*var(--fan-r,1))]",     arc: "translate-y-2 lg:translate-y-[calc(0.5rem*var(--fan-w,1))]",  depth: 1, gap: "-ml-3 sm:-ml-4 md:-ml-5 lg:ml-[calc(-1.25rem*var(--fan-s,1))]" },
+  { id: "swsh11/186", alt: "Giratina V Alt Art, Lost Origin",                  tilt: "rotate-[8deg] lg:rotate-[calc(8deg*var(--fan-r,1))]",     arc: "translate-y-6 lg:translate-y-[calc(1.5rem*var(--fan-w,1))]",  depth: 2 },
+  { id: "swsh7/218",  alt: "Rayquaza VMAX Alt Art, Evolving Skies",            tilt: "rotate-[12deg] lg:rotate-[calc(12deg*var(--fan-r,1))]",   arc: "translate-y-10 lg:translate-y-[calc(2.5rem*var(--fan-w,1))]", depth: 3 },
+  { id: "swsh4/188",  alt: "Pikachu VMAX Rainbow, Vivid Voltage",              tilt: "rotate-[15deg] lg:rotate-[calc(15deg*var(--fan-r,1))]",   arc: "translate-y-14 lg:translate-y-[calc(3.5rem*var(--fan-w,1))]", depth: 3, edge: true, fx: "brightness-[0.45] blur-[1.6px]" },
 ];
 
 /** Resolve a HERO_CARDS/VAULT_POCKETS id ("swsh7/215") to its catalog slug.
@@ -163,8 +191,11 @@ function Hero() {
           holo-tilts under the pointer. Decorative → aria-hidden. */}
       {/* NOT aria-hidden anymore (pre-send-coherence §4): every fan card is a
           real link to its card page — focusable, labeled, holo-tilt preserved. */}
-      <div className="relative mx-auto max-w-6xl [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]">
-        <div className="flex items-start justify-center px-2 pt-10 sm:pt-14">
+      <div
+        style={FAN_FLUID_VARS}
+        className="relative mx-auto max-w-[calc(72rem*var(--fan-s,1))] [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]"
+      >
+        <div className="flex items-start justify-center px-2 pt-10 sm:pt-14 lg:pt-[calc(3.5rem*var(--fan-s,1))]">
           {HERO_CARDS.map((c, i) => {
             const slot = DEPTH_SLOTS[c.depth];
             const slug = cardSlug(c.id);
@@ -185,7 +216,7 @@ function Hero() {
             return (
               <div
                 key={c.id}
-                className={`relative ${c.tilt} ${c.arc} ${slot.z} ${i > 0 ? (c.gap ?? "-ml-9 sm:-ml-10 md:-ml-12") : ""} ${
+                className={`relative ${c.tilt} ${c.arc} ${slot.z} ${i > 0 ? (c.gap ?? "-ml-9 sm:-ml-10 md:-ml-12 lg:ml-[calc(-3rem*var(--fan-s,1))]") : ""} ${
                   c.edge ? "hidden sm:block" : ""
                 } transition duration-200 ease-out hover:z-50 focus-within:z-50`}
               >
@@ -211,11 +242,11 @@ function Hero() {
             reflection pool beneath it. */}
         <div
           aria-hidden
-          className="pointer-events-none mx-auto -mt-5 h-10 w-[58%] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(4,4,5,0.95),rgba(4,4,5,0.4)_55%,transparent_75%)] blur-[5px]"
+          className="pointer-events-none mx-auto -mt-5 h-10 w-[58%] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(4,4,5,0.95),rgba(4,4,5,0.4)_55%,transparent_75%)] blur-[5px] lg:mt-[calc(-1.25rem*var(--fan-s,1))] lg:h-[calc(2.5rem*var(--fan-s,1))]"
         />
         <div
           aria-hidden
-          className="pointer-events-none mx-auto -mt-7 h-16 w-[44%] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(217,138,160,0.13),rgba(248,245,240,0.06)_45%,transparent_72%)] blur-[10px]"
+          className="pointer-events-none mx-auto -mt-7 h-16 w-[44%] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(217,138,160,0.13),rgba(248,245,240,0.06)_45%,transparent_72%)] blur-[10px] lg:mt-[calc(-1.75rem*var(--fan-s,1))] lg:h-[calc(4rem*var(--fan-s,1))]"
         />
       </div>
 

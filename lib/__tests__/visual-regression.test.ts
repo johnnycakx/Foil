@@ -508,9 +508,10 @@ test("Hero: grail cards are a full-opacity foreground showcase, not a ghosted ba
   // re-ghost the showcase.
   assert.doesNotMatch(src, /opacity:\s*0\.(?:28|5)\b/, "hero cards must not be opacity-ghosted");
   assert.doesNotMatch(src, /filter:\s*["']blur\(/, "hero cards must not be blurred");
-  // Cards render large (up to lg:w-44) as the hero visual — the light sources
-  // of the night register.
-  assert.match(src, /lg:w-44/);
+  // Cards render large as the hero visual — the light sources of the night
+  // register. Since hero-fan-widescreen-fix the lg widths are fluid (the
+  // focal's 15rem base scales with --fan-s above 1440px).
+  assert.match(src, /lg:w-\[calc\(15rem\*var\(--fan-s,1\)\)\]/);
 });
 
 test("Hero: the copy-area scrim is gone (ADR-037 — cards no longer overlap text)", () => {
@@ -704,6 +705,36 @@ test("Hero fan + vault pockets: every card is a slug-verified link to its card p
   const fanIdx = src.indexOf("HERO_CARDS.map");
   const heroBlock = src.slice(src.indexOf("function Hero"), fanIdx);
   assert.doesNotMatch(heroBlock.slice(heroBlock.lastIndexOf("<div")), /aria-hidden/, "the fan wrapper must not be aria-hidden");
+});
+
+test("Hero fan: fluid widescreen composition derives from clamped vars, sub-1440 pinned (hero-fan-widescreen-fix)", () => {
+  const src = readFile("app/(site)/page.tsx");
+  // The three fluid vars exist as tan(atan2()) NUMBER factors that stay 1 at
+  // ≤1440px — that floor is what pins 1024–1440 byte-identical to the tuned
+  // composition (and below lg the fluid tier never applies at all). The
+  // naive `1 + (100vw - X)/N` form is TYPE-INVALID CSS (number + length):
+  // it computes to garbage and unsets every dependent declaration — the
+  // giant-flat-naturals failure iter-1 caught. Don't reintroduce it.
+  assert.match(src, /"--fan-s": "calc\(1 \+ [\d.]+ \* clamp\(0, tan\(atan2\(100vw - 1440px,/, "--fan-s: unitless tan(atan2) factor from 1440px");
+  assert.match(src, /"--fan-w": "calc\(1 \+ [\d.]+ \* clamp\(0, tan\(atan2\(100vw - 1440px,/, "--fan-w: unitless tan(atan2) factor from 1440px");
+  assert.match(src, /"--fan-r": "calc\(1 \+ \(var\(--fan-w, 1\) - 1\)/, "--fan-r rides --fan-w damped");
+  // The sub-lg width ladder is untouched (the tuned sub-1440 composition),
+  // and every consumer carries the `,1` fallback (old browsers degrade to
+  // the 1440 composition, never to unset widths).
+  assert.match(src, /w-32 sm:w-40 md:w-48 lg:w-\[calc\(15rem\*var\(--fan-s,1\)\)\]/, "focal width ladder + fluid lg");
+  assert.match(src, /w-\[6\.5rem\] sm:w-32 md:w-\[9\.5rem\] lg:w-\[calc\(11rem\*var\(--fan-s,1\)\)\]/, "depth-1 ladder + fluid lg");
+  assert.match(src, /w-24 sm:w-28 md:w-32 lg:w-\[calc\(10rem\*var\(--fan-s,1\)\)\]/, "depth-2 ladder + fluid lg");
+  assert.match(src, /w-20 sm:w-24 md:w-28 lg:w-\[calc\(8\.5rem\*var\(--fan-s,1\)\)\]/, "depth-3 ladder + fluid lg");
+  assert.doesNotMatch(src, /var\(--fan-[swr]\)/, "every --fan-* consumer must carry the ,1 fallback");
+  // Overlap, arc, and rotation all derive from the same vars at lg (scale,
+  // spread, cadence move together — the composition invariants).
+  assert.match(src, /-ml-9 sm:-ml-10 md:-ml-12 lg:ml-\[calc\(-3rem\*var\(--fan-s,1\)\)\]/, "overlap scales with --fan-s");
+  assert.match(src, /lg:translate-y-\[calc\(2\.5rem\*var\(--fan-w,1\)\)\]/, "arc amplitude scales with --fan-w");
+  assert.match(src, /lg:rotate-\[calc\(-12deg\*var\(--fan-r,1\)\)\]/, "rotation cadence scales with --fan-r");
+  // The fan container grows with the fan (no fixed max-w-6xl cage) and the
+  // edge-dissolve mask stays.
+  assert.match(src, /max-w-\[calc\(72rem\*var\(--fan-s,1\)\)\]/, "container max-width derives from --fan-s");
+  assert.match(src, /mask-image:linear-gradient\(90deg,transparent,black_10%,black_90%,transparent\)/, "edge dissolve mask intact");
 });
 
 test("Vault pockets: the SV-151 starter evolution lines in order, self-hosted art (binder-aesthetic-pass)", () => {

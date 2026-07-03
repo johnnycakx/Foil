@@ -6,6 +6,18 @@ Append new entries at the top. When an entry is promoted, leave it here with a `
 
 ---
 
+## I-012 — CSS custom-property math is TYPED; number+length invalidates silently and UNSETS every dependent declaration
+
+**Spotted:** hero-fan-widescreen-fix, 2026-07-03 (iter-23).
+
+**Shape.** A fluid scale factor authored as `--fan-s: clamp(1, 1 + (100vw - 1440px) / 2600, 1.34)` parsed fine, served fine, and looked right in the source — but CSS math is typed: a NUMBER (`1`) cannot add to a LENGTH (`(100vw - 1440px) / 2600`), so the property is *invalid at computed-value time*. The failure mode is the trap: an invalid custom property doesn't fall back to the previous cascade declaration — every declaration that consumes it via `var()` becomes **unset**. The hero's `lg:` widths/rotations/margins all won the cascade then evaporated, rendering giant flat natural-width cards. Nothing errored anywhere: not the build, not the console, not tests — only a screenshot caught it.
+
+**The general fix.** (a) To divide two lengths into a unitless number, use `tan(atan2(a, b))` — exactly `a/b`, Baseline 2023. (b) Give every `var()` consumer an explicit fallback (`var(--fan-s, 1)`): a PARSE-invalid declaration (old browser, typo) drops the property → the fallback applies → graceful degrade; note the asymmetry — the fallback does NOT rescue *computed-value-time* invalidity, so the math itself must be type-correct. (c) Screenshot-verify any custom-property math change at the widths it targets; the failure is invisible to every code-level gate.
+
+**Promotion trigger.** Second surface adopting the tan(atan2) unitless-division + fallback recipe → promote to a dedicated ADR (candidate: any future fluid-composition system on /lines or the vault).
+
+---
+
 ## I-011 — var() inside a CSS keyframe forces the animation onto the main thread; quantize to literal keyframe variants
 
 **Spotted:** petal-fidelity-pass, 2026-07-02. The sakura drift rig fed per-petal variety (breeze/amplitude/wobble) through CSS custom properties referenced INSIDE `@keyframes` (`translateX(var(--breeze))`). Elegant authoring — one keyframe pair, N petals — but a keyframe that references var() cannot be resolved ahead of time, so the browser re-evaluates it in style recalc EVERY FRAME on the main thread for EVERY animated element. Invisible at 28 petals; at 3x density (84 petals × 2 nested animations) a 4x-CPU-throttled scroll measured ~50-55fps, and a reduced-motion baseline of 240fps pinned the cost to the animation rig itself, not the page.

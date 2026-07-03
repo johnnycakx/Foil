@@ -381,3 +381,21 @@ token pair itself).
 **Skill trace:** frontend-design -> "botanical fact, not particle dust": the two-stop gradient direction + notch-carries-the-read geometry + cluster-into-open-zones art direction; impeccable (craft) -> the static shape-read bar ("a stranger says cherry blossom at 100% zoom with zero motion context"), the preview-grid verification method, the blossom 1-2-per-viewport restraint cap, and the header smudge -> sharp-anchor fix; emil-design-eng -> far layer falls SLOWER than near (22-29s vs 15-20s, parallax mass), per-petal negative delays so no two share a phase, transform/opacity only, reduced-motion = static scatter (unchanged contract).
 
 **Shots:** gallery/petal-fidelity/ (iter-1, iter-2, og-umbreon; final post-build shots per SESSION-LOG). Guards: one-source-of-truth tripwire (favicon/icon/banner byte-synced to petal-shapes.ts, OG blob banned), density ladder sums pinned (78/48/30), MIN_PETAL_PX floor pinned in component + builder, blossom caps pinned, blur-[1px] pinned.
+
+---
+
+## iter-23 - hero-fan-widescreen-fix (bar hit iteration 2 of 3)
+
+**Bug (John, live at ~2100px+):** the fan was frozen at its 1024-tuned size (fixed lg widths, max-w-6xl cage) — floating small and bunched in empty charcoal at wide/ultrawide.
+
+**Skills invoked + the concrete change each drove:**
+- **frontend-design** → the fan OPENS, not just enlarges: two separate fluid factors — `--fan-s` (card scale/overlap/floor/container) and the faster-growing `--fan-w` (arc amplitude) with `--fan-r` (rotation, damped to 55% of --fan-w) — so at 2560 the hand spreads like a fan opening; caps 1.34/1.45 at ~2200px, judged on the shot matrix as the width where the composition stops improving.
+- **impeccable (layout)** → one token source: every lg dimension is `calc(base * var(--fan-*, 1))` off vars defined once on the fan container (no per-card arbitrary values); the container max-width and vertical breathing derive from the same scale so the edge-dissolve mask tracks the hand; the sub-lg ladder untouched.
+- **emil-design-eng** → NOT invoked: zero motion values touched (holo-tilt, hover transitions, petal physics all unchanged — static pose only).
+
+**iter-1 (broken, kept as exhibit `iter-1/iter1-2560.png`):** naive `1 + (100vw - 1440px)/2600` is TYPE-INVALID CSS (number + length) — the custom property computes to garbage and every dependent declaration goes to UNSET, rendering giant flat natural-width cards. Score: 2560 ≈ 1.
+**iter-2 (bar hit):** `tan(atan2(a, b))` = a/b as a real unitless number (Baseline 2023) + `var(--fan-*, 1)` fallbacks so non-supporting browsers degrade to the 1440 composition, never to unset.
+
+**Rubric (a: one lit grounded object · b: no bunching/tucking/slivers · c: page uses its width · d: sub-1440 unchanged):**
+390: 9.0 · 768: 8.7 · 1024: 8.7 · 1152: 8.7 · 1280: 8.7 · 1440: 8.7 (vars ≡ 1, the John-approved tuned composition) · 1680: 8.7 · 1920: 8.8 · 2560: 8.4.
+**avg 8.71 / min 8.4 — bar (≥8.5 / ≥8.0) MET.** Petals verified coexisting at 2560 (field scales with the hero, none over text at rest). Shots: `gallery/hero-widescreen/iter-2/`.
