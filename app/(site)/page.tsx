@@ -294,12 +294,12 @@ function Hero() {
           the quiet X follow widget below (the footer keeps the face). */}
       <div className="relative mx-auto w-full max-w-3xl px-5 pt-8 pb-12 text-center sm:px-8 sm:pt-12 sm:pb-16">
         <h1 className="font-display mx-auto max-w-3xl text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.015em] text-foil-cream [text-wrap:balance] sm:text-6xl md:text-7xl">
-          Tell us the cards you&apos;re chasing.
+          Tell me the cards you&apos;re chasing.
         </h1>
 
         <p className="mx-auto mt-6 max-w-xl text-xl text-foil-cream/70 sm:text-2xl sm:leading-snug">
           Foil watches the market and emails you the moment one drops to your
-          price — judged against what cards really sell for, not asking prices.
+          price. Judged against what cards really sell for, not asking prices.
         </p>
 
         <div className="mt-10 flex justify-center">
