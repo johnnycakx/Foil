@@ -1,16 +1,21 @@
-// Seeded-vault claim core (eve-vault, ADR-100). Pure orchestration with
-// injected deps so every branch unit-tests without a network (the scan-batch
-// DI pattern). The Server Action wrapper (app/actions/seeded-vault.ts) owns
-// the request-shaped concerns: token verify, honeypot, per-IP limit.
+// Seeded-vault claim core (eve-vault, ADR-100; TEMPLATE model per the
+// eve-vault-template-claims amendment). Pure orchestration with injected deps
+// so every branch unit-tests without a network (the scan-batch DI pattern).
+// The Server Action wrapper (app/actions/seeded-vault.ts) owns the
+// request-shaped concerns: token verify, honeypot, per-IP limit.
 //
-// Claim semantics:
-//   - ATOMIC: the seeded_vault_claims PK insert is the claim. A concurrent
-//     second claim loses on the unique violation — no read-then-write race.
-//   - IDEMPOTENT for the claimant: re-submitting the same email re-runs the
-//     row upserts (heals a partially-failed first claim) and reports success.
-//   - The claimed email's PERSONAL vault link travels by EMAIL only (the
-//     welcome send) — never echoed to the browser. The seeded page's URL is
-//     public (it's in a tweet); echoing an email-vault token there would turn
+// Claim semantics (template instantiation — the link lives in a PUBLIC reply,
+// so anyone clicking it gets the same experience):
+//   - UNLIMITED: every email that claims gets its OWN watch-set (the seeded
+//     pockets applied as a template through the real funnel machinery). There
+//     is no cross-email lock and no "claimed by someone else" state.
+//   - IDEMPOTENT per email: the (vault_slug, claimed_email) PK insert is the
+//     instantiation log. A re-submit by the same email hits the unique
+//     violation, re-runs the row upserts (heals a partially-failed first
+//     claim), and reports "already_yours" — never duplicate watch rows.
+//   - The claimant's PERSONAL vault link travels by EMAIL only (the welcome
+//     send) — never echoed to the browser. The seeded page's URL is public
+//     (it's in a tweet); echoing an email-vault token there would turn
 //     "found the tweet" into "reads/edits the claimant's watchlist" (the same
 //     /security-review HIGH the /api/start first-watch rule exists for).
 //   - Suppression is inherited (ADR-090): a suppressed email's seeded rows
@@ -24,7 +29,7 @@ import { exceedsWatchCap } from "../start/guards.ts";
 
 export type SeededClaimResult =
   | { ok: true; status: "claimed" | "already_yours" }
-  | { ok: false; error: "already_claimed" | "watch_cap" | "save_failed" | "unavailable" };
+  | { ok: false; error: "watch_cap" | "save_failed" | "unavailable" };
 
 export type SeededClaimDeps = {
   admin: SupabaseClient;
@@ -44,8 +49,8 @@ export async function claimSeededVaultCore(
   const email = rawEmail.trim().toLowerCase();
   const { admin } = deps;
 
-  // Watch-cap BEFORE claiming (an over-cap address must not consume the one
-  // claim). Count failure → proceed; the cap is an abuse guard, not an
+  // Watch-cap BEFORE instantiating (an over-cap address gets no new rows and
+  // no log entry). Count failure → proceed; the cap is an abuse guard, not an
   // invariant (same posture as /api/start).
   const { count: existingCount, error: countError } = await admin
     .from("watchlists")
@@ -55,8 +60,9 @@ export async function claimSeededVaultCore(
     return { ok: false, error: "watch_cap" };
   }
 
-  // THE claim: a PK insert. 23505 = someone (possibly this same email,
-  // re-submitting) already claimed it.
+  // The instantiation log: one row per (vault, claimer). 23505 = THIS email
+  // already instantiated this vault (the composite PK makes that the only
+  // possible conflict) — idempotent path, heal the rows below.
   const { error: claimError } = await admin
     .from("seeded_vault_claims")
     .insert({ vault_slug: vault.id, claimed_email: email });
@@ -64,15 +70,7 @@ export async function claimSeededVaultCore(
   let status: "claimed" | "already_yours" = "claimed";
   if (claimError) {
     if (claimError.code !== "23505") return { ok: false, error: "unavailable" };
-    const { data: existing } = await admin
-      .from("seeded_vault_claims")
-      .select("claimed_email")
-      .eq("vault_slug", vault.id)
-      .maybeSingle();
-    if (!existing || existing.claimed_email !== email) {
-      return { ok: false, error: "already_claimed" };
-    }
-    status = "already_yours"; // idempotent re-claim: heal the rows below
+    status = "already_yours";
   }
 
   // Seed the real watch rows: null target = the blank-target market basis
@@ -96,8 +94,9 @@ export async function claimSeededVaultCore(
     if (ok) upserted += 1;
   }
   if (upserted === 0) {
-    // Total write failure. On a FRESH claim, release the claim row so the
-    // claimant can retry (leaving it would strand a claimed-but-empty gift).
+    // Total write failure. On a FRESH instantiation, release this email's log
+    // row so the claimant can retry (leaving it would strand a logged-but-empty
+    // gift). Other emails' instances are untouched.
     if (status === "claimed") {
       await admin
         .from("seeded_vault_claims")
@@ -117,24 +116,4 @@ export async function claimSeededVaultCore(
   }
 
   return { ok: true, status };
-}
-
-/** Read claim state for a seeded vault. Null = unclaimed (or read failure —
- *  the page then renders the claim form; a transient read error must not
- *  paint someone else's masked email). */
-export async function getSeededVaultClaim(
-  admin: SupabaseClient,
-  vaultId: string,
-): Promise<{ claimedEmail: string; claimedAt: string } | null> {
-  try {
-    const { data } = await admin
-      .from("seeded_vault_claims")
-      .select("claimed_email, claimed_at")
-      .eq("vault_slug", vaultId)
-      .maybeSingle();
-    if (!data?.claimed_email) return null;
-    return { claimedEmail: data.claimed_email, claimedAt: data.claimed_at ?? "" };
-  } catch {
-    return null;
-  }
 }

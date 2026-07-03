@@ -1,12 +1,15 @@
-// The SEEDED vault view (eve-vault, ADR-100) — a pre-made gift vault rendered
-// from repo config (lib/vault-seeds.ts) + live sold data, claimable by email.
+// The SEEDED vault view (eve-vault, ADR-100; TEMPLATE model per the
+// eve-vault-template-claims amendment) — a pre-made gift vault rendered from
+// repo config (lib/vault-seeds.ts) + live sold data. The link lives in a
+// PUBLIC reply, so the vault is a template: EVERY visitor can claim their own
+// copy (their email gets its own watch-set via the real funnel machinery).
 // Rendered by /w/[token]/page.tsx when the token verifies in the SEEDED
 // context (never the email context — lib/vault-token.ts separates them).
 //
-// Three audiences, one page (it will be screenshotted):
-//   - the recipient pre-claim: the activation block IS the ask
-//   - the recipient post-claim: masked confirmation, form gone, can't re-claim
-//   - everyone else watching: a quiet fork CTA to /start
+// The page NEVER locks. Post-submit state is per-visitor (the ?c= flag on the
+// action's redirect): a "check your email" confirmation for the submitter,
+// then the next visitor with the clean URL sees the claimable state again.
+// No claimed-by-someone-else state exists.
 //
 // Quota discipline matches the real vault (R-012): no live eBay resolve —
 // sold figures come from ONE market_movers read with the committed /lines
@@ -20,23 +23,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { getCatalogEntry } from "@/lib/cards/catalog";
 import { getBakedCardMetadata } from "@/lib/cards/sdk";
 import { effectiveTargetCents } from "@/lib/wishlist/alert-decision";
-import { getSeededVaultClaim } from "@/lib/wishlist/seeded-claim";
 import { getSnapshotSold, type SeededVault } from "@/lib/vault-seeds";
 import { claimSeededVault } from "@/app/actions/seeded-vault";
 import { SakuraAmbience } from "@/components/sakura-ambience";
 
 function usdWhole(cents: number): string {
   return `$${Math.round(cents / 100).toLocaleString("en-US")}`;
-}
-
-/** PUBLIC-page email mask — stricter than the Discord maskEmail (which keeps
- *  the domain, fine for a private ops channel): this URL is in a tweet, and a
- *  vanity domain would publicly bind the claimant's identity (/security-review
- *  L-1). First letter only, domain elided — exactly the goal's own example
- *  ("watching for e***@…"). Full confirmation lives in the welcome email. */
-function publicMask(email: string): string {
-  const first = email[0] ?? "*";
-  return `${first}***@…`;
 }
 
 export async function SeededVaultView({
@@ -52,11 +44,9 @@ export async function SeededVaultView({
   try {
     admin = supabaseAdmin() as unknown as SupabaseClient;
   } catch {
-    // No DB → render unclaimed with snapshot sold data; the claim form still
-    // posts (the action re-checks and flags err). The gift page must load.
+    // No DB → render with snapshot sold data; the claim form still posts
+    // (the action re-checks and flags err). The gift page must load.
   }
-
-  const claim = admin ? await getSeededVaultClaim(admin, vault.id) : null;
 
   // One movers read for live sold averages; committed bake as fallback.
   const soldBySlug = new Map<string, { soldCents: number; saleCount: number }>();
@@ -89,7 +79,12 @@ export async function SeededVaultView({
     return { slug, meta, sold, effective };
   });
 
-  const claimed = claim != null;
+  // Per-visitor post-submit states (the ?c= flag on the action's redirect).
+  // The page itself never locks: a fresh visitor with the clean URL always
+  // gets the claimable state.
+  const justClaimed = claimFlag === "ok";
+  const alreadyYours = claimFlag === "again";
+  const confirmed = justClaimed || alreadyYours;
   const forkHref = `/start?src=${encodeURIComponent(vault.src)}-fork`;
 
   return (
@@ -111,22 +106,24 @@ export async function SeededVaultView({
         <p className="mt-3 text-base text-foil-cream/70 sm:text-lg">{vault.tagline}</p>
       </header>
 
-      {/* ACTIVATION — the one clear ask (pre-claim), or the claimed state. */}
+      {/* ACTIVATION — the one clear ask, or the per-visitor confirmation. */}
       <section
         aria-labelledby="claim-heading"
         className="relative mt-8 rounded-3xl bg-foil-night-2 p-6 ring-1 ring-foil-accent/30 sm:p-8"
       >
-        {claimed ? (
+        {confirmed ? (
           <>
             <h2 id="claim-heading" className="text-sm font-semibold uppercase tracking-wider text-foil-accent">
-              Claimed
+              {justClaimed ? "You're in" : "Already watching"}
             </h2>
             <p className="mt-2 text-lg font-semibold text-foil-cream sm:text-xl">
-              Watching for <span className="font-mono">{publicMask(claim.claimedEmail)}</span>
+              {justClaimed
+                ? "Check your email — your duo is being watched 🌸"
+                : "That email is already watching this duo."}
             </p>
             <p className="mt-2 max-w-xl text-sm text-foil-cream/70">
-              Alerts go to that inbox when a card genuinely dips, and the full vault link —
-              targets, pauses, more cards — is in the welcome email.
+              Alerts go to your inbox when a card genuinely dips, and your private vault
+              link — targets, pauses, more cards — travels by email, never through this page.
             </p>
           </>
         ) : (
@@ -135,17 +132,12 @@ export async function SeededVaultView({
               This vault is yours
             </h2>
             <p className="mt-2 max-w-xl text-lg font-semibold text-foil-cream sm:text-xl">
-              Add your email and Foil emails you when your duo dips.
+              Add your email and Foil watches this duo for you.
             </p>
             <p className="mt-2 max-w-xl text-sm text-foil-cream/70">
-              We check eBay every hour. No account, no tabs left open — the first email
-              claims this vault and the watching starts.
+              We check eBay every hour. No account, no tabs left open — anyone with this
+              link can claim their own copy, and the watching starts.
             </p>
-            {claimFlag === "taken" && (
-              <p role="alert" className="mt-3 text-sm text-foil-accent">
-                This vault was already claimed. Want one of your own? Use the link below.
-              </p>
-            )}
             {claimFlag === "invalid" && (
               <p role="alert" className="mt-3 text-sm text-foil-accent">
                 That email didn&apos;t look right — try again?
@@ -185,8 +177,8 @@ export async function SeededVaultView({
         )}
       </section>
 
-      {/* THE POCKETS — read-only binder page; targets/pauses live in the
-          claimed email's personal vault. */}
+      {/* THE POCKETS — read-only binder page; targets/pauses live in each
+          claimer's personal vault. */}
       <ul className="mt-8 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3">
         {pockets.map(({ slug, meta, sold, effective }) => (
           <li
@@ -209,7 +201,7 @@ export async function SeededVaultView({
                 <div aria-hidden className="w-full" style={{ aspectRatio: "245 / 342" }} />
               )}
               <span className="absolute right-2 top-2 rounded-full bg-foil-night/85 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-foil-accent ring-1 ring-foil-accent/40 backdrop-blur-sm">
-                {claimed ? "Armed" : "Ready"}
+                {confirmed ? "Armed" : "Ready"}
               </span>
             </div>
             <div className="mt-3 px-1">
@@ -235,12 +227,12 @@ export async function SeededVaultView({
         <li className="flex min-h-[200px] flex-col items-center justify-center rounded-2xl border border-dashed border-foil-cream/20 bg-foil-night-2/50 p-6 text-center">
           <span aria-hidden className="text-2xl text-foil-cream/40">+</span>
           <p className="mt-2 text-sm font-medium text-foil-cream/70">
-            {claimed ? "Your next grail goes here" : "Your first pick goes here"}
+            {confirmed ? "Your next grail goes here" : "Your first pick goes here"}
           </p>
           <p className="mt-1 text-xs text-foil-cream/50">
-            {claimed
+            {confirmed
               ? "Add cards any time from the vault link in your inbox."
-              : "Claim the vault, then add any card you're chasing."}
+              : "Claim your copy, then add any card you're chasing."}
           </p>
         </li>
       </ul>
@@ -257,8 +249,10 @@ export async function SeededVaultView({
       </p>
 
       <p className="mt-6 text-[11px] text-foil-cream/50">
-        This page is public to anyone with the link. Price alerts go only to the claimed
-        email&apos;s inbox, and the private vault link travels by email — never through this page.
+        This page is public to anyone with the link, and anyone can claim their own copy.
+        Price alerts go only to your own inbox, and your private vault link travels by
+        email — never through this page. Claiming also signs you up for the weekly Foil
+        newsletter; every email has a one-click unsubscribe.
       </p>
     </main>
   );

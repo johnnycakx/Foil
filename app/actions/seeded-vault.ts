@@ -1,17 +1,19 @@
 "use server";
 
-// Seeded-vault claim action (eve-vault, ADR-100). The thin request-shaped
-// wrapper around lib/wishlist/seeded-claim.ts: verifies the SEEDED token
-// (context-separated from email-vault tokens — lib/vault-token.ts), applies
-// the /start funnel's abuse posture (honeypot → fake success; per-IP budget),
-// then runs the claim core with the real funnel deps (tri-store opt-in with
-// the vault's UTM attribution, welcome email with the claimant's personal
-// vault link — inbox-only, never echoed to the browser).
+// Seeded-vault claim action (eve-vault, ADR-100; template model per the
+// eve-vault-template-claims amendment). The thin request-shaped wrapper around
+// lib/wishlist/seeded-claim.ts: verifies the SEEDED token (context-separated
+// from email-vault tokens — lib/vault-token.ts), applies the /start funnel's
+// abuse posture (honeypot → fake success; per-IP budget), then runs the claim
+// core with the real funnel deps (tri-store opt-in with the vault's UTM
+// attribution, welcome email with the claimant's personal vault link —
+// inbox-only, never echoed to the browser).
 //
-// Results travel as a ?c= flag on the redirect back to the seeded page (the
-// page is force-dynamic; the claim row drives the post-claim render):
-//   ok      claimed (or idempotent re-claim by the same email)
-//   taken   someone else claimed it first
+// Results travel as a ?c= flag on the redirect back to the seeded page. The
+// flag is PER-VISITOR state: the public page itself never locks — every fresh
+// visitor (no flag) sees the claimable state.
+//   ok      this email's instance was created — check your inbox
+//   again   this email already claimed a copy (idempotent; rows healed)
 //   invalid email didn't parse
 //   err     transient save failure — try again
 
@@ -118,8 +120,6 @@ export async function claimSeededVault(formData: FormData): Promise<void> {
     sendWelcome: (e) => sendVaultLinkEmail(e, "welcome").then(() => undefined),
   });
 
-  if (result.ok) back("ok");
-  if (!result.ok && result.error === "already_claimed") back("taken");
-  if (!result.ok && result.error === "watch_cap") back("err");
+  if (result.ok) back(result.status === "already_yours" ? "again" : "ok");
   back("err");
 }

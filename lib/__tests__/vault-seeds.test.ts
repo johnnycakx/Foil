@@ -1,13 +1,17 @@
-// Seeded gift vaults (eve-vault, ADR-100). Pins the acceptance criteria:
+// Seeded gift vaults (eve-vault, ADR-100; TEMPLATE model per the
+// eve-vault-template-claims amendment). Pins the acceptance criteria:
 //   - Token: seeded context is cryptographically separate from BOTH the
 //     email-vault and unsubscribe audiences (no cross-audience verify).
 //   - Curation (navigation-promise): every seed pocket is in CARD_CATALOG
 //     AND has real committed sold data — no stub pockets on a gift.
-//   - Claim: atomic via the PK insert (second claimant loses), idempotent
-//     for the claimant, watch-cap checked BEFORE consuming the claim, rows
-//     born with NULL targets (blank-target market basis) + the seed's src,
-//     suppression inherited, welcome email only on first watch, and the
-//     claim row released if every row write fails.
+//   - Claim = INSTANTIATE, unlimited: N emails → N independent instances
+//     with zero cross-email leakage; idempotent per email (re-submit heals
+//     rows, never duplicates); watch-cap checked before any write; rows born
+//     with NULL targets (blank-target market basis) + the seed's src;
+//     suppression inherited; welcome email only on first watch; this email's
+//     log row released if every row write fails (other instances untouched).
+//   - The page NEVER locks: no claimed-by-someone-else state, no email ever
+//     rendered — post-submit state is per-visitor (?c= flag).
 //   - Exposure: the claim path never echoes an email-vault token to the
 //     browser (structural), and /eve 302s to the seeded vault with UTMs.
 
@@ -109,27 +113,31 @@ test("eve's seed: the duo curation + attribution the goal pins", () => {
   assert.ok(getSeededVault("demo"), "the demo seed is the claim-flow test target");
 });
 
-// --- the claim core ----------------------------------------------------------
+// --- the claim core (template instantiation) ---------------------------------
 
 type Call = {
   table: string;
   op: string;
   payload?: unknown;
   opts?: Record<string, unknown>;
+  eqs: Array<[string, unknown]>;
 };
 
 function fakeAdmin(state: {
-  existingWatchCount?: number;
-  claimedBy?: string | null;
+  /** existing watch count PER EMAIL (default 0 for unlisted emails) */
+  watchCounts?: Record<string, number>;
+  /** emails that already instantiated the vault */
+  claims?: string[];
   failWatchUpsert?: boolean;
   suppression?: { alerts_paused_at: string; paused_source: string } | null;
 }) {
   const calls: Call[] = [];
-  let claimed: string | null = state.claimedBy ?? null;
+  const claims = new Set<string>(state.claims ?? []);
 
   async function resolveCall(call: Call): Promise<unknown> {
     if (call.table === "watchlists" && call.op === "select" && call.opts?.head) {
-      return { count: state.existingWatchCount ?? 0, error: null };
+      const email = String(call.eqs.find(([col]) => col === "email")?.[1] ?? "");
+      return { count: state.watchCounts?.[email] ?? 0, error: null };
     }
     if (call.table === "watchlists" && call.op === "select") {
       // getAlertSuppression probe
@@ -140,18 +148,16 @@ function fakeAdmin(state: {
     }
     if (call.table === "seeded_vault_claims" && call.op === "insert") {
       const row = call.payload as { claimed_email: string };
-      if (claimed) return { error: { code: "23505", message: "duplicate key" } };
-      claimed = row.claimed_email;
+      // Composite-PK semantics: the only possible conflict is the SAME email.
+      if (claims.has(row.claimed_email)) {
+        return { error: { code: "23505", message: "duplicate key" } };
+      }
+      claims.add(row.claimed_email);
       return { error: null };
     }
-    if (call.table === "seeded_vault_claims" && call.op === "select") {
-      return {
-        data: claimed ? { claimed_email: claimed, claimed_at: "2026-07-02T00:00:00Z" } : null,
-        error: null,
-      };
-    }
     if (call.table === "seeded_vault_claims" && call.op === "delete") {
-      claimed = null;
+      const email = String(call.eqs.find(([col]) => col === "claimed_email")?.[1] ?? "");
+      claims.delete(email);
       return { error: null };
     }
     if (call.table === "card_hydration") return { error: null };
@@ -160,7 +166,7 @@ function fakeAdmin(state: {
 
   const admin = {
     from(table: string) {
-      const call: Call = { table, op: "" };
+      const call: Call = { table, op: "", eqs: [] };
       calls.push(call);
       const b: Record<string, unknown> = {};
       const chain = (fn?: (...a: unknown[]) => void) => (...a: unknown[]) => {
@@ -185,7 +191,9 @@ function fakeAdmin(state: {
         delete: chain(() => {
           call.op = "delete";
         }),
-        eq: chain(),
+        eq: chain((col, val) => {
+          call.eqs.push([String(col), val]);
+        }),
         not: chain(),
         in: chain(),
         order: chain(),
@@ -199,7 +207,7 @@ function fakeAdmin(state: {
     },
   } as unknown as SupabaseClient;
 
-  return { admin, calls, getClaimed: () => claimed };
+  return { admin, calls, getClaims: () => [...claims] };
 }
 
 function deps(admin: SupabaseClient) {
@@ -222,12 +230,12 @@ function deps(admin: SupabaseClient) {
 
 const EVE = SEEDED_VAULTS.eve;
 
-test("claim: fresh claim writes the claim row + one NULL-target row per pocket with the seed src, subscribes, welcomes", async () => {
-  const { admin, calls, getClaimed } = fakeAdmin({ existingWatchCount: 0 });
+test("claim: fresh claim logs the instantiation + one NULL-target row per pocket with the seed src, subscribes, welcomes", async () => {
+  const { admin, calls, getClaims } = fakeAdmin({});
   const d = deps(admin);
   const result = await claimSeededVaultCore(EVE, "Eve@Example.com", d.deps);
   assert.deepEqual(result, { ok: true, status: "claimed" });
-  assert.equal(getClaimed(), "eve@example.com", "claim row holds the lowercased email");
+  assert.deepEqual(getClaims(), ["eve@example.com"], "log row holds the lowercased email");
 
   const upserts = calls.filter((c) => c.table === "watchlists" && c.op === "upsert");
   assert.equal(upserts.length, EVE.pockets.length, "one watch row per pocket");
@@ -243,58 +251,76 @@ test("claim: fresh claim writes the claim row + one NULL-target row per pocket w
   assert.deepEqual(d.welcomed, ["eve@example.com"], "first watch → welcome email with HER vault link");
 });
 
+test("claim: TEMPLATE — two different emails get two independent instances, zero cross-email leakage", async () => {
+  const { admin, calls, getClaims } = fakeAdmin({});
+  const d = deps(admin);
+
+  const first = await claimSeededVaultCore(EVE, "first@example.com", d.deps);
+  const second = await claimSeededVaultCore(EVE, "second@example.com", d.deps);
+  assert.deepEqual(first, { ok: true, status: "claimed" }, "first claimer instantiates");
+  assert.deepEqual(second, { ok: true, status: "claimed" }, "second claimer is NOT locked out — same experience");
+  assert.deepEqual(getClaims().sort(), ["first@example.com", "second@example.com"], "one log row per claimer");
+
+  const upserts = calls.filter((c) => c.table === "watchlists" && c.op === "upsert");
+  assert.equal(upserts.length, EVE.pockets.length * 2, "each instance gets its own full pocket set");
+  const emails = new Set(upserts.map((u) => (u.payload as Record<string, unknown>).email));
+  assert.deepEqual([...emails].sort(), ["first@example.com", "second@example.com"]);
+  for (const u of upserts) {
+    const row = u.payload as Record<string, unknown>;
+    assert.ok(
+      row.email === "first@example.com" || row.email === "second@example.com",
+      "every row belongs to exactly one claimer — no cross-email writes",
+    );
+  }
+  assert.deepEqual(d.welcomed.sort(), ["first@example.com", "second@example.com"], "each first-watch claimer gets THEIR OWN welcome");
+});
+
 test("claim: an address with existing watches gets NO duplicate welcome (inbox-only bearer rule)", async () => {
-  const { admin } = fakeAdmin({ existingWatchCount: 3 });
+  const { admin } = fakeAdmin({ watchCounts: { "collector@example.com": 3 } });
   const d = deps(admin);
   const result = await claimSeededVaultCore(EVE, "collector@example.com", d.deps);
   assert.ok(result.ok);
   assert.deepEqual(d.welcomed, [], "welcome only on the FIRST watch for the address");
 });
 
-test("claim: already claimed by someone else → already_claimed, zero row writes", async () => {
-  const { admin, calls } = fakeAdmin({ claimedBy: "first@example.com" });
-  const d = deps(admin);
-  const result = await claimSeededVaultCore(EVE, "second@example.com", d.deps);
-  assert.deepEqual(result, { ok: false, error: "already_claimed" });
-  assert.equal(calls.filter((c) => c.table === "watchlists" && c.op === "upsert").length, 0);
-  assert.deepEqual(d.subscribed, []);
-  assert.deepEqual(d.welcomed, []);
-});
-
-test("claim: idempotent re-claim by the claimant heals the rows and succeeds", async () => {
-  const { admin, calls } = fakeAdmin({ claimedBy: "eve@example.com", existingWatchCount: 6 });
+test("claim: idempotent re-claim by the same email heals the rows, no duplicates, no second welcome", async () => {
+  const { admin, calls, getClaims } = fakeAdmin({
+    claims: ["eve@example.com"],
+    watchCounts: { "eve@example.com": 6 },
+  });
   const d = deps(admin);
   const result = await claimSeededVaultCore(EVE, "EVE@example.com", d.deps);
   assert.deepEqual(result, { ok: true, status: "already_yours" });
+  assert.deepEqual(getClaims(), ["eve@example.com"], "still exactly one log row for the email");
   assert.equal(
     calls.filter((c) => c.table === "watchlists" && c.op === "upsert").length,
     EVE.pockets.length,
-    "re-claim re-runs the upserts (heals a partially-failed first claim)",
+    "re-claim re-runs the upserts (heals a partially-failed first claim; upsert = no duplicate rows)",
   );
   assert.deepEqual(d.welcomed, [], "no duplicate welcome");
 });
 
-test("claim: watch-cap is checked BEFORE the claim row is consumed", async () => {
-  const { admin, calls, getClaimed } = fakeAdmin({ existingWatchCount: 97 });
+test("claim: watch-cap is checked BEFORE any write (no log row, no watch rows)", async () => {
+  const { admin, calls, getClaims } = fakeAdmin({ watchCounts: { "hoarder@example.com": 97 } });
   const d = deps(admin);
   const result = await claimSeededVaultCore(EVE, "hoarder@example.com", d.deps);
   assert.deepEqual(result, { ok: false, error: "watch_cap" });
-  assert.equal(getClaimed(), null, "the one claim must not be consumed by an over-cap address");
+  assert.deepEqual(getClaims(), [], "an over-cap address writes nothing");
   assert.equal(calls.filter((c) => c.table === "seeded_vault_claims" && c.op === "insert").length, 0);
 });
 
-test("claim: total row-write failure on a fresh claim releases the claim row (retryable gift)", async () => {
-  const { admin, getClaimed } = fakeAdmin({ existingWatchCount: 0, failWatchUpsert: true });
+test("claim: total row-write failure releases only THIS email's log row (other instances untouched)", async () => {
+  const { admin, getClaims } = fakeAdmin({ claims: ["earlier@example.com"], failWatchUpsert: true });
   const d = deps(admin);
   const result = await claimSeededVaultCore(EVE, "eve@example.com", d.deps);
   assert.deepEqual(result, { ok: false, error: "save_failed" });
-  assert.equal(getClaimed(), null, "the claim row is released so the claimant can retry");
+  assert.deepEqual(getClaims(), ["earlier@example.com"], "the failed claimer's row is released; earlier instances survive");
   assert.deepEqual(d.welcomed, [], "no welcome on failure");
 });
 
 test("claim: a suppressed address's seeded rows are born paused (claiming ≠ consent to resume, ADR-090)", async () => {
   const { admin, calls } = fakeAdmin({
-    existingWatchCount: 2,
+    watchCounts: { "optedout@example.com": 2 },
     suppression: { alerts_paused_at: "2026-06-01T00:00:00Z", paused_source: "unsubscribe" },
   });
   const d = deps(admin);
@@ -321,15 +347,23 @@ test("the claim path never mints or echoes an email-vault token to the browser",
   assert.doesNotMatch(core, /buildVaultUrl|mintVaultToken/, "the core cannot leak the bearer credential either");
 });
 
-test("the seeded view renders the claim form (honeypot + masked post-claim) and the quiet fork CTA", () => {
+test("the public page NEVER locks: no cross-email claim state, no email ever rendered, form always available to a fresh visitor", () => {
   const view = read("app/(site)/w/[token]/seeded-vault-view.tsx");
   assert.match(view, /claimSeededVault/, "form posts the claim action");
   assert.match(view, /name="website"/, "honeypot field rendered");
-  assert.match(view, /publicMask\(claim\.claimedEmail\)/, "post-claim state masks the email");
-  assert.match(view, /@…/, "public mask elides the DOMAIN too (tweet-public page, /security-review L-1)");
-  assert.doesNotMatch(view, /\{claim\.claimedEmail\}/, "the raw claimed email never renders");
+  // Template model: the view reads NO claim state from the DB and renders no
+  // claimant identity — post-submit state is per-visitor via the ?c= flag.
+  assert.doesNotMatch(view, /getSeededVaultClaim/, "the view must not read cross-visitor claim state");
+  assert.doesNotMatch(view, /publicMask|claimedEmail|claimed_email/, "no email (masked or raw) ever renders on the public page");
+  assert.doesNotMatch(view, /first email claims/i, "the single-claim copy is retired");
+  assert.match(view, /claimFlag === "ok"/, "post-submit confirmation is per-visitor (?c=ok)");
+  assert.match(view, /claimFlag === "again"/, "idempotent re-claim gets the friendly already-watching state");
   assert.match(view, /-fork/, "fork CTA carries the -fork src");
   assert.match(view, /Made for \{vault\.dedication\}/, "dedication chip (the /lines pattern)");
+  const action = read("app/actions/seeded-vault.ts");
+  assert.doesNotMatch(action, /"taken"|already_claimed/, "no claimed-by-someone-else outcome exists anywhere in the action");
+  const core = read("lib/wishlist/seeded-claim.ts");
+  assert.doesNotMatch(core, /already_claimed/, "the core has no cross-email lock error");
   const page = read("app/(site)/w/[token]/page.tsx");
   assert.match(page, /verifySeededVaultToken/, "the page branches to the seeded view");
   assert.match(page, /notFound\(\)/, "both token failures still render the uniform 404");
