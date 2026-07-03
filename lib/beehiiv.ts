@@ -10,6 +10,13 @@ import { z } from "zod";
 export type SubscribeInput = {
   email: string;
   source: string;
+  /** Beehiiv-side utm_medium. Default "email-capture" (every site capture).
+   *  The seeded-vault claim path passes "vault-claim" — the flag the welcome
+   *  automation's trigger condition keys on to SUPPRESS the generic welcome
+   *  (claimants already get the vault email; two welcomes is the bug —
+   *  welcome-email-overhaul). Changing this string breaks the live Beehiiv
+   *  trigger condition; it's pinned in lib/__tests__/beehiiv.test.ts. */
+  utmMedium?: "email-capture" | "vault-claim";
 };
 
 export type SubscribeResult =
@@ -21,6 +28,7 @@ export type SubscribeResult =
 const subscribeSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   source: z.string().trim().min(1).max(128),
+  utmMedium: z.enum(["email-capture", "vault-claim"]).default("email-capture"),
 });
 
 let cachedClient: BeehiivClient | null = null;
@@ -51,7 +59,7 @@ export async function subscribeEmail(input: SubscribeInput): Promise<SubscribeRe
   const parsed = subscribeSchema.safeParse(input);
   if (!parsed.success) return { ok: false };
 
-  const { email, source } = parsed.data;
+  const { email, source, utmMedium } = parsed.data;
   const client = getClient();
   const publicationId = getPublicationId();
 
@@ -60,7 +68,7 @@ export async function subscribeEmail(input: SubscribeInput): Promise<SubscribeRe
     reactivate_existing: true,
     send_welcome_email: false,
     utm_source: "foil-blog",
-    utm_medium: "email-capture",
+    utm_medium: utmMedium,
     utm_campaign: source,
     referring_site: "foiltcg.com",
   };

@@ -9,6 +9,8 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { Beehiiv } from "@beehiiv/sdk";
 import { __setClientForTests, subscribeEmail, unsubscribeEmail } from "../beehiiv.ts";
 
@@ -104,6 +106,42 @@ test("subscribeEmail — sends ADR-010 utm payload + reactivate_existing flag", 
       referring_site: "foiltcg.com",
     });
   });
+});
+
+// welcome-email-overhaul: utmMedium is the welcome-dedupe flag. The default
+// stays "email-capture" (pinned above); the seeded-vault claim path passes
+// "vault-claim", which the live Beehiiv welcome automation's trigger condition
+// excludes (medium not_equal "vault-claim") so claimants get ONE welcome (the
+// vault email), never two. These strings are load-bearing on the Beehiiv side.
+test("subscribeEmail — utmMedium 'vault-claim' passes through to the Beehiiv payload", async () => {
+  const { client, calls } = makeFakeClient({});
+  await withFakeClient(client, async () => {
+    const result = await subscribeEmail({
+      email: "claimer@example.com",
+      source: "eve-vault",
+      utmMedium: "vault-claim",
+    });
+    assert.deepEqual(result, { ok: true, status: "subscribed" });
+    assert.equal(calls[0].request.utm_medium, "vault-claim");
+    assert.equal(calls[0].request.utm_campaign, "eve-vault");
+  });
+});
+
+test("seeded-vault claim action — subscribes with the vault-claim welcome-dedupe flag", () => {
+  // Structural pin: the claim path must pass utmMedium:"vault-claim" so the
+  // Beehiiv trigger condition can suppress the generic welcome for claimants.
+  const src = readFileSync(
+    join(process.cwd(), "app", "actions", "seeded-vault.ts"),
+    "utf8",
+  );
+  const callIdx = src.search(/subscribeEmail\s*\(/);
+  assert.ok(callIdx >= 0, "claim action must call subscribeEmail");
+  const callSlice = src.slice(callIdx, callIdx + 300);
+  assert.match(
+    callSlice,
+    /utmMedium:\s*["']vault-claim["']/,
+    "claim action's subscribeEmail call must pass utmMedium:'vault-claim'",
+  );
 });
 
 test("subscribeEmail — retries once on TooManyRequestsError then succeeds", async () => {

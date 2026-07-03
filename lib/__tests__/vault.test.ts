@@ -151,6 +151,22 @@ test("vault link email: welcome + recovery subjects, one link, private-link warn
   assert.match(welcome, /https:\/\/foiltcg\.com\/w\/tok/);
   assert.match(welcome, /treat it like a private calendar link/);
   assert.doesNotMatch(welcome, /<img/i);
+  // welcome-email-overhaul: the vault welcome is the claimer's ONLY welcome
+  // (the generic Beehiiv welcome is suppressed for vault-claim signups), so it
+  // must carry the what-to-expect line and the reply-ask — voice says
+  // "chasing", never "hunting".
+  assert.match(welcome, /about one email a week/);
+  assert.match(welcome, /hit reply and tell me the one card you're chasing right now/);
+  assert.match(welcome, /I read every reply/);
+  assert.doesNotMatch(welcome, /hunt/i);
+  // The recovery variant stays a thin link-resend — no welcome furniture.
+  const recovery = vaultEmailBody({
+    kind: "recovery",
+    vaultUrl: "https://foiltcg.com/w/tok",
+    unsubscribeUrl: null,
+  });
+  assert.doesNotMatch(recovery, /what to expect/i);
+  assert.doesNotMatch(recovery, /hit reply/i);
   assert.equal(vaultEmailSubject("welcome"), "Your Foil vault is open");
   assert.equal(vaultEmailSubject("recovery"), "Your Foil vault link");
 });

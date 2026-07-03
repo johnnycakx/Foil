@@ -29,10 +29,15 @@ export function vaultEmailBody(input: {
   unsubscribeUrl: string | null;
 }): string {
   const safeUrl = escapeHtml(input.vaultUrl);
+  // The welcome IS the claimer's only welcome (the generic Beehiiv welcome is
+  // suppressed for vault-claim signups — welcome-email-overhaul), so it carries
+  // the what-to-expect line and the reply-ask alongside the vault link.
   const intro =
     input.kind === "welcome"
       ? `<p style="font-size: 16px; margin: 0 0 8px;"><strong>Your vault is open.</strong></p>
-<p style="font-size: 14px; color: #445; margin: 0 0 16px;">Every card you track lives on one page — see live prices, tune targets, pause or add cards any time. Keep this link; it's yours.</p>`
+<p style="font-size: 14px; color: #445; margin: 0 0 16px;">Every card you track lives on one page — see live prices, tune targets, pause or add cards any time. Keep this link; it's yours.</p>
+<p style="font-size: 14px; color: #445; margin: 0 0 16px;">What to expect: about one email a week on the market, plus an alert when a card you're watching genuinely dips.</p>
+<p style="font-size: 14px; color: #445; margin: 0 0 16px;">One favor: hit reply and tell me the one card you're chasing right now — I read every reply. — John</p>`
       : `<p style="font-size: 16px; margin: 0 0 8px;"><strong>Here's your vault link.</strong></p>
 <p style="font-size: 14px; color: #445; margin: 0 0 16px;">This is the private link to the cards you're watching on Foil.</p>`;
   const footer = input.unsubscribeUrl

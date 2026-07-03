@@ -53,7 +53,14 @@ function maskInline(email: string): string {
  *  soft-fails; failures ping #errors, never the claimant). */
 async function subscribeClaimant(email: string, vault: SeededVault): Promise<void> {
   try {
-    const subResult = await subscribeEmail({ email, source: vault.subscriberSource });
+    // utmMedium "vault-claim" is the welcome-dedupe flag: the Beehiiv welcome
+    // automation's trigger condition skips vault-claim signups (they get the
+    // vault email instead — one welcome, never two).
+    const subResult = await subscribeEmail({
+      email,
+      source: vault.subscriberSource,
+      utmMedium: "vault-claim",
+    });
     if (!subResult.ok) {
       notifyErrors("BeehiivSubscribeFailed", "subscribeEmail returned ok:false", {
         source: vault.subscriberSource,
