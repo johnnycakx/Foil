@@ -17,6 +17,7 @@ import {
 import { generateEngagementBrief, type BriefDeps } from "../engagement/brief-engine.ts";
 import type { BriefStore } from "../engagement/store.ts";
 import { renderEngagementBriefChunks, neutralizeMentions } from "../engagement/render.ts";
+import { ENGAGEMENT_QUERIES } from "../engagement/queries.ts";
 
 function post(over: Partial<XPost> & { id: string; text: string }): XPost {
   return {
@@ -104,6 +105,30 @@ test("advisoryEligible: only high-reach candidates qualify (public engagement, n
   assert.equal(advisoryEligible(big), true, "real audience qualifies");
   assert.equal(advisoryEligible(small), false, "low followers AND low public engagement does not (views are dead)");
   assert.equal(advisoryEligible(viral), true, "low followers but real public engagement qualifies");
+});
+
+test("advisoryEligible: floor is 250 (widen-scan) — mid-tier accounts now qualify, true low-reach still skipped", () => {
+  const mid = { post: post({ id: "m", text: "x", authorFollowers: 300, metrics: { likes: 2, replies: 0, reposts: 0, impressions: 0 } }), intentScore: 0.6 };
+  const low = { post: post({ id: "l", text: "x", authorFollowers: 200, metrics: { likes: 2, replies: 0, reposts: 0, impressions: 0 } }), intentScore: 0.6 };
+  assert.equal(advisoryEligible(mid), true, "300 followers clears the 250 floor (was below the old 500)");
+  assert.equal(advisoryEligible(low), false, "200 followers + low public engagement still below floor");
+});
+
+test("evaluateCandidate: grading intent is a value question (widen-scan)", () => {
+  const c = evaluateCandidate(post({ id: "g", text: "Should I grade this Umbreon or keep it raw?" }), "FoilTCG");
+  assert.ok(c, "grading decision on a pokemon card is a candidate");
+});
+
+test("ENGAGEMENT_QUERIES: widened set stays Pokemon-scoped + reply/retweet-excluded (widen-scan)", () => {
+  assert.ok(ENGAGEMENT_QUERIES.length >= 8, `expected >= 8 queries, got ${ENGAGEMENT_QUERIES.length}`);
+  assert.equal(ENGAGEMENT_QUERIES.length, 9, "widened to 9 (bump this pin if you add/remove queries)");
+  for (const q of ENGAGEMENT_QUERIES) {
+    assert.ok(q.includes("-is:retweet"), `query missing -is:retweet: ${q}`);
+    assert.ok(q.includes("-is:reply"), `query missing -is:reply: ${q}`);
+    assert.ok(q.includes("lang:en"), `query missing lang:en: ${q}`);
+    assert.ok(q.includes("-giveaway"), `query missing -giveaway noise exclusion: ${q}`);
+    assert.ok(/pok[eé]mon|wotc/i.test(q), `query not Pokemon-scoped: ${q}`);
+  }
 });
 
 test("validateAdvisoryDraft: a clean, helpful, figure-free reply passes", () => {

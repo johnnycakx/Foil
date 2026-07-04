@@ -98,7 +98,16 @@ export async function GET(request: Request): Promise<NextResponse> {
       maxItems: 20,
       store: supabaseBriefStore(),
       search: async (q) => {
-        const r = await searchRecent(q, { maxResults: 30 });
+        // 50 (was 30): fatten the per-query scan within the quota budget (project
+        // cap 2M/mo, ~480 used — 9 queries × 50 × 3 runs/day ≈ 40k/mo ≈ 2% of cap).
+        // Kept below X's 100 ceiling so the widen adds reach, not low-signal noise.
+        const r = await searchRecent(q, { maxResults: 50 });
+        // Space the queries (~2s): recent-search enforces a burst cap well below 9
+        // rapid calls (measured — back-to-back throttles after ~8; 2s spacing ran
+        // all 9 clean), so without spacing the LATER widened queries would silently
+        // soft-fail to [] and the widen would only partly apply. 9 × 2s ≈ 18s,
+        // trivial vs the 300s function limit and the 3-runs/day cadence.
+        await new Promise((r) => setTimeout(r, 2000));
         return r.ok ? r.posts : [];
       },
       getFacts: async () => {

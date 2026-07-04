@@ -26,6 +26,10 @@ const VALUE_INTENT: readonly RegExp[] = [
   /is this (a )?(good|worth|real|legit)/i,
   /(rip|ripping|crack|open).{0,12}(sealed|booster|box|pack)/i,
   /\b(psa|cgc|bgs)\s?\d/i,
+  // Grading intent (widen-scan amendment): a grade decision is a value question —
+  // Foil's raw-vs-graded sold spread is exactly the data that answers it. Lets the
+  // new grading query surface real candidates ("should i grade" isn't in should-i).
+  /should i grade|get(ting)? (it |this )?graded|gem mint|\bgrade (it|this)\b/i,
 ];
 
 // On-topic guard — search is pokemon-scoped but a stray "worth" off-topic post
@@ -110,12 +114,15 @@ export function opportunityScore(c: Candidate, nowMs: number): number {
   return c.intentScore * 0.35 + reach * 0.3 + velocity * 0.2 + freshness * 0.1 + engagement * 0.05;
 }
 
-// Advisory-mode reach gate (ADR-086 v2; the dead views leg fixed §2c). Advisory
-// replies (value-first, no data cite) go ONLY to high-reach relevant posts — the
-// generic-but-big buying questions that name no specific card. Stricter than the
-// base candidate floor so a low-reach generic post is skipped rather than
-// cold-replied (the spam-flag risk).
-const ADVISORY_REACH_FLOOR_FOLLOWERS = 500;
+// Advisory-mode reach gate (ADR-086 v2; the dead views leg fixed §2c; floor
+// lowered 500 → 250 in the widen-scan amendment). Advisory replies (value-first,
+// no data cite) go ONLY to relevant posts with genuine reach — the generic-but-
+// -sizable buying questions that name no specific card. Still stricter than the
+// base candidate floor (75) so a true low-reach post is skipped rather than
+// cold-replied (the spam-flag risk). 500 was over-tight for a young account; 250
+// still guarantees a real mid-tier audience while surfacing more candidates, and
+// opportunityScore still sorts best-first so the strongest reach reads at the top.
+const ADVISORY_REACH_FLOOR_FOLLOWERS = 250;
 const ADVISORY_ENGAGEMENT_FLOOR = 25;
 
 /**
