@@ -138,10 +138,11 @@ export function Logo({
       {withMark && <SealMark px={MARK_PX[size]} />}
       <span aria-hidden className={`${wordmarkClass} inline-flex items-baseline gap-[0.28em]`}>
         <span className={foilColor}>Foil</span>
-        {/* Same face + weight as "Foil" (inherited from the lockup); only the
-            cap height shrinks to a suffix and a hair of tracking keeps the
-            small caps legible. The gold shimmer clips over this face. */}
-        <span className="wordmark-tcg text-[0.5em] tracking-[0.04em]">TCG</span>
+        {/* Same face + weight as "Foil" (inherited from the lockup); the cap
+            height shrinks to a confident suffix (John, 2026-07-04: 0.5em read
+            too small) and a hair of tracking keeps the small caps legible. The
+            gold shimmer clips over this face. */}
+        <span className="wordmark-tcg text-[0.62em] tracking-[0.03em]">TCG</span>
       </span>
     </span>
   );
