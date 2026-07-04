@@ -41,6 +41,7 @@
     "@types/mdx": "^2.0.13",
     "@vercel/analytics": "^2.0.1",
     "cheerio": "^1.2.0",
+    "google-auth-library": "^10.9.0",
     "gray-matter": "^4.0.3",
     "gsap": "^3.15.0",
     "h264-mp4-encoder": "^1.0.12",

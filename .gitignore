@@ -51,6 +51,15 @@ supabase/.temp/
 .bake-cards-state.json
 .bake-poketrace-state.json
 
+# GSC service-account key — the raw JSON must NEVER be committed (ADR-109 / gsc-api-integration).
+# The key is stored base64 in .env.local as GSC_SA_KEY_JSON; this is defensive coverage
+# in case the raw file is ever dropped in the repo.
+gsc-sa-key.json
+*-sa-key.json
+*.iam.gserviceaccount.com.json
+*n8n-content-project*.json
+*service-account*.json
+
 # Creator-content ingestion: raw transcripts are gitignored (synthesized
 # digests in docs/transcript-digests/ are committed). Goal C.1 / ADR-050.
 docs/transcripts/
