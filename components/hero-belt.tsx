@@ -36,7 +36,7 @@
 // checks matchMedia before ever starting — belt markup without drift for
 // safety if the CSS gate is bypassed.
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import type { BeltCard } from "@/lib/hero-belt/pool";
@@ -59,6 +59,14 @@ export function HeroBelt({ pool }: { pool: BeltCard[] }) {
   const rootRef = useRef<HTMLDivElement>(null);
   // k = how many whole slots have wrapped; faces derive from it.
   const [k, setK] = useState(0);
+  // The k the DOM is ACTUALLY showing (setK is async — it lags the ticker by a
+  // frame). The transform must key off THIS, not the live modulo, or the seam
+  // stutters: for one frame the x resets while the faces haven't shifted yet,
+  // which reads as a "motion blur every few seconds" (mobile-hero-redesign fix).
+  const renderedKRef = useRef(0);
+  useLayoutEffect(() => {
+    renderedKRef.current = k;
+  }, [k]);
 
   const faces = useMemo(() => {
     if (pool.length === 0) return [];
@@ -99,7 +107,11 @@ export function HeroBelt({ pool }: { pool: BeltCard[] }) {
         wraps = newWraps;
         setK(newWraps); // one node re-faces off-screen; the scene is unchanged
       }
-      gsap.set(track, { x: -(offset % SLOT_PX) });
+      // Key x off the RENDERED k, not `offset % SLOT_PX`. When a wrap fires,
+      // `setK` hasn't committed yet, so the track keeps drifting smoothly past one
+      // slot (the 2 spare nodes cover it); the frame the faces actually shift, x
+      // snaps back by SLOT_PX in the SAME frame — no seam stutter / motion blur.
+      gsap.set(track, { x: -(offset - renderedKRef.current * SLOT_PX) });
     };
 
     gsap.ticker.add(tick);

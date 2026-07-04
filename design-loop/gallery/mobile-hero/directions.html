@@ -1,0 +1,131 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Foil mobile hero — 3 directions</title>
+<style>
+  :root{
+    --night:#0d0d0e; --night2:#141416; --cream:#f8f5f0; --cream60:rgba(248,245,240,.6);
+    --cream45:rgba(248,245,240,.45); --gold:#c9a24b; --accent:#d98aa0; --navy:#0f1e3a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#1c1c1f;font-family:'Geist',system-ui,sans-serif;padding:28px;display:flex;gap:34px;align-items:flex-start;justify-content:center}
+  .col{display:flex;flex-direction:column;gap:12px;align-items:center}
+  .label{color:#cfcfcf;font:600 13px/1.3 system-ui;letter-spacing:.02em;text-align:center}
+  .sub{color:#8a8a8a;font:400 11px/1.4 system-ui;text-align:center;max-width:390px}
+  /* the phone frame */
+  .phone{width:390px;height:760px;background:var(--night);border-radius:26px;overflow:hidden;position:relative;
+    box-shadow:0 24px 70px -20px rgba(0,0,0,.7);border:1px solid #2a2a2e}
+  .chrome{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 10px}
+  .wm{font:800 17px/1 'Georgia',serif;color:var(--cream);letter-spacing:.01em}
+  .wm b{color:var(--gold)}
+  .nav{display:flex;gap:14px;color:var(--cream60);font:500 11px/1 system-ui}
+  .h1{font-family:'Georgia','Fraunces',serif;color:var(--cream);font-weight:600;letter-spacing:-.01em}
+  .card{aspect-ratio:5/7;border-radius:9px;overflow:hidden;background:#222;
+    box-shadow:0 10px 26px -12px rgba(0,0,0,.85);outline:1px solid rgba(248,245,240,.10)}
+  .card img{width:100%;height:100%;object-fit:cover;display:block}
+  .cta{display:inline-flex;align-items:center;justify-content:center;background:var(--cream);color:var(--navy);
+    font:700 15px/1 system-ui;padding:14px 26px;border-radius:999px;letter-spacing:.01em}
+  .trust{color:var(--cream45);font:400 11px/1.5 system-ui;text-align:center}
+  .pill{display:inline-flex;align-items:center;gap:6px;color:var(--cream60);font:600 10px/1 system-ui;
+    letter-spacing:.08em;text-transform:uppercase}
+  .dot{width:5px;height:5px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold)}
+  .subh{color:var(--cream60);font:400 14px/1.5 system-ui;text-align:center}
+  /* grounding shadow for compositions */
+  .floor{height:14px;margin:-6px auto 0;border-radius:100%;filter:blur(7px);
+    background:radial-gradient(ellipse at center,rgba(0,0,0,.9),rgba(0,0,0,.35) 55%,transparent 75%)}
+  .fade-mask{-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
+    mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+
+  /* ---- A: still strip (frozen belt) ---- */
+  .A .strip{display:flex;gap:9px;padding:0 0 0 14px;margin-top:12px}
+  .A .strip .card{width:118px;flex:0 0 auto}
+  .A .body{padding:26px 26px 0;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
+  .A .h1{font-size:38px;line-height:1.02}
+
+  /* ---- B: tight grail fan ---- */
+  .B .fan{position:relative;height:230px;margin-top:20px;display:flex;justify-content:center;align-items:flex-start}
+  .B .fan .card{width:132px;position:absolute;top:0}
+  .B .fan .l{transform:rotate(-11deg) translateX(-86px) translateY(16px)}
+  .B .fan .c{transform:rotate(1deg);z-index:3;box-shadow:0 18px 44px -12px rgba(0,0,0,.9),0 0 30px -8px rgba(217,138,160,.28);outline-color:rgba(201,162,75,.4)}
+  .B .fan .r{transform:rotate(11deg) translateX(86px) translateY(16px)}
+  .B .body{padding:8px 26px 0;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
+  .B .h1{font-size:39px;line-height:1.02}
+
+  /* ---- C: hero grail + supporting shelf ---- */
+  .C .focalwrap{margin-top:16px;display:flex;flex-direction:column;align-items:center}
+  .C .focal{width:158px}
+  .C .focal .card{outline-color:rgba(201,162,75,.4);box-shadow:0 20px 50px -14px rgba(0,0,0,.9),0 0 34px -10px rgba(217,138,160,.3)}
+  .C .glow{position:absolute;inset-inline:0;top:56px;height:220px;pointer-events:none;
+    background:radial-gradient(ellipse 55% 60% at 50% 30%,rgba(248,245,240,.08),transparent 62%)}
+  .C .shelf{display:flex;gap:8px;justify-content:center;margin-top:18px}
+  .C .shelf .card{width:64px}
+  .C .body{padding:22px 26px 0;display:flex;flex-direction:column;align-items:center;gap:15px;text-align:center}
+  .C .h1{font-size:36px;line-height:1.04}
+</style>
+
+<div class="col">
+  <div class="label">A · Still strip (frozen belt)</div>
+  <div class="phone A">
+    <div class="chrome"><div class="wm">Foil<b>·</b></div><div class="nav"><span>Deals</span><span>Cards</span><span>Vault</span></div></div>
+    <div class="strip fade-mask">
+      <div class="card"><img src="../../../public/hero/base1-4.webp"></div>
+      <div class="card"><img src="../../../public/hero/swsh7-215.webp"></div>
+      <div class="card"><img src="../../../public/hero/swsh12-186.webp"></div>
+      <div class="card"><img src="../../../public/hero/swsh4-188.webp"></div>
+    </div>
+    <div class="body">
+      <div class="pill"><span class="dot"></span>Watching 1,885 cards</div>
+      <h1 class="h1">Tell me the cards you're chasing.</h1>
+      <div class="subh">Foil watches the market and emails you the moment one drops to your price.</div>
+      <a class="cta">Start your vault</a>
+      <div class="trust">Free · no account · one email when it matters</div>
+    </div>
+  </div>
+  <div class="sub">A frozen frame of the belt: a clean strip of grails fading at the edges. Reads as "the wheel, paused." H1 large below = LCP.</div>
+</div>
+
+<div class="col">
+  <div class="label">B · Tight grail fan</div>
+  <div class="phone B">
+    <div class="chrome"><div class="wm">Foil<b>·</b></div><div class="nav"><span>Deals</span><span>Cards</span><span>Vault</span></div></div>
+    <div class="fan">
+      <div class="card l"><img src="../../../public/hero/base1-4.webp"></div>
+      <div class="card r"><img src="../../../public/hero/swsh12-186.webp"></div>
+      <div class="card c"><img src="../../../public/hero/swsh7-215.webp"></div>
+    </div>
+    <div class="floor" style="width:60%"></div>
+    <div class="body">
+      <div class="pill"><span class="dot"></span>Watching 1,885 cards</div>
+      <h1 class="h1">Tell me the cards you're chasing.</h1>
+      <div class="subh">The market, watched for you. We email the moment your card drops.</div>
+      <a class="cta">Start your vault</a>
+      <div class="trust">Free · no account · one email when it matters</div>
+    </div>
+  </div>
+  <div class="sub">Three grails in a tight fan, Moonbreon leading, grounded by a soft floor. The composed-fan feel of the desktop hero, held still.</div>
+</div>
+
+<div class="col">
+  <div class="label">C · Hero grail + shelf</div>
+  <div class="phone C">
+    <div class="glow"></div>
+    <div class="chrome"><div class="wm">Foil<b>·</b></div><div class="nav"><span>Deals</span><span>Cards</span><span>Vault</span></div></div>
+    <div class="focalwrap">
+      <div class="focal"><div class="card"><img src="../../../public/hero/swsh7-215.webp"></div></div>
+      <div class="floor" style="width:150px"></div>
+      <div class="shelf">
+        <div class="card"><img src="../../../public/hero/base1-4.webp"></div>
+        <div class="card"><img src="../../../public/hero/swsh12-186.webp"></div>
+        <div class="card"><img src="../../../public/hero/swsh8-269.webp"></div>
+        <div class="card"><img src="../../../public/hero/swsh4-188.webp"></div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="pill"><span class="dot"></span>Watching 1,885 cards</div>
+      <h1 class="h1">Tell me the cards you're chasing.</h1>
+      <div class="subh">One grail up front, the whole hobby behind it. We watch, you get the email.</div>
+      <a class="cta">Start your vault</a>
+      <div class="trust">Free · no account · one email when it matters</div>
+    </div>
+  </div>
+  <div class="sub">A single hero grail with a supporting shelf of chase cards. Clear hierarchy, most "editorial", strongest single-card desire pull.</div>
+</div>
