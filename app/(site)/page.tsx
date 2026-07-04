@@ -259,7 +259,11 @@ function Hero() {
               <div
                 key={c.id}
                 className={`relative ${c.tilt} ${c.arc} ${slot.z} ${i > 0 ? (c.gap ?? "-ml-9 sm:-ml-10 md:-ml-12 lg:ml-[calc(-3rem*var(--fan-s,1))]") : ""} ${
-                  c.edge ? "hidden sm:block" : ""
+                  // mobile-static-hero: on mobile the fan is the hero, so it's
+                  // MINIMAL — only the focal grail (depth 0) shows; the wings are
+                  // `hidden lg:block`, returning for the lg reduced-motion fan.
+                  // One ~50KB card beats five (~250KB) for the mobile LCP.
+                  c.depth >= 1 ? "hidden lg:block" : ""
                 } transition duration-200 ease-out hover:z-50 focus-within:z-50`}
               >
                 {slug ? (
