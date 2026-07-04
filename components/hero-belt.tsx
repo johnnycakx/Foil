@@ -38,13 +38,14 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import gsap from "gsap";
 import type { BeltCard } from "@/lib/hero-belt/pool";
-// GSAP EXECUTION is device-gated in the effect below (mobile-static-hero): the
-// ticker/animation only boots on desktop-motion, so phones never pay the ~1s
-// GSAP boot / main-thread cost (the biggest slice of the mobile hero LCP per the
-// prod LCP breakdown). GSAP is still statically imported so the desktop belt
-// animation is rock-solid; the module is downloaded-but-idle on mobile.
+// GSAP is DYNAMICALLY imported inside the effect below (mobile-lcp-font-js-floor):
+// the ~74KB library was previously a static module-scope import, so it entered
+// the first-load client bundle and downloaded on EVERY device — including phones,
+// where the belt is display:none and GSAP never runs (the biggest slice of unused
+// mobile JS per the prod bundle). Now the import fires only AFTER the
+// desktop-motion gate, so mobile/reduced-motion visitors never fetch or parse it,
+// while the desktop belt animation is unchanged.
 
 // Uniform card box: the loop math depends on it (face width variance would
 // break the wrap arithmetic). Art fills the 5/7 box.
@@ -80,65 +81,83 @@ export function HeroBelt({ pool }: { pool: BeltCard[] }) {
     // DEVICE-GATED MOTION (mobile-static-hero, ADR-102 amendment): the belt +
     // GSAP boot ONLY on desktop-motion. On mobile OR reduced-motion the static
     // fan is the hero (CSS-gated in page.tsx: the belt container is
-    // `lg:motion-safe:block`), so GSAP is never needed here — and because it's
-    // dynamically imported below (not module-scope), phones never download or
-    // execute it. `lg` = 1024px, matching that CSS gate exactly so DOM + JS agree.
+    // `lg:motion-safe:block`), so GSAP is never needed here. `lg` = 1024px,
+    // matching that CSS gate exactly so DOM + JS agree.
     if (!window.matchMedia("(min-width: 1024px)").matches) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    let offset = 0;
-    let wraps = 0;
-    // The pause-is-deceleration proxy: hover/focus/offscreen tween this
-    // toward 0; resume tweens back to 1. The drift itself stays linear.
-    const speed = { v: 1 };
-    let visible = true;
-    let engaged = false; // hover or focus-within
+    // Only past the gate do we pull GSAP over the wire (mobile-lcp-font-js-floor):
+    // the dynamic import keeps the ~74KB library out of the mobile first-load
+    // bundle entirely. `cancelled`/`teardown` handle an unmount that races the
+    // async import (StrictMode double-invoke, fast navigation).
+    let cancelled = false;
+    let teardown: (() => void) | null = null;
 
-    const speedTarget = () => (visible && !engaged && !document.hidden ? 1 : 0);
-    const retune = () => {
-      gsap.to(speed, { v: speedTarget(), duration: 0.45, ease: "power2.out", overwrite: true });
-    };
+    import("gsap").then(({ default: gsap }) => {
+      if (cancelled) return;
+      const trackEl = trackRef.current;
+      const rootEl = rootRef.current;
+      if (!trackEl || !rootEl) return;
 
-    const tick = (_t: number, dt: number) => {
-      if (speed.v <= 0.001) return;
-      offset += (DRIFT_PX_S * speed.v * dt) / 1000;
-      const newWraps = Math.floor(offset / SLOT_PX);
-      if (newWraps !== wraps) {
-        wraps = newWraps;
-        setK(newWraps); // one node re-faces off-screen; the scene is unchanged
-      }
-      // Key x off the RENDERED k, not `offset % SLOT_PX`. When a wrap fires,
-      // `setK` hasn't committed yet, so the track keeps drifting smoothly past one
-      // slot (the 2 spare nodes cover it); the frame the faces actually shift, x
-      // snaps back by SLOT_PX in the SAME frame — no seam stutter / motion blur.
-      gsap.set(track, { x: -(offset - renderedKRef.current * SLOT_PX) });
-    };
+      let offset = 0;
+      let wraps = 0;
+      // The pause-is-deceleration proxy: hover/focus/offscreen tween this
+      // toward 0; resume tweens back to 1. The drift itself stays linear.
+      const speed = { v: 1 };
+      let visible = true;
+      let engaged = false; // hover or focus-within
 
-    gsap.ticker.add(tick);
+      const speedTarget = () => (visible && !engaged && !document.hidden ? 1 : 0);
+      const retune = () => {
+        gsap.to(speed, { v: speedTarget(), duration: 0.45, ease: "power2.out", overwrite: true });
+      };
 
-    const onEnter = () => { engaged = true; retune(); };
-    const onLeave = () => { engaged = false; retune(); };
-    root.addEventListener("mouseenter", onEnter);
-    root.addEventListener("mouseleave", onLeave);
-    root.addEventListener("focusin", onEnter);
-    root.addEventListener("focusout", onLeave);
+      const tick = (_t: number, dt: number) => {
+        if (speed.v <= 0.001) return;
+        offset += (DRIFT_PX_S * speed.v * dt) / 1000;
+        const newWraps = Math.floor(offset / SLOT_PX);
+        if (newWraps !== wraps) {
+          wraps = newWraps;
+          setK(newWraps); // one node re-faces off-screen; the scene is unchanged
+        }
+        // Key x off the RENDERED k, not `offset % SLOT_PX`. When a wrap fires,
+        // `setK` hasn't committed yet, so the track keeps drifting smoothly past one
+        // slot (the 2 spare nodes cover it); the frame the faces actually shift, x
+        // snaps back by SLOT_PX in the SAME frame — no seam stutter / motion blur.
+        gsap.set(trackEl, { x: -(offset - renderedKRef.current * SLOT_PX) });
+      };
 
-    const io = new IntersectionObserver(([entry]) => {
-      visible = entry?.isIntersecting ?? true;
-      retune();
+      gsap.ticker.add(tick);
+
+      const onEnter = () => { engaged = true; retune(); };
+      const onLeave = () => { engaged = false; retune(); };
+      rootEl.addEventListener("mouseenter", onEnter);
+      rootEl.addEventListener("mouseleave", onLeave);
+      rootEl.addEventListener("focusin", onEnter);
+      rootEl.addEventListener("focusout", onLeave);
+
+      const io = new IntersectionObserver(([entry]) => {
+        visible = entry?.isIntersecting ?? true;
+        retune();
+      });
+      io.observe(rootEl);
+      const onVis = () => retune();
+      document.addEventListener("visibilitychange", onVis);
+
+      teardown = () => {
+        gsap.ticker.remove(tick);
+        rootEl.removeEventListener("mouseenter", onEnter);
+        rootEl.removeEventListener("mouseleave", onLeave);
+        rootEl.removeEventListener("focusin", onEnter);
+        rootEl.removeEventListener("focusout", onLeave);
+        io.disconnect();
+        document.removeEventListener("visibilitychange", onVis);
+      };
     });
-    io.observe(root);
-    const onVis = () => retune();
-    document.addEventListener("visibilitychange", onVis);
 
     return () => {
-      gsap.ticker.remove(tick);
-      root.removeEventListener("mouseenter", onEnter);
-      root.removeEventListener("mouseleave", onLeave);
-      root.removeEventListener("focusin", onEnter);
-      root.removeEventListener("focusout", onLeave);
-      io.disconnect();
-      document.removeEventListener("visibilitychange", onVis);
+      cancelled = true;
+      teardown?.();
     };
   }, [pool]);
 

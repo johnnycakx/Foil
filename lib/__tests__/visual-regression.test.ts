@@ -623,16 +623,21 @@ test("Hero: seal-free and pill-free (hero-polish-followups closed the seal class
   assert.doesNotMatch(src, /<PokeballMark\b/, "no PokeballMark bullets remain");
 });
 
-test("Display font is Fraunces with the SOFT warmth axis; Bricolage is the wordmark cut (ADR-036/094)", () => {
+test("Display font is Fraunces (self-hosted SOFT=30 subset) backing --font-display; Bricolage is the wordmark cut (ADR-036/094; mobile-lcp-font subset)", () => {
   const layout = readFile("app/layout.tsx");
-  assert.match(layout, /Fraunces/, "layout must import Fraunces");
-  // Bricolage is back (ADR-094) but as the WORDMARK cut, not the display font —
-  // Fraunces still backs --font-display, Bricolage backs --font-wordmark.
-  assert.match(layout, /Fraunces\([\s\S]*?variable:\s*["']--font-display["']/, "Fraunces backs --font-display");
+  assert.match(layout, /Fraunces/, "layout must reference Fraunces (the display cut)");
+  // mobile-lcp-font-js-floor: Fraunces is the mobile-LCP font, so it now loads
+  // via next/font/local from a brand-identical SUBSET (57KB vs 120KB), still
+  // backing --font-display. Bricolage (ADR-094) stays the WORDMARK cut.
+  assert.match(layout, /localFont\(\{[\s\S]*?variable:\s*["']--font-display["']/, "the local Fraunces subset backs --font-display");
+  assert.match(layout, /src:\s*["']\.\/fonts\/fraunces-display\.woff2["']/, "layout points at the committed Fraunces subset asset");
   assert.match(layout, /Bricolage_Grotesque\([\s\S]*?variable:\s*["']--font-wordmark["']/, "Bricolage backs --font-wordmark");
   const css = readFile("app/globals.css");
-  // The SOFT axis (no wght set, so font-weight utilities still compose).
-  assert.match(css, /font-variation-settings:\s*["']SOFT["']\s+30/);
+  // opsz stays a live axis (font-optical-sizing:auto); the SOFT=30 warmth
+  // (ADR-036) is now BAKED INTO the subset rather than set via CSS.
+  assert.match(css, /\.font-display\s*\{[\s\S]*?font-optical-sizing:\s*auto/, "opsz optical-sizing retained on .font-display");
+  const subsetScript = readFile("scripts/subset-fraunces.py");
+  assert.match(subsetScript, /["']SOFT["']:\s*30/, "the subset bakes SOFT=30 — the ADR-036 warmth is preserved, not dropped");
 });
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces, Bricolage_Grotesque, Shrikhand } from "next/font/google";
+import { Geist, Geist_Mono, Bricolage_Grotesque, Shrikhand } from "next/font/google";
+import localFont from "next/font/local";
 import { Analytics } from "@vercel/analytics/next";
 import { siteUrl } from "@/lib/seo/site-url";
 import "./globals.css";
@@ -18,16 +19,28 @@ const geistMono = Geist_Mono({
   preload: false,
 });
 
-// Display font for hero headlines + brand surfaces. Session 46 (ADR-036)
-// swapped Bricolage Grotesque (geometric grotesque) for Fraunces — a
-// variable humanist serif. The opsz axis lets the cut adapt from text
-// to display sizes; the SOFT axis (applied in globals.css) warms the
-// terminals so headlines read "trusted concierge", warm but considered,
-// rather than "indie SaaS". Body stays Geist Sans.
-const fraunces = Fraunces({
+// Display font for hero headlines + brand surfaces — Fraunces, a variable
+// humanist serif (Session 46 / ADR-036: the opsz axis adapts the cut from text
+// to display sizes; the SOFT axis warms the terminals so headlines read
+// "trusted concierge", not "indie SaaS"). Body stays Geist Sans.
+//
+// SELF-HOSTED SUBSET (mobile-lcp-font-js-floor goal). Fraunces is the mobile-LCP
+// element (the homepage H1), and next/font/google served it as a 120KB "latin"
+// woff2 whose weight is almost all VARIABLE-AXIS delta data. app/fonts/
+// fraunces-display.woff2 is a brand-IDENTICAL 57KB subset (regenerate via
+// scripts/subset-fraunces.py): SOFT is baked at 30 — the only value the site
+// ever renders, so the warmth is preserved, not dropped — while opsz [9,72] and
+// wght [400,700] stay VARIABLE so font-optical-sizing:auto and the font-weight
+// utilities still compose exactly as before. next/font/local keeps the
+// automatic fallback-metric override (adjustFontFallback) so the swap is CLS-0.
+const fraunces = localFont({
+  src: "./fonts/fraunces-display.woff2",
   variable: "--font-display",
-  subsets: ["latin"],
-  axes: ["opsz", "SOFT"],
+  weight: "400 700",
+  display: "swap",
+  preload: true,
+  adjustFontFallback: "Times New Roman",
+  fallback: ["Georgia", "Times New Roman", "serif"],
 });
 
 // Brand wordmark font (ADR-094). Bricolage Grotesque 600 — a carved, slightly
