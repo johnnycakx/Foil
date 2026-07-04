@@ -95,6 +95,19 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // the proxy would 302 the bot's request to /login and break approval.
   { kind: "exact", path: "/api/x/approve" },
 
+  // Reply-desk approve endpoint (x-reply-desk §1, ADR-107). The Foil HQ bot POSTs
+  // here after the owner clicks Reply / Edit / Skip; the route does its OWN bearer
+  // gate (X_REPLY_DESK_SECRET) + API-posts the reply in-thread. Must be public or
+  // the proxy 302s the bot to /login and Approve breaks.
+  { kind: "exact", path: "/api/reply-desk/approve" },
+
+  // In-flow receipts endpoint (x-reply-desk 3d, ADR-107). John's bookmarklet /
+  // iOS Shortcut POST here from x.com; the route does its OWN bearer gate
+  // (X_RECEIPTS_SECRET) + per-IP rate limit + CORS. Must be public or the proxy
+  // 302s the cross-origin call to /login and the tool breaks. No user data,
+  // no writes — it drafts a reply + builds an intent URL John posts by hand.
+  { kind: "exact", path: "/api/receipts" },
+
   // Newsletter digest approval endpoint (ADR-077). Same contract as /api/x/approve:
   // the bot POSTs here (its own bearer gate NEWSLETTER_APPROVE_SECRET) when the
   // owner approves/skips a digest draft whose id was not an X draft. Must be public

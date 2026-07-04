@@ -440,6 +440,20 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 **Mitigation candidates.** Per-sale robust stats via `/cards/{uuid}/listings` (median + IQR trim + language filtering on titles — we already pull this endpoint in diagnosis; IDEAS entry); re-run `scripts/sold-coherence-scan.ts --from-cache`-refreshed monthly as a standing probe; surface the per-row source (ebay/tcgplayer) in the UI if mixing keeps confusing readers.
 
+## R-069 — X account-ban from automated replies (the reply desk's API write)
+
+**Severity:** High (an X automation-rules violation is account-fatal; @FoilTCG is the primary distribution channel + the whole reply→signup funnel — losing it is a business-level event, not a bug). Extends [R-019](RISKS.md#r-019--x-automation-tos--api-cost-runaway) (X automation ToS + cost) with the specific new surface: API-REPLYING to other accounts.
+
+**Status:** `mitigating` (2026-07-03, [ADR-107](DECISIONS.md#adr-107--the-two-lane-x-reply-workflow-api-post-on-user-initiated-contact-intent-link-on-cold-replies--the-in-flow-receipts-tool)). The x-reply-desk goal introduces the FIRST code path that posts a reply to another account via the X API (the reply desk's Approve). This is designed to stay inside X's automation rules by a firewall, not by discipline:
+- **Two-lane split, structurally enforced.** API-post ONLY on USER-INITIATED contact (mentions of @FoilTCG / replies in our threads — X permits API responses to people who contacted us). COLD replies (strangers' posts, QTs, the engagement brief) are `x.com/intent/post` intent links, human-posted FOREVER. `reply-desk-invariant.test.ts` fails the build if any cold-lane/read/draft file references an X write, or if more than one file binds `postToX` (only the approve route may).
+- **Human Approve before every post** (no auto-reply), a dedicated bearer (`X_REPLY_DESK_SECRET`, not the cron/x-approve secret), claim-once idempotency (no double-post), and `REPLY_DESK_ENABLED` off by default (safe-by-default; the code deploys inert).
+
+**The residual risk.** (1) X's classifier could still flag even permitted replies if the volume/pattern reads as automation (mitigated by human Approve pacing + the 3x/day cadence, not a firehose). (2) A future goal "helpfully" widening the reply desk to reply to non-mentions would cross the line — the invariant test is the guard, but a determined refactor could edit both the test and the code. (3) The cost surface (each reply is an API write, ~$0.20 with a link) is R-019's cost half.
+
+**Trigger to escalate.** Any X warning/suspension notice on @FoilTCG; OR a spike in reply-desk Approve volume beyond a handful/day (John's own pacing is the throttle — if it climbs, something is auto-clicking); OR a PR/issue proposing to API-post anything other than a reply to user-initiated contact.
+
+**Mitigation / recovery.** Kill switch: set `REPLY_DESK_ENABLED=false` on Vercel (stops the cron) + rotate/unset `X_REPLY_DESK_SECRET` (the approve endpoint 503s → no reply can post). The intent-link cold lane and the receipts tool keep working (they never API-post). If suspended: appeal citing the automation-rules-compliant design (responses to user-initiated contact only), and fall back to 100% intent-link/human-send until cleared.
+
 ---
 
 ## How to log a new risk

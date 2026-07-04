@@ -10,7 +10,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { resolveCardSlug, KNOWN_CARDS } from "../engagement/card-resolver.ts";
 import { draftReply, type MoverFact } from "../engagement/draft.ts";
-import { evaluateCandidate } from "../engagement/candidate-filter.ts";
+import {
+  evaluateCandidate,
+  opportunityScore,
+  publicEngagement,
+  isPriceClaim,
+  quoteTweetEligible,
+} from "../engagement/candidate-filter.ts";
+import type { XPost } from "../social/x-client.ts";
 import { THELOU7789_MOONBREON, UMBREON_FACTS } from "../__fixtures__/engagement/thelou7789-moonbreon.ts";
 
 // --- exact-card resolution (null over guess) -------------------------------
@@ -35,12 +42,21 @@ test("resolveCardSlug: other curated chase cards resolve to their exact slug", (
   for (const c of KNOWN_CARDS) assert.ok(c.slug && c.aliases.length > 0 && c.displayName);
 });
 
-test("resolveCardSlug: the expanded chase cards (Prismatic eeveelutions, DR trainers) resolve exactly", () => {
+test("resolveCardSlug: the expanded chase cards (Prismatic eeveelutions, DR trainers) resolve exactly WHEN QUALIFIED", () => {
   assert.equal(resolveCardSlug("is the sylveon ex prismatic worth grading")?.slug, "sv8pt5-156-sylveon-ex");
-  assert.equal(resolveCardSlug("how much is leafeon ex")?.slug, "sv8pt5-144-leafeon-ex");
-  assert.equal(resolveCardSlug("umbreon ex worth it")?.slug, "sv8pt5-161-umbreon-ex"); // the Prismatic ex, distinct from Moonbreon
+  assert.equal(resolveCardSlug("prismatic leafeon ex")?.slug, "sv8pt5-144-leafeon-ex"); // qualified with "prismatic"
+  assert.equal(resolveCardSlug("umbreon ex prismatic worth it")?.slug, "sv8pt5-161-umbreon-ex"); // the Prismatic SIR, distinct from Moonbreon
   assert.equal(resolveCardSlug("team rocket's mewtwo ex price")?.slug, "sv10-231-team-rocket-s-mewtwo-ex");
   assert.equal(resolveCardSlug("mew vmax alt art value")?.slug, "swsh8-269-mew-vmax-alt-art");
+});
+
+test("resolveCardSlug: a BARE eeveelution-ex name resolves to null (3a alias hardening — same-name regular arts exist)", () => {
+  // "umbreon ex" / "leafeon ex" alone could be the sv8pt5-60-class regular art
+  // (a $5 card) OR the -161 SIR (four figures). Refuse to guess — require a
+  // prismatic/number/SIR qualifier (the flipped pin: this used to resolve to the SIR).
+  assert.equal(resolveCardSlug("umbreon ex worth it"), null);
+  assert.equal(resolveCardSlug("how much is leafeon ex"), null);
+  assert.equal(resolveCardSlug("is sylveon ex a good buy"), null);
 });
 
 test("resolveCardSlug: the new entries don't reintroduce ambiguity — bare multi-printing names still resolve to null", () => {
@@ -49,7 +65,8 @@ test("resolveCardSlug: the new entries don't reintroduce ambiguity — bare mult
   assert.equal(resolveCardSlug("rocket's mewtwo worth"), null); // vintage gym2-14, NOT the DR team-rocket ex
   assert.equal(resolveCardSlug("mew vmax worth it"), null); // ambiguous vs the regular VMAX → needs "alt"
   // A post naming TWO distinct known cards is ambiguous → null (don't guess which to cite).
-  assert.equal(resolveCardSlug("is moonbreon or umbreon ex the better buy"), null);
+  // (Both must be resolvable: "umbreon ex prismatic" is qualified post-3a; bare "umbreon ex" is now null.)
+  assert.equal(resolveCardSlug("is moonbreon or umbreon ex prismatic the better buy"), null);
   // ...but a single card named two ways (both alias the SAME slug) still resolves.
   assert.equal(resolveCardSlug("moonbreon, the umbreon vmax alt art")?.slug, "swsh7-215-umbreon-vmax-alt-art");
 });
@@ -111,7 +128,44 @@ test("evaluateCandidate: the SAME post from an account with real reach is kept",
   assert.ok(evaluateCandidate(reachy, "FoilTCG"));
 });
 
-test("evaluateCandidate: a low-follower but viral (high-view) post is kept (reach floor is followers AND views)", () => {
-  const viral = { ...THELOU7789_MOONBREON, authorFollowers: 5, metrics: { likes: 50, replies: 10, reposts: 5, impressions: 9000 } };
-  assert.ok(evaluateCandidate(viral, "FoilTCG"));
+test("evaluateCandidate: a low-follower but high-engagement post is kept (reach floor is followers AND public engagement, §2c)", () => {
+  const viral = { ...THELOU7789_MOONBREON, authorFollowers: 5, metrics: { likes: 50, replies: 10, reposts: 5, impressions: 0 } };
+  assert.ok(evaluateCandidate(viral, "FoilTCG"), "real public engagement clears the floor even with no author-only views");
+});
+
+// --- cold-lane fixes: dead views leg, velocity, QT lane (§2c + §3c) --------
+
+const cp = (over: Partial<XPost> = {}): XPost => ({
+  id: "1", text: "is this charizard worth it", authorId: "a", authorUsername: "u",
+  authorFollowers: 1000, createdAt: "2026-07-03T00:00:00.000Z", metrics: null, ...over,
+});
+
+test("publicEngagement: likes + replies + reposts (impressions ignored — they're author-only)", () => {
+  assert.equal(publicEngagement(cp({ metrics: { likes: 4, replies: 2, reposts: 1, impressions: 9999 } })), 7);
+  assert.equal(publicEngagement(cp({ metrics: null })), 0);
+});
+
+test("opportunityScore: a fast-accelerating post outranks a bigger but stale one (velocity term, §3c)", () => {
+  const now = Date.parse("2026-07-03T02:00:00.000Z");
+  // Fresh (1h old) with strong engagement → high velocity.
+  const fast = { post: cp({ id: "fast", createdAt: "2026-07-03T01:00:00.000Z", authorFollowers: 1500, metrics: { likes: 25, replies: 6, reposts: 6, impressions: 0 } }), intentScore: 0.8 };
+  // Bigger absolute engagement but 3 days old → velocity ~0.
+  const stale = { post: cp({ id: "stale", createdAt: "2026-06-30T02:00:00.000Z", authorFollowers: 1500, metrics: { likes: 60, replies: 20, reposts: 20, impressions: 0 } }), intentScore: 0.8 };
+  assert.ok(opportunityScore(fast, now) > opportunityScore(stale, now), "the accelerating post wins the early slot");
+});
+
+test("isPriceClaim: detects price/market claims; passes on a plain question", () => {
+  assert.equal(isPriceClaim("This just hit $500 raw, insane"), true);
+  assert.equal(isPriceClaim("Moonbreon crashed hard this week"), true);
+  assert.equal(isPriceClaim("PSA 10 pop is up 30% since the reprint"), true);
+  assert.equal(isPriceClaim("what set is this from?"), false);
+});
+
+test("quoteTweetEligible: a price-claim post with real reach qualifies; a quiet one does not", () => {
+  const claimBig = { post: cp({ text: "Charizard hit $1,200 today", authorFollowers: 5000 }), intentScore: 0.7 };
+  const claimQuiet = { post: cp({ text: "Charizard hit $1,200 today", authorFollowers: 10, metrics: { likes: 1, replies: 0, reposts: 0, impressions: 0 } }), intentScore: 0.7 };
+  const questionBig = { post: cp({ text: "is charizard worth grading", authorFollowers: 5000 }), intentScore: 0.7 };
+  assert.equal(quoteTweetEligible(claimBig), true);
+  assert.equal(quoteTweetEligible(claimQuiet), false, "no reach → skip the QT");
+  assert.equal(quoteTweetEligible(questionBig), false, "not a price claim → not a QT target");
 });

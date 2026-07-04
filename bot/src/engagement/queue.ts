@@ -21,10 +21,14 @@ export type BriefItemRow = {
   reply: string;
   data_cited: string;
   score: number;
+  /** The prefilled x.com/intent/post URL (x-reply-desk §2a/§3c) — one tap opens
+   *  X's composer prefilled + threaded (reply) or quoting the claim (QT). Null on
+   *  legacy rows → the handler falls back to the deep link. */
+  intent_url: string | null;
 };
 
 const TABLE = "engagement_brief_items";
-const SELECT_COLS = "post_id, post_url, post_text, author_username, mode, matched_card, reply, data_cited, score";
+const SELECT_COLS = "post_id, post_url, post_text, author_username, mode, matched_card, reply, data_cited, score, intent_url";
 
 /** Undelivered items (not yet posted to Discord), oldest first. Soft-fail → []. */
 export async function fetchUndelivered(client: SupabaseClient, limit = 25): Promise<BriefItemRow[]> {

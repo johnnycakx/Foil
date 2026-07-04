@@ -20,6 +20,17 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 
 ---
 date: 2026-07-03
+category: growth
+status: captured
+---
+## Receipts tool: a live-PokeTrace sold-history layer for full-catalog coverage + a real per-condition spread
+
+The x-reply-desk receipts tool (ADR-107 §3d) resolves sold figures from `market_movers` (live) → the committed `/lines` snapshot, so a resolved chase card that's neither a current mover nor in the /lines bake returns figure-free (the card link, no numbers). A third layer — the live PokeTrace sold-history the card page itself uses (`getHeroSoldStat`/`resolveSoldPanel`, coherence-gated) — would cover any of the ~1,270 varianted cards AND give a genuine per-condition spread (NM→DMG), matching the card page exactly. Deliberately deferred from the goal because the PokeTrace key lapses ~2026-07-15; wire it if/when PokeTrace renews. Same idea unblocks a fuller "spread" in the reply-desk data-cite drafts.
+
+**Context:** x-reply-desk goal (ADR-107) — the honest coverage tradeoff flagged in the P0 premise check + the ADR consequences. Gated on the PT-RENEW decision (R-062).
+
+---
+date: 2026-07-03
 category: product
 status: captured
 ---

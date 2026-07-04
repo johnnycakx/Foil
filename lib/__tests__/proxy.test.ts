@@ -197,6 +197,27 @@ test("/api/newsletter/approve is public — bot-triggered, self-gates on NEWSLET
   assert.equal(isPublicRoute("/api/newsletter"), false);
 });
 
+test("/api/reply-desk/approve is public — bot-triggered, self-gates on X_REPLY_DESK_SECRET (ADR-107)", () => {
+  // The Foil HQ bot POSTs here after the owner clicks Reply/Edit/Skip; the route
+  // does its own bearer check + API-posts the reply. Must be reachable without a
+  // Supabase session or the proxy would 302 the bot to /login and Approve breaks.
+  assert.equal(isPublicRoute("/api/reply-desk/approve"), true);
+  // Exact rule — must not open the rest of the stem.
+  assert.equal(isPublicRoute("/api/reply-desk"), false);
+  assert.equal(isPublicRoute("/api/reply-desk/anything"), false);
+});
+
+test("/api/receipts is public — bookmarklet-triggered, self-gates on X_RECEIPTS_SECRET (ADR-107)", () => {
+  // John's receipts bookmarklet/Shortcut POSTs here cross-origin from x.com; the
+  // route does its own bearer check + rate limit + CORS. Must be reachable
+  // without a Supabase session or the proxy would 302 the cross-origin call to
+  // /login and the in-flow tool would break.
+  assert.equal(isPublicRoute("/api/receipts"), true);
+  // Exact rule — must not bleed into an adjacent stem.
+  assert.equal(isPublicRoute("/api/receipts-all"), false);
+  assert.equal(isPublicRoute("/api/receipt"), false);
+});
+
 test("/api/unsubscribe is public — RFC 8058 one-click + token IS the auth (Task #18)", () => {
   // The endpoint accepts GET (visible-link path) and POST (List-Unsubscribe-
   // Post). The HMAC token in the query string is the only auth — the route
@@ -358,7 +379,8 @@ test("bio link /x is public and 302s to the homepage with bio attribution (x-pro
   const { GET } = await import("../../app/x/route.ts");
   const r = GET(new Request("https://foiltcg.com/x"));
   assert.equal(r.status, 302, "temporary 302, never 301/308");
-  assert.equal(r.headers.get("location"), "https://foiltcg.com/?utm_source=x&utm_medium=bio");
+  // x-reply-desk §4: the bio link now carries the full campaign attribution.
+  assert.equal(r.headers.get("location"), "https://foiltcg.com/?utm_source=x&utm_medium=bio&utm_campaign=profile");
 });
 
 test("/eve is public and 302s to the seeded gift vault with eve UTMs; soft-falls to /start when the secret is missing (eve-vault)", async () => {

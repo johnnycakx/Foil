@@ -28,6 +28,11 @@ export type EngagementBriefItem = {
   reply: string;
   dataCited: string;
   score: number;
+  /** The prefilled x.com/intent/post URL (x-reply-desk §2a/§3c) — reply-intent
+   *  for a normal cold reply, quote-intent for a QT-with-receipts. Computed by
+   *  the cron (which holds the origin + the intent builders), stored so the bot's
+   *  one-tap Post button opens X's composer prefilled. Absent = legacy rows. */
+  intentUrl?: string;
 };
 
 export type EngagementBrief = {

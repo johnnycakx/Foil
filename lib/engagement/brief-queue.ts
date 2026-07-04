@@ -34,6 +34,7 @@ export function toQueueRow(item: EngagementBriefItem): Record<string, unknown> {
     reply: item.reply,
     data_cited: item.dataCited ?? "",
     score: item.score ?? 0,
+    intent_url: item.intentUrl ?? null,
   };
 }
 

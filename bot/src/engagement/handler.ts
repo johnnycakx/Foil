@@ -93,25 +93,24 @@ export async function handleEngagementButton(
     return;
   }
 
-  // POST: surface copy-ready text + deep link. The bot NEVER posts to X.
-  // The reply text is gated (no links; no $ for advisory) but it's still
-  // surfaced with allowedMentions:{parse:[]} so a stray @mention can't ping.
+  // POST (cold lane): ONE TAP opens X's composer prefilled + threaded via the
+  // stored intent URL (x-reply-desk §2a); John presses X's own Post. The bot
+  // NEVER posts to X — an intent URL is a link a human clicks, not an API call.
+  // The copy/paste path is gone. Legacy rows with no intent_url fall back to the
+  // reply text + deep link so nothing is ever un-actionable.
   const item = await d.getItem(parsed.postId);
-  const replyText = (item?.reply?.trim() || "(reply text not found — open the post and write it)")
-    .replace(/```/g, "ʼʼʼ"); // neutralize a code-fence break-out in the copy block
+  const intentUrl = item?.intent_url?.trim() ?? "";
   const url = item?.post_url ?? "";
   await d.recordDecision(parsed.postId, "posted_by_hand");
   await interaction.update({ components: [buildDecidedButtons(parsed.postId, "posted_by_hand")] }).catch(() => {});
-  await interaction.followUp({
-    content:
-      "Post this BY HAND on X (the bot never posts). Copy the reply:\n" +
-      "```\n" +
-      replyText.slice(0, 1500) +
-      "\n```\n" +
-      (url ? `Open the post: ${url}` : ""),
-    ephemeral: true,
-    allowedMentions: { parse: [] },
-  });
+  const content = intentUrl
+    ? `Tap to open X's composer prefilled, then press X's Post (the bot never posts):\n${intentUrl}` +
+      (url ? `\n\n(The post you're replying to: ${url})` : "")
+    : // legacy fallback (no stored intent URL)
+      "Post this on X by hand (no prefilled link stored for this item):\n" +
+      (item?.reply?.trim() || "(reply text not found — open the post and write it)") +
+      (url ? `\n\nOpen the post: ${url}` : "");
+  await interaction.followUp({ content: content.slice(0, 1900), ephemeral: true, allowedMentions: { parse: [] } });
 }
 
 export type DrainDeps = {

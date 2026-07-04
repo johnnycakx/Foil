@@ -12,6 +12,7 @@ import { Client, Events, GatewayIntentBits, Partials } from "discord.js";
 import { handleMention } from "./handlers/mention.ts";
 import { handleSlashCommand, registerSlashCommands } from "./handlers/slash-commands.ts";
 import { handleEngagementButton, startEngagementBriefPoller } from "./engagement/handler.ts";
+import { handleReplyDeskButton, handleReplyDeskModal, startReplyDeskPoller } from "./reply-desk/handler.ts";
 
 const REQUIRED_ENV = [
   "DISCORD_BOT_TOKEN",
@@ -47,6 +48,10 @@ client.once(Events.ClientReady, async (c) => {
   // ENGAGEMENT_BRIEF_CHANNEL_ID is set — the bot, not the webhook, posts the
   // brief because only an app-owned message can carry working Skip/Post buttons.
   startEngagementBriefPoller(c);
+  // Arm the reply-desk poller (ADR-107 §1). No-op until REPLY_DESK_CHANNEL_ID is
+  // set. Posts each inbound with Reply / Edit / Skip; Reply relays to the app's
+  // approve endpoint, which API-posts the response in-thread (user-initiated).
+  startReplyDeskPoller(c);
 });
 
 client.on(Events.MessageCreate, async (message) => {
@@ -55,13 +60,24 @@ client.on(Events.MessageCreate, async (message) => {
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
-  // Engagement-brief Skip/Post buttons (ADR-086 v2). The handler ignores any
-  // button that isn't ours, owner-gates the rest, and NEVER posts to X.
+  // Button clicks: each handler ignores any button that isn't its own, so we
+  // route to both. Engagement's "Post" never posts to X; the reply desk's
+  // "Reply" relays to the approve endpoint (user-initiated contact only).
   if (interaction.isButton()) {
     try {
       await handleEngagementButton(interaction);
+      await handleReplyDeskButton(interaction);
     } catch (err) {
       console.warn("[interaction] button handler threw:", err);
+    }
+    return;
+  }
+  // The reply-desk Edit modal submit.
+  if (interaction.isModalSubmit()) {
+    try {
+      await handleReplyDeskModal(interaction);
+    } catch (err) {
+      console.warn("[interaction] modal handler threw:", err);
     }
     return;
   }

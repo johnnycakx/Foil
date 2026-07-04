@@ -4,6 +4,9 @@
 // design so the destination can be re-pointed without fighting caches.
 
 export function GET(request: Request): Response {
-  const url = new URL("/?utm_source=x&utm_medium=bio", request.url);
+  // Full bio attribution (x-reply-desk §4): utm_campaign=profile completes the
+  // reply→signup proof chain (runbook docs/runbooks/acquisition-utm.md:27), so
+  // `npm run subscriber-sources` can isolate bio-link signups.
+  const url = new URL("/?utm_source=x&utm_medium=bio&utm_campaign=profile", request.url);
   return Response.redirect(url, 302);
 }

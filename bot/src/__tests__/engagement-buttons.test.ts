@@ -121,6 +121,7 @@ function fakeDeps(over: Partial<ButtonHandlerDeps> = {}): { deps: ButtonHandlerD
       reply: "Sold avg sits near 480 this week, down from 520.",
       data_cited: "$480",
       score: 0.5,
+      intent_url: `https://x.com/intent/post?in_reply_to=${postId}&text=Sold%20avg%20sits%20near%20480`,
     }),
     recordDecision: async (postId, decision) => {
       recorded.push({ postId, decision });
@@ -163,23 +164,37 @@ test("handleEngagementButton: re-clicked Skip reports already-actioned (idempote
   assert.match(calls.followUp[0].content, /already/i);
 });
 
-test("handleEngagementButton: Post surfaces copy-ready reply + deep link, NEVER posts to X", async () => {
+test("handleEngagementButton: Post surfaces the ONE-TAP intent link (x-reply-desk §2a), NEVER posts to X", async () => {
   const { interaction, calls } = fakeInteraction("eng:post:123", "owner1");
   const { deps, recorded } = fakeDeps();
   await handleEngagementButton(interaction, deps);
   const msg = calls.followUp[0].content;
-  assert.match(msg, /BY HAND/, "instructs the human to post it");
-  assert.match(msg, /Sold avg sits near 480/, "carries the copy-ready reply text");
-  assert.match(msg, /x\.com\/u\/status\/123/, "carries the deep link to the source post");
+  assert.match(msg, /x\.com\/intent\/post\?in_reply_to=123/, "carries the prefilled composer URL (one tap, human posts)");
+  assert.match(msg, /press X's Post/i, "tells the human to press X's own Post");
+  assert.doesNotMatch(msg, /```/, "the copy/paste block is gone");
   assert.deepEqual(recorded, [{ postId: "123", decision: "posted_by_hand" }]);
-  // The no-X-write guarantee itself is pinned by the repo-level zero-X-write
-  // invariant test, which reads handler.ts source for any X write/engagement call.
+  // The no-X-write guarantee (the intent URL is a link a human clicks, not an API
+  // call) is pinned by the repo-level zero-X-write invariant test on handler.ts.
+});
+
+test("handleEngagementButton: Post falls back to reply text + deep link when no intent URL is stored (legacy rows)", async () => {
+  const { interaction, calls } = fakeInteraction("eng:post:123", "owner1");
+  const { deps } = fakeDeps({
+    getItem: async (postId) => ({
+      post_id: postId, post_url: `https://x.com/u/status/${postId}`, post_text: "p", author_username: "u",
+      mode: "data_cite", matched_card: null, reply: "Sold avg near 480.", data_cited: "$480", score: 0.5, intent_url: null,
+    }),
+  });
+  await handleEngagementButton(interaction, deps);
+  const msg = calls.followUp[0].content;
+  assert.match(msg, /Sold avg near 480/, "legacy fallback still carries the reply text");
+  assert.match(msg, /x\.com\/u\/status\/123/, "and the deep link");
 });
 
 // --- drain + post (delivery) -----------------------------------------------
 
 function row(id: string): BriefItemRow {
-  return { post_id: id, post_url: `https://x.com/u/status/${id}`, post_text: "post", author_username: "u", mode: "data_cite", matched_card: null, reply: "r".repeat(20), data_cited: "$480", score: 0.5 };
+  return { post_id: id, post_url: `https://x.com/u/status/${id}`, post_text: "post", author_username: "u", mode: "data_cite", matched_card: null, reply: "r".repeat(20), data_cited: "$480", score: 0.5, intent_url: null };
 }
 
 test("drainAndPostOnce: posts each undelivered item and marks it posted", async () => {

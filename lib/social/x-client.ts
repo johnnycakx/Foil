@@ -60,6 +60,10 @@ export type PostToXInput = {
    *  link-free for reach). Best-effort: a reply failure never fails the post —
    *  the main tweet is already out. Null/empty → no reply. */
   linkReply?: string | null;
+  /** Reply desk (ADR-107): post `text` AS A REPLY to this inbound tweet id
+   *  (user-initiated contact only). When set, the created post is threaded to
+   *  the inbound tweet rather than a standalone post. Null/absent → standalone. */
+  inReplyToTweetId?: string | null;
   fetchImpl?: typeof fetch;
   /** Test/explicit creds; defaults to reading the X_* env vars. */
   credentials?: XCredentials;
@@ -334,6 +338,63 @@ export async function fetchTweetPublicMetrics(
   }
 }
 
+// --- read: a single tweet's text (x-reply-desk, ADR-107) --------------------
+
+export type TweetContent = { id: string; text: string; authorUsername: string | null; authorFollowers: number | null };
+export type FetchTweetTextResult = { ok: true; tweet: TweetContent } | { ok: false; error: string };
+
+/**
+ * READ-ONLY single-tweet lookup: GET /2/tweets?ids=<id>&tweet.fields=text +
+ * author expansion. Used by the receipts tool when it's handed only a tweet URL
+ * (the bookmarklet usually passes the text directly to avoid this call). This
+ * NEVER posts/replies/likes — it only reads one public tweet. OAuth 1.0a
+ * user-context; GET params folded into the signature base. Soft-fails; ~read cost.
+ */
+export async function fetchTweetText(
+  tweetId: string,
+  input: { credentials?: XCredentials; fetchImpl?: typeof fetch } = {},
+): Promise<FetchTweetTextResult> {
+  const creds = input.credentials ?? xCredentialsFromEnv();
+  if (!creds) return { ok: false, error: "missing_x_credentials" };
+  const id = (tweetId ?? "").trim();
+  if (!/^\d{1,32}$/.test(id)) return { ok: false, error: "invalid_tweet_id" };
+  const fetchFn = input.fetchImpl ?? fetch;
+
+  const queryParams: Record<string, string> = {
+    ids: id,
+    "tweet.fields": "text,author_id",
+    expansions: "author_id",
+    "user.fields": "username,public_metrics",
+  };
+  const qs = Object.keys(queryParams)
+    .map((k) => `${rfc3986(k)}=${rfc3986(queryParams[k])}`)
+    .join("&");
+  const auth = oauthHeader("GET", TWEETS_LOOKUP_URL, creds, queryParams);
+
+  try {
+    const res = await fetchFn(`${TWEETS_LOOKUP_URL}?${qs}`, { headers: { Authorization: auth } });
+    if (!res.ok) return { ok: false, error: `tweet_lookup_http_${res.status}` };
+    const json = (await res.json()) as {
+      data?: Array<{ id: string; text?: string; author_id?: string }>;
+      includes?: { users?: Array<{ id: string; username?: string; public_metrics?: Record<string, number> }> };
+    };
+    const t = json.data?.[0];
+    if (!t) return { ok: false, error: "tweet_not_found" };
+    const u = t.author_id ? (json.includes?.users ?? []).find((x) => x.id === t.author_id) : undefined;
+    return {
+      ok: true,
+      tweet: {
+        id: t.id,
+        text: t.text ?? "",
+        authorUsername: u?.username ?? null,
+        authorFollowers: typeof u?.public_metrics?.followers_count === "number" ? u.public_metrics.followers_count : null,
+      },
+    };
+  } catch (err) {
+    return { ok: false, error: `tweet_lookup_failed: ${(err as Error).message}` };
+  }
+}
+
 export type XPost = {
   id: string;
   text: string;
@@ -343,6 +404,9 @@ export type XPost = {
   authorFollowers: number | null;
   createdAt: string | null;
   metrics: { likes: number; replies: number; reposts: number; impressions: number | null } | null;
+  /** True when the tweet carries an image/video attachment (reply desk 3e —
+   *  image-bearing mentions route to the human-look card). */
+  hasMedia?: boolean;
 };
 
 export type SearchRecentResult = { ok: true; posts: XPost[] } | { ok: false; error: string };
@@ -371,7 +435,7 @@ export async function searchRecent(
   const queryParams: Record<string, string> = {
     query,
     max_results: String(maxResults),
-    "tweet.fields": "created_at,public_metrics,author_id",
+    "tweet.fields": "created_at,public_metrics,author_id,attachments",
     expansions: "author_id",
     "user.fields": "username,public_metrics",
   };
@@ -384,7 +448,7 @@ export async function searchRecent(
     const res = await fetchFn(`${SEARCH_RECENT_URL}?${qs}`, { headers: { Authorization: auth } });
     if (!res.ok) return { ok: false, error: `search_http_${res.status}` };
     const json = (await res.json()) as {
-      data?: Array<{ id: string; text: string; author_id?: string; created_at?: string; public_metrics?: Record<string, number> }>;
+      data?: Array<{ id: string; text: string; author_id?: string; created_at?: string; public_metrics?: Record<string, number>; attachments?: { media_keys?: string[] } }>;
       includes?: { users?: Array<{ id: string; username?: string; public_metrics?: Record<string, number> }> };
     };
     const userById = new Map((json.includes?.users ?? []).map((u) => [u.id, u]));
@@ -405,6 +469,7 @@ export async function searchRecent(
             impressions: typeof t.public_metrics.impression_count === "number" ? t.public_metrics.impression_count : null,
           }
         : null,
+      hasMedia: (t.attachments?.media_keys?.length ?? 0) > 0,
       };
     });
     return { ok: true, posts };
@@ -447,7 +512,11 @@ export async function postToX(input: PostToXInput): Promise<PostToXResult> {
     mediaId = up.mediaId;
   }
 
-  const main = await createPost(input.text, creds, fetchFn, mediaId ? { mediaId } : {});
+  const inReplyToTweetId = input.inReplyToTweetId?.trim() || undefined;
+  const main = await createPost(input.text, creds, fetchFn, {
+    ...(mediaId ? { mediaId } : {}),
+    ...(inReplyToTweetId ? { inReplyToTweetId } : {}),
+  });
   if (!main.ok) return { ok: false, error: main.error };
 
   // Fix 3b: the body is link-free for reach; post the link as the first reply.

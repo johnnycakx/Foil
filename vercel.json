@@ -35,7 +35,27 @@
     },
     {
       "path": "/api/cron/engagement-brief",
-      "schedule": "30 15 * * *"
+      "schedule": "12 13 * * *"
+    },
+    {
+      "path": "/api/cron/engagement-brief",
+      "schedule": "12 17 * * *"
+    },
+    {
+      "path": "/api/cron/engagement-brief",
+      "schedule": "12 22 * * *"
+    },
+    {
+      "path": "/api/cron/reply-desk",
+      "schedule": "7 13 * * *"
+    },
+    {
+      "path": "/api/cron/reply-desk",
+      "schedule": "7 17 * * *"
+    },
+    {
+      "path": "/api/cron/reply-desk",
+      "schedule": "7 22 * * *"
     },
     {
       "path": "/api/cron/format-mining",

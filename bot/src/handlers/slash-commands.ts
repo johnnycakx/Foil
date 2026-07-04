@@ -17,9 +17,10 @@ import {
   type ChatInputCommandInteraction,
   type Client,
 } from "discord.js";
-import { resetChannel, semanticSearchMessages } from "../db.ts";
+import { getClient, resetChannel, semanticSearchMessages } from "../db.ts";
 import { TOOL_DEFINITIONS } from "../tools/index.ts";
 import { IDEA_CATEGORIES, parseIdeasFile, type IdeaCategory } from "../system-prompt.ts";
+import { listPending } from "../reply-desk/queue.ts";
 
 export const COMMAND_DEFS = [
   new SlashCommandBuilder()
@@ -53,6 +54,9 @@ export const COMMAND_DEFS = [
     .addStringOption((opt) =>
       opt.setName("id").setDescription("The draft id from the #content-engine approval message").setRequired(true),
     ),
+  new SlashCommandBuilder()
+    .setName("pending")
+    .setDescription("List reply-desk cards awaiting your Reply / Edit / Skip (the daily-clear backstop)."),
   new SlashCommandBuilder()
     .setName("help")
     .setDescription("List my tools and slash commands."),
@@ -121,6 +125,8 @@ export async function handleSlashCommand(interaction: ChatInputCommandInteractio
       return approvalHandler(interaction, "approve");
     case "skip":
       return approvalHandler(interaction, "skip");
+    case "pending":
+      return pendingHandler(interaction);
     case "help":
       return helpHandler(interaction);
     default:
@@ -295,6 +301,34 @@ async function approvalHandler(
   await interaction.editReply(`Could not ${action} draft \`${id}\`: ${result.error}`);
 }
 
+/**
+ * /pending — the reply-desk daily-clear backstop (ADR-107 §5). Lists the
+ * unactioned cards (highest-reach first) so John can clear the queue even if he
+ * scrolled past a card. No streak-gamification / nag machinery: the one-click
+ * design is the habit; this is just the "what's left" view. Owner only (the
+ * queue is operational, not public).
+ */
+async function pendingHandler(interaction: ChatInputCommandInteraction): Promise<void> {
+  if (!isApprovalOwner(interaction.user.id, process.env.X_BOT_OWNER_DISCORD_ID)) {
+    await interaction.reply({ content: "Only the configured owner can view the reply-desk queue.", ephemeral: true });
+    return;
+  }
+  await interaction.deferReply({ ephemeral: true });
+  const rows = await listPending(getClient(), 15);
+  if (rows.length === 0) {
+    await interaction.editReply("Reply-desk queue is clear — nothing pending. 🎉");
+    return;
+  }
+  const lines = rows.map((r, i) => {
+    const who = r.author_username ? `@${r.author_username}` : "unknown";
+    const reach = typeof r.author_followers === "number" ? ` (${r.author_followers.toLocaleString("en-US")})` : "";
+    const preview = (r.post_text ?? "").replace(/\s+/g, " ").trim().slice(0, 90);
+    return `**${i + 1}.** ${who}${reach} · \`${r.mode}\`\n> ${preview}\n${r.post_url}`;
+  });
+  const text = `**${rows.length} reply-desk card(s) pending** (highest-reach first):\n\n${lines.join("\n\n")}`.slice(0, 1900);
+  await interaction.editReply(text);
+}
+
 async function helpHandler(interaction: ChatInputCommandInteraction): Promise<void> {
   const toolList = TOOL_DEFINITIONS.map(
     (t) => `• \`${t.name}\` — ${(t.description ?? "").split(". ")[0]}.`,
@@ -310,6 +344,7 @@ async function helpHandler(interaction: ChatInputCommandInteraction): Promise<vo
     `• \`/ideas [category]\` — top-10 captured ideas from docs/IDEAS.md (optionally filtered).`,
     `• \`/approve <id>\` — (owner) approve a pending draft → posts the X post, or emails the newsletter issue.`,
     `• \`/skip <id>\` — (owner) skip a pending draft (X post or newsletter) → never sent.`,
+    `• \`/pending\` — (owner) list reply-desk cards awaiting Reply / Edit / Skip.`,
     `• \`/help\` — this list.`,
     ``,
     `**Tools available to me**`,

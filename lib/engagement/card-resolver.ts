@@ -61,32 +61,36 @@ export const KNOWN_CARDS: readonly KnownCard[] = [
     // bare "mew vmax" is ambiguous with the regular VMAX — require "alt".
     aliases: ["mew vmax alt", "mew vmax alt art", "mew vmax 269"],
   },
-  // Prismatic Evolutions eeveelution-ex SIRs (sv8pt5) — one printing each, so the
-  // bare "<eeveelution> ex" resolves unambiguously; "prismatic"/number add safety.
+  // Prismatic Evolutions eeveelution-ex SIRs (sv8pt5). The bare "<eeveelution>
+  // ex" alias was STRIPPED (x-reply-desk 3a): the 1,840-card catalog has
+  // same-name regular arts (e.g. sv8pt5-60 regular Umbreon ex vs -161 SIR), so a
+  // $5-pull question about the regular art would get the four-figure SIR answer.
+  // Require a "prismatic"/number/SIR qualifier — same discipline as charizard ex
+  // (below). NULL over guess when only the bare name is present.
   {
     slug: "sv8pt5-161-umbreon-ex",
     displayName: "Umbreon ex SIR (Prismatic Evolutions, 161/131)",
-    aliases: ["umbreon ex prismatic", "prismatic umbreon ex", "umbreon ex 161", "umbreon ex"],
+    aliases: ["umbreon ex prismatic", "prismatic umbreon ex", "umbreon ex 161", "umbreon ex sir"],
   },
   {
     slug: "sv8pt5-156-sylveon-ex",
     displayName: "Sylveon ex SIR (Prismatic Evolutions, 156/131)",
-    aliases: ["sylveon ex prismatic", "prismatic sylveon ex", "sylveon ex 156", "sylveon ex"],
+    aliases: ["sylveon ex prismatic", "prismatic sylveon ex", "sylveon ex 156", "sylveon ex sir"],
   },
   {
     slug: "sv8pt5-144-leafeon-ex",
     displayName: "Leafeon ex SIR (Prismatic Evolutions, 144/131)",
-    aliases: ["leafeon ex prismatic", "prismatic leafeon ex", "leafeon ex 144", "leafeon ex"],
+    aliases: ["leafeon ex prismatic", "prismatic leafeon ex", "leafeon ex 144", "leafeon ex sir"],
   },
   {
     slug: "sv8pt5-149-vaporeon-ex",
     displayName: "Vaporeon ex SIR (Prismatic Evolutions, 149/131)",
-    aliases: ["vaporeon ex prismatic", "prismatic vaporeon ex", "vaporeon ex 149", "vaporeon ex"],
+    aliases: ["vaporeon ex prismatic", "prismatic vaporeon ex", "vaporeon ex 149", "vaporeon ex sir"],
   },
   {
     slug: "sv8pt5-146-flareon-ex",
     displayName: "Flareon ex SIR (Prismatic Evolutions, 146/131)",
-    aliases: ["flareon ex prismatic", "prismatic flareon ex", "flareon ex 146", "flareon ex"],
+    aliases: ["flareon ex prismatic", "prismatic flareon ex", "flareon ex 146", "flareon ex sir"],
   },
   // Destined Rivals trainer-ex (sv10) — the character name + "ex" is unique.
   {

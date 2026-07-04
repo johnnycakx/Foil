@@ -20,7 +20,12 @@ import { draftReply, draftAdvisoryReply, type MoverFact } from "@/lib/engagement
 import { supabaseBriefStore } from "@/lib/engagement/store";
 import { supabaseBriefQueue } from "@/lib/engagement/brief-queue";
 import { renderEngagementBriefChunks } from "@/lib/engagement/render";
+import { isPriceClaim } from "@/lib/engagement/candidate-filter";
+import { resolveCardSlug } from "@/lib/engagement/card-resolver";
+import { buildReplyIntentUrl, buildQuoteIntentUrl, buildCardPageUrl, tweetLength, REPLY_DESK_UTM } from "@/lib/receipts/intent";
 import { postWebhook } from "@/lib/notifications/discord";
+import { siteUrl } from "@/lib/seo/site-url";
+import type { EngagementBriefItem } from "@/lib/engagement/brief-engine";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -58,6 +63,21 @@ function factsFromMovers(
       momentumPct: r.momentumPct,
       sampleSize: r.saleCount,
     }));
+}
+
+/** The one-tap composer URL for a brief item (§2a/§3c). A price-claim data-cite
+ *  → a QUOTE tweet carrying the reply + the card link (receipts on the claim);
+ *  everything else → a threaded reply-intent. Cold lane: the human posts it. */
+function buildItemIntentUrl(it: EngagementBriefItem): string {
+  if (it.mode === "data_cite" && isPriceClaim(it.postText)) {
+    const resolved = resolveCardSlug(it.postText);
+    const cardUrl = resolved ? buildCardPageUrl(resolved.slug, { origin: siteUrl(), utm: REPLY_DESK_UTM }) : null;
+    // Append the card link (the receipts) when it still fits a tweet; else the
+    // bare reply (never a truncated figure).
+    const qtText = cardUrl && tweetLength(`${it.reply} ${cardUrl}`) <= 280 ? `${it.reply} ${cardUrl}` : it.reply;
+    return buildQuoteIntentUrl(qtText, it.postUrl);
+  }
+  return buildReplyIntentUrl(it.reply, it.postId);
 }
 
 export async function GET(request: Request): Promise<NextResponse> {
@@ -101,9 +121,18 @@ export async function GET(request: Request): Promise<NextResponse> {
     // summary (visibility). If the queue write fails, FALL BACK to the full
     // rendered webhook brief so John still gets actionable content (no buttons)
     // — graceful degradation, never a silent loss.
+    // Cold-lane friction fix (§2a/§3c): attach a one-tap intent URL to each item.
+    // A price-claim data-cite becomes a QT-with-receipts (quote the claim + the
+    // card link); everything else is a threaded reply-intent. The human still
+    // presses X's Post — the intent URL only opens the composer prefilled.
+    const withIntent: EngagementBriefItem[] = brief.items.map((it) => ({
+      ...it,
+      intentUrl: buildItemIntentUrl(it),
+    }));
+
     let queued = 0;
-    if (brief.items.length > 0) {
-      queued = await supabaseBriefQueue().enqueue(brief.items);
+    if (withIntent.length > 0) {
+      queued = await supabaseBriefQueue().enqueue(withIntent);
     }
 
     if (!webhook) {

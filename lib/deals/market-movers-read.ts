@@ -86,6 +86,35 @@ export function rankMovers(rows: MoverRow[], limit = 12, nowMs: number = Date.no
 }
 
 /**
+ * Read ONE mover row by exact card slug (any direction, incl. flat), fresh
+ * within MOVER_FRESHNESS_MS. Powers the receipts tool + reply desk (ADR-107),
+ * which need the sold figures for a SPECIFIC resolved card rather than the
+ * ranked top-N board. Soft-fails to null on any error or stale/missing row.
+ * Touches NO eBay data — pure DB read of PokeTrace-derived metadata.
+ */
+export async function getMoverBySlug(slug: string, nowMs: number = Date.now()): Promise<MoverRow | null> {
+  const s = (slug ?? "").trim();
+  if (!s) return null;
+  try {
+    const admin = supabaseAdmin();
+    const { data, error } = await admin
+      .from("market_movers")
+      .select(
+        "card_slug, card_name, set_name, image_url, direction, momentum_pct, avg7d, avg30d, sale_count, matched_tier, computed_at",
+      )
+      .eq("card_slug", s)
+      .maybeSingle();
+    if (error || !data) return null;
+    const row = toMoverRow(data as RawRow);
+    const t = Date.parse(row.computedAt);
+    if (!Number.isFinite(t) || nowMs - t > MOVER_FRESHNESS_MS) return null; // stale → treat as absent
+    return row;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Read the down/up movers from the cache and rank them. Soft-fails to empty on
  * any Supabase error so /deals renders its calm empty state, never a 500.
  * Touches NO eBay data — pure DB read of PokeTrace-derived metadata.

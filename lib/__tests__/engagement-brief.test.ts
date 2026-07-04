@@ -95,13 +95,15 @@ test("suppliedFigures + usd: the allowed set is exactly the real averages", () =
 
 // --- advisory mode (value-first, figure-free, spam-safe) -------------------
 
-test("advisoryEligible: only high-reach candidates qualify for a no-data advisory reply", () => {
+test("advisoryEligible: only high-reach candidates qualify (public engagement, not dead author-only views — §2c)", () => {
   const big = { post: post({ id: "b", text: "x", authorFollowers: 5000 }), intentScore: 0.6 };
-  const small = { post: post({ id: "s", text: "x", authorFollowers: 100, metrics: { likes: 0, replies: 0, reposts: 0, impressions: 50 } }), intentScore: 0.6 };
-  const viral = { post: post({ id: "v", text: "x", authorFollowers: 10, metrics: { likes: 0, replies: 0, reposts: 0, impressions: 5000 } }), intentScore: 0.6 };
+  // Low followers AND low public engagement — even a big author-only impression
+  // count (dead on others' posts, ADR-087) does not qualify it.
+  const small = { post: post({ id: "s", text: "x", authorFollowers: 100, metrics: { likes: 1, replies: 0, reposts: 0, impressions: 5000 } }), intentScore: 0.6 };
+  const viral = { post: post({ id: "v", text: "x", authorFollowers: 10, metrics: { likes: 40, replies: 8, reposts: 12, impressions: 0 } }), intentScore: 0.6 };
   assert.equal(advisoryEligible(big), true, "real audience qualifies");
-  assert.equal(advisoryEligible(small), false, "low followers AND low views does not");
-  assert.equal(advisoryEligible(viral), true, "low followers but viral views qualifies");
+  assert.equal(advisoryEligible(small), false, "low followers AND low public engagement does not (views are dead)");
+  assert.equal(advisoryEligible(viral), true, "low followers but real public engagement qualifies");
 });
 
 test("validateAdvisoryDraft: a clean, helpful, figure-free reply passes", () => {
