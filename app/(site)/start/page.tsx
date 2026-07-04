@@ -15,6 +15,7 @@
 import type { Metadata } from "next";
 import { CARD_CATALOG } from "@/lib/cards/catalog";
 import { StartPageForm } from "@/components/start-page-form";
+import { SakuraAmbience } from "@/components/sakura-ambience";
 
 export const dynamic = "force-static";
 export const revalidate = 86400;
@@ -53,15 +54,23 @@ export default function StartPage() {
   const cataloguedIds = CARD_CATALOG.map((e) => e.pokemonTcgId);
 
   return (
-    <main className="relative mx-auto w-full max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
-      <header className="mb-10 text-center sm:text-left">
-        <p className="text-xs font-medium uppercase tracking-widest text-foil-accent-deep">
+    // Night register (blackout-brand Workstream D) — the /start funnel entry
+    // shares the charcoal surface with its sibling night pages (/deals, the
+    // vault); the chrome flips via body:has([data-tone="night"]).
+    <main data-tone="night" className="relative mx-auto w-full max-w-3xl bg-foil-night px-5 py-12 text-foil-cream sm:px-8 sm:py-16">
+      {/* Quiet far-layer hanami over the header band only (matches /deals + the
+          vault) — atmosphere above the copy, never beside the form inputs. */}
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[180px] overflow-hidden">
+        <SakuraAmbience mode="header" />
+      </div>
+      <header className="relative mb-10 text-center sm:text-left">
+        <p className="text-xs font-medium uppercase tracking-widest text-foil-accent">
           Get started
         </p>
-        <h1 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl md:text-5xl">
+        <h1 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-cream sm:text-4xl md:text-5xl">
           Tell me what cards you want.
         </h1>
-        <p className="mt-3 text-base text-foil-slate sm:text-lg">
+        <p className="mt-3 text-base text-foil-cream/70 sm:text-lg">
           I&apos;ll email you the moment each one drops to a price worth buying. Track
           up to 50 at once.
         </p>
@@ -74,7 +83,7 @@ export default function StartPage() {
           working path — the newsletter form is a plain POST away, and email
           works everywhere. */}
       <noscript>
-        <p className="mt-6 rounded-xl border border-foil-navy/15 bg-foil-cream p-4 text-sm text-foil-navy">
+        <p className="mt-6 rounded-xl border border-foil-cream/15 bg-foil-night-2 p-4 text-sm text-foil-cream">
           This form needs JavaScript. Without it, you can still get the weekly
           deals email at{" "}
           <a href="/newsletter" className="underline underline-offset-4">
@@ -88,11 +97,11 @@ export default function StartPage() {
         </p>
       </noscript>
 
-      <p className="mt-10 text-center text-xs text-foil-slate">
+      <p className="mt-10 text-center text-xs text-foil-cream/60">
         Privacy is in the{" "}
         <a
           href="/legal/privacy"
-          className="underline decoration-foil-navy/20 underline-offset-4 transition hover:text-foil-navy hover:decoration-foil-accent-deep"
+          className="underline decoration-foil-cream/25 underline-offset-4 transition hover:text-foil-cream hover:decoration-foil-accent"
         >
           policy
         </a>

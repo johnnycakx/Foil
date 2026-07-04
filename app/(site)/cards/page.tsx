@@ -166,17 +166,20 @@ export default async function CardsIndexPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-6xl flex-1 px-5 pt-12 pb-20 sm:px-8 sm:pt-16">
+    // Night register (blackout-brand Workstream D) — the catalog index shares
+    // the charcoal surface; the shared header/footer chrome flips via
+    // body:has([data-tone="night"]).
+    <main data-tone="night" className="mx-auto w-full max-w-6xl flex-1 bg-foil-night px-5 pt-12 pb-20 text-foil-cream sm:px-8 sm:pt-16">
       <header className="max-w-2xl">
-        <p className="text-xs font-medium uppercase tracking-wider text-foil-gold">
+        <p className="text-xs font-medium uppercase tracking-wider text-foil-accent">
           Catalog · {CARD_CATALOG.length} cards
         </p>
-        <h1 className="font-display mt-3 text-4xl font-bold tracking-[-0.02em] text-foil-navy sm:text-5xl">
+        <h1 className="font-display mt-3 text-4xl font-bold tracking-[-0.02em] text-foil-cream sm:text-5xl">
           Browse Pokémon cards by set
         </h1>
-        <p className="mt-4 text-lg text-foil-slate">
+        <p className="mt-4 text-lg text-foil-cream/70">
           Pick an era, then a set. Each set lists the cards Foil tracks
-          live across eBay — best current deal, watchlist alerts, real prices.
+          live across eBay: best current deal, vault alerts, real prices.
         </p>
       </header>
 
@@ -192,11 +195,11 @@ export default async function CardsIndexPage() {
             <div className="flex items-baseline justify-between gap-4">
               <h2
                 id={`era-${slugifyEra(group.era)}`}
-                className="font-display text-xl font-bold tracking-[-0.02em] text-foil-navy sm:text-2xl"
+                className="font-display text-xl font-bold tracking-[-0.02em] text-foil-cream sm:text-2xl"
               >
                 {group.era === "Other" ? "Special sets" : `${group.era} era`}
               </h2>
-              <span className="rounded-full border border-foil-gold/40 bg-foil-gold/5 px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-foil-navy">
+              <span className="rounded-full border border-foil-accent/40 bg-foil-accent/10 px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-foil-cream">
                 {group.sets.length} set{group.sets.length === 1 ? "" : "s"}
               </span>
             </div>
@@ -213,9 +216,9 @@ export default async function CardsIndexPage() {
                   >
                     <Link
                       href={`/cards/sets/${set.id}`}
-                      className="group block h-full rounded-2xl border border-foil-navy/10 bg-foil-cream p-5 shadow-sm shadow-foil-navy/5 transition duration-200 hover:-translate-y-0.5 hover:border-foil-gold/50 hover:shadow-lg hover:shadow-foil-navy/10"
+                      className="group block h-full rounded-2xl border border-foil-cream/10 bg-foil-night-2 p-5 transition duration-200 hover:-translate-y-0.5 hover:border-foil-accent/40"
                     >
-                      <div className="flex h-24 items-center justify-center rounded-xl bg-foil-navy px-3 py-2">
+                      <div className="flex h-24 items-center justify-center rounded-xl bg-foil-night px-3 py-2">
                         {set.logoUrl ? (
                           <Image
                             src={set.logoUrl}
@@ -232,16 +235,16 @@ export default async function CardsIndexPage() {
                         )}
                       </div>
                       <div className="mt-4 flex items-baseline justify-between gap-3">
-                        <p className="truncate text-base font-semibold text-foil-navy group-hover:text-foil-coral">
+                        <p className="truncate text-base font-semibold text-foil-cream group-hover:text-foil-accent">
                           {set.name}
                         </p>
                         {year ? (
-                          <span className="font-mono text-[10px] uppercase tracking-wider text-foil-slate">
+                          <span className="font-mono text-[10px] uppercase tracking-wider text-foil-cream/60">
                             {year}
                           </span>
                         ) : null}
                       </div>
-                      <p className="mt-1 text-xs text-foil-slate">
+                      <p className="mt-1 text-xs text-foil-cream/60">
                         {count} card{count === 1 ? "" : "s"} tracked
                         {set.total > 0 && set.total !== count ? <> · of {set.total} in set</> : null}
                       </p>

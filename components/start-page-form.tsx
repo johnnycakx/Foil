@@ -178,28 +178,28 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
 
   if (submission.state === "success") {
     return (
-      <section className="rounded-3xl border border-foil-accent-deep/40 bg-foil-cream p-8 shadow-xl shadow-foil-navy/10 sm:p-10">
-        <p className="text-xs font-medium uppercase tracking-widest text-foil-accent-deep">
+      <section className="rounded-3xl border border-foil-accent/40 bg-foil-night-2 p-8 sm:p-10">
+        <p className="text-xs font-medium uppercase tracking-widest text-foil-accent">
           You&apos;re tracking {submission.count} cards
         </p>
-        <h2 className="font-display mt-3 text-2xl font-bold tracking-[-0.02em] text-foil-navy sm:text-3xl">
+        <h2 className="font-display mt-3 text-2xl font-bold tracking-[-0.02em] text-foil-cream sm:text-3xl">
           We&apos;ve got it from here.
         </h2>
-        <p className="mt-4 text-base text-foil-slate">
-          Foil checks eBay every hour. The first time one of your cards drops to a price worth buying, the email lands. <span className="text-foil-slate/80">Add <code className="rounded bg-foil-navy/10 px-1.5 py-0.5 text-sm text-foil-navy">alerts@foiltcg.com</code> to your contacts so Gmail doesn&apos;t hide it.</span>
+        <p className="mt-4 text-base text-foil-cream/70">
+          Foil checks eBay every hour. The first time one of your cards drops to a price worth buying, the email lands. <span className="text-foil-cream/60">Add <code className="rounded bg-foil-cream/10 px-1.5 py-0.5 text-sm text-foil-cream">alerts@foiltcg.com</code> to your contacts so Gmail doesn&apos;t hide it.</span>
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-3">
           {submission.vaultUrl ? (
             <a
               href={submission.vaultUrl}
-              className="inline-flex items-center justify-center rounded-xl bg-foil-navy px-5 py-2.5 text-sm font-semibold text-foil-cream transition hover:bg-foil-accent-deep"
+              className="inline-flex items-center justify-center rounded-xl bg-foil-cream px-5 py-2.5 text-sm font-semibold text-foil-navy transition hover:ring-2 hover:ring-foil-accent/60"
             >
               Open your vault →
             </a>
           ) : (
             <a
               href="/cards"
-              className="inline-flex items-center justify-center rounded-xl bg-foil-navy px-5 py-2.5 text-sm font-semibold text-foil-cream transition hover:bg-foil-accent-deep"
+              className="inline-flex items-center justify-center rounded-xl bg-foil-cream px-5 py-2.5 text-sm font-semibold text-foil-navy transition hover:ring-2 hover:ring-foil-accent/60"
             >
               Browse the catalog →
             </a>
@@ -208,13 +208,13 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
               meanwhile, this week's best drops. */}
           <a
             href="/deals?src=start-success"
-            className="text-sm text-foil-navy underline decoration-foil-navy/20 underline-offset-4 transition hover:decoration-foil-accent-deep"
+            className="text-sm text-foil-cream underline decoration-foil-cream/25 underline-offset-4 transition hover:text-foil-accent hover:decoration-foil-accent"
           >
             Meanwhile, see this week&apos;s best drops →
           </a>
         </div>
         {submission.vaultUrl && (
-          <p className="mt-3 text-xs text-foil-slate">
+          <p className="mt-3 text-xs text-foil-cream/60">
             Your vault is the private page with everything you track — the link is also in
             your welcome email. Keep it handy.
           </p>
@@ -224,7 +224,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="rounded-3xl border border-foil-navy/10 bg-foil-cream p-6 shadow-sm shadow-foil-navy/5 sm:p-8">
+    <form onSubmit={onSubmit} className="rounded-3xl border border-foil-cream/10 bg-foil-night-2 p-6 sm:p-8">
       {/* Honeypot (ADR-090) — off-screen, never announced, never tabbable.
           Humans can't reach it; naive bots fill every field. The route
           fake-succeeds when it's non-empty. */}
@@ -243,37 +243,44 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
       </div>
 
       {/* SEARCH — the shared type-ahead (ADR-093; extracted so the vault's
-          add-in-place uses the same component, never a fork). */}
-      <CardTypeahead
-        cataloguedIds={cataloguedIds}
-        pickedIds={selectedIds}
-        onPick={addCard}
-        autoFocus
-      />
+          add-in-place uses the same component, never a fork). The shared
+          component stays cream-register on purpose (do not fork/edit it); on the
+          night panel its cream input + result rows read as intentional light
+          slips, exactly like the vault. Only the navy label + slate "Searching…"
+          line clash on charcoal, so re-ink them to cream from the wrapper (the
+          same override the vault applies — blackout-brand Workstream D). */}
+      <div className="[&_label>span]:text-foil-cream [&_li:only-child]:text-foil-cream/60">
+        <CardTypeahead
+          cataloguedIds={cataloguedIds}
+          pickedIds={selectedIds}
+          onPick={addCard}
+          autoFocus
+        />
+      </div>
 
       {/* EMPTY STATE — one-tap chase-card chips so a cold visitor never faces
           a blank form (fable-design-overhaul §2). Disappears once anything is
           picked. */}
       {selected.length === 0 && (
         <div className="mt-4">
-          <p className="text-xs text-foil-slate">Not sure how to spell it? Start with a grail:</p>
+          <p className="text-xs text-foil-cream/60">Not sure how to spell it? Start with a grail:</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {CHASE_EXAMPLES.filter((c) => cataloguedIds.includes(c.id)).map((c) => (
               <button
                 key={c.id}
                 type="button"
                 onClick={() => addCard(c)}
-                className="inline-flex items-center gap-2 rounded-full border border-foil-navy/15 bg-foil-cream py-1 pr-3 pl-1 text-xs font-medium text-foil-navy transition hover:border-foil-accent-deep/60 hover:bg-foil-accent-deep/5"
+                className="inline-flex items-center gap-2 rounded-full border border-foil-cream/15 bg-foil-night py-1 pr-3 pl-1 text-xs font-medium text-foil-cream transition hover:border-foil-accent/50 hover:bg-foil-accent/10"
               >
                 <Image
                   src={c.image}
                   alt=""
                   width={24}
                   height={34}
-                  className="h-8 w-6 rounded object-cover ring-1 ring-foil-navy/10"
+                  className="h-8 w-6 rounded object-cover ring-1 ring-foil-cream/10"
                 />
                 {c.name}
-                <span aria-hidden className="text-foil-accent-deep">+</span>
+                <span aria-hidden className="text-foil-accent">+</span>
               </button>
             ))}
           </div>
@@ -284,10 +291,10 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
           the user has picked at least one card. */}
       {selected.length > 0 && (
         <div className="mt-8">
-          <p className="font-display text-base font-bold text-foil-navy">
+          <p className="font-display text-base font-bold text-foil-cream">
             Set target prices
           </p>
-          <p className="mt-1 text-sm text-foil-slate">
+          <p className="mt-1 text-sm text-foil-cream/70">
             No price in mind? Leave it blank and we&apos;ll email you when the
             card dips well below what it usually sells for.
           </p>
@@ -295,7 +302,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
             {selected.map((s) => (
               <li
                 key={s.id}
-                className="flex items-center gap-3 rounded-xl border border-foil-navy/10 bg-foil-cream px-3 py-2 shadow-sm shadow-foil-navy/5"
+                className="flex items-center gap-3 rounded-xl border border-foil-cream/10 bg-foil-night px-3 py-2"
               >
                 <Image
                   src={s.image}
@@ -303,16 +310,16 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
                   width={40}
                   height={56}
                   unoptimized
-                  className="h-14 w-10 rounded-md object-cover ring-1 ring-foil-navy/10"
+                  className="h-14 w-10 rounded-md object-cover ring-1 ring-foil-cream/10"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="truncate text-sm font-medium text-foil-navy">{s.name}</p>
-                  <p className="truncate text-xs text-foil-slate">
+                  <p className="truncate text-sm font-medium text-foil-cream">{s.name}</p>
+                  <p className="truncate text-xs text-foil-cream/60">
                     {s.setName} · #{s.number}
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-sm text-foil-slate">$</span>
+                  <span className="text-sm text-foil-cream/60">$</span>
                   <input
                     type="number"
                     inputMode="decimal"
@@ -321,14 +328,14 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
                     value={s.targetPriceUsd}
                     onChange={(e) => updateTarget(s.id, e.target.value)}
                     placeholder="any"
-                    className="w-20 rounded-lg border border-foil-navy/15 bg-foil-cream px-2 py-1.5 text-right text-sm text-foil-navy placeholder:text-foil-slate/60 outline-none focus:border-foil-accent-deep focus:ring-2 focus:ring-foil-accent-deep/30"
+                    className="w-20 rounded-lg border border-foil-cream/15 bg-foil-night px-2 py-1.5 text-right text-sm text-foil-cream placeholder:text-foil-cream/40 outline-none focus:border-foil-accent focus:ring-2 focus:ring-foil-accent/30"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => removeCard(s.id)}
                   aria-label={`Remove ${s.name}`}
-                  className="ml-1 rounded-md p-1 text-foil-slate transition hover:bg-foil-navy/5 hover:text-foil-navy"
+                  className="ml-1 rounded-md p-1 text-foil-cream/60 transition hover:bg-foil-cream/10 hover:text-foil-cream"
                 >
                   ✕
                 </button>
@@ -341,7 +348,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
       {/* EMAIL + OPT-IN — section header (no number). */}
       <div className="mt-8">
         <label className="block">
-          <span className="font-display text-base font-bold text-foil-navy">Where to email you</span>
+          <span className="font-display text-base font-bold text-foil-cream">Where to email you</span>
           <input
             type="email"
             value={email}
@@ -349,15 +356,15 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
             placeholder="you@gmail.com"
             required
             autoComplete="email"
-            className="mt-2 w-full rounded-xl border border-foil-navy/15 bg-foil-cream px-4 py-3 text-base text-foil-navy placeholder:text-foil-slate/60 outline-none transition focus:border-foil-accent-deep focus:ring-2 focus:ring-foil-accent-deep/30"
+            className="mt-2 w-full rounded-xl border border-foil-cream/15 bg-foil-night px-4 py-3 text-base text-foil-cream placeholder:text-foil-cream/40 outline-none transition focus:border-foil-accent focus:ring-2 focus:ring-foil-accent/30"
           />
         </label>
-        <label className="mt-4 flex items-start gap-3 text-sm text-foil-slate">
+        <label className="mt-4 flex items-start gap-3 text-sm text-foil-cream/70">
           <input
             type="checkbox"
             checked={optInNewsletter}
             onChange={(e) => setOptInNewsletter(e.target.checked)}
-            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-foil-navy/20 bg-foil-cream text-foil-accent-deep focus:ring-foil-accent-deep focus:ring-offset-0"
+            className="mt-0.5 h-4 w-4 flex-shrink-0 rounded border-foil-cream/20 bg-foil-night text-foil-accent focus:ring-foil-accent focus:ring-offset-0"
           />
           <span>
             Also send me Foil&apos;s weekly deals newsletter (~1 email/week, unsubscribe anytime)
@@ -369,7 +376,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
       <button
         type="submit"
         disabled={submission.state === "submitting" || selected.length === 0}
-        className="mt-8 w-full rounded-xl bg-foil-navy px-6 py-3.5 text-base font-semibold text-foil-cream shadow-md shadow-foil-navy/20 transition-all hover:-translate-y-0.5 hover:bg-foil-accent-deep hover:shadow-lg hover:shadow-foil-navy/30 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:bg-foil-navy"
+        className="mt-8 w-full rounded-xl bg-foil-cream px-6 py-3.5 text-base font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-accent/60 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
       >
         {submission.state === "submitting"
           ? "Setting up…"

@@ -93,21 +93,27 @@ export function FoilCornerMark({ px = 22 }: { px?: number }) {
 }
 
 /**
- * The Foil wordmark lockup (ADR-094): the hanko seal + "Foil" in Bricolage
- * Grotesque 600 (font-wordmark). `tone` flips "Foil" navy↔cream for cream vs
- * navy/dark surfaces. No "TCG" in the display wordmark. One accessible name:
- * "Foil home".
+ * The FoilTCG wordmark lockup (ADR-094, amended by the blackout-brand goal):
+ * the hanko seal + bold "Foil" (white/cream on night chrome, navy ink on
+ * cream) + "TCG" in metallic gold — the `.wordmark-tcg` ramp anchored on the
+ * real gold #856a00 (globals.css), the ONLY gold on any night surface.
+ * John's verdict (2026-07-03) deliberately reverses ADR-094's TCG drop.
+ * `tcgFace` records the legibility trial: "clean" (Bricolage, the pick — the
+ * balloon face smears at 12px caps) vs "bubble" (Shrikhand, galleried).
+ * One accessible name: "FoilTCG home".
  */
 export function Logo({
   size = "md",
   tone = "onCream",
   withMark = true,
   face = "carved",
+  tcgFace = "clean",
 }: {
   size?: Size;
   tone?: Tone;
   withMark?: boolean;
   face?: Face;
+  tcgFace?: "clean" | "bubble";
 }) {
   const foilColor =
     tone === "chrome"
@@ -123,12 +129,19 @@ export function Logo({
     face === "bubble" && size === "md" ? "text-2xl" : WORDMARK_CLASS[size];
   return (
     <span
-      aria-label="Foil home"
+      aria-label="FoilTCG home"
       className={`${faceClass} inline-flex items-center font-semibold leading-none tracking-tight ${GAP_CLASS[size]}`}
     >
       {withMark && <SealMark px={MARK_PX[size]} />}
-      <span aria-hidden className={`${wordmarkClass} ${foilColor}`}>
-        Foil
+      <span aria-hidden className={`${wordmarkClass} inline-flex items-baseline gap-[0.28em]`}>
+        <span className={foilColor}>Foil</span>
+        <span
+          className={`wordmark-tcg text-[0.5em] font-bold tracking-[0.18em] ${
+            tcgFace === "bubble" ? "" : "font-wordmark"
+          }`}
+        >
+          TCG
+        </span>
       </span>
     </span>
   );

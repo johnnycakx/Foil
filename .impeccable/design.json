@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-05-28T00:00:00Z",
+  "generatedAt": "2026-07-03T00:00:00Z",
   "title": "Design System: Foil",
   "extensions": {
     "colorMeta": {
@@ -24,7 +24,7 @@
       },
       "gold": {
         "role": "secondary",
-        "displayName": "Concierge Gold",
+        "displayName": "Concierge Gold (cream register only; one stop in the wordmark ramp)",
         "canonical": "#c9a24b",
         "tonalRamp": ["oklch(32% 0.060 85)", "oklch(42% 0.075 85)", "oklch(52% 0.090 85)", "oklch(62% 0.100 85)", "oklch(72% 0.105 85)", "oklch(82% 0.085 85)", "oklch(90% 0.055 85)", "oklch(96% 0.025 85)"]
       },
@@ -36,21 +36,51 @@
       },
       "night": {
         "role": "surface-dark",
-        "displayName": "Night (homepage lit-room surface)",
-        "canonical": "#0a1322",
-        "tonalRamp": ["oklch(14% 0.030 260)", "oklch(18% 0.035 260)", "oklch(24% 0.040 260)", "oklch(32% 0.045 260)", "oklch(42% 0.048 260)", "oklch(54% 0.045 260)", "oklch(68% 0.035 260)", "oklch(84% 0.020 260)"]
+        "displayName": "Night (site-wide matte charcoal ground)",
+        "canonical": "#0d0d0e",
+        "tonalRamp": ["oklch(15% 0.004 356)", "oklch(22% 0.004 356)", "oklch(30% 0.004 356)", "oklch(40% 0.004 356)", "oklch(52% 0.004 356)", "oklch(66% 0.004 356)", "oklch(80% 0.004 356)", "oklch(93% 0.003 356)"]
       },
       "night-2": {
         "role": "surface-dark-raised",
-        "displayName": "Night Panel",
-        "canonical": "#101d31",
-        "tonalRamp": ["oklch(16% 0.032 260)", "oklch(21% 0.038 260)", "oklch(27% 0.042 260)", "oklch(35% 0.046 260)", "oklch(45% 0.048 260)", "oklch(57% 0.044 260)", "oklch(70% 0.034 260)", "oklch(85% 0.018 260)"]
+        "displayName": "Night Panel (charcoal raised)",
+        "canonical": "#17171a",
+        "tonalRamp": ["oklch(17% 0.005 356)", "oklch(24% 0.005 356)", "oklch(32% 0.005 356)", "oklch(42% 0.005 356)", "oklch(54% 0.005 356)", "oklch(68% 0.005 356)", "oklch(82% 0.004 356)", "oklch(94% 0.003 356)"]
       },
       "vermillion": {
-        "role": "accent",
-        "displayName": "Hanko Vermillion (succeeds gold on migrated surfaces)",
+        "role": "brand-ink",
+        "displayName": "Hanko Vermillion (hanko ink only; not a UI accent)",
         "canonical": "#d85a30",
         "tonalRamp": ["oklch(32% 0.085 40)", "oklch(42% 0.110 40)", "oklch(52% 0.140 40)", "oklch(60% 0.155 40)", "oklch(68% 0.150 40)", "oklch(78% 0.115 40)", "oklch(88% 0.070 40)", "oklch(95% 0.030 40)"]
+      },
+      "sakura": {
+        "role": "accent",
+        "displayName": "Sakura (petal ink; /lines register accent, same hue as the functional accent)",
+        "canonical": "#d98aa0",
+        "tonalRamp": ["oklch(30% 0.070 5)", "oklch(40% 0.085 5)", "oklch(50% 0.100 5)", "oklch(60% 0.100 5)", "oklch(70% 0.090 5)", "oklch(80% 0.070 5)", "oklch(89% 0.045 5)", "oklch(95% 0.020 5)"]
+      },
+      "sakura-wash": {
+        "role": "surface-tint",
+        "displayName": "Sakura Wash (soft petal tint for panels on cream)",
+        "canonical": "#f6e6ea",
+        "tonalRamp": ["oklch(30% 0.030 5)", "oklch(42% 0.032 5)", "oklch(54% 0.034 5)", "oklch(66% 0.032 5)", "oklch(76% 0.028 5)", "oklch(85% 0.022 5)", "oklch(92% 0.014 5)", "oklch(96% 0.008 5)"]
+      },
+      "accent": {
+        "role": "accent",
+        "displayName": "Foil Accent (THE functional UI accent, sakura on night; ADR-097 supersedes teal)",
+        "canonical": "#d98aa0",
+        "tonalRamp": ["oklch(30% 0.070 5)", "oklch(40% 0.085 5)", "oklch(50% 0.100 5)", "oklch(60% 0.100 5)", "oklch(70% 0.090 5)", "oklch(80% 0.070 5)", "oklch(89% 0.045 5)", "oklch(95% 0.020 5)"]
+      },
+      "accent-deep": {
+        "role": "accent",
+        "displayName": "Foil Accent Deep (the darker sakura sibling for cream surfaces, 4.8:1)",
+        "canonical": "#a5546e",
+        "tonalRamp": ["oklch(28% 0.075 5)", "oklch(38% 0.090 5)", "oklch(48% 0.100 5)", "oklch(58% 0.100 5)", "oklch(68% 0.090 5)", "oklch(78% 0.070 5)", "oklch(88% 0.045 5)", "oklch(95% 0.020 5)"]
+      },
+      "gold-anchor": {
+        "role": "brand-wordmark",
+        "displayName": "Gold Anchor (real gold #856a00; base of the metallic TCG wordmark ramp, the only gold on night surfaces)",
+        "canonical": "#856a00",
+        "tonalRamp": ["oklch(20% 0.050 95)", "oklch(30% 0.070 95)", "oklch(40% 0.090 95)", "oklch(50% 0.100 95)", "oklch(60% 0.110 95)", "oklch(72% 0.110 95)", "oklch(84% 0.080 95)", "oklch(94% 0.040 95)"]
       }
     },
     "typographyMeta": {
@@ -179,7 +209,7 @@
       "Don't use #000 or #fff anywhere; navy and cream are the true black/white.",
       "Don't let coral rest. If coral is visible without a hover or an error, it is a bug.",
       "Don't let gold spread past ~10% of a screen.",
-      "Don't use background-clip: text gradients. The brand spark mark is the only sanctioned gradient, and it is a small SVG mark.",
+      "Don't use background-clip: text gradients, with ONE sanctioned exception: the wordmark's .wordmark-tcg metallic ramp (ADR-106), where the gradient IS the meaning (metal, not decoration). No other text gradient is permitted, and no panel gradients ever.",
       "Don't use side-stripe accents (border-left/border-right > 1px as a color bar) or default to a modal when an inline or progressive reveal would do."
     ]
   }

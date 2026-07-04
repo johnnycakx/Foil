@@ -68,16 +68,19 @@ export default async function SetIndexPage({ params }: PageProps) {
   const releaseYear = set.releaseDate?.match(/^(\d{4})/)?.[1] ?? null;
 
   return (
-    <main className="mx-auto w-full max-w-6xl flex-1 px-5 pt-12 pb-20 sm:px-8 sm:pt-16">
-      <nav aria-label="Breadcrumb" className="font-mono text-[11px] uppercase tracking-wider text-foil-slate">
-        <Link href="/cards" className="transition hover:text-foil-navy">
+    // Night register (blackout-brand Workstream D) — per-set browse shares the
+    // charcoal surface; the shared header/footer chrome flips via
+    // body:has([data-tone="night"]).
+    <main data-tone="night" className="mx-auto w-full max-w-6xl flex-1 bg-foil-night px-5 pt-12 pb-20 text-foil-cream sm:px-8 sm:pt-16">
+      <nav aria-label="Breadcrumb" className="font-mono text-[11px] uppercase tracking-wider text-foil-cream/60">
+        <Link href="/cards" className="transition hover:text-foil-accent">
           ← All sets
         </Link>
       </nav>
 
       <header className="mt-6 grid gap-6 sm:grid-cols-[12rem_1fr] sm:items-center">
         {set.logoUrl ? (
-          <div className="flex h-32 items-center justify-center rounded-2xl border border-foil-navy/10 bg-foil-navy p-4">
+          <div className="flex h-32 items-center justify-center rounded-2xl border border-foil-cream/10 bg-foil-night p-4">
             <Image
               src={set.logoUrl}
               alt={`${set.name} set logo`}
@@ -89,14 +92,14 @@ export default async function SetIndexPage({ params }: PageProps) {
           </div>
         ) : null}
         <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-foil-gold">
+          <p className="text-xs font-medium uppercase tracking-wider text-foil-accent">
             {set.series || "Set"}
             {releaseYear ? <> · {releaseYear}</> : null}
           </p>
-          <h1 className="font-display mt-2 text-4xl font-bold leading-tight tracking-[-0.02em] text-foil-navy sm:text-5xl">
+          <h1 className="font-display mt-2 text-4xl font-bold leading-tight tracking-[-0.02em] text-foil-cream sm:text-5xl">
             {set.name}
           </h1>
-          <p className="mt-3 text-base text-foil-slate sm:text-lg">
+          <p className="mt-3 text-base text-foil-cream/70 sm:text-lg">
             {entries.length} card{entries.length === 1 ? "" : "s"} tracked from this set. Pick one to see the current best eBay listing.
           </p>
         </div>
@@ -109,9 +112,9 @@ export default async function SetIndexPage({ params }: PageProps) {
             <li key={entry.slug}>
               <Link
                 href={`/cards/${entry.slug}`}
-                className="group block rounded-2xl border border-foil-navy/10 bg-foil-cream p-3 shadow-sm shadow-foil-navy/5 transition hover:-translate-y-0.5 hover:border-foil-gold/40 hover:shadow-lg hover:shadow-foil-navy/10"
+                className="group block rounded-2xl border border-foil-cream/10 bg-foil-night-2 p-3 transition hover:-translate-y-0.5 hover:border-foil-accent/40"
               >
-                <div className="overflow-hidden rounded-xl bg-foil-navy/5">
+                <div className="overflow-hidden rounded-xl bg-foil-night">
                   {entry.meta.image ? (
                     <Image
                       src={entry.meta.image}
@@ -122,14 +125,14 @@ export default async function SetIndexPage({ params }: PageProps) {
                       className="aspect-[245/342] w-full transition group-hover:scale-[1.02]"
                     />
                   ) : (
-                    <div aria-hidden className="w-full bg-foil-navy/5" style={{ aspectRatio: "245 / 342" }} />
+                    <div aria-hidden className="w-full bg-foil-night" style={{ aspectRatio: "245 / 342" }} />
                   )}
                 </div>
                 <div className="mt-3 px-1 pb-1">
-                  <p className="font-mono text-[10px] uppercase tracking-wider text-foil-slate">
+                  <p className="font-mono text-[10px] uppercase tracking-wider text-foil-cream/60">
                     #{number}
                   </p>
-                  <p className="mt-1 truncate text-sm font-semibold text-foil-navy group-hover:text-foil-coral">
+                  <p className="mt-1 truncate text-sm font-semibold text-foil-cream group-hover:text-foil-accent">
                     {entry.meta.name}
                   </p>
                 </div>

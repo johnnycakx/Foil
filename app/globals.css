@@ -53,6 +53,11 @@
      site. Teal is RETIRED. */
   --color-foil-accent: #d98aa0;
   --color-foil-accent-deep: #a5546e;
+  /* The wordmark gold anchor (blackout-brand goal, John's verdict): real gold
+     #856a00, the base of the metallic "TCG" ramp below and the solid fallback
+     where background-clip:text is unavailable. On night surfaces this gold
+     appears in the wordmark ONLY (scarce-gold, absolute form). */
+  --color-foil-gold-anchor: #856a00;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   /* Display font for hero headlines + brand surfaces. Fraunces (variable
@@ -252,6 +257,52 @@ body {
 @media (prefers-reduced-motion: no-preference) {
   details[open] > .detail-body {
     animation: vault-reveal 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+}
+
+/*
+ * Wordmark "TCG" — metallic gold (blackout-brand goal). The ONLY gold on any
+ * night surface. A gradient ramp ANCHORED on the real gold #856a00 (flat
+ * #856a00 on charcoal reads muddy ~3.5:1; the specular stops toward #f4e3a1
+ * carry the metal read) clipped to the glyphs. Solid #856a00 fallback where
+ * background-clip:text is unavailable (and always solid in email/OG — those
+ * templates never use this class, ADR-079 lesson).
+ * Hover sheen: a slow background-position sweep under the clip — paint-only
+ * on ~12px of text (the transform/opacity budget rule is about layout-sized
+ * layers, not three letters), gated behind prefers-reduced-motion.
+ */
+.wordmark-tcg {
+  color: var(--color-foil-gold-anchor);
+}
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .wordmark-tcg {
+    background-image: linear-gradient(
+      100deg,
+      #6b5500 0%,
+      #856a00 24%,
+      #d4b04a 42%,
+      #f4e3a1 50%,
+      #c9a24b 60%,
+      #856a00 80%,
+      #6b5500 100%
+    );
+    background-size: 250% 100%;
+    /* Rest position parks the mid-gold (#d4b04a) on the glyphs so the metal
+       reads bright at 12px caps; the hover sweep drags the #f4e3a1 specular
+       through and settles on the deeper anchor side. */
+    background-position: 38% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .wordmark-tcg {
+      transition: background-position 700ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    a:hover .wordmark-tcg,
+    a:focus-visible .wordmark-tcg {
+      background-position: 62% 0;
+    }
   }
 }
 

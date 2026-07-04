@@ -323,10 +323,13 @@ test("/start form: renders the named section headers (ADR-029)", () => {
 // /cards browse + /cards/[slug] — palette anchors
 // ---------------------------------------------------------------------------
 
-test("/cards browse: catalog label uses gold accent (ADR-029)", () => {
+test("/cards browse: catalog label uses the sakura accent on the night register (blackout-brand Workstream D, was gold ADR-029)", () => {
   const src = readFile("app/(site)/cards/page.tsx");
-  // Catalog · N cards label, was text-[#FF6B5C], is now text-foil-gold.
-  assert.match(src, /text-foil-gold/);
+  // History: text-[#FF6B5C] → text-foil-gold (ADR-029, cream register) →
+  // text-foil-accent (blackout-brand Workstream D, night register). Gold is
+  // wordmark-only on night surfaces, so the eyebrow now uses the sakura accent.
+  assert.match(src, /text-foil-accent/);
+  assert.doesNotMatch(src, /foil-gold/);
 });
 
 test("/cards/[slug]: best-listing block uses accent border + night panel (design-loop-round2 §3 night register)", () => {
@@ -473,14 +476,27 @@ test("Logo component: hanko seal mark, vermillion + cream knockout, zero Pokéba
   assert.doesNotMatch(src, /#c9a24b/i, "the retired gold must be gone from the mark");
 });
 
-test("Logo component: 'Foil' wordmark — Bricolage font-wordmark, navy/cream tones, no 'TCG' (ADR-094)", () => {
+test("Logo component: 'Foil' + metallic gold 'TCG' lockup (blackout-brand, deliberately reverses the ADR-094 TCG drop)", () => {
   const src = readFile("components/brand/logo.tsx");
   assert.match(src, /font-wordmark/, "wordmark uses the font-wordmark utility");
-  assert.match(src, /aria-label="Foil home"/, "accessible name (no em dash — Gate 12)");
+  assert.match(src, /aria-label="FoilTCG home"/, "accessible name matches the visible lockup (no em dash — Gate 12)");
   assert.match(src, /text-foil-navy/, "onCream tone: navy 'Foil'");
   assert.match(src, /text-foil-cream/, "onNavy tone: cream 'Foil'");
   assert.match(src, />\s*Foil\s*<\/span>/, "'Foil' word");
-  assert.doesNotMatch(src, />\s*TCG\s*</, "'TCG' dropped from the display wordmark");
+  assert.match(src, /wordmark-tcg/, "'TCG' renders through the metallic gold ramp class");
+  assert.match(src, />\s*TCG\s*</, "'TCG' is back in the display wordmark (John's 2026-07-03 verdict)");
+});
+
+test("Wordmark gold: #856a00-anchored metallic ramp with solid fallback; hover sheen reduced-motion gated (blackout-brand)", () => {
+  const css = readFile("app/globals.css");
+  assert.match(css, /--color-foil-gold-anchor:\s*#856a00/i, "the real-gold anchor token exists");
+  assert.match(css, /\.wordmark-tcg\s*\{\s*[^}]*var\(--color-foil-gold-anchor\)/, "solid gold fallback outside @supports");
+  assert.match(css, /background-clip:\s*text/, "the metallic ramp clips to the glyphs");
+  assert.match(css, /#f4e3a1/i, "the specular highlight stop exists (metallic, not flat)");
+  // The sheen sweep must be inside the reduced-motion no-preference gate.
+  const sheenIdx = css.indexOf("transition: background-position");
+  const gateIdx = css.lastIndexOf("prefers-reduced-motion: no-preference", sheenIdx);
+  assert.ok(sheenIdx > -1 && gateIdx > -1, "hover sheen exists and sits behind the motion gate");
 });
 
 test("Wordmark font Bricolage Grotesque is pinned + exposed as font-wordmark (ADR-094)", () => {
@@ -1149,4 +1165,58 @@ test("Card page: honest fallback on thin-data cards — pending copy, no invente
   for (const rel of ["components/cards/add-to-vault.tsx", "components/cards/detail-section.tsx"]) {
     assert.ok(!readFile(rel).includes("—"), `${rel} contains no em dash`);
   }
+});
+
+// ---------------------------------------------------------------------------
+// blackout-brand Workstream D — /start + /cards index + /cards/sets migrated
+// from the cream register to the charcoal night register (matching /deals, the
+// vault, and /cards/[slug]). Each page opts into the tone, drops every cream
+// page/panel background, and carries no gold (gold is wordmark-only on night).
+// ---------------------------------------------------------------------------
+
+test("Night register pinned on /start + /cards index + sets (blackout-brand Workstream D)", () => {
+  for (const rel of [
+    "app/(site)/start/page.tsx",
+    "app/(site)/cards/page.tsx",
+    "app/(site)/cards/sets/[set-id]/page.tsx",
+  ]) {
+    const src = readFile(rel);
+    // Opts into the night tone (flips the shared chrome via body:has()) and
+    // paints the charcoal ground.
+    assert.match(src, /data-tone="night"/, `${rel} must render data-tone="night"`);
+    assert.match(src, /bg-foil-night/, `${rel} must paint the charcoal ground`);
+    // No cream page/panel background survives. text-foil-cream (ink) is fine;
+    // only a `bg-foil-cream` fill (optionally with a /opacity or -shade suffix)
+    // is forbidden — the negative lookahead lets bg-foil-night / -night-2 pass.
+    assert.doesNotMatch(
+      src,
+      /bg-foil-cream(?![\w-])/,
+      `${rel} must not keep a cream page/panel background`,
+    );
+    // Gold is retired on night surfaces (wordmark-only).
+    assert.doesNotMatch(src, /foil-gold/, `${rel} must carry no gold on the night register`);
+  }
+});
+
+test("Movers board: heating-up rows at full parity — shared row, thumbnails, /cards links, designed null thumb (blackout-brand Workstream C)", () => {
+  const src = readFile("components/deals/movers-board.tsx");
+  // ONE row component renders both directions — parity by construction.
+  assert.match(src, /function MoverRowItem\(\{ m, direction \}/, "shared row component exists");
+  const upSection = src.slice(src.indexOf('id="heating-up"'));
+  assert.match(upSection, /<MoverRowItem key=\{m.cardSlug\} m=\{m\} direction="up"/, "heating rows render the shared row (with the thumbnail)");
+  // The thumbnail null state is DESIGNED (card glyph), never a blank box.
+  assert.match(src, /function CardThumb/, "thumb helper exists");
+  assert.match(src, /<svg viewBox="0 0 24 24"/, "designed placeholder glyph");
+  // Internal links: identity → our card page; affiliate CTA untouched.
+  assert.match(src, /href=\{`\/cards\/\$\{m.cardSlug\}`\}/, "identity links to /cards/[slug]");
+  assert.match(src, /affiliateSearchUrl\(query, buildCustomId\(\{ tier: "deals", slug: m.cardSlug, src: "movers" \}\)\)/, "affiliate URL construction unchanged");
+  // No gold anywhere on this night surface.
+  assert.doesNotMatch(src, /foil-gold/, "gold is wordmark-only on night surfaces");
+  // Readability: the stats sentence is 13px, not 11-12px muted.
+  assert.match(src, /text-\[13px\] leading-snug text-foil-cream\/70/, "stats line readable");
+  // Jump links + footnote block on the page.
+  const page = readFile("app/(site)/deals/page.tsx");
+  assert.match(page, /aria-label="Board sections"/, "section jump links exist");
+  assert.match(page, /How to read this board/, "explainer is a labeled footnote block");
+  assert.match(page, /id="below-sold"/, "below-sold jump target exists");
 });

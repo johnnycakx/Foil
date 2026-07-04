@@ -7,11 +7,14 @@ colors:
   slate: "#4a5568"
   gold: "#c9a24b"
   coral: "#ff6b5c"
-  gold-deep: "#a07d2c"
-  gold-light: "#e6c170"
-  night: "#0a1322"
-  night-2: "#101d31"
+  night: "#0d0d0e"
+  night-2: "#17171a"
   vermillion: "#d85a30"
+  sakura: "#d98aa0"
+  sakura-wash: "#f6e6ea"
+  accent: "#d98aa0"
+  accent-deep: "#a5546e"
+  gold-anchor: "#856a00"
 typography:
   display:
     fontFamily: "Fraunces, Georgia, serif"
@@ -152,11 +155,12 @@ gold and a coral that only ever appears under a cursor.
   in place of `#000` everywhere, and tinted into every shadow and hairline border.
 
 ### Secondary
-- **Concierge Gold** (#c9a24b): The premium signal. Live-status dots, "good deal"
-  badges, the brand glyph, focus rings, hairlines on premium surfaces, and
-  link-hover underlines. Never a background fill for large areas, never decorative.
-  Its scarcity is the entire point. Two siblings exist only inside the brand
-  glyph's holofoil gradient: **Gold Deep** (#a07d2c) and **Gold Light** (#e6c170).
+- **Concierge Gold** (#c9a24b): The premium signal ON CREAM-REGISTER PAGES
+  ONLY (legal, pillars, vending): badges, focus rings, hairlines on premium
+  surfaces, link-hover underlines. Never a background fill for large areas,
+  never decorative. Its scarcity is the entire point. On night surfaces gold
+  is wordmark-only (ADR-106, see section 7a): the "TCG" metallic ramp anchored
+  on **Gold Anchor** (#856a00), where #c9a24b survives as one gradient stop.
 
 ### Tertiary
 - **Touch Coral** (#ff6b5c): Reserved for interaction. Primary buttons swap their
@@ -286,9 +290,12 @@ already lifted before you point at it, drop it back down.
 - **Numeric (price) fields:** Right-aligned, narrow, prefixed with a slate `$`.
 
 ### Navigation
-- **Brand:** The Logo — the hanko seal mark + "Foil" wordmark — in the Bricolage
-  Grotesque wordmark font. "Foil" navy (or cream on dark). No "TCG" in the
-  display wordmark (the domain keeps the longer form).
+- **Brand:** The Logo in the site chrome is wordmark-first: "Foil" in the
+  Shrikhand bubble face (chrome ink: cream on night, navy on cream, no seal
+  mark in the chrome) followed by "TCG" in metallic gold via `.wordmark-tcg`
+  (Bricolage bold caps at 0.5em, +0.18em tracking). ADR-106 deliberately
+  reverses ADR-094's TCG drop. Accessible name: "FoilTCG home". The seal mark
+  survives on favicon/OG/hero-glyph surfaces.
 - **Links:** Body/label scale, navy, gold-underline on hover, matching the text
   link pattern above.
 
@@ -305,16 +312,25 @@ small mark, laddering sm/md/lg for footer / header / hero:
   stroke thickens there), the lockup icon, the OG-card mark, and tiles as the
   faint "How it works" section watermark. Geometry-only and isolated so it can be
   swapped without touching the wordmark.
-- **Wordmark:** "Foil" set in **Bricolage Grotesque 600** (pinned via
-  `next/font/google`, exposed as the `font-wordmark` utility). Navy (`onCream`,
-  the default header tone) or cream (`onNavy`, for footer / OG / dark surfaces).
-  Accessible name: `"Foil home"` (no em dash, Gate 12).
+- **Wordmark:** "Foil" set in **Shrikhand** in the site chrome (the bubble
+  face, `--font-wordmark-bubble`, rendered via `Logo face="bubble"`), with
+  **Bricolage Grotesque 600** (`font-wordmark`) as the carved cut that also
+  sets the "TCG" caps. Chrome ink follows the tone: cream on night, navy on
+  cream. Accessible name: `"FoilTCG home"` (label-in-name, ADR-106).
+- **"TCG" in metallic gold (`.wordmark-tcg`, ADR-106):** a bg-clip gradient
+  ramp anchored on the real gold `--color-foil-gold-anchor` (#856a00) with a
+  #f4e3a1 specular stop, solid #856a00 fallback where `background-clip: text`
+  is unavailable, and a slow hover background-position sheen gated behind
+  `prefers-reduced-motion`. Bricolage bold caps at 0.5em won the face trial
+  (Shrikhand's counters smear at 12px caps; recorded via the `tcgFace` prop).
+  On night surfaces this is the ONLY gold anywhere (scarce-gold, absolute
+  form). Email/OG never use the class: solid gold only there (ADR-079).
 
-**The hanko vermillion (`#D85A30`) is the accent color that succeeds gold.** The
-mark pick *was* the accent-color decision (ADR-094 coordinates with the
-fable-design-overhaul palette revision): the broader gold→vermillion UI accent
-migration is that separate goal's work; this mark ships palette-agnostic (the
-seal carries its own vermillion regardless of when the UI palette catches up).
+**The hanko vermillion (`#D85A30`) is the hanko ink only.** John rejected
+vermillion as the UI accent (design-loop-round2); the functional accent role
+passed to the sakura pair (`--color-foil-accent` #d98aa0 on night /
+`--color-foil-accent-deep` #a5546e on cream, ADR-097). The seal still carries
+its own vermillion; do not use vermillion for new UI.
 
 **No Pokémon trade dress.** The mark uses no Pokéball or other Pokémon-trademark
 shape and avoids the Pokémon yellow+blue trade dress.
@@ -323,8 +339,11 @@ shape and avoids the Pokémon yellow+blue trade dress.
 red/white Pokéball (ADR-040) → **ADR-055 (2026-06-05)** retired the Pokéball for
 an owned Fredoka "FoilTCG" wordmark + foil-corner card mark → **ADR-094
 (2026-07-01)** replaced that with the hanko seal + "Foil" (Bricolage), driven by
-the gold retirement. Do not reintroduce the Pokéball, the gold-"TCG" treatment,
-or any Pokémon-trademark shape.
+the gold retirement → **ADR-106 (2026-07-03)** brought "TCG" back in metallic
+real gold (#856a00 anchored) as the gold's one sanctioned home, and the chrome
+went wordmark-first in the Shrikhand bubble face. Do not reintroduce the
+Pokéball or any Pokémon-trademark shape; the old flat-gold "TCG" of ADR-055 is
+also dead (the ADR-106 metallic ramp is a different treatment, not a revival).
 
 ## 6. Do's and Don'ts
 
@@ -356,45 +375,62 @@ or any Pokémon-trademark shape.
   a bug.
 - **Don't** let gold spread past ~10% of a screen, the moment it becomes a section
   background or a second button fill, it stops meaning anything.
-- **Don't** use `background-clip: text` gradients. The brand glyph's holofoil
-  gradient is the only sanctioned gradient, and it is a small SVG mark, not text
-  and not a panel.
+- **Don't** use `background-clip: text` gradients, with ONE sanctioned
+  exception: the wordmark's `.wordmark-tcg` metallic ramp (ADR-106), where the
+  gradient IS the meaning (metal, not decoration). No other text gradient is
+  permitted, and no panel gradients ever.
 - **Don't** use side-stripe accents (`border-left`/`border-right` > 1px as a color
   bar) or default to a modal when an inline or progressive reveal would do.
 
-> **ROUND-2 AMENDMENTS (design-loop-round2, John's 1am verdicts — override
-> conflicting lines below):** the night register now covers home, /deals,
-> /blog index, /cards/[slug], and the vault (/w); /lines stays cream-sakura
-> for the eve delivery. **Vermillion is OUT as the UI accent** (hanko ink
-> only) — THE accent is **moon-glow teal** (`--color-foil-accent` #6fd8c5 on
-> night / `--color-foil-accent-deep` #0e7c6b on cream, both AA), sampled from
-> Moonbreon's moonlit art; bake-off vs holo-iridescent + sakura galleried.
+> **ROUND-2 AMENDMENTS (design-loop-round2, John's 1am verdicts), as amended
+> by pre-send-coherence (ADR-097) and blackout-brand (ADR-106):** the night
+> register now covers home, /deals, /blog index, /cards/[slug], the vault
+> (/w), and (per ADR-106 Workstream D) /start, the /cards index, and
+> /cards/sets/[set-id]; /lines stays cream-sakura for the eve delivery.
+> **Vermillion is OUT as the UI accent** (hanko ink only). Round 2 ratified
+> **moon-glow teal** as THE accent; that call was SUPERSEDED in production:
+> **sakura is THE functional accent** (`--color-foil-accent` #d98aa0 on
+> night, about 7:1 / `--color-foil-accent-deep` #a5546e on cream, 4.8:1,
+> ADR-097; the /lines pages set the standard site-wide). Teal is retired.
 > The register is MATTE Linear-grade ("the dark gallery"): glows pulled back,
-> depth from layering — the cards glow, the page doesn't. Wordmark: "Foil" in
+> depth from layering; the cards glow, the page doesn't. Wordmark: "Foil" in
 > **Shrikhand** (`--font-wordmark-bubble`, `Logo face="bubble"`), wordmark-
-> FIRST chrome (seal demoted to favicon + hero-pill glyph). Type scale up:
-> marketing body 18–20px. All pending John's morning ratification
-> (design-loop/SUMMARY-ROUND2.md).
+> FIRST chrome (seal demoted to favicon + hero-pill glyph), now followed by
+> "TCG" in the metallic gold ramp (ADR-106; see Components). Type scale up:
+> marketing body 18–20px.
 
-## 7a. Night register (HOMEPAGE — overnight-design-loop, 2026-07-02, pending John's merge)
+## 7a. Night register (SITE-WIDE CHARCOAL: overnight-design-loop 2026-07-02, re-grounded by pre-send-coherence + ADR-106, 2026-07-03)
 
-The homepage runs the **"lit room"** register: a warm near-black surface where
-the card art is the light source of the page. Won the DIVERGE face-off against
-an evolved-warm control (design-loop/ITERATION-LOG.md) on the ICP and
-card-spotlight dimensions — holographic art visibly dims on cream; it pops on
-dark walls. Scoped to the homepage via `data-tone="night"`; every other
-surface keeps its register.
+The night register began as the homepage's **"lit room"** (won the DIVERGE
+face-off against an evolved-warm control, design-loop/ITERATION-LOG.md:
+holographic art visibly dims on cream; it pops on dark walls) and is now the
+default register for the whole deal-finder funnel. **Coverage:** home, /deals,
+/blog index, /cards/[slug], the vault (/w), /start, the /cards index, and
+/cards/sets/[set-id] (the last three migrated in ADR-106 Workstream D, with a
+visual-regression guard pinning the register). **/lines stays cream-sakura**
+(eve's live links). The cream canon of sections 1 through 6 survives on
+legal, pillar, and vending pages. A page opts in via `data-tone="night"`.
 
-**New tokens (globals.css):**
-- **Night** (`--color-foil-night` #0a1322): the homepage surface. A navy-derived
-  warm near-black — never `#000` (No-Pure-Black holds in spirit).
-- **Night panel** (`--color-foil-night-2` #101d31): raised panels (binder
+**Ground tokens (globals.css, supersede the round-1 navy-derived night):**
+- **Night** (`--color-foil-night` #0d0d0e): the surface. Neutral matte
+  CHARCOAL with zero blue cast; a whisper of warmth (oklch chroma about 0.004
+  toward the sakura hue) keeps it matte rather than lifeless. Never `#000`
+  (No-Pure-Black holds in spirit). The earlier navy-cast night (#0a1322) is
+  dead; navy survives only as semantic ink and shadow tint on cream surfaces.
+- **Night panel** (`--color-foil-night-2` #17171a): raised panels (binder
   spread, artifact chips, night email capture).
-- **Vermillion** (`--color-foil-vermillion` #d85a30): the hanko ink, now a real
-  token. **Succeeds gold as THE accent** on every surface touched by the
-  overnight loop (homepage, /start, /deals, email-capture, typeahead). Used as
-  a pinprick: live dots, eyebrows, one underline, focus rings, hover fills.
-  Gold remains only on not-yet-migrated surfaces; do not add new gold.
+- **THE accent is the sakura pair** (`--color-foil-accent` #d98aa0 on night,
+  about 7:1 / `--color-foil-accent-deep` #a5546e on cream, 4.8:1; ADR-097).
+  One hue family across /lines and the night funnel: one site. Used as a
+  pinprick: live dots, eyebrows, one underline, focus rings, delta dots.
+  History: round 1 tried vermillion as the accent, round 2 ratified moon-glow
+  teal; both are superseded. Vermillion (`--color-foil-vermillion` #d85a30)
+  is the hanko ink ONLY. Teal is retired.
+- **Gold is wordmark-only on night** (scarce-gold, absolute form; ADR-106).
+  The "TCG" metallic ramp anchored on `--color-foil-gold-anchor` (#856a00) is
+  the ONLY gold that may paint on any night surface. Every other night-surface
+  gold was retinted to sakura; do not add new gold. Cream-register pages keep
+  their ADR-029 gold until their own migration.
 
 **Chrome tone mechanism:** the shared header/footer read `--chrome-*` variables;
 `body:has([data-tone="night"])` flips them dark. No layout fork, no client JS.
@@ -410,10 +446,28 @@ the hero NEVER reveals (paints instantly). Depth is light logic — each
 section's artifact is its light source (glow spills), never tiled textures
 (the seal-watermark wallpaper is dead and guarded against).
 
-**Wordmark soft cut:** "Foil" in **Baloo 2 600** (`--font-wordmark-soft`,
-`Logo face="soft"`) in the site chrome — the cloudy/bubbly warmth that keeps
-the dark register from going sterile. Bricolage (`font-wordmark`) remains the
-carved cut for OG/favicon surfaces pending John's brand-asset follow-up.
+**Wordmark in the chrome:** "Foil" in **Shrikhand** (`--font-wordmark-bubble`,
+`Logo face="bubble"`, no seal mark in the chrome) + "TCG" in the metallic
+gold `.wordmark-tcg` ramp (see Components). The round-1 Baloo 2 soft cut is
+retired; Bricolage (`font-wordmark`) remains the carved cut that sets the
+"TCG" caps and serves OG/favicon surfaces pending the brand-asset follow-up.
+
+**Vault-first card page (ADR-105):** `/cards/[slug]` leads with the action:
+card identity + one coherence-gated sold figure + the "Add to vault" button
+above the fold (mobile-first, 390x844), the listing module as visible proof,
+and the data demoted to collapsible depth via `DetailSection` (native
+`<details>/<summary>`, zero client JS, collapsed content still in the
+server-rendered DOM). Sold panel defaults open; variants and card details
+default collapsed. "Add to vault" is the one noun at every step. Thin-data
+cards say "Sold data pending for this card" rather than inventing a figure.
+
+**/deals row anatomy (ADR-106 Workstream C):** both directions render the
+same `MoverRowItem` at full parity: thumbnail (designed card-glyph null
+state, never a blank box), name + set linking to /cards/[slug], a 13px
+plain-words stats sentence, the two-point delta dumbbell (down: sakura dot
+left of the cream baseline; up: cream dot right; direction + label carry the
+"warm" read since vermillion is hanko-only, coral hover-only, gold
+wordmark-only), sample size on every row, and the affiliate Browse CTA.
 
 ## 7. Vending register (B2B host surfaces) — evolves §§1–6 for `/`, `/host`, `/faq`, `/service-areas`
 

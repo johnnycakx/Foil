@@ -32,7 +32,7 @@ function SiteHeader() {
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
         <Link
           href="/"
-          aria-label="Foil home"
+          aria-label="FoilTCG home"
           className="inline-flex items-center transition hover:opacity-80"
         >
           <Logo size="md" tone="chrome" face="bubble" withMark={false} />
@@ -84,7 +84,7 @@ function SiteFooter() {
             (round-2: hanko demoted from chrome; survives as favicon + the
             hero pill glyph pending John's morning call). */}
         <div className="mb-6">
-          <Link href="/" aria-label="Foil home" className="inline-flex transition hover:opacity-80">
+          <Link href="/" aria-label="FoilTCG home" className="inline-flex transition hover:opacity-80">
             <Logo size="md" tone="chrome" face="bubble" withMark={false} />
           </Link>
         </div>

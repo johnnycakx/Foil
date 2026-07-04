@@ -96,19 +96,52 @@ export default async function DealsPage() {
         </p>
       </header>
 
+      {/* Section jump links (blackout-brand Workstream C readability pass):
+          the board is three scannable sections; say so up top. */}
+      <nav aria-label="Board sections" className="mt-6 flex flex-wrap items-center justify-center gap-2">
+        {movers.down.length > 0 ? (
+          <a
+            href="#cooling-off"
+            className="rounded-full border border-foil-cream/15 px-3.5 py-1.5 text-xs font-medium text-foil-cream/80 transition hover:border-foil-accent/50 hover:text-foil-accent"
+          >
+            Cooling off
+          </a>
+        ) : null}
+        {movers.up.length > 0 ? (
+          <a
+            href="#heating-up"
+            className="rounded-full border border-foil-cream/15 px-3.5 py-1.5 text-xs font-medium text-foil-cream/80 transition hover:border-foil-accent/50 hover:text-foil-accent"
+          >
+            Heating up
+          </a>
+        ) : null}
+        <a
+          href="#below-sold"
+          className="rounded-full border border-foil-cream/15 px-3.5 py-1.5 text-xs font-medium text-foil-cream/80 transition hover:border-foil-accent/50 hover:text-foil-accent"
+        >
+          Below sold right now
+        </a>
+      </nav>
+
       <div className="mt-8">
         <MoversBoard movers={movers} />
       </div>
 
-      {/* Honest framing of the aggregate signal. */}
-      <p className="mt-5 text-center text-xs leading-relaxed text-foil-cream/60">
-        Down versus a card&apos;s 30-day average means it has cooled off lately, which can be a buying
-        window or a sign demand is softening. We surface the move and the numbers behind it. The call is
-        yours. Built from recent sold data, refreshed daily.
-      </p>
+      {/* Honest framing of the aggregate signal — a proper footnote block, not
+          floating text (Workstream C readability pass). */}
+      <aside className="mt-6 rounded-xl border border-foil-cream/12 bg-foil-night-2 px-5 py-4">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-foil-cream/60">
+          How to read this board
+        </p>
+        <p className="mt-2 text-[13px] leading-relaxed text-foil-cream/70">
+          Down versus a card&apos;s 30-day average means it has cooled off lately, which can be a buying
+          window or a sign demand is softening. We surface the move and the numbers behind it. The call is
+          yours. Every row shows its recent-sale count; built from recent sold data, refreshed daily.
+        </p>
+      </aside>
 
       {/* Demoted secondary: the single-listing below-sold board. */}
-      <section className="mt-14">
+      <section id="below-sold" className="mt-14 scroll-mt-24">
         <h2 className="font-display text-xl font-bold text-foil-cream">Below sold right now</h2>
         <p className="mt-1 text-sm text-foil-cream/60">
           Individual live listings priced under their condition-matched recent sold price. We check{" "}
