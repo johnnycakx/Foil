@@ -242,7 +242,15 @@ function Hero() {
                 alt={c.alt}
                 width={400}
                 height={560}
-                eager
+                sizes="(max-width: 768px) 40vw, 240px"
+                /* homepage-mobile-perf: the fan is the reduced-motion FALLBACK
+                   (the belt is the primary hero, motion-safe:block). On a normal
+                   mobile the fan is motion-safe:hidden, yet eager images download
+                   even when display:none — so eager on all 7 wasted ~250KB on the
+                   conversion-critical mobile path. Only the focal grail stays eager
+                   (non-blank paint for reduced-motion); the 6 wings are lazy
+                   (in-viewport, so they still load promptly when shown). */
+                eager={c.depth === 0}
                 className={`aspect-[5/7] overflow-hidden rounded-lg ring-1 ${slot.size} ${c.fx ?? slot.fx} ${
                   c.depth === 0
                     ? "shadow-[0_16px_60px_-12px_rgba(217,138,160,0.32),0_12px_40px_-10px_rgba(248,245,240,0.3)] ring-foil-accent/40"
@@ -414,6 +422,7 @@ function VaultMoment() {
                         alt={p.name}
                         width={280}
                         height={392}
+                        sizes="(max-width: 768px) 30vw, 200px"
                         className="h-full w-full object-cover"
                       />
                     </div>

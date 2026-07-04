@@ -135,15 +135,24 @@ export function HeroBelt({ pool }: { pool: BeltCard[] }) {
             className="belt-card group/card relative block shrink-0 overflow-hidden rounded-xl ring-1 ring-foil-cream/12 transition-shadow duration-200 focus-visible:ring-2 focus-visible:ring-foil-accent focus-visible:outline-none"
             style={{ width: CARD_W }}
           >
-            {/* Uniform 5/7 box; explicit dimensions = zero CLS. First
-                viewport of faces loads eagerly for LCP; the rest lazily. */}
+            {/* Uniform 5/7 box; explicit dimensions = zero CLS. MOBILE LCP
+                (homepage-mobile-perf): only the ~visible window loads eager —
+                on a 390px viewport ~2 cards show, so 3 covers them + one ahead
+                of the drift; the rest lazy (they load as they approach on the
+                slow 48px/s walk). ONLY node 0 (the LCP element) is high
+                priority. srcset serves a 300px variant to low-DPR phones and
+                the 480px to DPR2 (the card box is a fixed 232px). This stops
+                ~5 off-screen eager images (~275KB) from blocking the mobile
+                LCP on Slow 4G. */}
             <img
               src={card.img}
+              srcSet={`${card.img.replace(/\.webp$/, "-sm.webp")} 300w, ${card.img} 480w`}
+              sizes="232px"
               alt={card.name}
               width={480}
               height={672}
-              loading={i < 8 ? "eager" : "lazy"}
-              fetchPriority={i < 4 ? "high" : "auto"}
+              loading={i < 3 ? "eager" : "lazy"}
+              fetchPriority={i === 0 ? "high" : "auto"}
               decoding="async"
               className="aspect-[5/7] w-full object-cover"
             />

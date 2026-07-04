@@ -26,7 +26,10 @@ const OUT_POOL = join(ROOT, "lib", "hero-belt", "pool.generated.json");
 const POOL_TARGET = 200;
 const CANDIDATE_OVERSAMPLE = 240; // extra headroom for download failures
 const MIN_MARKET_USD = 15; // below this it's not a chase card
-const IMG_WIDTH = 480; // uniform box; art fills it (5/7 aspect)
+const IMG_WIDTH = 480; // uniform box; art fills it (5/7 aspect) — DPR2 of the 232px card
+const IMG_WIDTH_SM = 300; // small srcset variant for low-DPR phones (homepage-mobile-perf)
+const IMG_QUALITY = 80; // base stays crisp; the sm downscale hides its re-encode
+const IMG_QUALITY_SM = 76;
 
 type BakedCard = {
   id: string;
@@ -130,6 +133,7 @@ async function main() {
   for (const { card, slug, usd } of candidates) {
     if (got.length >= POOL_TARGET) break;
     const file = join(OUT_IMG_DIR, `${slug}.webp`);
+    const fileSm = join(OUT_IMG_DIR, `${slug}-sm.webp`);
     try {
       if (!existsSync(file)) {
         // The bake stores the full _hires.png URL; fall back to the standard
@@ -137,8 +141,13 @@ async function main() {
         const buf = await fetchImage(card.image).catch(() =>
           fetchImage(card.image.replace("_hires", "")),
         );
-        await sharp(buf).resize({ width: IMG_WIDTH }).webp({ quality: 80 }).toFile(file);
+        // Base (crisp) + small srcset variant for low-DPR phones.
+        await sharp(buf).resize({ width: IMG_WIDTH }).webp({ quality: IMG_QUALITY }).toFile(file);
+        await sharp(buf).resize({ width: IMG_WIDTH_SM }).webp({ quality: IMG_QUALITY_SM }).toFile(fileSm);
         await new Promise((r) => setTimeout(r, 120)); // pace the CDN
+      } else if (!existsSync(fileSm)) {
+        // Base already downloaded — backfill just the small variant (no re-fetch).
+        await sharp(readFileSync(file)).resize({ width: IMG_WIDTH_SM }).webp({ quality: IMG_QUALITY_SM }).toFile(fileSm);
       }
       got.push({ slug, name: card.name, setName: card.setName, setId: card.setId, img: `/belt/${slug}.webp`, usd: Math.round(usd) });
     } catch (err) {

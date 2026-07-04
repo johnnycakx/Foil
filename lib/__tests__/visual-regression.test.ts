@@ -710,7 +710,11 @@ test("Hero showcase: the grail cards load eagerly through HoloCard, never lazy (
   const end = src.indexOf("/>", at);
   assert.ok(start > -1 && end > -1, "could not isolate the <HoloCard> block");
   const block = src.slice(start, end + 2);
-  assert.match(block, /\beager\b/, "hero HoloCards must receive the eager flag");
+  // homepage-mobile-perf: the FOCAL grail (depth 0) stays eager so the
+  // reduced-motion fan never paints blank; the wings are lazy so the fan (which
+  // is motion-safe:hidden on a normal mobile) stops downloading ~250KB of hidden
+  // images on the conversion-critical mobile path. The word "eager" must remain.
+  assert.match(block, /eager=\{c\.depth === 0\}/, "hero focal must be eager; wings lazy (mobile-perf)");
   const holo = readFile("components/cards/holo-card.tsx");
   assert.match(holo, /loading=\{eager \? "eager" : "lazy"\}/, "HoloCard maps eager → loading=eager");
   assert.match(holo, /fetchPriority=\{eager \? "high" : undefined\}/, "HoloCard maps eager → fetchPriority=high");

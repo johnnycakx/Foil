@@ -59,8 +59,14 @@ test("belt component: motion contract — linear drift, decelerating pause, offs
   assert.match(src, /aspect-\[5\/7\]/);
   assert.match(src, /width=\{480\}/);
   assert.match(src, /height=\{672\}/);
-  // LCP: first faces eager, the rest lazy — never a 200-image waterfall.
-  assert.match(src, /loading=\{i < 8 \? "eager" : "lazy"\}/);
+  // LCP (homepage-mobile-perf): only the ~visible window (3) loads eager, the
+  // rest lazy — never a 200-image waterfall, and never the old 8-eager mobile
+  // LCP killer. Only node 0 (the LCP element) is fetchpriority high.
+  assert.match(src, /loading=\{i < 3 \? "eager" : "lazy"\}/);
+  assert.match(src, /fetchPriority=\{i === 0 \? "high" : "auto"\}/);
+  // Responsive srcset: a 300px variant for low-DPR phones, 480 for DPR2.
+  assert.match(src, /srcSet=/);
+  assert.match(src, /-sm\.webp"\)\} 300w, \$\{card\.img\} 480w/);
   // Every face is a real crawlable market-page link with the a11y contract.
   assert.match(src, /href=\{`\/cards\/\$\{card\.slug\}`\}/);
   assert.match(src, /sold prices and live listings/);
