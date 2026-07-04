@@ -59,12 +59,13 @@ test("belt component: motion contract — linear drift, decelerating pause, offs
   assert.match(src, /aspect-\[5\/7\]/);
   assert.match(src, /width=\{480\}/);
   assert.match(src, /height=\{672\}/);
-  // LCP (homepage-mobile-perf): only the ~visible window (3) loads eager, the
-  // rest lazy — never a 200-image waterfall, and never the old 8-eager mobile
-  // LCP killer. Only node 0 (the LCP element) is fetchpriority high.
-  assert.match(src, /loading=\{i < 3 \? "eager" : "lazy"\}/);
-  assert.match(src, /fetchPriority=\{i === 0 \? "high" : "auto"\}/);
-  // Responsive srcset: a 300px variant for low-DPR phones, 480 for DPR2.
+  // The belt is DESKTOP-ONLY (mobile-static-hero): display:none on mobile, so
+  // ALL faces are lazy — hidden belt images never download on the mobile path
+  // (eager loads even under display:none), and desktop's in-viewport faces load
+  // promptly anyway. Never a 200-image waterfall.
+  assert.match(src, /loading="lazy"/);
+  assert.doesNotMatch(src, /loading=\{i < 3 \? "eager" : "lazy"\}/, "belt no longer eager-loads on mobile (it's display:none there)");
+  // Responsive srcset: a 300px variant for low-DPR screens, 480 for DPR2.
   assert.match(src, /srcSet=/);
   assert.match(src, /-sm\.webp"\)\} 300w, \$\{card\.img\} 480w/);
   // Every face is a real crawlable market-page link with the a11y contract.
@@ -74,11 +75,24 @@ test("belt component: motion contract — linear drift, decelerating pause, offs
   assert.doesNotMatch(src, /images\.pokemontcg\.io/);
 });
 
-test("hero: belt is motion-safe, the composed fan survives as the reduced-motion fallback", () => {
+test("hero: belt is DESKTOP-motion only; the static fan is the mobile + reduced-motion hero (mobile-static-hero)", () => {
   const src = read("app/(site)/page.tsx");
-  assert.match(src, /hidden max-w-\[110rem\] pt-10 sm:pt-14 motion-safe:block/, "belt renders only under motion-safe");
-  assert.match(src, /beltPool\.length > 0 \? "motion-safe:hidden" : ""/, "fan hides under motion-safe when the pool exists");
+  assert.match(src, /hidden max-w-\[110rem\] pt-10 sm:pt-14 lg:motion-safe:block/, "belt renders only on lg + motion-safe (desktop)");
+  assert.match(src, /beltPool\.length > 0 \? "lg:motion-safe:hidden" : ""/, "fan shows on mobile + reduced-motion, hides only on lg+motion-safe");
+  assert.match(src, /<SakuraAmbience mode="night" desktopOnly/, "petals are desktop-only — no mobile style/layout cost");
   assert.match(src, /getHeroBeltPool\(\)/, "pool comes from the reader (honest empty fallback)");
+});
+
+test("hero belt: GSAP EXECUTION is device-gated — the ticker never boots on mobile (mobile-static-hero)", () => {
+  const belt = read("components/hero-belt.tsx");
+  assert.match(belt, /min-width: 1024px/, "belt animation boots only at >= lg (desktop)");
+  assert.match(belt, /prefers-reduced-motion: reduce/, "belt still bails under reduced motion");
+  // The desktop gate MUST precede the ticker so nothing GSAP runs on mobile
+  // (the ~1s boot was the biggest mobile-LCP chunk per the prod breakdown).
+  assert.ok(
+    belt.indexOf('min-width: 1024px') < belt.indexOf('gsap.ticker.add'),
+    "the desktop viewport gate must run before gsap.ticker.add",
+  );
 });
 
 test("request widget: the site-to-X intake loop — copy, intent link, voice", () => {

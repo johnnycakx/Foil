@@ -62,9 +62,21 @@ const HEADER_ZONES: readonly PetalZone[] = [
 
 const HEADER_PETALS = buildPetalField(20260704, HEADER_ZONES);
 
-export function SakuraAmbience({ mode }: { mode: "night" | "header" }) {
+export function SakuraAmbience({
+  mode,
+  desktopOnly = false,
+}: {
+  mode: "night" | "header";
+  // mobile-static-hero: `hidden lg:block` on the homepage so the petal field's
+  // style/layout cost (a slice of the mobile hero's 2,384ms) is gone on phones —
+  // display:none subtrees aren't laid out. Desktop keeps the full field.
+  desktopOnly?: boolean;
+}) {
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div
+      aria-hidden
+      className={`pointer-events-none absolute inset-0 overflow-hidden${desktopOnly ? " hidden lg:block" : ""}`}
+    >
       {mode === "night" ? (
         <PetalField petals={NIGHT_PETALS} blossoms={NIGHT_BLOSSOMS} tone="night" />
       ) : (

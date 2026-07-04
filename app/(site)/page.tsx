@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { EmailCapture } from "@/components/email-capture";
 import { HoloCard } from "@/components/cards/holo-card";
 import { SakuraAmbience } from "@/components/sakura-ambience";
@@ -42,13 +40,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function Home() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (user) redirect("/upload");
-
+// Static, anonymous-first marketing homepage (ADR-020): no server-side auth read
+// — that forced a per-request dynamic render + a Supabase getUser() round-trip on
+// every (99%+ anonymous) visitor just to auto-redirect the rare logged-in user to
+// /upload. Removed for TTFB/LCP (homepage-perf / mobile-static-hero); logged-in
+// users see the marketing page and navigate to the app via the header Account link.
+export default function Home() {
   return (
     // data-tone="night" flips the shared chrome dark via body:has() (globals.css).
     // The night register is homepage-scoped: the dark direction of the
@@ -199,7 +196,7 @@ function Hero() {
       {/* Hanami comes home (binder-aesthetic-pass): the /lines petal physics
           at ambient density on the charcoal — atmosphere, not weather. Sits
           under all content; static scatter under reduced-motion. */}
-      <SakuraAmbience mode="night" />
+      <SakuraAmbience mode="night" desktopOnly />
       {/* The light spill — a warm glow rising from behind the card fan, as if
           the cards themselves light the room. Pure CSS, aria-hidden, zero
           critical-path cost. */}
@@ -214,7 +211,7 @@ function Hero() {
           past at gallery-walk speed, every face a real link. Motion-safe
           only; hidden entirely under prefers-reduced-motion. */}
       {beltPool.length > 0 && (
-        <div className="relative mx-auto hidden max-w-[110rem] pt-10 sm:pt-14 motion-safe:block">
+        <div className="relative mx-auto hidden max-w-[110rem] pt-10 sm:pt-14 lg:motion-safe:block">
           <HeroBelt pool={beltPool} />
           {/* The floor: the wheel stands on the same grounded shadow language
               as the fan it succeeds. */}
@@ -229,7 +226,7 @@ function Hero() {
       <div
         style={FAN_FLUID_VARS}
         className={`relative mx-auto max-w-[calc(72rem*var(--fan-s,1))] [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)] ${
-          beltPool.length > 0 ? "motion-safe:hidden" : ""
+          beltPool.length > 0 ? "lg:motion-safe:hidden" : ""
         }`}
       >
         <div className="flex items-start justify-center px-2 pt-10 sm:pt-14 lg:pt-[calc(3.5rem*var(--fan-s,1))]">

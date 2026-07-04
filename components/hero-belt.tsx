@@ -40,6 +40,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import type { BeltCard } from "@/lib/hero-belt/pool";
+// GSAP EXECUTION is device-gated in the effect below (mobile-static-hero): the
+// ticker/animation only boots on desktop-motion, so phones never pay the ~1s
+// GSAP boot / main-thread cost (the biggest slice of the mobile hero LCP per the
+// prod LCP breakdown). GSAP is still statically imported so the desktop belt
+// animation is rock-solid; the module is downloaded-but-idle on mobile.
 
 // Uniform card box: the loop math depends on it (face width variance would
 // break the wrap arithmetic). Art fills the 5/7 box.
@@ -64,6 +69,13 @@ export function HeroBelt({ pool }: { pool: BeltCard[] }) {
     const track = trackRef.current;
     const root = rootRef.current;
     if (!track || !root || pool.length === 0) return;
+    // DEVICE-GATED MOTION (mobile-static-hero, ADR-102 amendment): the belt +
+    // GSAP boot ONLY on desktop-motion. On mobile OR reduced-motion the static
+    // fan is the hero (CSS-gated in page.tsx: the belt container is
+    // `lg:motion-safe:block`), so GSAP is never needed here — and because it's
+    // dynamically imported below (not module-scope), phones never download or
+    // execute it. `lg` = 1024px, matching that CSS gate exactly so DOM + JS agree.
+    if (!window.matchMedia("(min-width: 1024px)").matches) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let offset = 0;
@@ -135,15 +147,14 @@ export function HeroBelt({ pool }: { pool: BeltCard[] }) {
             className="belt-card group/card relative block shrink-0 overflow-hidden rounded-xl ring-1 ring-foil-cream/12 transition-shadow duration-200 focus-visible:ring-2 focus-visible:ring-foil-accent focus-visible:outline-none"
             style={{ width: CARD_W }}
           >
-            {/* Uniform 5/7 box; explicit dimensions = zero CLS. MOBILE LCP
-                (homepage-mobile-perf): only the ~visible window loads eager —
-                on a 390px viewport ~2 cards show, so 3 covers them + one ahead
-                of the drift; the rest lazy (they load as they approach on the
-                slow 48px/s walk). ONLY node 0 (the LCP element) is high
-                priority. srcset serves a 300px variant to low-DPR phones and
-                the 480px to DPR2 (the card box is a fixed 232px). This stops
-                ~5 off-screen eager images (~275KB) from blocking the mobile
-                LCP on Slow 4G. */}
+            {/* Uniform 5/7 box; explicit dimensions = zero CLS. The belt is now
+                DESKTOP-ONLY (mobile-static-hero): it's `display:none` on mobile,
+                where the static fan is the hero. So ALL belt faces are `lazy` —
+                on mobile that means the hidden belt images never download (eager
+                images load even under display:none, which was wasting ~170KB on
+                the conversion-critical mobile path); on desktop the first faces
+                are in the initial viewport, so `lazy` loads them promptly anyway.
+                srcset still serves a 300px variant to low-DPR screens. */}
             <img
               src={card.img}
               srcSet={`${card.img.replace(/\.webp$/, "-sm.webp")} 300w, ${card.img} 480w`}
@@ -151,8 +162,7 @@ export function HeroBelt({ pool }: { pool: BeltCard[] }) {
               alt={card.name}
               width={480}
               height={672}
-              loading={i < 3 ? "eager" : "lazy"}
-              fetchPriority={i === 0 ? "high" : "auto"}
+              loading="lazy"
               decoding="async"
               className="aspect-[5/7] w-full object-cover"
             />
