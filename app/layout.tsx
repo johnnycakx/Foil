@@ -12,6 +12,10 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  // Not above the fold on the homepage (used for blog/card breadcrumbs + mono
+  // labels). Don't preload it — preloading all 5 fonts competes with the LCP
+  // display font (Fraunces) on mobile Slow-4G (homepage-perf-and-a11y).
+  preload: false,
 });
 
 // Display font for hero headlines + brand surfaces. Session 46 (ADR-036)
@@ -35,6 +39,10 @@ const bricolage = Bricolage_Grotesque({
   variable: "--font-wordmark",
   subsets: ["latin"],
   weight: ["600", "700"],
+  // Below the fold on the homepage (footer wordmark + the carved logo variant +
+  // OG surfaces). Don't preload — the visible above-the-fold wordmark is the
+  // Shrikhand bubble cut, which stays preloaded (homepage-perf-and-a11y).
+  preload: false,
 });
 
 // Bubble wordmark cut (design-loop-round2 §1/§8, John's 1am verdict):

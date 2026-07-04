@@ -2,6 +2,15 @@
   "name": "foil",
   "version": "0.1.0",
   "private": true,
+  "//browserslist": "Modern target (homepage-perf-and-a11y): drops SWC's ES2022 polyfills/transforms (Array.at/flat/flatMap, Object.fromEntries/hasOwn, String.trimStart/End) — all Baseline since Safari 15.4 (Mar 2022). Trims the legacy-JS chunk; the floor still covers ~all current users.",
+  "browserslist": [
+    "chrome >= 92",
+    "edge >= 92",
+    "firefox >= 90",
+    "safari >= 15.4",
+    "ios_saf >= 15.4",
+    "not dead"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -319,7 +319,7 @@ function Hero() {
           </Link>
         </div>
 
-        <p className="mt-5 text-sm text-foil-cream/45">
+        <p className="mt-5 text-sm text-foil-cream/60">
           Free · no account needed · one email when it matters, not a feed to check
         </p>
 
@@ -429,7 +429,7 @@ function VaultMoment() {
                     <p className="mt-1.5 truncate text-[11px] font-medium text-foil-cream/80">
                       {p.name}
                     </p>
-                    <p className="truncate text-[11px] text-foil-cream/45">{p.target}</p>
+                    <p className="truncate text-[11px] text-foil-cream/60">{p.target}</p>
                   </>
                 );
                 return (
