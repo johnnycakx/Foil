@@ -1,6 +1,15 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "./login-form";
+
+// Gated utility page — zero SEO value. It's public (in PUBLIC_ROUTES) so the
+// magic-link flow works, which means Google crawls it; noindex tells Google to
+// stop evaluating it (it was sitting in "crawled – currently not indexed").
+export const metadata: Metadata = {
+  title: "Sign in",
+  robots: { index: false, follow: false },
+};
 
 export default async function LoginPage() {
   const supabase = await createClient();

@@ -1,0 +1,28 @@
+# Foil
+
+> Foil is a Pokémon TCG deal-finder for collectors. It shows the best current price on any specific Pokémon card from live eBay listings, the real 30-day sold average from aggregated sales data, and sends a free email alert when a card you're tracking drops to your target price.
+
+Foil is buyer-side: tell it a card you want, and it finds the best live listing across the marketplace, shows what the card actually sells for (never an estimate — every figure is a real number), and lets you set a price-drop alert with no account required. Sold-price data comes from aggregated eBay and TCGplayer sales; live listings come from the eBay Browse API. Built by a Level-4 TCGplayer seller.
+
+## Start here
+
+- [Home](https://foiltcg.com/): what Foil does and how to start tracking a card.
+- [Start a watchlist](https://foiltcg.com/start): add the cards you're chasing and get a price-drop alert. No account needed.
+- [Best buys this week](https://foiltcg.com/deals): market movers — cards trading below their recent sold average, computed from sold-price momentum.
+- [Pricing methodology](https://foiltcg.com/pricing-methodology): how the buy signal and sold-average figures are computed.
+
+## Guides
+
+- [How much is my Pokémon card worth](https://foiltcg.com/pokemon-card-value-calculator): a value calculator + a 60-second checklist.
+- [Pokémon card condition guide](https://foiltcg.com/pokemon-card-condition-guide): NM vs LP vs MP and why grade drives price.
+- [Japanese Pokémon cards value](https://foiltcg.com/japanese-pokemon-cards-value): reading and pricing Japanese-language cards.
+- [Blog](https://foiltcg.com/blog): guides on pricing, grading, sold-vs-market data, and buying smart.
+
+## Browse cards
+
+- [All cards](https://foiltcg.com/cards): the full per-card price index.
+- [Umbreon VMAX Alt Art — "Moonbreon"](https://foiltcg.com/cards/swsh7-215-umbreon-vmax-alt-art)
+- [Umbreon ex — Prismatic Evolutions](https://foiltcg.com/cards/sv8pt5-161-umbreon-ex)
+- [Charizard — Base Set](https://foiltcg.com/cards/base1-4-charizard)
+- [Blastoise — Base Set](https://foiltcg.com/cards/base1-2-blastoise)
+- [Pikachu ex — Surging Sparks](https://foiltcg.com/cards/sv8-219-pikachu-ex)

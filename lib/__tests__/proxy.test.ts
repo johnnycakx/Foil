@@ -304,6 +304,8 @@ test("/api/listing/[slug] is public — client-hydrated curated listing (ADR-047
 test("metadata routes are public so crawlers can fetch them", () => {
   assert.equal(isPublicRoute("/robots.txt"), true);
   assert.equal(isPublicRoute("/sitemap.xml"), true);
+  // llms.txt must be public or the proxy 307s it to /login (SEO/agent audit fail).
+  assert.equal(isPublicRoute("/llms.txt"), true);
 });
 
 test("/upload requires auth", () => {

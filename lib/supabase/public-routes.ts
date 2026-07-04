@@ -187,6 +187,11 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   { kind: "exact", path: "/opengraph-image" },
   { kind: "exact", path: "/twitter-image" },
   { kind: "exact", path: "/manifest.webmanifest" },
+  // llms.txt (public/llms.txt static file) — the LLM/agent-crawler site guide
+  // (llmstxt.org). Must be public or the proxy 307s /llms.txt to /login (which is
+  // what made PageSpeed's Agentic Browsing audit see login HTML: "missing H1, no
+  // links"). Allowlisting lets the static file serve 200.
+  { kind: "exact", path: "/llms.txt" },
 ];
 
 export function isPublicRoute(pathname: string): boolean {
