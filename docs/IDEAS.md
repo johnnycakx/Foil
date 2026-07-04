@@ -768,3 +768,121 @@ Sunday review session (target weekly, ad-hoc if missed):
 4. If rejected, add a one-line **Why rejected:** under the entry. The history of nos matters as much as the history of yeses.
 
 Goal-time discipline: any goal that surfaces a non-trivial idea adds an entry HERE before commit. Same contract as SESSION-LOG. See [CLAUDE.md → Project Second Brain](../CLAUDE.md#project-second-brain).
+
+---
+date: 2026-07-02
+category: growth
+status: captured
+
+## DM-handshake delivery (X DM as the handshake, email as the pipe)
+
+John's instinct: alerts/watchlists delivered straight to X DMs would complete "can u do it for me" without the user ever leaving X. Full version rejected (rented land vs the owned-list north star; recurring automated DMs = ban pattern; DM API access is paid-tier and shifting). The right-sized version: someone replies with a card → we DM them their vault link ONCE (user-initiated context = the permitted lane) → email carries the watching forever. First task before any spec: verify current X API DM tier access/limits live. Pairs with the owned Discord deal-alerts channel (PokePings model) for the in-chat-alert feel on infra we control.
+
+**Context:** eve-send night. The insight to keep: delivery should meet the collector in-channel; the pipe must stay owned.
+
+---
+date: 2026-07-02
+category: product
+status: captured
+
+## Opaque vault tokens (privacy hardening)
+
+The /w vault token's middle segment is plain base64 — the owner's email is readable by anyone holding the URL. HMAC-signed (unforgeable) so acceptable for v1, but vault links will get screenshotted (they're pretty). Swap to an opaque random id → DB lookup. Small goal, do before any vault-share feature.
+
+**Context:** noticed during the eve-vault claim tests.
+
+---
+date: 2026-07-02
+category: marketing
+status: captured
+
+## Banner-in-email A/B (test-gated revisit of ADR-079)
+
+John wants the sakura banner aesthetic in emails. Doctrine says text-forward holds Primary. Trigger to revisit: ~500+ subscribers → A/B a banner-headed variant against fresh Gmail accounts; tab placement (Primary vs Promotions) decides, not taste. Until then: brand-in-email = voice.
+
+**Context:** welcome-email overhaul night; holding the deliverability line while banking the ambition.
+
+---
+date: 2026-07-02
+category: content
+status: captured
+
+## The layoff build-in-public post (the strongest journey content we own)
+
+"Got laid off, decided to build the tool I always wanted, then a stranger said 'can u do it for me' and I shipped it in 48 hours." John's story, real, and the eve thread is its public proof. Deserves its own post (possibly the pinned reveal, possibly an X Article a la @humfhuang's growth article — meta-content that becomes a growth asset). NOT stapled to gift replies (sympathy weight next to an ask).
+
+**Context:** eve-send night; Humphrey Huang playbook analysis (journey milestones = the format that works).
+
+---
+date: 2026-07-02
+category: process
+status: captured
+
+## Custom skills from our own process (skill-creator; the real self-learning lever)
+
+Marketplace skills encode other people's generic lessons; the compounding move is encoding OURS: `foil-goal-spec` (premise check + closure gates + verified skill protocol + persona lens baked in), `foil-design-loop` (evaluator-optimizer harness + judge + rubric format), `foil-editorial-voice` (chasing/no-em-dash/hedge rules). skill-creator (installed) has evals to measure whether a skill demonstrably changes output. Pairs with the Sunday tooling scan ritual (new installs must map to a named bottleneck + get a trial task within the week, or uninstall).
+
+**Context:** John found the never-used skills wall; the fix was verifiable protocol (done) + this: promote lessons from prose-someone-must-read into machinery-that-fires-itself.
+
+---
+date: 2026-07-02
+category: growth
+status: captured
+
+## Vanity-link pattern for every send (clean tweet, attributed click)
+
+/umbreon, /espeon, /eve, /x proved the pattern: top-level 302 → UTM'd destination, guard-pinned so route refactors can't kill links living in public threads. Make it the standing rule: every distribution moment mints a clean vanity path; re-point to permanent shortcuts after the event. A tiny `lib/` helper + proxy-test template would make each new one a 5-minute task.
+
+**Context:** John's "the tweet NEEDS to look clean" — he was right; the pattern reconciled clean + measured.
+
+---
+date: 2026-07-03
+category: monetization
+status: captured
+
+## App packaging ("price alerts for Pokemon cards") — PWA first, native on a data gate
+
+John's thesis: the eventual package is an app in the "price alerts for Pokemon cards" market. Research (2026-07-02): the phrase is a real occupied category — a literal "Price Alert for Pokemon TCG" App Store app, tcgpricealerts.com, Card Ladder Pro sells alerts as a feature; the category king is portfolio tracking (Collectr). Foil's wedge is different: we alert on a REAL LIVE LISTING hitting a real-deal threshold vs sold comps (deal detection), not price-guide movement (portfolio anxiety). Sequencing: web now (acquisition = SEO line pages + X flywheel + email; apps have neither) → PWA with web push as the first "app" (push = the V2 Pro instant-alert differentiator; iOS supports web push; keeps 100% of subscription vs Apple's 15-30% IAP cut) → native app when ~500-1,000 engaged subs + alert-open data prove people want alerts on their lock screen (also unlocks App Store search as a discovery channel). Decision gate, not a date.
+
+**Context:** John, midnight after the eve send. The app is the retention/monetization package; the web is the acquisition engine — don't swap their jobs.
+
+---
+date: 2026-07-03
+category: product
+status: captured
+
+## CSV collection import (bulk on-ramp to the vault)
+
+Collectors already have their collections/wantlists as CSVs (TCGplayer exports, Collectr, spreadsheets). A CSV upload that resolves rows against the catalog and bulk-creates watches turns a 30-minute manual entry into one drag-and-drop, and makes Foil the easiest place to point an EXISTING collection at. Also a persona unlock: the binder-culture power collector with 100+ cards. Null-over-guess applies hard: ambiguous rows go to a review state, never silent wrong matches. Spec written: docs/goals/csv-import.md.
+
+**Context:** John, 2026-07-03 ~02:00, looking at the vault's one-pocket-at-a-time add flow.
+
+---
+date: 2026-07-03
+category: strategy
+status: captured
+
+## The eve pattern is the mainstream flow (service-first, data-second)
+
+Positioning-level read from John: eve's "can u do it for me" is not the edge case, it's the default audience. Most visitors don't want to study a market dashboard; they want to hand Foil a card and get watched. Product consequence: every surface leads with the SERVICE action (Add to vault) and demotes the data to supporting evidence — the data is the trust that justifies the button, not the product itself. First implementation: docs/goals/card-page-vault-first.md (hierarchy inversion on card pages). Future lens: apply the same test to /deals, /lines, and any new surface — "where is the one button that does it for them?"
+
+**Context:** John, 2026-07-03 morning, after seeing belt-driven card-page traffic paths. Also the reason "Add to vault" is the canonical CTA noun (never "+ Watchlist" — one noun sitewide).
+
+---
+date: 2026-07-03
+category: strategy
+status: captured
+
+## Manipulation-detection as a staged, provable trust layer (and eventual positioning)
+
+John's thesis (07-03 night): the Pokemon market runs on manipulation as much as logic (wash trading, shill bidding, buyouts, 200-fake-account floor control on the Van Gogh Pikachu per Cardmarket's 2024 legal action), the topic is trendy on X, and "Foil detects it and protects buyers" would be a huge value prop. Ruling (John + Cowork): CONTENT lane starts now (manipulation-explainer threads with receipts; patterns, never named accusations — defamation wall); PRODUCT positioning waits until detection is provable (never claim protection we can't demonstrate). The staged detection ladder, each rung provable before claimed: (1) volume honesty — real windowed sale counts, shipped by sold-data-integrity; (2) spike context — "+40% on 6 sales" gets a caution chip vs "+19.9% on 314 sales"; (3) surface PokeTrace per-listing anomaly flags where exposed; (4) cross-source divergence alerts (washed eBay comps diverge from TCGplayer/Cardmarket); (5) single-seller concentration if we ever get listing-level seller data. End-state positioning when earned: "the deal-finder that can't be pumped." Also a defensive truth: wash trading is an attack on OUR data spine — every rung hardens the product even if the positioning never changes.
+
+**Context:** the H3 sold-data incident night. First test = the manipulation thread draft in NEXT-SESSION-BRIEF; engagement decides how fast the ladder gets built.
+
+---
+
+## /deals filters + sorting (deferred from blackout-brand-and-deals-rework, 2026-07-03)
+
+**Idea:** Now that /deals has parity rows + jump links, the next functionality step is user-side control: filter by set/era/price band, sort by % move vs sample size, maybe a "only cards in my vault" toggle (vault-token aware). Deliberately kept OUT of the blackout goal (its scope note) so the rework stayed shippable in one pass.
+
+**Trigger to promote:** /deals traffic from the belt/reveal post shows scroll-depth past the first 12 rows, or John hears "can I filter this" twice.
