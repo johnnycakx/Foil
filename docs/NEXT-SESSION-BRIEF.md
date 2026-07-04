@@ -1,11 +1,20 @@
-# Next-Session Brief — 2026-07-05 (written at 07-04 close) — brand live in gold, X reply tooling LIVE, first real inbound caught
+# Next-Session Brief — updated 2026-07-04 (session 2) — GSC wired + verdict IN, font/JS LCP floor pushed, copy going function-first
 
 > Read first: current state + prioritized plan. (Cowork edits this; commits on John's machine.)
 
+## THE HEADLINE FROM THIS SESSION
+**The "why aren't we indexed" investigation is CLOSED with live data.** GSC API is wired (Phase 1+2 LIVE, `d6b7f46` pushed). Verdict (n=45): **1 indexed / 12 crawled-not-indexed / 32 unknown-to-Google / 0 defects.** Nothing is broken. The gate is **discovery + authority**, which is off-page. **Operating consequence: STOP building for SEO — the lever is distribution** (replies, newsletter, backlinks/citations). 4th confirmation of "measure before you build," now with the real instrument. Report: `docs/goals/_results/gsc-index-report.md`.
+
 ## FIRST ACTIONS OF THE MORNING
-1. **Model/budget:** Fable's weekly cap is exhausted (drained 07-04). **Keep Claude Code's default on Opus 4.8** — it runs everything free; only switch to Fable for a specific judgment call, then switch back. Fable promo = 50%-weekly until **July 7**, changes after (check what it becomes). The blocker when Fable's capped is a saved-default setting, not a real limit.
-2. **Verify `#4f` engagement-brief-widen-scan landed** (it was running at 07-04 close). The next brief should surface ~5-15 candidates, not 1. If it didn't commit, re-fire it.
-3. **BE IN THE REPLIES — this is the growth act, not another build.** The receipts bookmarklet + Discord candidates are live. Reply to **@possiblyeve** first (Edit → point her at her vault; she's the eve you seeded `/eve` for, 2,092 followers, "can u do it for me").
+1. **Model/budget:** keep Claude Code's default on **Opus 4.8** (Fable promo = 50%-weekly until **July 7**, then re-check; the wall is a saved-default setting, not a real limit).
+2. **⚠️ Fix the GCP billing card.** `n8n-content-project` (hosts the GSC service account we now depend on) is flagged **at risk of suspension** — billing acct `01CBF6-7D6D18-F894B6` past due. Fix at `console.cloud.google.com/billing/01CBF6-7D6D18-F894B6/settings` or the GSC integration breaks. (Same card likely on the Google Workspace invoice.)
+3. **Font/JS LCP floor pushed (`8d6df33`) but UNVERIFIED on prod** — run ONE real mobile PageSpeed on foiltcg.com to confirm the projected ~2s LCP. **After it, perf is DONE** (don't chase green on a throttled emulator).
+4. **THE WORK IS DISTRIBUTION, now data-proven — not another build.** Be in the replies (the discovery lever). Do **NOT** re-reply @possiblyeve — that thread is won + pinned (see EVE STRAND below).
+5. **Queued builds** (only if not doing distribution, in order): the **function-first hero copy** goal (tiny — see COPY below), then **CSV bulk import** (competitor-switch on-ramp), then **`#5b` deals-freshness-diagnosis** (HIGH strategic). NOT more SEO content.
+6. **Optional nudge Cowork can run:** drive GSC "Request Indexing" over Chrome on the ~6 priority crawled-not-indexed pages (pillars, /blog, /deals). Legit ≤10/day nudge — not a fix (authority is the gate).
+
+## COPY DIRECTION — decided this session (function-first, voice → X)
+Evidence-backed against comparables (Keepa/Collectr/TheRightTrader all lead with plain function, differentiator-as-fact, zero warmth): **homepage copy is function-first; save founder-voice for X.** The "salesy" feeling = voice carrying a line that should carry function. Working lines (John's final veto pending): H1 toward a function-led line (`Tell me what you're chasing.` is the current, may go fully functional), sub `I watch them and email you the second one hits your price. Priced on real sales, not asking prices.`, microcopy `Free · no account · one email for alert delivery`. **DURABLE METHOD RULE: copy is scored against competitor register, not taste.** Ships as one bounded goal (`hero-copy-evidence.md`) when John locks the lines.
 
 ## What went LIVE 07-04 (huge day)
 - **Blackout brand** — metallic-gold "Foil TCG" wordmark, `/start` + `/cards` on charcoal, `/deals` parity + heating-up images. Pushed + verified (`30142b5` / `e276fee`), wordmark face-match + size-up (`7551415`, `a7cf705`).
@@ -33,6 +42,9 @@ The @possiblyeve thread is ALREADY HANDLED — do NOT re-reply. Verified timelin
 
 ## Content (drafted, John veto/post)
 - **Reveal post** — drafted in John's voice, **PAUSED** (pin when ready; ties to the site being visibly honest first). Manipulation thread + vault-noun post still queued.
+
+## Competitive intel (new 07-04)
+**`docs/knowledge/competitor-teardown-therighttrader.md`** — teardown of @TheRightTrader, Foil's structural twin (niche market-data + alerts tool, X-grown, cheap sub vs an incumbent). Biggest takeaway: **Foil Pro has no "pays for itself" price anchor** — their whole monetization is anchoring a $2–15/mo sub against the ~$125/mo stack it replaces + an explicit competitor-comparison table + scarcity/lifetime-lock. Top transferable plays: (1) build a Foil Pro value anchor ("cheaper than one overpay" / vs PriceCharting+manual scrubbing), (2) an incumbent-kill hook ("stop scrubbing eBay"), (3) more free-tool SEO pages, (4) seat-scarcity + lifetime-lock copy for the founding-member launch. Worth turning into IDEAS entries + a goal. (Teardown doc is untracked — `git add` it whenever; persists on disk regardless.)
 
 ## Standing
 - **PokeTrace $98/mo** renewal ~Jul 15 — the `#5b` diagnosis is the due-diligence input.
