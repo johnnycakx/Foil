@@ -704,10 +704,11 @@ test("Hero showcase: the grail cards load eagerly through HoloCard, never lazy (
   // The hero cards now render through HoloCard (the holo-tilt signature).
   // The page must pass `eager`, and HoloCard must translate that into the
   // documented above-the-fold pattern (loading="eager" + fetchPriority="high").
-  const at = src.indexOf("/hero/${c.id");
-  assert.ok(at > -1, "the hero card src expression must exist");
-  const start = src.lastIndexOf("<HoloCard", at);
-  const end = src.indexOf("/>", at);
+  // Anchor on <HoloCard directly (the mobile-hero-redesign still-strip also uses
+  // a /hero/${c.id...} src, so keying off that would match the strip's plain
+  // <img> first). There is exactly one HoloCard usage — the fan.
+  const start = src.indexOf("<HoloCard");
+  const end = src.indexOf("/>", start);
   assert.ok(start > -1 && end > -1, "could not isolate the <HoloCard> block");
   const block = src.slice(start, end + 2);
   // homepage-mobile-perf: the FOCAL grail (depth 0) stays eager so the

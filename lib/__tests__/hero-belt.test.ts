@@ -75,11 +75,18 @@ test("belt component: motion contract — linear drift, decelerating pause, offs
   assert.doesNotMatch(src, /images\.pokemontcg\.io/);
 });
 
-test("hero: belt is DESKTOP-motion only; the static fan is the mobile + reduced-motion hero (mobile-static-hero)", () => {
+test("hero: mobile = server-only still-strip; belt = desktop-motion; fan = desktop-reduced-motion (mobile-hero-redesign)", () => {
   const src = read("app/(site)/page.tsx");
+  // Mobile hero is the SERVER-ONLY still-strip (Direction A): lg:hidden, plain
+  // <img> off the -sm grails, NO HoloCard/client component above the fold (that
+  // is what kills the hydration render-delay). The H1 is the LCP, not these.
+  assert.match(src, /lg:hidden mx-auto max-w-\[30rem\]/, "the still-strip is the mobile-only hero");
+  assert.match(src, /STRIP_CARDS\.map/, "the strip renders the grail set");
+  assert.match(src, /\/hero\/\$\{c\.id\.replace\("\/", "-"\)\}-sm\.webp/, "strip uses the light -sm grail images");
+  // Belt = desktop motion (unchanged); fan = desktop reduced-motion ONLY.
   assert.match(src, /hidden max-w-\[110rem\] pt-10 sm:pt-14 lg:motion-safe:block/, "belt renders only on lg + motion-safe (desktop)");
-  assert.match(src, /beltPool\.length > 0 \? "lg:motion-safe:hidden" : ""/, "fan shows on mobile + reduced-motion, hides only on lg+motion-safe");
-  assert.match(src, /<SakuraAmbience mode="night" desktopOnly/, "petals are desktop-only — no mobile style/layout cost");
+  assert.match(src, /beltPool\.length > 0 \? "hidden lg:block lg:motion-safe:hidden" : ""/, "fan is desktop reduced-motion only (hidden on mobile + lg-motion)");
+  assert.match(src, /<SakuraAmbience mode="night" desktopOnly/, "petals are desktop-only");
   assert.match(src, /getHeroBeltPool\(\)/, "pool comes from the reader (honest empty fallback)");
 });
 

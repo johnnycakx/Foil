@@ -184,6 +184,16 @@ function XGlyph() {
   );
 }
 
+// The mobile still-strip grails (mobile-hero-redesign Direction A): iconic,
+// instantly-recognizable chase cards — a still frame of the belt. Light `-sm`
+// (240px) variants under public/hero/ keep it fast; the H1, not these, is the LCP.
+const STRIP_CARDS: { id: string; alt: string }[] = [
+  { id: "base1/4", alt: "Charizard, Base Set" },
+  { id: "swsh7/215", alt: "Umbreon VMAX Alt Art (Moonbreon), Evolving Skies" },
+  { id: "swsh12/186", alt: "Lugia V Alt Art, Silver Tempest" },
+  { id: "swsh4/188", alt: "Pikachu VMAX Rainbow, Vivid Voltage" },
+];
+
 function Hero() {
   // hero-chase-belt (ADR-102): the motion hero is the chase wheel — the top
   // ~200 chase cards drifting past, each a real market-page link. The
@@ -207,6 +217,50 @@ function Hero() {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-[560px] bg-[radial-gradient(ellipse_58%_46%_at_50%_16%,rgba(248,245,240,0.07),transparent_62%)]"
       />
+      {/* MOBILE HERO (mobile-hero-redesign, Direction A — John's pick): a STATIC
+          strip of grails, a still frame of the desktop belt. SERVER-ONLY (plain
+          <img> + <Link>, NO client component / GSAP), so it paints from SSR HTML
+          with zero hydration wait — the H1 below is the LCP. This is what drops
+          the mobile LCP toward FCP (the 2,297ms hydration render-delay is gone
+          from the above-the-fold). Desktop (lg) hides it: the animated belt +
+          reduced-motion fan own the hero there. */}
+      <div className="lg:hidden mx-auto max-w-[30rem] overflow-hidden pt-9 sm:pt-12 [mask-image:linear-gradient(90deg,transparent,black_11%,black_89%,transparent)]">
+        <div className="flex justify-center gap-2.5 px-3">
+          {STRIP_CARDS.map((c) => {
+            const slug = cardSlug(c.id);
+            const img = (
+              <img
+                src={`/hero/${c.id.replace("/", "-")}-sm.webp`}
+                alt={c.alt}
+                width={240}
+                height={336}
+                loading="eager"
+                decoding="async"
+                className="aspect-[5/7] w-full rounded-[10px] object-cover shadow-[0_12px_28px_-12px_rgba(0,0,0,0.9)] ring-1 ring-foil-cream/12"
+              />
+            );
+            return slug ? (
+              <Link
+                key={c.id}
+                href={`/cards/${slug}`}
+                aria-label={`${c.alt} — sold prices and live listings`}
+                className="block w-[6.6rem] shrink-0 rounded-[10px] transition focus-visible:ring-2 focus-visible:ring-foil-accent focus-visible:outline-none active:scale-[0.98]"
+              >
+                {img}
+              </Link>
+            ) : (
+              <span key={c.id} className="block w-[6.6rem] shrink-0" aria-hidden>
+                {img}
+              </span>
+            );
+          })}
+        </div>
+        {/* The floor: the strip stands on the same grounded shadow as the fan. */}
+        <div
+          aria-hidden
+          className="pointer-events-none mx-auto -mt-2 h-6 w-[64%] rounded-[100%] bg-[radial-gradient(ellipse_at_center,rgba(4,4,5,0.85),rgba(4,4,5,0.3)_55%,transparent_75%)] blur-[6px]"
+        />
+      </div>
       {/* THE CHASE WHEEL (hero-chase-belt): the top ~200 chase cards drifting
           past at gallery-walk speed, every face a real link. Motion-safe
           only; hidden entirely under prefers-reduced-motion. */}
@@ -226,7 +280,11 @@ function Hero() {
       <div
         style={FAN_FLUID_VARS}
         className={`relative mx-auto max-w-[calc(72rem*var(--fan-s,1))] [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)] ${
-          beltPool.length > 0 ? "lg:motion-safe:hidden" : ""
+          // The composed fan is now the DESKTOP reduced-motion fallback ONLY
+          // (mobile-hero-redesign): hidden on mobile (the server-only still-strip
+          // is the mobile hero) and on lg-motion-safe (the animated belt owns it);
+          // shows only on lg + reduced-motion.
+          beltPool.length > 0 ? "hidden lg:block lg:motion-safe:hidden" : ""
         }`}
       >
         <div className="flex items-start justify-center px-2 pt-10 sm:pt-14 lg:pt-[calc(3.5rem*var(--fan-s,1))]">
@@ -259,11 +317,10 @@ function Hero() {
               <div
                 key={c.id}
                 className={`relative ${c.tilt} ${c.arc} ${slot.z} ${i > 0 ? (c.gap ?? "-ml-9 sm:-ml-10 md:-ml-12 lg:ml-[calc(-3rem*var(--fan-s,1))]") : ""} ${
-                  // mobile-static-hero: on mobile the fan is the hero, so it's
-                  // MINIMAL — only the focal grail (depth 0) shows; the wings are
-                  // `hidden lg:block`, returning for the lg reduced-motion fan.
-                  // One ~50KB card beats five (~250KB) for the mobile LCP.
-                  c.depth >= 1 ? "hidden lg:block" : ""
+                  // The fan is desktop-only now (mobile-hero-redesign), so it
+                  // renders the FULL composition on lg reduced-motion; the edge
+                  // cards keep their sm+ reveal for the fan's own breathing.
+                  c.edge ? "hidden sm:block" : ""
                 } transition duration-200 ease-out hover:z-50 focus-within:z-50`}
               >
                 {slug ? (
