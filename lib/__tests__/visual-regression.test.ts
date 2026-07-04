@@ -485,6 +485,12 @@ test("Logo component: 'Foil' + metallic gold 'TCG' lockup (blackout-brand, delib
   assert.match(src, />\s*Foil\s*<\/span>/, "'Foil' word");
   assert.match(src, /wordmark-tcg/, "'TCG' renders through the metallic gold ramp class");
   assert.match(src, />\s*TCG\s*</, "'TCG' is back in the display wordmark (John's 2026-07-03 verdict)");
+  // TCG must read as the SAME font cut as 'Foil' (John, 2026-07-04): its span
+  // inherits the lockup face + weight, never forces its own family or bold —
+  // the old font-wordmark override made it Bricolage next to the Shrikhand
+  // bubble 'Foil' in the chrome, a visibly different, thinner typeface.
+  const tcgSpan = src.match(/wordmark-tcg[^"]*/)?.[0] ?? "";
+  assert.doesNotMatch(tcgSpan, /font-wordmark|font-bold/, "'TCG' inherits the lockup face + weight, never forces its own");
 });
 
 test("Wordmark gold: #856a00-anchored metallic ramp with solid fallback; hover sheen reduced-motion gated (blackout-brand)", () => {

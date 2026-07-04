@@ -98,22 +98,25 @@ export function FoilCornerMark({ px = 22 }: { px?: number }) {
  * cream) + "TCG" in metallic gold — the `.wordmark-tcg` ramp anchored on the
  * real gold #856a00 (globals.css), the ONLY gold on any night surface.
  * John's verdict (2026-07-03) deliberately reverses ADR-094's TCG drop.
- * `tcgFace` records the legibility trial: "clean" (Bricolage, the pick — the
- * balloon face smears at 12px caps) vs "bubble" (Shrikhand, galleried).
- * One accessible name: "FoilTCG home".
+ * "TCG" is the SAME font CUT as "Foil" (John, 2026-07-04): it inherits the
+ * lockup's face and weight, and only shrinks to a suffix cap height. It does
+ * NOT force its own family — the earlier `font-wordmark` override made "TCG"
+ * render Bricolage next to the Shrikhand bubble "Foil" in the chrome, which
+ * read as a different, thinner typeface. Inheriting keeps them one face in
+ * every context (bubble → both Shrikhand, carved → both Bricolage). The gold
+ * `.wordmark-tcg` shimmer clips over whatever face renders. One accessible
+ * name: "FoilTCG home".
  */
 export function Logo({
   size = "md",
   tone = "onCream",
   withMark = true,
   face = "carved",
-  tcgFace = "clean",
 }: {
   size?: Size;
   tone?: Tone;
   withMark?: boolean;
   face?: Face;
-  tcgFace?: "clean" | "bubble";
 }) {
   const foilColor =
     tone === "chrome"
@@ -135,13 +138,10 @@ export function Logo({
       {withMark && <SealMark px={MARK_PX[size]} />}
       <span aria-hidden className={`${wordmarkClass} inline-flex items-baseline gap-[0.28em]`}>
         <span className={foilColor}>Foil</span>
-        <span
-          className={`wordmark-tcg text-[0.5em] font-bold tracking-[0.18em] ${
-            tcgFace === "bubble" ? "" : "font-wordmark"
-          }`}
-        >
-          TCG
-        </span>
+        {/* Same face + weight as "Foil" (inherited from the lockup); only the
+            cap height shrinks to a suffix and a hair of tracking keeps the
+            small caps legible. The gold shimmer clips over this face. */}
+        <span className="wordmark-tcg text-[0.5em] tracking-[0.04em]">TCG</span>
       </span>
     </span>
   );
