@@ -699,23 +699,19 @@ function imageBlockContaining(src: string, needle: string): string {
   return src.slice(start, end + 2);
 }
 
-test("Hero showcase: the grail cards load eagerly through HoloCard, never lazy (blank-on-paint regression)", () => {
+test("Hero showcase: the DESKTOP-only fan loads lazy (mobile-hero-redesign — the strip is the mobile hero)", () => {
   const src = readFile("app/(site)/page.tsx");
-  // The hero cards now render through HoloCard (the holo-tilt signature).
-  // The page must pass `eager`, and HoloCard must translate that into the
-  // documented above-the-fold pattern (loading="eager" + fetchPriority="high").
-  // Anchor on <HoloCard directly (the mobile-hero-redesign still-strip also uses
-  // a /hero/${c.id...} src, so keying off that would match the strip's plain
-  // <img> first). There is exactly one HoloCard usage — the fan.
+  // Anchor on <HoloCard directly (the still-strip also uses a /hero/${c.id...}
+  // src). There is exactly one HoloCard usage — the fan.
   const start = src.indexOf("<HoloCard");
   const end = src.indexOf("/>", start);
   assert.ok(start > -1 && end > -1, "could not isolate the <HoloCard> block");
   const block = src.slice(start, end + 2);
-  // homepage-mobile-perf: the FOCAL grail (depth 0) stays eager so the
-  // reduced-motion fan never paints blank; the wings are lazy so the fan (which
-  // is motion-safe:hidden on a normal mobile) stops downloading ~250KB of hidden
-  // images on the conversion-critical mobile path. The word "eager" must remain.
-  assert.match(block, /eager=\{c\.depth === 0\}/, "hero focal must be eager; wings lazy (mobile-perf)");
+  // The fan is now the DESKTOP reduced-motion fallback only (the server-only
+  // still-strip is the mobile hero), so NO fan card is eager — eager would still
+  // fetch the hidden fan's focal on mobile (43KB /_next/image waste); on lg
+  // reduced-motion the fan is in the initial viewport so lazy loads promptly.
+  assert.match(block, /eager=\{false\}/, "the desktop-only fan is lazy (no eager fetch on mobile)");
   const holo = readFile("components/cards/holo-card.tsx");
   assert.match(holo, /loading=\{eager \? "eager" : "lazy"\}/, "HoloCard maps eager → loading=eager");
   assert.match(holo, /fetchPriority=\{eager \? "high" : undefined\}/, "HoloCard maps eager → fetchPriority=high");
