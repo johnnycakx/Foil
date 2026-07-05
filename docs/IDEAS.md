@@ -19,6 +19,19 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-07-05
+category: product
+status: captured
+---
+## deals-basis-ebay-lowest + movers-ranking-rework — fix the "frozen board" (follow-on to the freshness diagnosis)
+
+The deals-freshness diagnosis (docs/goals/_results/deals-freshness-diagnosis.md) proved the /deals board "freeze" is a **ranking design + data-cadence** problem, not a data or cron bug — and NOT John's H0 (the board reads PokeTrace's eBay windowed *sold* averages, never TCGplayer market price). Three follow-on levers, in leverage order: (1) **ranking rework** — re-rank by absolute-$ opportunity or a %+$ blend + a recency/"new today" tiebreak + a higher $ floor, so the same 10 cheap-liquid cards stop locking the board for a week (`lib/deals/market-movers.ts`, `market-movers-read.ts`); (2) **confidence gating** — gate heterogeneous raw vintage out of the precise-% good-buys surface (or show a range), extend the cross-source coherence gate to movers (`lib/cards/sold-coherence.ts`); (3) **active-listing basis** `deals-basis-ebay-lowest` — price momentum off eBay lowest-active (owned via Browse, continuously fresh) instead of the 2-3-day-lagging windowed sold average, with a sanity floor. Open Qs for John: board's job = biggest-% vs biggest-$ vs freshest-new? · eBay-lowest raw vs with-sanity-floor? · thin-eBay-vs-deeper-TCGplayer (Blastoise proved TCGplayer can be the inflated/wrong one).
+
+**Context:** deals-freshness-diagnosis goal, 2026-07-05 (resumed). Ties to R-062 (weakens the $98/mo PokeTrace case) + R-068 (movers is a new surface of the single-point sold fragility).
+
+---
+
+---
 date: 2026-07-03
 category: growth
 status: captured
