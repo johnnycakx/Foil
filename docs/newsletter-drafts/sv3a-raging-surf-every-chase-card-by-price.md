@@ -1,48 +1,56 @@
 ---
 blogSlug: "sv3a-raging-surf-every-chase-card-by-price"
-blogTitle: "sv3a Raging Surf Prices: Every Chase Card Ranked (2026)"
+blogTitle: "sv3a Raging Surf Prices: Every Chase Card Ranked"
 blogUrl: "https://foiltcg.com/blog/sv3a-raging-surf-every-chase-card-by-price"
-subject: "Garchomp ex SIR vs AR: a $60 gap in one number"
-previewText: "sv3a Raging Surf: every chase card ranked by price"
-wordCount: 537
-sourceWordCount: 1468
-generatedAt: "2026-06-11T17:44:48.451Z"
+subject: "Umbreon VMAX Alt Art is at hype saturation"
+previewText: "sv3a Raging Surf: every chase card priced for 2026"
+wordCount: 557
+sourceWordCount: 1639
+generatedAt: "2026-07-06T16:57:51.449Z"
 beehiivStatus: "deferred-manual-paste"
 subjectCandidates:
-  - "Garchomp ex SIR vs AR: a $60 gap in one number"
-  - "sv3a Raging Surf: every chase card ranked by price"
-  - "The SAR arbitrage math on Parasol Lady (2026)"
+  - "Umbreon VMAX Alt Art is at hype saturation"
+  - "sv3a Raging Surf: every chase card priced for 2026"
+  - "42 creator mentions and a $300 raw card to show for it"
 topicRationale: |
   Selected from the **japanese pokemon cards value** pillar (URL: /japanese-pokemon-cards-value). This was rank #3 of 11 cluster posts in that pillar; 9 remain unshipped after this one. Tied at rank 3 with the **pokemon-card-condition-guide, pokemon-card-value-calculator** pillar(s) — broke ties by alphabetical pillar slug (per pickNextCandidate). Long-tail keywords from the strategy doc: sv3a raging surf prices..
 ---
 
 ## Newsletter body (paste-ready)
 
-**Subject:** Garchomp ex SIR vs AR: a $60 gap in one number
-**Preview text:** sv3a Raging Surf: every chase card ranked by price
+**Subject:** Umbreon VMAX Alt Art is at hype saturation
+**Preview text:** sv3a Raging Surf: every chase card priced for 2026
 
 ---
 
-<p>The Garchomp ex SIR and the Garchomp ex AR share a name, similar artwork in thumbnail listings, and absolutely nothing else in terms of price. One is a $75-$90 raw card. The other is an $8-$15 raw card. The only reliable way to tell them apart is the collector number stamped on the card itself: 091/092 versus 073/092. Mislabeled sales on secondary platforms have pulled comps in both directions on both cards.</p>
+<p>Umbreon VMAX Alt Art (#090/071) has been mentioned 42 times across creator commentary in the last 30 days, more than any other card in any tracked set. Raw NM copies are trading at $280-$320. That combination should make you cautious, not excited.</p>
 
-<p>That single version-confusion problem is the reason I put together a full sv3a Raging Surf price map. The set is compact at 92 cards, but the SIR and SAR slots are densely packed relative to that size, and the grade premiums are sharp enough to matter if you're buying raws to submit or accumulating chase cards at current floors.</p>
+<p>The new post covers every chase card in sv3a Raging Surf, ranked by 2026 raw NM price, with graded comparisons where the spread actually matters. Here is what's worth knowing before you read it.</p>
 
-<h2>What's actually moving in 2026</h2>
+<h2>The Umbreon problem</h2>
 
-<p>Three SIRs sit at the top: Garchomp ex (091/092), Mela (089/092), and Crispin (090/092). Garchomp ex is the clear price leader. Raw NM copies have cleared over $80, and PSA 10s have cleared $200 at auction. Mela's SIR has a real centering problem that creates a meaningful PSA 9-to-10 spread worth knowing before you submit. Crispin's SIR is the lightest of the three on liquidity.</p>
+<p>PSA 10s on the Umbreon VMAX Alt Art have reached $500+ at auction. The math on submitting a raw NM copy looks workable on paper: buy at $300, grade to a 10, sell at $500, keep the spread. The problem is the spread runs $170-$175 before fees, and a PSA 9 at $220-$250 erases it entirely. Japanese SARs from this era print off-center often enough that your centering read has to be right, not just optimistic. And the 42-mention count is a saturation signal. The speculative float is already priced in.</p>
 
-<p>The SAR is Parasol Lady (088/092). Raw NM copies have sold in the $55-$70 range. PSA 10 graded copies have cleared $150. The arbitrage math only works if you're confident pulling PSA 10s consistently, and grading yield on this card is actually better than on the SIRs because it tends to come out of pack with fewer factory scratches. At PSA's current $25 standard tier, the SAR sits at the borderline of positive submission math on a raw NM copy. Garchomp ex SIR is the only card in the set where that math is clearly positive.</p>
+<p>If you are buying Umbreon VMAX Alt Art in 2026, you are buying collector demand, not upside. Know which trade you are making.</p>
 
-<p>Below the SAR, the AR block runs from 073/092 through 087/092. Garchomp ex AR tops that group at $8-$15 raw. Everything below 073/092 trades in the $1-$5 range with essentially no grading upside.</p>
+<h2>Where the better risk-reward actually sits</h2>
 
-<h2>The creator signal (and what it tells you about timing)</h2>
+<p>Garchomp ex SIR (#086/071) is at $45-$65 raw and $120-$150 at PSA 10. The pop is smaller in relative terms than Umbreon's, which means a PSA 10 in hand moves faster at auction. PokeBeard has flagged it as an SIR that hasn't fully tracked to its pop-adjusted ceiling. Whether that's correct or whether Garchomp just lacks the collector pull to close the gap is the honest debate. At $45-$65, the downside is bounded.</p>
 
-<p>sv3a is not getting heavy creator attention right now. Digest data from June 2026 shows background-noise-level mentions of Garchomp ex SIR, not a speculator spike. The sets pulling collector liquidity at the moment are Destined Rivals, Prismatic Evolutions, and Mega Evolution. For sv3a that means price stability rather than near-term appreciation pressure. Not a bad environment to accumulate at current floors if Garchomp ex SIR is on your want list. The prices here are driven by fundamental SIR and SAR quality, not a hype cycle, which makes this a cleaner card-by-card evaluation than most.</p>
+<p>Mew ex SIR (#084/071) at $35-$50 raw has persistent Mew collector demand working for it, but the art doesn't carry the same visual weight as the Umbreon SAR treatment. That price feels like the right floor, not a springboard.</p>
 
-<h2>One thing Foil catches before you buy</h2>
+<h2>The sealed box angle in one paragraph</h2>
 
-<p>The AR-versus-SIR version confusion on Garchomp ex is exactly the problem Foil was built to short-circuit. Foil reads the name, set code, and collector number off a photo and resolves the version immediately. A $60-plus price gap should not hinge on squinting at a thumbnail listing.</p>
+<p>Sv3a booster boxes are trading as low as $69.99 on TCGplayer as of July 2026. The EV of cracking one depends entirely on what you assign to the Umbreon pull probability at $280-$320 raw. The SAR rate in Japanese SV-era sets means you are more likely to build a pile of $10-$20 IRs than to pull the anchor card. The more interesting trade is that single-card prices have stabilized while sealed boxes are still cheap. That gap closes as boxes get opened and raw supply compresses. Buy the singles.</p>
 
-<p><a href="/blog/sv3a-raging-surf-every-chase-card-by-price">Read the full post →</a> for the complete ranked price table, graded ladder, and the full breakdown on where the flat cards are hiding.</p>
+<h2>One operational note before you price anything</h2>
 
-<p>If you want to check a card in your own collection right now, <a href="https://foiltcg.com/upload">Try Foil free →</a> and upload a photo. Version and price in seconds.</p>
+<p>Palafin ex appears across multiple sv sets with similar art styles. So does Garchomp ex. The collector number off the physical card (not the artwork) is what separates a $20 card from a $5 reprint variant. If you are pricing sv3a IRs for sale or insurance, verify name, set code sv3a, and collector number before you pull comps. Artwork-based identification is where pricing errors start.</p>
+
+<p>The full post has the complete ranked table from Umbreon VMAX Alt Art at $280-$320 down to Beach Court holo at $4-$6, graded ladder comparisons, and the grading economics breakdown in detail.</p>
+
+<p><a href="/blog/sv3a-raging-surf-every-chase-card-by-price">Read the full post →</a></p>
+
+<p>If you are sitting on sv3a pulls and want to cross-reference them against live market pricing before deciding whether to grade or sell raw, Foil handles the identification layer so you are not guessing at collector numbers.</p>
+
+<p><a href="https://foiltcg.com/upload">Try Foil free →</a></p>
