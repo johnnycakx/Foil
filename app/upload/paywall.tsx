@@ -14,7 +14,7 @@ export function Paywall() {
         Upgrade to <span className="font-medium">Foil Pro</span> for unlimited scans, full per-card pricing, 90-day history, and no watermark.
       </p>
       <div className="mt-4 flex items-baseline gap-2">
-        <span className="text-3xl font-semibold tabular-nums">$14.99</span>
+        <span className="text-3xl font-semibold tabular-nums">$6</span>
         <span className="text-sm text-zinc-500">/ month</span>
       </div>
       <form action={createCheckoutSession} className="mt-5">

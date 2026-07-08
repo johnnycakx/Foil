@@ -8,6 +8,16 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-07-08 — validation-sprint-runner Phase 2: Stripe Foil Pro $6/mo + 30-day card-required trial, TEST-MODE E2E-proven ([ADR-111](DECISIONS.md#adr-111--foil-pro-repurposed-to-a-6mo--30-day-card-required-trial-test-mode-rail))
+
+**Goal `validation-sprint-runner.md` Phase 2 = stripe-pro-wiring.** Repurposed the parked $14.99 scanner paywall (ADR-020) into the deal-finder Pro rail for the willingness-to-pay ads test. Builds the RAIL, not the pitch — the offer wording is the Fable offer-lock session's call. **Read the Stripe free-trials docs before coding** (AGENTS.md external-platform rule): confirmed `subscription_data.trial_period_days` is the trial length and `payment_method_collection:"always"` forces the card on a $0-due trial (`"if_required"` is the opt-out).
+
+**Shipped ([ADR-111](DECISIONS.md)):** price → $6/mo (`PRO_PRICE_USD_CENTS` 600) under a NEW lookup key `foil_pro_monthly_v2` (Stripe prices are immutable — the old key is bound to the $14.99 object); `createCheckoutSession` adds the 30-day card-required trial; the webhook now covers the full trial lifecycle (`customer.subscription.created`/`.updated`/`.trial_will_end`/`.deleted` + `checkout.session.completed`) with the status→tier mapping extracted to a pure, unit-testable `lib/stripe-entitlement.ts::subscriptionTier` (trialing+active→pro, else→free); a new PUBLIC `/pro` page (night brand, function-first copy — **FLAGGED for John's voice veto**) with the checkout CTA (self-gates to /login); `$14.99`→`$6` in the paywall + account UI.
+
+**Closure bar met — live TEST-MODE E2E** (`scripts/verify-stripe-pro.ts`, guarded to `sk_test`, 5/5): the $6 price is created idempotently; a real subscription reaches `trialing` (trial_end +30d); the webhook's exact upsert creates the entitlement row as `pro`; canceling revokes it to `free`; full cleanup. Exercises everything the webhook drives except the browser-hosted-checkout + HMAC HTTP layer (Stripe's SDK) — that's John's optional manual confirm in the go-live checklist. Plus mockable unit tests (`lib/__tests__/stripe-pro.test.ts`: the tier matrix + $6/30-day config) + a `/pro`-is-public proxy test.
+
+**Gates:** tsc clean · npm test **1602 pass / 0 fail / 19 skip** · build exit 0 · design:lint no /pro warnings · /security-review (see below). Docs: ADR-111, ENV-VARS (`STRIPE_PRO_PRICE_ID`), `docs/goals/_results/stripe-golive-checklist.md` (John's ~20-min live-mode steps — LLC + bank already exist). Committed `feat(pro):` + pushed; `#content-engine` ping. **John's gate: live-mode activation per the checklist (live keys never touched by the runner).**
+
 ## 2026-07-08 — validation-sprint-runner Phase 1: content-trust residual — 4 defects closed, 2 premises overturned by sourced probes ([ADR-110](DECISIONS.md#adr-110--extending-the-adr-104-freshness-doctrine-to-the-baked-lines-snapshot--tcgplayer-listed-labeling))
 
 **Goal `docs/goals/validation-sprint-runner.md` (Opus, plan-approved), Phase 1 = `content-trust-hotfix.md`.** Sequential release-train runner; this is the first of three phases (content-trust → stripe-pro → deals-gate), each with its own gates + conventional commit + push + `#content-engine` ping. Push authority granted per-phase.

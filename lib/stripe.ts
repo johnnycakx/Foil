@@ -17,7 +17,12 @@ export function stripe(): Stripe {
 }
 
 export const PRO_PRODUCT_NAME = "Foil Pro";
-export const PRO_PRICE_USD_CENTS = 1499;
+// $6/mo (validation-sprint Phase 2). Repurposed from the parked $14.99 scan
+// paywall (ADR-020) to the deal-finder Pro tier: daily deal drop + personal
+// price watches. A 30-day card-required trial is added at Checkout, not here.
+export const PRO_PRICE_USD_CENTS = 600;
+/** Trial length for the Foil Pro Checkout Session (card required, per ADR-111). */
+export const PRO_TRIAL_DAYS = 30;
 export const PRO_TIER = "pro";
 export const FREE_TIER = "free";
 export const FREE_DAILY_SCAN_LIMIT = 1;

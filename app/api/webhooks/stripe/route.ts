@@ -5,29 +5,24 @@
 // The CLI prints a webhook signing secret (whsec_...) — paste it into
 // .env.local as STRIPE_WEBHOOK_SECRET, then restart `npm run dev`.
 //
-// We subscribe to:
-//   - checkout.session.completed
-//   - customer.subscription.updated
-//   - customer.subscription.deleted
+// We subscribe to (validation-sprint Phase 2 added the two trial events):
+//   - checkout.session.completed        (trial start via Checkout)
+//   - customer.subscription.created     (trialing sub created)
+//   - customer.subscription.updated     (trial→active, past_due, etc.)
+//   - customer.subscription.trial_will_end  (3 days before trial ends)
+//   - customer.subscription.deleted     (canceled → revoke)
 
 import type { NextRequest } from "next/server";
 import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
+import { subscriptionTier, periodEndIso } from "@/lib/stripe-entitlement";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 
-function periodEndIso(sub: Stripe.Subscription): string | null {
-  const raw = (sub as unknown as { current_period_end?: number | null }).current_period_end;
-  if (typeof raw === "number" && Number.isFinite(raw)) {
-    return new Date(raw * 1000).toISOString();
-  }
-  return null;
-}
-
 async function upsertFromSubscription(sub: Stripe.Subscription, supabaseUserId: string | null) {
   const admin = supabaseAdmin();
-  const tier = ["active", "trialing"].includes(sub.status) ? "pro" : "free";
+  const tier = subscriptionTier(sub.status);
 
   if (supabaseUserId) {
     await admin.from("subscriptions").upsert(
@@ -104,15 +99,21 @@ export async function POST(req: NextRequest) {
         }
         break;
       }
+      case "customer.subscription.created":
       case "customer.subscription.updated":
+      case "customer.subscription.trial_will_end":
       case "customer.subscription.deleted": {
+        // All four carry a Subscription object; a single upsert keeps the
+        // entitlement row in lockstep with Stripe status (trialing→pro on
+        // create, →free on delete). trial_will_end is a heads-up (status stays
+        // trialing) — the upsert is a no-op refresh, safe to run.
         const sub = event.data.object as Stripe.Subscription;
         const supabaseUserId = (sub.metadata?.supabase_user_id as string | undefined) ?? null;
         await upsertFromSubscription(sub, supabaseUserId);
         break;
       }
       default:
-        // Ignore other event types — we only subscribe to the three above in the CLI/dashboard.
+        // Ignore other event types — we only subscribe to the ones above.
         break;
     }
   } catch (err) {

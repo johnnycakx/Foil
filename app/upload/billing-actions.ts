@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { FOIL_PRO_LOOKUP_KEY, ensureProProductAndPrice } from "@/lib/stripe-setup";
-import { stripe } from "@/lib/stripe";
+import { stripe, PRO_TRIAL_DAYS } from "@/lib/stripe";
 
 async function siteOrigin(): Promise<string> {
   const h = await headers();
@@ -65,10 +65,18 @@ export async function createCheckoutSession(): Promise<void> {
     customer: customerId,
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${origin}/account?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/upload?checkout=canceled`,
+    cancel_url: `${origin}/pro?checkout=canceled`,
     allow_promotion_codes: true,
     client_reference_id: user.id,
-    subscription_data: { metadata: { supabase_user_id: user.id } },
+    // 30-day free trial, CARD REQUIRED (payment_method_collection:"always" — the
+    // Stripe default for subscription mode, set explicitly so a $0-due trial
+    // still collects a card; "if_required" would skip it). trial_period_days is
+    // the trial length. Confirmed against docs.stripe.com/payments/checkout/free-trials.
+    payment_method_collection: "always",
+    subscription_data: {
+      trial_period_days: PRO_TRIAL_DAYS,
+      metadata: { supabase_user_id: user.id },
+    },
   });
 
   if (!session.url) {

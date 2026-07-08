@@ -5,7 +5,11 @@ import {
   stripe,
 } from "./stripe.ts";
 
-const LOOKUP_KEY = "foil_pro_monthly";
+// v2 key (validation-sprint Phase 2): the old "foil_pro_monthly" is bound to the
+// parked $14.99 price object. A NEW key forces `ensureProProductAndPrice` to
+// create a fresh $6 price instead of silently reusing the $14.99 one (Stripe
+// prices are immutable — you can't change the amount on an existing price).
+const LOOKUP_KEY = "foil_pro_monthly_v2";
 
 export type SetupResult = {
   productId: string;
@@ -28,7 +32,7 @@ export async function ensureProProductAndPrice(): Promise<SetupResult> {
   if (!product) {
     product = await s.products.create({
       name: PRO_PRODUCT_NAME,
-      description: "Unlimited Pokémon card scans, full per-card breakdown, 90-day history, no watermark.",
+      description: "The daily deal drop + personal price watches — get pinged the moment a card you're chasing hits your price, on real sold data.",
     });
   }
 
@@ -47,7 +51,7 @@ export async function ensureProProductAndPrice(): Promise<SetupResult> {
       currency: "usd",
       recurring: { interval: "month" },
       lookup_key: LOOKUP_KEY,
-      nickname: "Foil Pro — $14.99/mo",
+      nickname: "Foil Pro — $6/mo",
     });
   } else if (typeof price.product !== "string" && price.product.id !== product.id) {
     // Lookup key already in use for a different product — refuse to clobber.

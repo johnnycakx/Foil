@@ -146,6 +146,12 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   // (already covered by the /api/cron prefix).
   { kind: "exact", path: "/deals" },
 
+  // /pro — the Foil Pro offer + checkout CTA (validation-sprint Phase 2,
+  // ADR-111). Public marketing surface: ads/visitors land here logged-out. The
+  // checkout CTA posts to createCheckoutSession, which self-gates to /login —
+  // so the page is public but the purchase path still requires auth.
+  { kind: "exact", path: "/pro" },
+
   // Vending surfaces. /host is the venue-acquisition funnel; /faq is the host
   // FAQ; /service-areas is the Bay-Area hub + its /service-areas/[city] pages
   // (prefix). All anonymous-friendly marketing surfaces; the /host lead form

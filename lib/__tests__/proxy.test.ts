@@ -82,6 +82,15 @@ test("/deals leaderboard is public — screenshot surface + homepage CTA (ADR-05
   assert.equal(isPublicRoute("/dealsroom"), false);
 });
 
+test("/pro offer page is public — ads/visitors land here logged-out (validation-sprint Phase 2)", () => {
+  // Public marketing surface; the checkout CTA self-gates to /login, so the
+  // page is reachable anonymously but the purchase still requires auth.
+  assert.equal(isPublicRoute("/pro"), true);
+  // Exact rule — the gated app surfaces must not bleed in.
+  assert.equal(isPublicRoute("/product"), false);
+  assert.equal(isPublicRoute("/pro/secret"), false);
+});
+
 test("login + magic-link callback are public (or the magic link loops)", () => {
   assert.equal(isPublicRoute("/login"), true);
   assert.equal(isPublicRoute("/auth/callback"), true);

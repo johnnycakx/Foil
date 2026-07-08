@@ -81,7 +81,7 @@ export default async function AccountPage({
           ) : (
             <form action={createCheckoutSession} className="mt-5">
               <div className="mb-3 flex items-baseline gap-2">
-                <span className="text-2xl font-semibold tabular-nums">$14.99</span>
+                <span className="text-2xl font-semibold tabular-nums">$6</span>
                 <span className="text-sm text-zinc-500">/ month</span>
               </div>
               <button
