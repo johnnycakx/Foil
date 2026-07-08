@@ -25,6 +25,7 @@
     "compliance:pdf": "node --experimental-strip-types --no-warnings scripts/generate-compliance-pdf.ts",
     "setup:news-subdomain": "node --experimental-strip-types --no-warnings scripts/setup-news-subdomain.ts",
     "subscriber-sources": "node --experimental-strip-types --no-warnings scripts/subscriber-sources.ts",
+    "funnel-report": "node --experimental-strip-types --no-warnings scripts/funnel-report.ts",
     "test": "node --experimental-strip-types --no-warnings --test \"lib/__tests__/*.test.ts\" \"scripts/__tests__/*.test.ts\"",
     "goals:watch": "node --experimental-strip-types --no-warnings scripts/goal-runner.ts"
   },

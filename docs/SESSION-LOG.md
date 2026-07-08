@@ -8,6 +8,16 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-07-08 — validation-sprint-runner Phase 3: /deals gated teaser + funnel instrumentation ([ADR-112](DECISIONS.md#adr-112--deals-gated-teaser--funnel-instrumentation-the-wtp-test-rail))
+
+**Goal `validation-sprint-runner.md` Phase 3 = deals-gate + funnel.** Gates the `/deals` BOARD (top 2 shown, rest visibly locked) + stands up the three-signal funnel report. Board only — does NOT touch the email product or pre-empt the free-vs-paid-drop fork (the ads A/B + Fable offer-lock decide that).
+
+**Shipped ([ADR-112](DECISIONS.md)):** the top 2 deals render fully (public teaser); the rest render as dimmed+blurred locked rows (no sold price / below% / CTA leaked) above an email drop-subscribe. **Thin-day honesty is the load-bearing property** — `lib/deals/gate.ts::dealsGateState` NEVER fabricates a locked count: 0 deals → "Nothing worth locking today" (the trust flex); 1–2 → all shown, no fake lock; ≥3 → lock the real remainder ("N more good buys today"). Pure + unit-tested across 0–12. The gate (`components/deals/deals-drop-gate.tsx`) reuses the ADR-090 tri-store (`subscribeAction` → Beehiiv + owned Supabase list + Resend) + ADR-084 UTM forwarding, `source="deals_gate"`. New `scripts/funnel-report.ts` (`npm run funnel-report`) prints the three signals from Supabase — signups by utm_source, trial starts (subscriptions with a `stripe_subscription_id`, excluding free placeholder rows), trial→paid among resolved trials — with the honest caveat that true rates need ad-platform clicks. **Verified live** (funnel-report read real Supabase: 1 signup, 1 converted trial). UTM persistence covered by the shared `subscriber-attribution.test.ts` (the gate reuses that path).
+
+**Gates:** tsc clean · npm test **1613 pass / 0 fail / 20 skip** (new deals-gate + funnel-aggregate tests + a /deals content marker) · build exit 0 · design:lint no deals-surface warnings · /security-review (see below). Docs: ADR-112. Committed `feat(deals):` + pushed; `#content-engine` ping.
+
+**Vercel note:** the Phase 2 push (197053a) did NOT auto-deploy (a missed GitHub→Vercel webhook — no `ignoreCommand` in vercel.json, and Phase 1 pushes deployed fine), so `/pro` was still 307→/login. The Phase 3 push carries Phase 2 + Phase 3 to prod together; both verified live after it.
+
 ## 2026-07-08 — validation-sprint-runner Phase 2: Stripe Foil Pro $6/mo + 30-day card-required trial, TEST-MODE E2E-proven ([ADR-111](DECISIONS.md#adr-111--foil-pro-repurposed-to-a-6mo--30-day-card-required-trial-test-mode-rail))
 
 **Goal `validation-sprint-runner.md` Phase 2 = stripe-pro-wiring.** Repurposed the parked $14.99 scanner paywall (ADR-020) into the deal-finder Pro rail for the willingness-to-pay ads test. Builds the RAIL, not the pitch — the offer wording is the Fable offer-lock session's call. **Read the Stripe free-trials docs before coding** (AGENTS.md external-platform rule): confirmed `subscription_data.trial_period_days` is the trial length and `payment_method_collection:"always"` forces the card on a $0-due trial (`"if_required"` is the opt-out).
