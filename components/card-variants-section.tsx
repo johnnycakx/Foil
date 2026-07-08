@@ -72,7 +72,8 @@ export function CardVariantsSection({ card, currentBestPriceUsd, currentBestVari
       }
     >
       <p className="text-sm text-foil-cream/70">
-        The TCGplayer low / mid / high range per printing.
+        TCGplayer listed prices per printing — a reference that can lag recent eBay
+        sold results, so we label it as listed, not a verified sale.
         {currentBestVariantKey && currentBestPriceUsd != null
           ? " The dark marker shows the verified live eBay listing on its matching printing."
           : null}
@@ -96,7 +97,7 @@ export function CardVariantsSection({ card, currentBestPriceUsd, currentBestVari
                   )}
                   {price.market !== null && Number.isFinite(price.market) && (
                     <span className="font-mono text-sm tabular-nums text-foil-cream">
-                      market{" "}
+                      TCGplayer listed{" "}
                       <span className="ml-1 font-semibold">
                         {new Intl.NumberFormat("en-US", {
                           style: "currency",

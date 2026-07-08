@@ -1,317 +1,369 @@
 {
-  "asOf": "2026-07-02T04:39:41.925Z",
+  "asOf": "2026-07-08T08:44:08.141Z",
   "cards": {
     "neo2-1-espeon": {
       "soldCents": 34884,
       "saleCount": 37,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-29T00:00:00.000Z"
     },
     "neo2-13-umbreon": {
       "soldCents": 84000,
       "saleCount": 20,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-07T00:00:00.000Z"
     },
     "neo4-4-dark-espeon": {
       "soldCents": 33000,
       "saleCount": 10,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-25T00:00:00.000Z"
     },
     "swsh7-215-umbreon-vmax-alt-art": {
-      "soldCents": 221366,
-      "saleCount": 63,
+      "soldCents": 228545,
+      "saleCount": 64,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-01T00:00:00.000Z"
     },
     "swsh7-189-umbreon-v": {
-      "soldCents": 36690,
-      "saleCount": 141,
+      "soldCents": 37402,
+      "saleCount": 143,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-04T00:00:00.000Z"
     },
     "swsh8-270-espeon-vmax": {
-      "soldCents": 32374,
-      "saleCount": 92,
+      "soldCents": 32750,
+      "saleCount": 96,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-03T00:00:00.000Z"
     },
     "swsh7-180-espeon-v": {
-      "soldCents": 20865,
-      "saleCount": 104,
+      "soldCents": 20755,
+      "saleCount": 105,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-04T00:00:00.000Z"
     },
     "neo2-20-espeon": {
-      "soldCents": 9250,
-      "saleCount": 19,
+      "soldCents": 2833,
+      "saleCount": 224,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "tcgplayer",
+      "soldAsOf": "2026-07-06T00:00:00.000Z"
     },
     "swsh7-214-umbreon-vmax": {
       "soldCents": 6768,
       "saleCount": 76,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-29T00:00:00.000Z"
     },
     "neo2-32-umbreon": {
-      "soldCents": 17500,
-      "saleCount": 20,
+      "soldCents": 7183,
+      "saleCount": 96,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "tcgplayer",
+      "soldAsOf": "2026-07-06T00:00:00.000Z"
     },
     "swsh7-188-umbreon-v": {
-      "soldCents": 4891,
-      "saleCount": 106,
+      "soldCents": 4955,
+      "saleCount": 108,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-03T00:00:00.000Z"
     },
     "swsh7-95-umbreon-vmax": {
-      "soldCents": 2685,
-      "saleCount": 374,
+      "soldCents": 2715,
+      "saleCount": 380,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-04T00:00:00.000Z"
     },
     "swsh7-179-espeon-v": {
-      "soldCents": 2245,
-      "saleCount": 117,
+      "soldCents": 2110,
+      "saleCount": 118,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-02T00:00:00.000Z"
     },
     "swsh7-65-espeon-vmax": {
-      "soldCents": 1604,
-      "saleCount": 401,
+      "soldCents": 1647,
+      "saleCount": 408,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-04T00:00:00.000Z"
     },
     "swsh7-94-umbreon-v": {
-      "soldCents": 754,
-      "saleCount": 498,
+      "soldCents": 771,
+      "saleCount": 520,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-04T00:00:00.000Z"
     },
     "sv8pt5-161-umbreon-ex": {
-      "soldCents": 124486,
-      "saleCount": 314,
+      "soldCents": 130596,
+      "saleCount": 321,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-05T00:00:00.000Z"
     },
     "sv8pt5-155-espeon-ex": {
       "soldCents": 28031,
-      "saleCount": 321,
+      "saleCount": 322,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-30T00:00:00.000Z"
     },
     "sv8pt5-60-umbreon-ex": {
-      "soldCents": 713,
-      "saleCount": 1227,
+      "soldCents": 710,
+      "saleCount": 1247,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-05T00:00:00.000Z"
     },
     "ex10-112-umbreon-ex": {
       "soldCents": 119600,
       "saleCount": 9,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-24T00:00:00.000Z"
     },
     "ex11-17-umbreon": {
-      "soldCents": 18550,
-      "saleCount": 10,
-      "tierLabel": "Near Mint",
-      "source": "ebay"
+      "soldCents": 30650,
+      "saleCount": 14,
+      "tierLabel": "Lightly Played",
+      "source": "ebay",
+      "soldAsOf": "2026-06-29T00:00:00.000Z"
     },
     "ex2-24-umbreon": {
       "soldCents": 2895,
       "saleCount": 31,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-22T00:00:00.000Z"
     },
     "col1-22-umbreon": {
-      "soldCents": 9733,
-      "saleCount": 10,
-      "tierLabel": "Near Mint",
-      "source": "ebay"
+      "soldCents": 9999,
+      "saleCount": 13,
+      "tierLabel": "Lightly Played",
+      "source": "ebay",
+      "soldAsOf": "2026-06-19T00:00:00.000Z"
     },
     "xy10-119-umbreon-ex": {
-      "soldCents": 13528,
-      "saleCount": 34,
+      "soldCents": 13310,
+      "saleCount": 35,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-29T00:00:00.000Z"
     },
     "dp5-32-umbreon": {
-      "soldCents": 5377,
-      "saleCount": 13,
+      "soldCents": 8933,
+      "saleCount": 23,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "tcgplayer",
+      "soldAsOf": "2026-06-27T00:00:00.000Z"
     },
     "xy9-117-espeon-ex": {
       "soldCents": 7010,
       "saleCount": 40,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-09T00:00:00.000Z"
     },
     "xy10-55-umbreon-ex": {
       "soldCents": 4811,
       "saleCount": 51,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-29T00:00:00.000Z"
+    },
+    "pop5-17-umbreon": {
+      "soldCents": 7139,
+      "saleCount": 4,
+      "tierLabel": "Near Mint",
+      "source": "tcgplayer",
+      "soldAsOf": "2026-06-27T00:00:00.000Z"
     },
     "bw9-64-umbreon": {
       "soldCents": 10333,
       "saleCount": 20,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-30T00:00:00.000Z"
     },
     "ecard3-32-umbreon": {
       "soldCents": 28050,
       "saleCount": 13,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-27T00:00:00.000Z"
     },
     "bw5-60-umbreon": {
       "soldCents": 6500,
       "saleCount": 25,
       "tierLabel": "Near Mint",
-      "source": "ebay"
-    },
-    "ecard2-41-umbreon": {
-      "soldCents": 47500,
-      "saleCount": 12,
-      "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-14T00:00:00.000Z"
     },
     "bw5-61-umbreon": {
       "soldCents": 1457,
       "saleCount": 46,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-27T00:00:00.000Z"
     },
     "sm8-120-umbreon": {
-      "soldCents": 1917,
-      "saleCount": 39,
+      "soldCents": 1936,
+      "saleCount": 40,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-04T00:00:00.000Z"
     },
     "sm11-125-umbreon-and-darkrai-gx": {
-      "soldCents": 7970,
-      "saleCount": 147,
+      "soldCents": 8020,
+      "saleCount": 148,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-04T00:00:00.000Z"
     },
     "cel25c-17-umbreon": {
-      "soldCents": 10626,
-      "saleCount": 707,
+      "soldCents": 10756,
+      "saleCount": 717,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-04T00:00:00.000Z"
     },
     "sv3-130-umbreon": {
-      "soldCents": 657,
-      "saleCount": 188,
+      "soldCents": 384,
+      "saleCount": 192,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-04T00:00:00.000Z"
     },
     "sv8pt5-59-umbreon": {
-      "soldCents": 206,
-      "saleCount": 464,
+      "soldCents": 204,
+      "saleCount": 488,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-05T00:00:00.000Z"
     },
     "ex11-4-espeon": {
-      "soldCents": 23056,
-      "saleCount": 15,
+      "soldCents": 17951,
+      "saleCount": 19,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "tcgplayer",
+      "soldAsOf": "2026-07-06T00:00:00.000Z"
     },
     "col1-4-espeon": {
-      "soldCents": 3872,
-      "saleCount": 12,
+      "soldCents": 2976,
+      "saleCount": 13,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-29T00:00:00.000Z"
     },
     "pl2-18-espeon-e4": {
-      "soldCents": 1458,
-      "saleCount": 63,
+      "soldCents": 1474,
+      "saleCount": 65,
       "tierLabel": "Near Mint",
-      "source": "tcgplayer"
+      "source": "tcgplayer",
+      "soldAsOf": "2026-07-04T00:00:00.000Z"
     },
     "ex2-16-espeon": {
       "soldCents": 8500,
-      "saleCount": 6,
+      "saleCount": 18,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "tcgplayer",
+      "soldAsOf": "2026-07-06T00:00:00.000Z"
     },
     "dp5-18-espeon": {
-      "soldCents": 1502,
-      "saleCount": 10,
+      "soldCents": 5647,
+      "saleCount": 21,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "tcgplayer",
+      "soldAsOf": "2026-07-06T00:00:00.000Z"
     },
     "ecard2-11-espeon": {
       "soldCents": 8176,
       "saleCount": 22,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-22T00:00:00.000Z"
     },
     "bw9-48-espeon": {
       "soldCents": 674,
       "saleCount": 27,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-30T00:00:00.000Z"
     },
     "bw5-48-espeon": {
-      "soldCents": 2454,
-      "saleCount": 15,
+      "soldCents": 2493,
+      "saleCount": 41,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "tcgplayer",
+      "soldAsOf": "2026-07-06T00:00:00.000Z"
     },
     "xy9-52-espeon-ex": {
-      "soldCents": 2465,
-      "saleCount": 87,
+      "soldCents": 2298,
+      "saleCount": 88,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-05T00:00:00.000Z"
     },
     "sm11-72-espeon-and-deoxys-gx": {
-      "soldCents": 5119,
-      "saleCount": 199,
+      "soldCents": 5113,
+      "saleCount": 202,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-03T00:00:00.000Z"
     },
     "sm8-89-espeon": {
       "soldCents": 954,
       "saleCount": 27,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-26T00:00:00.000Z"
     },
     "ex10-102-espeon-ex": {
       "soldCents": 118863,
       "saleCount": 11,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-06-17T00:00:00.000Z"
     },
     "swsh7-64-espeon-v": {
-      "soldCents": 355,
-      "saleCount": 422,
+      "soldCents": 352,
+      "saleCount": 430,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-03T00:00:00.000Z"
     },
     "sv3-86-espeon": {
-      "soldCents": 251,
-      "saleCount": 155,
+      "soldCents": 244,
+      "saleCount": 160,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-04T00:00:00.000Z"
     },
     "sv8pt5-33-espeon": {
-      "soldCents": 195,
-      "saleCount": 366,
+      "soldCents": 196,
+      "saleCount": 372,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-05T00:00:00.000Z"
     },
     "sv8pt5-34-espeon-ex": {
-      "soldCents": 428,
-      "saleCount": 1143,
+      "soldCents": 429,
+      "saleCount": 1171,
       "tierLabel": "Near Mint",
-      "source": "ebay"
+      "source": "ebay",
+      "soldAsOf": "2026-07-05T00:00:00.000Z"
     }
   }
 }

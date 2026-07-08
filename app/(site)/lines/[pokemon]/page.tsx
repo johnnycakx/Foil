@@ -260,7 +260,7 @@ function LineCardTile({ card, pokemon }: { card: LineCard; pokemon: string }) {
               </span>
             </p>
           )}
-          {market ? <p className="text-sm tabular-nums text-foil-slate">{market} to buy right now</p> : null}
+          {market ? <p className="text-sm tabular-nums text-foil-slate">{market}</p> : null}
           {spreadPct != null && spreadPct >= 1 ? (
             <p className="mt-1.5">
               <span className="inline-flex items-center gap-1 rounded-full border border-foil-sakura/40 bg-foil-sakura-wash px-2 py-0.5 text-xs font-semibold tabular-nums text-foil-navy">

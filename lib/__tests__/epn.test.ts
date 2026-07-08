@@ -11,9 +11,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   affiliateSearchUrl,
+  alertMissingCampaignId,
   buildAffiliateUrl,
   getBestListing,
   searchProducts,
+  __resetCampaignIdAlertForTest,
 } from "../affiliate/epn.ts";
 
 type CapturedRequest = { url: string; init: RequestInit };
@@ -177,6 +179,27 @@ test("buildAffiliateUrl returns the URL unwrapped (no attribution) when EBAY_CAM
     const out = buildAffiliateUrl("https://www.ebay.com/itm/abc", "foil-card-page");
     assert.equal(out, "https://www.ebay.com/itm/abc");
   });
+});
+
+// Defect 4 (content-trust-hotfix): the soft-fail must be LOUD, not silent. The
+// unwrapped-URL behavior above is unchanged (navigation preserved); the alarm
+// is the new observability — decision + once-per-process latch pinned here.
+test("alertMissingCampaignId fires once per process in prod when a webhook is set", () => {
+  __resetCampaignIdAlertForTest();
+  let fired = 0;
+  const deps = { webhook: "https://discord/errors", isProd: true, notify: () => { fired++; } };
+  assert.equal(alertMissingCampaignId(deps), true, "first eligible call fires");
+  assert.equal(alertMissingCampaignId(deps), false, "second call is latched — no spam");
+  assert.equal(fired, 1, "notify invoked exactly once");
+});
+
+test("alertMissingCampaignId stays quiet outside prod or without a webhook (no dev/CI spam)", () => {
+  let fired = 0;
+  __resetCampaignIdAlertForTest();
+  assert.equal(alertMissingCampaignId({ webhook: "https://d", isProd: false, notify: () => fired++ }), false);
+  __resetCampaignIdAlertForTest();
+  assert.equal(alertMissingCampaignId({ webhook: undefined, isProd: true, notify: () => fired++ }), false);
+  assert.equal(fired, 0, "no notify in non-prod or when the webhook is unset");
 });
 
 test("affiliateSearchUrl wraps the eBay search URL with the query + campid + customid", () => {

@@ -15,12 +15,37 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CARD_CATALOG } from "../cards/catalog.ts";
 import { getBakedCardMetadata } from "../cards/sdk.ts";
+import { SOLD_FRESHNESS_MAX_DAYS } from "../cards/sold-coherence.ts";
 import type { LineConfig } from "./config.ts";
+
+export type SoldSnapshotEntry = {
+  soldCents: number;
+  saleCount: number;
+  tierLabel: string;
+  source: string;
+  /** ISO date of the tier's most recent sale (content-trust-hotfix Defect 1).
+   *  Absent on legacy snapshots baked before the freshness gate landed. */
+  soldAsOf?: string | null;
+};
 
 export type SoldSnapshot = {
   asOf: string;
-  cards: Record<string, { soldCents: number; saleCount: number; tierLabel: string; source: string }>;
+  cards: Record<string, SoldSnapshotEntry>;
 };
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Is a baked sold figure still a fresh "sold recently" claim at render time?
+ *  Keys off the entry's own last-sale date, falling back to the snapshot-wide
+ *  asOf for legacy entries. A figure past the freshness window degrades to
+ *  dated "last sold" framing rather than overclaiming currency (ADR-104). */
+function isSoldFresh(entryAsOf: string | null | undefined, snapshotAsOf: string, nowMs: number): boolean {
+  const anchor = entryAsOf ?? snapshotAsOf;
+  if (!anchor) return false;
+  const t = Date.parse(anchor);
+  if (!Number.isFinite(t)) return false;
+  return nowMs - t <= SOLD_FRESHNESS_MAX_DAYS * DAY_MS;
+}
 
 function loadSoldSnapshot(): SoldSnapshot {
   try {
@@ -63,6 +88,10 @@ export type LineCard = {
   soldCents: number | null;
   soldSaleCount: number;
   soldTierLabel: string | null;
+  /** ISO date of the sold figure's most recent sale, or null. */
+  soldAsOf: string | null;
+  /** True → render "sold recently"; false → dated "last sold" framing. */
+  soldFresh: boolean;
 };
 
 export type LineData = {
@@ -110,6 +139,7 @@ function tcgRange(prices: Record<string, { low: number | null; high: number | nu
  */
 export function getLineData(config: LineConfig): LineData {
   const token = new RegExp(config.matchToken, "i");
+  const nowMs = Date.now();
   const cards: LineCard[] = [];
   for (const entry of CARD_CATALOG) {
     if (!token.test(entry.slug)) continue;
@@ -118,6 +148,8 @@ export function getLineData(config: LineConfig): LineData {
     const range = tcgRange(meta.tcgplayerPrices);
     const sold = SOLD.cards[entry.slug];
     const soldCents = sold ? sold.soldCents : null;
+    const soldAsOf = sold?.soldAsOf ?? null;
+    const soldFresh = sold ? isSoldFresh(soldAsOf, SOLD.asOf, nowMs) : false;
     // Rank by the strongest evidence of value: max(recent sold, current
     // market). Only when a card has neither do we fall back to the low/high
     // range (range.sort), so a $9,999 placeholder `high` can never top the list.
@@ -138,6 +170,8 @@ export function getLineData(config: LineConfig): LineData {
       soldCents,
       soldSaleCount: sold ? sold.saleCount : 0,
       soldTierLabel: sold ? sold.tierLabel : null,
+      soldAsOf,
+      soldFresh,
     });
   }
   cards.sort((a, b) => b.sortPriceCents - a.sortPriceCents);
@@ -158,28 +192,41 @@ export function usd(cents: number): string {
     : `$${dollars.toFixed(2)}`;
 }
 
-/** The recent-sold line in collector words, or the honest pending state. */
+/** "Jun 7" — a compact sold date for the honest "last sold" framing. */
+function soldDateLabel(iso: string): string | null {
+  const t = Date.parse(iso);
+  if (!Number.isFinite(t)) return null;
+  return new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+}
+
+/** The recent-sold line in collector words, or the honest pending state. A fresh
+ *  figure reads "sold recently"; a figure past the freshness window degrades to
+ *  dated "last sold" framing so a stale snapshot never overclaims currency
+ *  (content-trust-hotfix Defect 1, extending ADR-104 to the /lines path). */
 export function soldPhrase(card: LineCard): string {
   if (card.soldCents == null) return "Sold data pending — we're tracking it.";
-  return `Sold for ~${usd(card.soldCents)} recently`;
+  if (card.soldFresh) return `Sold for ~${usd(card.soldCents)} recently`;
+  const when = card.soldAsOf ? soldDateLabel(card.soldAsOf) : null;
+  return when ? `Last sold ~${usd(card.soldCents)} (as of ${when})` : `Last sold ~${usd(card.soldCents)}`;
 }
 
 /**
- * The current-market line in collector words. Anchors on the representative
- * `market` figure — a single "Around $X" — because that's the trustworthy
- * current price AND it keeps the displayed number consistent with the sort
- * order (both market-based). The raw low/high range is intentionally NOT shown:
- * its `high` is polluted by single $9,999 placeholder listings, so a card would
- * read "Around $5,000" while sorting below "$2,000" cards — the exact
- * looks-like-a-bug inconsistency a sharp collector would screenshot. Falls back
- * to the low/high range only when there's no `market` bucket at all.
+ * The TCGplayer listed-price line in collector words. Anchors on the
+ * representative `market` figure and labels it EXPLICITLY as "TCGplayer listed"
+ * (content-trust-hotfix Defect 2): the TCGplayer market number is a listed
+ * reference that can lag recent eBay sold results — for low-liquidity vintage it
+ * runs ~2x the real sold price (Base Blastoise $229 listed vs ~$95 sold, per the
+ * 2026-07-05 deals-freshness diagnosis). Calling it a plain "market" price (or,
+ * worse, a "to buy right now" price) overclaims accuracy on exactly the cards a
+ * sharp collector would screenshot. The raw low/high range is still not shown
+ * as a headline: its `high` is polluted by single $9,999 placeholder listings.
  */
 export function marketPhrase(card: LineCard): string | null {
-  if (card.marketCents != null) return `Around ${usd(card.marketCents)}`;
+  if (card.marketCents != null) return `TCGplayer listed ~${usd(card.marketCents)}`;
   if (card.marketLowCents == null && card.marketHighCents == null) return null;
   if (card.marketLowCents != null && card.marketHighCents != null && card.marketHighCents > card.marketLowCents) {
-    return `Around ${usd(card.marketLowCents)} to ${usd(card.marketHighCents)}`;
+    return `TCGplayer listed ~${usd(card.marketLowCents)} to ${usd(card.marketHighCents)}`;
   }
   const one = card.marketHighCents ?? card.marketLowCents!;
-  return `Around ${usd(one)}`;
+  return `TCGplayer listed ~${usd(one)}`;
 }

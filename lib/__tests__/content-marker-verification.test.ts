@@ -47,6 +47,10 @@ const FORBIDDEN: { label: string; re: RegExp }[] = [
   { label: "dead link /blog/how-to-read-pokemon-card-collector-numbers", re: /\/blog\/how-to-read-pokemon-card-collector-numbers/i },
   { label: "dead link /blog/how-to-price-pokemon-cards-from-photo", re: /\/blog\/how-to-price-pokemon-cards-from-photo/i },
   { label: "gas-station pre-fix '25 to 45' age range", re: /25 to 45/ },
+  // content-trust-hotfix Defect 3: the Moonbreon (Umbreon VMAX Alt Art, EVS 215)
+  // raw NM was undervalued at $180 across a live post (~12x below the sourced
+  // ~$2,300). Corrected + globally forbidden so a regression can't re-introduce it.
+  { label: "Moonbreon $180 NM undervaluation (Defect 3)", re: /\$180 NM Umbreon/i },
 ];
 
 // A sample curated card page must still render (I-006 HTTP layer).
@@ -83,6 +87,31 @@ test("Moonbreon post shows the corrected $2,100 figure", { skip }, async () => {
     `${BASE}/blog/how-much-is-my-pokemon-card-worth-a-60-second-checklist?cv=${Date.now()}`,
   );
   assert.match(body, /\$2,100/, "the corrected Moonbreon raw figure ($2,100) must be present");
+});
+
+// content-trust-hotfix Defect 3: two OTHER live posts undervalued the same card
+// (~12x low). Reconciled to the sourced PokeTrace windowed sold (live 2026-07-08:
+// eBay raw NM $2,285 / PSA 9 $2,277 / PSA 10 $4,574; TCG NM $2,240) — which is
+// what the checklist post above already showed. This pins that the contradiction
+// is resolved on the LIVE render, both directions (correct present, wrong absent).
+test("Moonbreon cross-post figures reconciled to the sourced number (Defect 3)", { skip }, async () => {
+  const p2 = await fetchText(
+    `${BASE}/blog/near-mint-vs-lightly-played-the-difference-that-doubles-a-card-s-price?cv=${Date.now()}`,
+  );
+  assert.equal(p2.status, 200);
+  assert.match(p2.body, /\$2,300 NM Umbreon VMAX alt art/i, "post #2 shows the corrected ~$2,300 Moonbreon NM");
+  assert.doesNotMatch(p2.body, /\$180 NM Umbreon/i, "the wrong $180 Moonbreon NM must be gone");
+
+  const p3 = await fetchText(
+    `${BASE}/blog/psa-9-vs-psa-10-is-the-200-grading-jump-worth-it?cv=${Date.now()}`,
+  );
+  assert.equal(p3.status, 200);
+  assert.match(p3.body, /Umbreon VMAX Alt Art[\s\S]{0,160}\$4,[456]00/i, "post #3 shows the corrected ~$4,400-$4,600 Moonbreon PSA 10");
+  assert.doesNotMatch(
+    p3.body,
+    /Umbreon VMAX Alt Art \(Evolving Skies\)[\s\S]{0,40}\$175/i,
+    "the wrong Umbreon-adjacent $175 PSA 9 figure must be gone (the generic table row is fine)",
+  );
 });
 
 test("japanese-sar post is live (was 404 before V.1)", { skip }, async () => {

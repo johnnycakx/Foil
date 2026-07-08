@@ -19,25 +19,16 @@ import { join } from "node:path";
 import { CARD_CATALOG } from "../lib/cards/catalog.ts";
 import { getSoldHistory } from "../lib/poketrace/by-uuid.ts";
 import type { PoketraceVariant } from "../lib/poketrace/variant.ts";
-import type { SoldHistory, SoldStat, SoldSource } from "../lib/poketrace/by-uuid.ts";
+import { resolveLineSoldEntry } from "../lib/lines/sold-select.ts";
 import { LINE_POKEMON } from "../lib/lines/config.ts";
 
 const OUTPUT_PATH = "lib/lines/sold-snapshot.generated.json";
 const SNAPSHOT_PATH = "lib/cards/baked-metadata.json";
-const SOURCES: readonly SoldSource[] = ["ebay", "tcgplayer", "cardmarket"];
-// Headline tiers ONLY (ADR-095 accuracy moat): the card's canonical value is
-// its NM (or LP) sold price. MP/HP/DMG are junk-copy prices — a 2-sale Damaged
-// outlier ($500k on a $50 card) is exactly the fabricated-looking figure this
-// page cannot show. Never headline below LP.
-const HEADLINE_TIERS = ["NEAR_MINT", "LIGHTLY_PLAYED"] as const;
-// Confidence floor: a figure from fewer than this many sales isn't reliable
-// "sold for ~$X recently" — thin trading + one outlier skews it.
-const MIN_SALES = 3;
-// Sanity band vs the baked TCGplayer market: a sold figure more than this
-// multiple ABOVE the market high (or a fraction BELOW the market low) is a data
-// outlier (mis-parse / graded-slab bleed), suppressed to the pending state.
-const MAX_OVER_MARKET = 4;
-const MIN_UNDER_MARKET = 0.15;
+// Freshness anchor for the whole run — every tier's fresh-windowed check keys
+// off this. Selection + suppression logic lives in lib/lines/sold-select.ts
+// (shared with the render + the unit tests); this script only orchestrates the
+// live PokeTrace reads and writes the committed snapshot.
+const NOW_MS = Date.now();
 
 function loadKey(): string {
   if (process.env.POKETRACE_API_KEY) return process.env.POKETRACE_API_KEY;
@@ -47,35 +38,6 @@ function loadKey(): string {
   } catch {
     return "";
   }
-}
-
-/** The single "recent sold" figure for a card's headline: NM first, then LP.
- *  Requires MIN_SALES for confidence and passes a TCGplayer sanity band —
- *  otherwise null (→ the honest pending state). `tcgHighCents`/`tcgLowCents`
- *  are the baked TCGplayer market bounds for the outlier cross-check. */
-function headlineSold(
-  h: SoldHistory | null,
-  tcgLowCents: number | null,
-  tcgHighCents: number | null,
-): { cents: number; saleCount: number; tierLabel: string; source: string; note?: string } | null {
-  for (const tier of HEADLINE_TIERS) {
-    const label = tier === "NEAR_MINT" ? "Near Mint" : "Lightly Played";
-    for (const src of SOURCES) {
-      const s: SoldStat | undefined = h?.bySource[src]?.[tier];
-      const v = s?.avg30d ?? s?.avg ?? null;
-      const sales = s?.saleCount ?? 0;
-      if (typeof v !== "number" || v <= 0) continue;
-      const cents = Math.round(v * 100);
-      if (sales < MIN_SALES) return { cents, saleCount: sales, tierLabel: label, source: src, note: "low_sales" };
-      // TCGplayer sanity band — reject data outliers ($500k on a $50 card).
-      if (tcgHighCents != null && cents > tcgHighCents * MAX_OVER_MARKET)
-        return { cents, saleCount: sales, tierLabel: label, source: src, note: "over_market" };
-      if (tcgLowCents != null && tcgLowCents > 0 && cents < tcgLowCents * MIN_UNDER_MARKET)
-        return { cents, saleCount: sales, tierLabel: label, source: src, note: "under_market" };
-      return { cents, saleCount: sales, tierLabel: label, source: src };
-    }
-  }
-  return null;
 }
 
 async function sleep(ms: number): Promise<void> {
@@ -117,7 +79,8 @@ async function main(): Promise<void> {
     LINE_POKEMON.some((p) => new RegExp(p, "i").test(e.slug)),
   ).map((e) => ({ slug: e.slug, id: e.pokemonTcgId }));
 
-  const out: Record<string, { soldCents: number; saleCount: number; tierLabel: string; source: string }> = {};
+  type Entry = { soldCents: number; saleCount: number; tierLabel: string; source: string; soldAsOf: string | null };
+  const out: Record<string, Entry> = {};
   let withData = 0;
   let i = 0;
 
@@ -130,25 +93,26 @@ async function main(): Promise<void> {
     }
     const { low: tcgLow, high: tcgHigh } = tcgBounds(id);
     // Read every variant's sold history; keep the best-traded ACCEPTED headline
-    // (a figure with a suppression `note` — low sales / market outlier — is
-    // dropped to the pending state; never shown).
-    let best: { cents: number; saleCount: number; tierLabel: string; source: string } | null = null;
+    // (a figure with a suppression `note` — low sales / market outlier / not a
+    // fresh windowed value — is dropped to the pending state; never shown).
+    let best: Entry | null = null;
     let lastReject = "";
     for (const v of variants) {
       await sleep(180); // under the 30 req/10s PokeTrace burst
       const h = await getSoldHistory(v.poketraceId);
-      const head = headlineSold(h, tcgLow, tcgHigh);
+      const head = resolveLineSoldEntry(h, { tcgLowCents: tcgLow, tcgHighCents: tcgHigh, nowMs: NOW_MS });
       if (!head) continue;
       if (head.note) {
         lastReject = head.note;
         continue;
       }
-      if (!best || head.saleCount > best.saleCount) best = { cents: head.cents, saleCount: head.saleCount, tierLabel: head.tierLabel, source: head.source };
+      if (!best || head.saleCount > best.saleCount)
+        best = { soldCents: head.cents, saleCount: head.saleCount, tierLabel: head.tierLabel, source: head.source, soldAsOf: head.soldAsOf };
     }
     if (best) {
-      out[slug] = { soldCents: best.cents, saleCount: best.saleCount, tierLabel: best.tierLabel, source: best.source };
+      out[slug] = best;
       withData++;
-      console.log(`  [${i}/${lineSlugs.length}] ${slug} -> $${(best.cents / 100).toFixed(0)} (${best.saleCount} sales, ${best.tierLabel})`);
+      console.log(`  [${i}/${lineSlugs.length}] ${slug} -> $${(best.soldCents / 100).toFixed(0)} (${best.saleCount} sales, ${best.tierLabel}, asOf ${best.soldAsOf ?? "?"})`);
     } else {
       console.log(`  [${i}/${lineSlugs.length}] ${slug} -> pending${lastReject ? ` (suppressed: ${lastReject})` : " (no data)"}`);
     }

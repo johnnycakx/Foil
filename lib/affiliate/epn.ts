@@ -14,6 +14,8 @@
 // If `api.partner.ebay.com` or those param names appear anywhere except here +
 // `.env.local` + `docs/ENV-VARS.md`, that's the regression.
 
+import { postError } from "../notifications/discord.ts";
+
 const EPN_PRODUCTS_ENDPOINT_BASE = "https://api.partner.ebay.com/v1";
 const EPN_SMART_LINK_BASE = "https://www.ebay.com/itm/";
 const EPN_SEARCH_URL_BASE = "https://www.ebay.com/sch/i.html";
@@ -162,6 +164,61 @@ function parseProductHits(body: unknown): EpnProductHit[] {
   return out;
 }
 
+// --- Missing-campaign-id LOUD alarm (content-trust-hotfix Defect 4) ---
+//
+// A missing EBAY_CAMPAIGN_ID means every affiliate link ships UNWRAPPED — a
+// SILENT 100% attribution loss (it bit the 2026-06-28 digest). We keep the
+// soft-fail (navigation must never break), but the failure is no longer silent:
+// the first occurrence per process pings #errors so a prod mis-config surfaces
+// immediately instead of leaking clicks for days. Guarded to production so
+// dev/test/CI don't spam. Latched once-per-process (buildAffiliateUrl is a hot
+// pure function — a per-call ping would flood). Mirrors the in-process dedup in
+// components/cards/sold-history-panel.tsx::pingSuppression.
+
+let campaignIdAlerted = false;
+
+/** Reset the once-per-process alarm latch. Tests only. */
+export function __resetCampaignIdAlertForTest(): void {
+  campaignIdAlerted = false;
+}
+
+export type CampaignIdAlertDeps = {
+  /** #errors webhook URL, or undefined when unset. */
+  webhook: string | undefined;
+  /** True in the production runtime (where a missing campid actually leaks). */
+  isProd: boolean;
+  /** Fire the alert (injected so the decision is unit-testable without network). */
+  notify: (webhook: string) => void;
+};
+
+/**
+ * Pure decision + latch for the missing-campaign-id alarm. Fires `notify` at
+ * most once per process, only in production, only when a webhook is configured.
+ * Returns whether it fired (for tests). Side-effect-free besides the latch.
+ */
+export function alertMissingCampaignId(deps: CampaignIdAlertDeps): boolean {
+  if (campaignIdAlerted) return false;
+  if (!deps.isProd || !deps.webhook) return false;
+  campaignIdAlerted = true; // latch on the first eligible occurrence, send or not
+  deps.notify(deps.webhook);
+  return true;
+}
+
+/** Default wiring: read env, post to #errors via the shared notifications lib. */
+function fireCampaignIdAlert(): void {
+  alertMissingCampaignId({
+    webhook: process.env.DISCORD_WEBHOOK_ERRORS,
+    isProd: process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL),
+    notify: (webhook) =>
+      void postError(webhook, {
+        source: "affiliate",
+        errorType: "ebay-campaign-id-missing",
+        message:
+          "EBAY_CAMPAIGN_ID is unset — affiliate links are shipping UNWRAPPED (100% attribution loss). Set it in the Vercel production env.",
+      }).catch(() => {}),
+  });
+}
+
 /**
  * Append EPN affiliate tracking params to an eBay URL. The function is pure —
  * no network call. Always includes `campid` (the campaign id env var) and the
@@ -169,12 +226,16 @@ function parseProductHits(body: unknown): EpnProductHit[] {
  *
  * If `EBAY_CAMPAIGN_ID` is missing, the URL is returned UNWRAPPED — soft-fail
  * preserves user navigation at the cost of affiliate attribution rather than
- * silently breaking page renders.
+ * silently breaking page renders. The miss is no longer silent: in production
+ * the first occurrence per process pings #errors (see fireCampaignIdAlert).
  */
 export function buildAffiliateUrl(itemUrl: string, customId: string): string {
   if (!itemUrl) return itemUrl;
   const campId = process.env.EBAY_CAMPAIGN_ID;
-  if (!campId) return itemUrl;
+  if (!campId) {
+    fireCampaignIdAlert();
+    return itemUrl;
+  }
 
   const target = new URL(itemUrl);
   for (const [k, v] of Object.entries(EPN_TRACKING_PARAMS)) {
