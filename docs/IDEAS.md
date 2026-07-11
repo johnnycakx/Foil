@@ -918,21 +918,24 @@ Positioning-level read from John: eve's "can u do it for me" is not the edge cas
 
 **Context:** John, 2026-07-03 morning, after seeing belt-driven card-page traffic paths. Also the reason "Add to vault" is the canonical CTA noun (never "+ Watchlist" — one noun sitewide).
 
----
-date: 2026-07-03
-category: strategy
-status: captured
+---
 
-## Manipulation-detection as a staged, provable trust layer (and eventual positioning)
+## Chat-first Foil UI (post-validation bet)
+Rebuild the primary product surface around a conversational, ChatGPT-familiar interface — type a card, Foil answers with the read and offers the watch. Deliberately PARKED during the validation sprint (weeks of new surface on the funnel we're about to pay to test). The bounded in-sprint version ships instead: prompt-style watch input + agent receipts (offer-implementation). Revisit only if the WTP test converts.
 
-John's thesis (07-03 night): the Pokemon market runs on manipulation as much as logic (wash trading, shill bidding, buyouts, 200-fake-account floor control on the Van Gogh Pikachu per Cardmarket's 2024 legal action), the topic is trendy on X, and "Foil detects it and protects buyers" would be a huge value prop. Ruling (John + Cowork): CONTENT lane starts now (manipulation-explainer threads with receipts; patterns, never named accusations — defamation wall); PRODUCT positioning waits until detection is provable (never claim protection we can't demonstrate). The staged detection ladder, each rung provable before claimed: (1) volume honesty — real windowed sale counts, shipped by sold-data-integrity; (2) spike context — "+40% on 6 sales" gets a caution chip vs "+19.9% on 314 sales"; (3) surface PokeTrace per-listing anomaly flags where exposed; (4) cross-source divergence alerts (washed eBay comps diverge from TCGplayer/Cardmarket); (5) single-seller concentration if we ever get listing-level seller data. End-state positioning when earned: "the deal-finder that can't be pumped." Also a defensive truth: wash trading is an attack on OUR data spine — every rung hardens the product even if the positioning never changes.
+**Context:** 2026-07-11 offer-lock session — John's agent-positioning instinct (people want things done for them; eve's "can u do it for me"). The two-voice architecture + register rule are the copy-level implementation shipping now.
 
-**Context:** the H3 sold-data incident night. First test = the manipulation thread draft in NEXT-SESSION-BRIEF; engagement decides how fast the ladder gets built.
+## Demand-driven catalog expansion (watch a card → Foil starts tracking it)
+When a user asks for a card outside the ~1,885 top-5-per-set catalog, add it live: Pokémon TCG SDK lookup → PokeTrace pricing → joins the bake + daily sweep. The perfect agent story ("Foil doesn't have that card yet. Give it a minute."). PARKED until the test produces users — their unmatched watch attempts ARE the prioritized expansion list. Marketing meanwhile leads with the curation ("top 5 chase cards from every English set"), never the count.
 
----
+**Context:** 2026-07-11 — John probing why movers cover ~300 cards (deliberate curation + thin-sale noise gating, NOT an eBay quota problem). Cross-ref ADR-088.
 
-## /deals filters + sorting (deferred from blackout-brand-and-deals-rework, 2026-07-03)
+## Mobile app / PWA (unscoped, deliberately unpromised)
+John wanted "app coming soon" in the founding-member copy; vetoed as vaporware (done beats coming soon). If real demand shows post-validation, scope PWA + push notifications first (~90% of the value for ~10% of the work) and only THEN say it out loud — founding members get it first.
 
-**Idea:** Now that /deals has parity rows + jump links, the next functionality step is user-side control: filter by set/era/price band, sort by % move vs sample size, maybe a "only cards in my vault" toggle (vault-token aware). Deliberately kept OUT of the blackout goal (its scope note) so the rework stayed shippable in one pass.
+**Context:** 2026-07-11 offer-lock. The founding line ships as honest rate-lock only.
 
-**Trigger to promote:** /deals traffic from the belt/reveal post shows scroll-depth past the first 12 rows, or John hears "can I filter this" twice.
+## Flipper/shop concierge probe (zero-cost, parallel to the consumer test)
+John DMs 4–5 flipper/shop mutuals offering a free 2-week "I'll watch your sourcing targets" pilot — smells the high-price lane (the labor-priced agent idea above) without building anything. If the $6 consumer test returns 0 trials, this is the required second data point before any "nobody pays" conclusion.
+
+**Context:** 2026-07-11 architecture discussion — the $6 ads test can only measure consumer-priced offers; the flipper lane needs warm outreach, not ads.

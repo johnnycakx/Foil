@@ -8,6 +8,16 @@ Append new entries at the TOP. Don't edit old entries except to add a "Related: 
 
 ---
 
+## 2026-07-11 — Cowork/Fable session: bridge restored · GSC-collapse verdict · THE OFFER-LOCK (all decisions ratified) · Stripe live-wiring in flight (paused at the credential step)
+
+**Cowork advisory session (Fable), first bridge access since 07-08.** Audit: nothing regressed in the dark days; stale `.git/index.lock` found + deleted; brief was stale (rewritten at close). **GSC pulled live over Chrome:** impressions collapsed ~96% (609/28d at the 07-05 report → 25/28d now; the last 7 full days = ZERO; indexed pages 16→3; NO manual action). Verdict: the authority gate deepened — changes nothing, SEO stays closed as a lever.
+
+**THE OFFER-LOCK SESSION (the reserved Fable judgment work — every decision RATIFIED by John; recorded in `docs/goals/offer-implementation.md`):** consumer $6 WTP test (flipper/shop lanes explicitly downstream) · ICP = modern singles chasers, grail hook leads · limits model: free = top-2 teaser + weekly digest + 3 watches checked DAILY (gift vaults exempt); Pro $6/30-day card trial = unlimited watches checked HOURLY + the full daily drop · price held $6 (live comps: PriceCharting $4.99/mo, CardLadder $20/mo, restock-alert Discords $5.99–9.99) · founding line = honest rate-lock ONLY ("app coming soon" vetoed by done-beats-coming-soon) · **TWO-VOICE ARCHITECTURE** (product surfaces = Foil-the-agent; John's "I" = X + editorial; core line ratified verbatim: "Foil doesn't guess prices. It reads real sales.") · **REGISTER RULE** (card-shop language, 15-year-old test, finance/tech words banned in public copy) · agent dress only (prompt-style watch input + receipts; chat-first UI parked to IDEAS) · ads = Reddit+Meta 50/50, two hooks, ~$300, per-cell consolidation rule · pre-ads mechanics gates: return-to-checkout + one-trial-per-customer. Scope-honesty catch (John): the "12 of 20 movers" draft used thresholded tails as a market sample — market-level claims wait for the market-temperature stat (spec'd).
+
+**Also this session:** the funnel-stress-test commit was pushed (adf55d3 after rebase; multi-word search fix verified live: Team Rocket 0→8 hits). **Stripe live activation ~80%:** live mode confirmed; **exposed sk_live ROLLED** (leaked via screenshot mid-walkthrough — rolled in 30s, zero cost pre-wiring); live $6 product created (`price_1TrwmPEmPu7zPPxMNKIyOCeT`); live webhook destination created (5 events). **`stripe-live-wiring` goal IN-FLIGHT, PAUSED at step 2** awaiting John's two interactive `vercel env add` pastes + pk_live — resumes cleanly. Workflow correction banked (John, emphatic): infra/env work runs as CLI GOALS, not manual dashboard walkthroughs; manual = credential moments only.
+
+**Next:** resume the Stripe goal → John's real-card smoke test (+ cancel the stray $14.99 test-mode sub) → fire `offer-implementation` → John's copy veto → Fable writes the ads-run spec → the ads-live gate. Durable learnings + IDEAS captured in COWORK-CONTEXT/IDEAS this close.
+
 ## 2026-07-11 — funnel-stress-test (V5): the whole money path walked end-to-end in test mode — headline gap confirmed (no daily-drop send, weekly digest OFF on prod), 8 defects fixed inline — committed, NO PUSH
 
 **Goal `docs/goals/funnel-stress-test.md` (Fable) — the last build-side item on the ads-live gate.** Every step exercised FOR REAL: live prod gate submit, real browser Stripe test checkout (`4242…` through hosted Checkout), real webhooks via `stripe listen`, real alert emails to John's `+funnelqa1` alias (safety pre-check: all 15 watch owners in the DB are John's aliases — zero strangers reachable), real cron runs, all three subscriber stores read back via API. Full step-by-step table with evidence: **`docs/goals/_results/funnel-stress-test.md`** (on disk; `docs/goals/` is gitignored by convention).
@@ -3880,69 +3890,4 @@ The "13 → 14 active" check originally written into the goal criterion was the 
 
 **Commits:** `8848382`, `ce4f6d3`, `c969388`, `ad316e5`, `749b21a`
 
-**Summary.** Four-stage build: (1) MDX blog infrastructure + topic-cluster strategy doc, (2) two new pillar landing pages for the value calculator and condition guide, (3) auth-proxy fix to stop the new marketing surfaces from getting gated to `/login`, (4) autonomous content engine v1 (drafts to `_pending/`, opens review PR), (5) full-autonomy upgrade (8 quality gates, 3-retry loop, twice-weekly direct-commit-to-main, SERP context injection via Brave Search, Foil data injection via Supabase). Two real posts shipped end-to-end via the autonomous pipeline: `how-to-read-a-japanese-pokemon-card` and `near-mint-vs-lightly-played-…`. Both passed all 8 gates on first attempt.
-
-**Key decisions made.**
-- [ADR-004](DECISIONS.md#adr-004--brave-search-for-serp-context-injection-2kmo-free-fits-2xweek-cadence) Brave Search over SerpApi/DataForSEO.
-- [ADR-005](DECISIONS.md#adr-005--twice-weekly-content-cadence-mondays--thursdays-at-1403-utc) Twice-weekly Mon + Thu 14:03 UTC.
-- [ADR-006](DECISIONS.md#adr-006--full-autonomy-no-human-review-step-gates-as-the-safety-net) Full autonomy, no review step.
-- [ADR-007](DECISIONS.md#adr-007--8-quality-gates--3-retries--skip-on-failure-not-fail-the-build) Skip-on-failure (not fail-the-build) on gate exhaustion.
-
-**Follow-ups added to ROADMAP.** Items #1-9 (NOW + NEXT) are net-new this session. The fabrication risk discussed in ADR-006 is tracked as [RISKS.md R-001](RISKS.md).
-
-**State at session end.** Both commits pushed to `main` (`c969388..749b21a`). Vercel auto-deployed. Local working tree clean. First scheduled cron fires Mon 2026-05-25 14:03 UTC — blocked on GitHub Actions secrets (ROADMAP item #1).
-
----
-
-## 2026-05-19 — Session 3: Pricing pipeline maturation + UX flip + first SEO surface
-
-**Commits:** `ba35a63`, `6e9e360`, `c4842b8`, `86bc754`, `e16c1e4`, `f8046a5`, `522f194`, `a675475`, `1888d6c`, `f9305d8`, `1243ce9`, `7bfa259`, `30f393e`
-
-**Summary.** Largest single-session count of the build so far. PriceCharting graded ladder added, condition multipliers killed in favor of per-tier quotes (`ba35a63`). Detect filter shipped to drop tiny/low-confidence/bad-aspect boxes and IoU-merge duplicates (`e16c1e4`). Visual confirmation pass gated behind low-confidence matches (`f8046a5`). Partial-id recovery via PokeTrace + PriceCharting candidate dedup (`a675475`). UX flipped: single-card scanning is now V1 primary, binder is an advanced toggle (`f9305d8`, see [ADR-003](DECISIONS.md#adr-003--single-card-scanning-is-the-v1-primary-ux-binder-mode-is-an-advanced-toggle)). First SEO landing page shipped: `/japanese-pokemon-cards-value` with Article + FAQPage JSON-LD (`7bfa259`). Waitlist attribution + UTM capture (`1243ce9`). Card Identification Framework documented (`30f393e`).
-
-**Key decisions made.**
-- [ADR-003](DECISIONS.md#adr-003--single-card-scanning-is-the-v1-primary-ux-binder-mode-is-an-advanced-toggle) Single-card primary.
-- Pipeline rules established as "null over guess, don't auto-correct printed numbers, 3-letter set codes atomic, low-confidence requires visual confirm" (now codified in `docs/foil-card-id-framework.md` + CLAUDE.md).
-
-**State at session end.** All shipped to main. First pillar page indexed-eligible.
-
----
-
-## 2026-05-18 — Session 2: V1 critical path end-to-end
-
-**Commits:** `0e19f6d`, `419fdf3`, `ca84b81`, `20a590c`, `311fac4`, `a6ee634`, `997f73f`, `25ce6a1`, `877c841`
-
-**Summary.** End-to-end V1 stood up in a single day. Magic-link auth (`0e19f6d`), Claude Vision wired (`419fdf3`), end-to-end verified on Prismatic Evolutions fixtures (`ca84b81`), two-pass multi-card pipeline + null-safety (`20a590c`), Stripe paywall + Pro subscription verified (`311fac4`), retry pipeline + AGGREGATED price fallback (`a6ee634` — went from 0/9 to 9/9 on the Prismatic binder), Pokemon Card Identification Framework applied to the vision system prompt (`997f73f`), visual confirmation pass + reference images (`25ce6a1`), PokeTrace image cache in Supabase Storage (`877c841`).
-
-**Key decisions made.**
-- [ADR-001](DECISIONS.md#adr-001--domain-foiltcgcom-over-foilapp) Domain choice.
-- [ADR-002](DECISIONS.md#adr-002--pricing-data-poketrace--pricecharting-scrydex-deferred) PokeTrace + PriceCharting; Scrydex deferred.
-
-**State at session end.** V1 critical path complete. Ready for SEO + content phase.
-
----
-
-## 2026-05-18 — Session 1: Scaffold
-
-**Commits:** `a68731a`, `32810fc`
-
-**Summary.** Initial Next.js 16 scaffold with Supabase, Stripe, Anthropic SDK wired. Project structure established (no `src/`, App Router, Tailwind 4, Turbopack).
-
-**Key decisions made.** Stack choice (see CLAUDE.md → Stack section).
-
-**State at session end.** Bare scaffold, no domain logic yet.
-
----
-
-## How to log a session
-
-Run at the end of any non-trivial goal:
-
-1. Add a new entry at the top of this file.
-2. Date format: `YYYY-MM-DD`. If a session crosses midnight UTC, use the day the bulk of work happened.
-3. List the commit short-hashes shipped, in commit order.
-4. **Summary paragraph:** 2-4 sentences. What changed, why it mattered. NOT a commit-by-commit recap (that's what `git log` is for).
-5. **Key decisions:** link to the ADRs added or amended in [DECISIONS.md](DECISIONS.md). If no ADR was needed, omit this section.
-6. **Follow-ups:** list any items added to [ROADMAP.md](ROADMAP.md) during the session.
-7. **State at session end:** one sentence on the working-tree state, what's pushed, what's blocking the next ship.
-
+**Summary.** Four-stage build: (1) MDX blog infrastructure + topic-cluster strategy doc, (2) two new pillar landing pages for the value calculator and condition guide, (3) auth-proxy fix to stop the new marketing surfaces from getting gated to `/login`, (4) autonomous content engine v1 (drafts to `_pending/`, opens review PR), (5) full-autonomy upgrade (8 quality gates, 3-retry loop, twice-weekly direct-commit-to-main, SERP conte
