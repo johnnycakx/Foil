@@ -180,7 +180,7 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
     return (
       <section className="rounded-3xl border border-foil-accent/40 bg-foil-night-2 p-8 sm:p-10">
         <p className="text-xs font-medium uppercase tracking-widest text-foil-accent">
-          You&apos;re tracking {submission.count} cards
+          You&apos;re tracking {submission.count} {submission.count === 1 ? "card" : "cards"}
         </p>
         <h2 className="font-display mt-3 text-2xl font-bold tracking-[-0.02em] text-foil-cream sm:text-3xl">
           We&apos;ve got it from here.

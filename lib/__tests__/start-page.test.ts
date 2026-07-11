@@ -233,13 +233,18 @@ test("searchCards: strips Lucene-control chars before building the query string"
     query: 'charizard") OR set.id:("base1',
     fetchImpl: fakeFetch,
   });
-  // The cleaned query must not pass through `)`, `(`, or `"`. The literal
-  // `name:` prefix is server-controlled and fine; the user-content portion
-  // (everything after `name:`) must be sanitized.
+  // The cleaned query must not pass through `)`, `(`, or `"` FROM USER INPUT.
+  // Since the funnel-stress-test 2026-07-11 fix the CODE wraps the value in
+  // its own quotes (`name:"<cleaned>*"` — unquoted multi-word queries 400
+  // upstream), so the shape is: server-controlled prefix + one opening quote,
+  // sanitized user content, then the server-controlled `*"` suffix. The
+  // sanitizer stripping `"` from input is exactly what makes the wrapping
+  // safe — user content still can't close the quote or inject operators.
   const queryParam = new URL(capturedUrl).searchParams.get("q") ?? "";
-  assert.match(queryParam, /^name:/, "expected the name: filter prefix");
-  const userPortion = queryParam.replace(/^name:/, "");
+  assert.match(queryParam, /^name:"/, "expected the quoted name: filter prefix");
+  assert.match(queryParam, /\*"$/, "expected the server-controlled quoted-wildcard suffix");
+  const userPortion = queryParam.replace(/^name:"/, "").replace(/\*"$/, "");
   assert.doesNotMatch(userPortion, /[():"]/, "user content must not introduce Lucene control chars");
   // Sanity: must still start with the sanitized cleartext.
-  assert.match(queryParam, /^name:charizard/);
+  assert.match(queryParam, /^name:"charizard/);
 });

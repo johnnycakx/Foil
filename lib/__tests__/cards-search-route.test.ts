@@ -169,6 +169,37 @@ test("searchCards: does NOT retry on 4xx (user query, empty result is a real out
   assert.equal(calls, 1, "expected no retries on 4xx for user-input search");
 });
 
+// ---------------------------------------------------------------------------
+// funnel-stress-test 2026-07-11 — multi-word searches must reach upstream as a
+// QUOTED name value. Unquoted `name:Iono's Bellibolt*` is a Lucene syntax
+// error: pokemontcg.io answers 400 and the soft-fail rendered every spaced
+// search ("Team Rocket", "Iono's Bellibolt" — most real card searches) as
+// silent zero hits across /start, the vault add form, and the card-page form.
+// ---------------------------------------------------------------------------
+
+test("searchCards: sends the name value QUOTED so multi-word queries don't 400 upstream", async () => {
+  const { searchCards } = await import("../cards/sdk.ts");
+  const seenUrls: string[] = [];
+  const capture = (async (url: RequestInfo | URL) => {
+    seenUrls.push(String(url));
+    return new Response(JSON.stringify({ data: [] }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }) as unknown as typeof fetch;
+
+  await searchCards({ query: "Iono's Bellibolt", limit: 8, fetchImpl: capture });
+  assert.equal(seenUrls.length, 1);
+  const q = new URL(seenUrls[0]).searchParams.get("q");
+  assert.equal(q, `name:"Iono's Bellibolt*"`, "multi-word name value must be quoted");
+
+  // Single-word stays quoted too (verified upstream: quoted prefix wildcards
+  // match for both shapes) — one code path, no conditional to drift.
+  await searchCards({ query: "charizard", limit: 8, fetchImpl: capture });
+  const q2 = new URL(seenUrls[1]).searchParams.get("q");
+  assert.equal(q2, `name:"charizard*"`);
+});
+
 test("getCardMetadata: retries on 504 and recovers (Bug 3 — set page placeholders)", async () => {
   const { getCardMetadata } = await import("../cards/sdk.ts");
   let calls = 0;

@@ -43,6 +43,34 @@ test("periodEndIso: unix seconds → ISO; absent/invalid → null", () => {
   );
 });
 
+test("periodEndIso: falls back to the ITEM-level current_period_end (basil+ API shape)", () => {
+  // Stripe 2025-03-31.basil moved current_period_end from Subscription to
+  // SubscriptionItem — on our pinned 2026-04-22.dahlia the top-level field is
+  // ABSENT on live webhook payloads (verified against a real trialing sub,
+  // funnel-stress-test 2026-07-11). Without the item fallback every entitlement
+  // row's current_period_end is silently null.
+  const at = 1_786_348_581;
+  assert.equal(
+    periodEndIso({
+      items: { data: [{ current_period_end: at }] },
+    } as unknown as Parameters<typeof periodEndIso>[0]),
+    new Date(at * 1000).toISOString(),
+  );
+  // Top-level (older shape) still wins when present.
+  assert.equal(
+    periodEndIso({
+      current_period_end: at,
+      items: { data: [{ current_period_end: at + 999 }] },
+    } as unknown as Parameters<typeof periodEndIso>[0]),
+    new Date(at * 1000).toISOString(),
+  );
+  // Neither present → null (unchanged soft behavior).
+  assert.equal(
+    periodEndIso({ items: { data: [] } } as unknown as Parameters<typeof periodEndIso>[0]),
+    null,
+  );
+});
+
 test("Foil Pro is priced $6/mo with a 30-day trial (the repurposed rail, not $14.99)", () => {
   assert.equal(PRO_PRICE_USD_CENTS, 600, "the price is $6.00, not the parked $14.99");
   assert.equal(PRO_TRIAL_DAYS, 30, "the trial is 30 days");

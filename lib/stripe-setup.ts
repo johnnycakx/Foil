@@ -11,6 +11,11 @@ import {
 // prices are immutable — you can't change the amount on an existing price).
 const LOOKUP_KEY = "foil_pro_monthly_v2";
 
+// Shown by Stripe Checkout beside the price — must describe the CURRENT
+// deal-finder Pro offer (mirrors /pro), never the parked scanner tier.
+const PRO_PRODUCT_DESCRIPTION =
+  "The daily deal drop + personal price watches — get pinged the moment a card you're chasing hits your price, on real sold data.";
+
 export type SetupResult = {
   productId: string;
   priceId: string;
@@ -32,7 +37,15 @@ export async function ensureProProductAndPrice(): Promise<SetupResult> {
   if (!product) {
     product = await s.products.create({
       name: PRO_PRODUCT_NAME,
-      description: "The daily deal drop + personal price watches — get pinged the moment a card you're chasing hits your price, on real sold data.",
+      description: PRO_PRODUCT_DESCRIPTION,
+    });
+  } else if (product.description !== PRO_PRODUCT_DESCRIPTION) {
+    // The reused product may still carry the parked scanner-era description
+    // ("Unlimited Pokémon card scans…") — Checkout renders it beside the $6
+    // offer, so a buyer would see copy for a product that no longer exists
+    // (funnel-stress-test 2026-07-11). Idempotent refresh on every setup run.
+    product = await s.products.update(product.id, {
+      description: PRO_PRODUCT_DESCRIPTION,
     });
   }
 

@@ -19,6 +19,32 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-07-11
+category: product
+status: captured
+---
+## daily-drop-send — build the send the funnel already sells (the funnel-stress-test headline gap)
+
+Every capture surface promises a DAILY deal drop (the /deals gate: "one email a day at most"; the success state: "the day's best buys"; /pro's first $6 value card: "curated daily") — and NO send path exists: no cron, no send code, and even the weekly digest is off on prod (`NEWSLETTER_DIGEST_MODE=""`). A deals_gate subscriber gets one Beehiiv welcome (which says "weekly"!) then silence; a $6 trial would pay for a drop that never arrives. Shape after the offer-lock decides free-vs-paid drop content: daily cron → render the board state (reuse `dealsGateState` + `market_movers` + the thin-day honesty rule — the "quiet day? we'll tell you that too" email is already in-copy) → Resend send to the audience/segment with the existing unsubscribe footer plumbing. Bundle: flip `NEWSLETTER_DIGEST_MODE` decision + reconcile the welcome email's "one email a week" copy.
+
+**Context:** funnel-stress-test 2026-07-11 (`docs/goals/_results/funnel-stress-test.md`) — the #1 blocking item on the ads-live gate.
+
+---
+
+---
+date: 2026-07-11
+category: infra
+status: captured
+---
+## Attribution: make the `source` (capture surface) column sticky-first-touch like UTM — or accept last-touch deliberately
+
+`buildSubscriberRow` always overwrites `source` on re-capture while UTM is sticky-first-touch (ADR-084) — the stress-test's deals_gate signup became `source=start-page` after the same email added a watch, so the funnel report's "by capture surface" tally loses gate attribution while "by utm_source" keeps the channel. One-line change if first-touch is wanted; matters for reading the WTP test's gate-vs-other-surface split. Related smaller reads from the same walk: /pro auth friction (CTA → /login → back to /pro → click again; no return-to-checkout) and repeat-trial abuse gating — both already flagged in the golive checklist for the offer-lock.
+
+**Context:** funnel-stress-test 2026-07-11, instrumentation step (D-B in the memo).
+
+---
+
+---
 date: 2026-07-05
 category: product
 status: captured

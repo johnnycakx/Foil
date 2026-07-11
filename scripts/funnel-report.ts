@@ -58,21 +58,29 @@ async function main(): Promise<void> {
   const db = createClient(SUPABASE_URL!, SERVICE_KEY!, { auth: { persistSession: false, autoRefreshToken: false } });
   const since = days && Number.isFinite(days) ? new Date(Date.now() - days * 86_400_000).toISOString() : null;
 
-  // 1. Signups (email captures) by inbound channel.
-  let sq = db.from("newsletter_subscribers").select("source, utm_source, utm_campaign, created_at, unsubscribed_at").is("unsubscribed_at", null);
+  // 1. Signups (email captures) by inbound channel. NO unsubscribed filter —
+  // a signup is an acquisition EVENT; a later unsubscribe must not erase it
+  // from channel attribution (funnel-stress-test 2026-07-11: the filter made
+  // an unsubscribed test signup vanish from its channel's count). The
+  // unsubscribed tail is reported separately below.
+  let sq = db.from("newsletter_subscribers").select("source, utm_source, utm_campaign, created_at, unsubscribed_at");
   if (since) sq = sq.gte("created_at", since);
   const { data: signupData, error: sErr } = await sq;
   if (sErr) { console.error("[funnel] signups query failed:", sErr.message); process.exit(1); }
   const signups = (signupData ?? []) as SignupRow[];
+  const unsubscribedCount = signups.filter((r) => r.unsubscribed_at != null).length;
 
-  // 2/3. Subscriptions → trial + paid funnel.
-  const { data: subData, error: subErr } = await db.from("subscriptions").select("status, tier, stripe_subscription_id");
+  // 2/3. Subscriptions → trial + paid funnel. The --days window applies here
+  // too — without it the flag silently windowed only signal 1.
+  let subQ = db.from("subscriptions").select("status, tier, stripe_subscription_id, created_at");
+  if (since) subQ = subQ.gte("created_at", since);
+  const { data: subData, error: subErr } = await subQ;
   if (subErr) { console.error("[funnel] subscriptions query failed:", subErr.message); process.exit(1); }
   const subs = summarizeSubscriptions((subData ?? []) as SubRow[]);
 
   console.log(`Validation funnel — ${days ? `last ${days}d` : "all-time"}`);
   console.log(`\n════ Signal 1: email signups (offer compelling?) ════`);
-  console.log(`Total signups: ${signups.length}`);
+  console.log(`Total signups: ${signups.length}${unsubscribedCount > 0 ? ` (${unsubscribedCount} later unsubscribed)` : ""}`);
   printTally("By utm_source (inbound channel):", tallyBy(signups, (r) => r.utm_source), signups.length);
   printTally("By source (capture surface):", tallyBy(signups, (r) => r.source), signups.length);
 

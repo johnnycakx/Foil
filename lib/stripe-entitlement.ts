@@ -16,9 +16,19 @@ export function subscriptionTier(status: string): "pro" | "free" {
 }
 
 /** Subscription current-period-end (unix secs) → ISO, or null when absent. For
- *  a trialing subscription Stripe sets this to the trial-end date. */
+ *  a trialing subscription Stripe sets this to the trial-end date.
+ *
+ *  Stripe's 2025-03-31.basil API release MOVED current_period_end from the
+ *  Subscription to the SubscriptionItem (verified live against our pinned
+ *  2026-04-22.dahlia: top-level is absent, items.data[0].current_period_end
+ *  carries the date — funnel-stress-test 2026-07-11). Read the top level first
+ *  (older API shapes / test fixtures), then fall back to the first item. */
 export function periodEndIso(sub: Stripe.Subscription): string | null {
-  const raw = (sub as unknown as { current_period_end?: number | null }).current_period_end;
+  const top = (sub as unknown as { current_period_end?: number | null }).current_period_end;
+  const item = sub.items?.data?.[0] as
+    | { current_period_end?: number | null }
+    | undefined;
+  const raw = typeof top === "number" ? top : item?.current_period_end;
   if (typeof raw === "number" && Number.isFinite(raw)) {
     return new Date(raw * 1000).toISOString();
   }

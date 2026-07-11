@@ -30,10 +30,10 @@ export default async function AccountPage({
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href="/upload"
+            href="/deals"
             className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
           >
-            Back to scans
+            Today&apos;s deals
           </Link>
           <form action={signOut}>
             <button
@@ -58,9 +58,9 @@ export default async function AccountPage({
           <p className="mt-1 text-3xl font-semibold">{isPro ? "Pro" : "Free"}</p>
           {isPro ? (
             <p className="mt-2 text-sm text-zinc-500">
-              Unlimited scans
+              Daily deal drop + personal price watches
               {ent.periodEnd
-                ? ` · renews ${new Date(ent.periodEnd).toLocaleDateString("en-US", { dateStyle: "medium" })}`
+                ? ` · next charge ${new Date(ent.periodEnd).toLocaleDateString("en-US", { dateStyle: "medium" })}`
                 : ""}
             </p>
           ) : (
@@ -97,10 +97,9 @@ export default async function AccountPage({
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
           <p className="font-medium text-zinc-900 dark:text-zinc-100">What Pro includes</p>
           <ul className="mt-3 space-y-1.5">
-            <li>· Unlimited card scans</li>
-            <li>· Full per-card pricing breakdown (eBay, TCGplayer, graded)</li>
-            <li>· 90-day scan history</li>
-            <li>· No watermark on shared images</li>
+            <li>· The daily deal drop — the best live buys across the market, curated daily</li>
+            <li>· Personal price watches — we watch the cards you&apos;re chasing and email you the moment one hits</li>
+            <li>· Every figure priced on real sold data, never an asking price</li>
           </ul>
         </div>
       </section>

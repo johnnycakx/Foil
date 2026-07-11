@@ -182,7 +182,7 @@ test("extractUnsubscribeEmails dedupes repeated recipients", () => {
 
 // --- syncUnsubscribe (injected IO) -----------------------------------------
 
-test("syncUnsubscribe: both legs succeed → updated + beehiiv true", async () => {
+test("syncUnsubscribe: all legs succeed → updated + beehiiv + resend true", async () => {
   const calls: string[] = [];
   const r = await syncUnsubscribe("User@X.com", {
     setSupabaseUnsubscribed: async (email, at) => {
@@ -193,11 +193,37 @@ test("syncUnsubscribe: both legs succeed → updated + beehiiv true", async () =
       calls.push(`bh:${email}`);
       return true;
     },
+    resendUnsubscribe: async (email) => {
+      calls.push(`rs:${email}`);
+      return true;
+    },
     nowIso: "2026-06-30T00:00:00.000Z",
   });
-  assert.deepEqual(r, { email: "user@x.com", supabase: "updated", beehiiv: true });
-  // Email is normalized before either leg sees it.
-  assert.deepEqual(calls.sort(), ["bh:user@x.com", "sb:user@x.com:2026-06-30T00:00:00.000Z"]);
+  assert.deepEqual(r, { email: "user@x.com", supabase: "updated", beehiiv: true, resend: true });
+  // Email is normalized before any leg sees it.
+  assert.deepEqual(calls.sort(), [
+    "bh:user@x.com",
+    "rs:user@x.com",
+    "sb:user@x.com:2026-06-30T00:00:00.000Z",
+  ]);
+});
+
+test("syncUnsubscribe: the Resend leg runs for the one-click direction (broadcast exclusion — funnel-stress-test 2026-07-11)", async () => {
+  // The weekly digest is a Resend Broadcast to the audience; Resend's own
+  // `unsubscribed` flag is the ONLY thing excluding a contact from it. The
+  // HMAC one-click path (/api/unsubscribe) reuses syncUnsubscribe, so the
+  // Resend leg firing here is what stops the next broadcast.
+  let resendEmail: string | null = null;
+  const r = await syncUnsubscribe("buyer@x.com", {
+    setSupabaseUnsubscribed: async () => "updated",
+    beehiivUnsubscribe: async () => true,
+    resendUnsubscribe: async (email) => {
+      resendEmail = email;
+      return true;
+    },
+  });
+  assert.equal(resendEmail, "buyer@x.com");
+  assert.equal(r.resend, true);
 });
 
 test("syncUnsubscribe: replayed webhook is a no-op (0 rows changed → noop, still not an error)", async () => {
@@ -221,8 +247,9 @@ test("syncUnsubscribe: a Beehiiv failure does not deny the Supabase leg (soft-fa
   const r = await syncUnsubscribe("user@x.com", {
     setSupabaseUnsubscribed: async () => "updated",
     beehiivUnsubscribe: async () => false,
+    resendUnsubscribe: async () => true,
   });
-  assert.deepEqual(r, { email: "user@x.com", supabase: "updated", beehiiv: false });
+  assert.deepEqual(r, { email: "user@x.com", supabase: "updated", beehiiv: false, resend: true });
 });
 
 test("syncUnsubscribe: a thrown leg is caught and downgraded, never propagated", async () => {
@@ -233,11 +260,14 @@ test("syncUnsubscribe: a thrown leg is caught and downgraded, never propagated",
     beehiivUnsubscribe: async () => {
       throw new Error("beehiiv down");
     },
+    resendUnsubscribe: async () => {
+      throw new Error("resend down");
+    },
   });
-  assert.deepEqual(r, { email: "user@x.com", supabase: "error", beehiiv: false });
+  assert.deepEqual(r, { email: "user@x.com", supabase: "error", beehiiv: false, resend: false });
 });
 
-test("syncUnsubscribe: empty email short-circuits without calling either leg", async () => {
+test("syncUnsubscribe: empty email short-circuits without calling any leg", async () => {
   let called = false;
   const r = await syncUnsubscribe("   ", {
     setSupabaseUnsubscribed: async () => {
@@ -248,7 +278,11 @@ test("syncUnsubscribe: empty email short-circuits without calling either leg", a
       called = true;
       return true;
     },
+    resendUnsubscribe: async () => {
+      called = true;
+      return true;
+    },
   });
   assert.equal(called, false);
-  assert.deepEqual(r, { email: "", supabase: "noop", beehiiv: false });
+  assert.deepEqual(r, { email: "", supabase: "noop", beehiiv: false, resend: false });
 });

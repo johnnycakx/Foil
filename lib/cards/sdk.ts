@@ -703,7 +703,13 @@ export async function searchCards(input: SearchCardsInput): Promise<CardSearchHi
   // a malicious query short-circuit the name filter.
   const cleaned = q.replace(/[^a-zA-Z0-9 \-'.]/g, "").trim();
   if (!cleaned) return [];
-  const queryStr = `name:${cleaned}*`;
+  // ALWAYS quote the name value. An unquoted multi-word query ("Iono's
+  // Bellibolt" — most real card searches) is a Lucene syntax error upstream:
+  // pokemontcg.io returns 400 and the soft-fail turned every spaced search
+  // into silent zero hits (funnel-stress-test, 2026-07-11). Quoted prefix
+  // wildcards verified working upstream for single- AND multi-word queries;
+  // the sanitizer above already strips `"` so the value can't break out.
+  const queryStr = `name:"${cleaned}*"`;
 
   const url = `${POKEMON_TCG_API_BASE}?q=${encodeURIComponent(queryStr)}&pageSize=${limit}&orderBy=-set.releaseDate`;
   const response = await fetchWithRetry(
