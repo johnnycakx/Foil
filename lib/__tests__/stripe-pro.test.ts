@@ -8,7 +8,9 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { subscriptionTier, periodEndIso } from "../stripe-entitlement.ts";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { subscriptionTier, periodEndIso, cancelState } from "../stripe-entitlement.ts";
 import { PRO_PRICE_USD_CENTS, PRO_TRIAL_DAYS } from "../stripe.ts";
 
 test("subscriptionTier: trialing + active are Pro (a card-required trial IS the entitlement)", () => {
@@ -74,4 +76,66 @@ test("periodEndIso: falls back to the ITEM-level current_period_end (basil+ API 
 test("Foil Pro is priced $6/mo with a 30-day trial (the repurposed rail, not $14.99)", () => {
   assert.equal(PRO_PRICE_USD_CENTS, 600, "the price is $6.00, not the parked $14.99");
   assert.equal(PRO_TRIAL_DAYS, 30, "the trial is 30 days");
+});
+
+// ---------------------------------------------------------------------------
+// Scheduled-cancel state (2026-07-12). Stripe keeps a canceling subscription at
+// trialing/active until the period ends, so the ONLY signal is the flag. Before
+// this, /account told a canceled user they had a "next charge" coming — a false
+// claim about their money — and our own DB couldn't tell "will bill" from
+// "will end" (which is what made the +smoke live trial unverifiable from our
+// data on 2026-07-12).
+// ---------------------------------------------------------------------------
+
+type SubArg = Parameters<typeof cancelState>[0];
+
+test("cancelState: a scheduled cancel is flagged with its end date", () => {
+  const at = 1786000000;
+  const s = cancelState({ cancel_at_period_end: true, cancel_at: at } as unknown as SubArg);
+  assert.equal(s.cancelAtPeriodEnd, true);
+  assert.equal(s.cancelAt, new Date(at * 1000).toISOString());
+});
+
+test("cancelState: flagged with no cancel_at falls back to the period end", () => {
+  const at = 1786000000;
+  const s = cancelState({
+    cancel_at_period_end: true,
+    cancel_at: null,
+    items: { data: [{ current_period_end: at }] },
+  } as unknown as SubArg);
+  assert.equal(s.cancelAtPeriodEnd, true);
+  assert.equal(s.cancelAt, new Date(at * 1000).toISOString());
+});
+
+test("cancelState: a normal renewing sub is NOT flagged", () => {
+  const s = cancelState({
+    cancel_at_period_end: false,
+    cancel_at: null,
+    items: { data: [{ current_period_end: 1786000000 }] },
+  } as unknown as SubArg);
+  assert.equal(s.cancelAtPeriodEnd, false);
+  assert.equal(s.cancelAt, null);
+});
+
+test("a canceling sub is STILL Pro until the period ends (entitlement is not revoked early)", () => {
+  // The trap: cancel_at_period_end does NOT change status, so tier must stay pro.
+  assert.equal(subscriptionTier("trialing"), "pro");
+  assert.equal(subscriptionTier("active"), "pro");
+});
+
+test("/account never promises a next charge to a canceling user", () => {
+  const src = readFileSync(
+    join(new URL("../..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"), "app/account/page.tsx"),
+    "utf8",
+  );
+  // The "next charge" string must be reachable ONLY on the non-canceling branch.
+  assert.match(src, /ent\.cancelAtPeriodEnd \?/, "the page must branch on the cancel flag");
+  assert.match(src, /Pro ends/, "a canceling user is told when Pro ends");
+  assert.match(src, /won&apos;t be charged again/, "and told they won't be charged again");
+  const afterFlag = src.slice(src.indexOf("ent.cancelAtPeriodEnd ?"));
+  const cancelBranch = afterFlag.slice(0, afterFlag.indexOf(") : ("));
+  assert.ok(
+    !cancelBranch.includes("next charge"),
+    "the canceling branch must NEVER render 'next charge'",
+  );
 });

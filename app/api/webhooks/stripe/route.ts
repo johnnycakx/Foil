@@ -16,7 +16,7 @@ import type { NextRequest } from "next/server";
 import { createClient as createBareClient } from "@supabase/supabase-js";
 import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
-import { subscriptionTier, periodEndIso } from "@/lib/stripe-entitlement";
+import { subscriptionTier, periodEndIso, cancelState } from "@/lib/stripe-entitlement";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { trialAlreadyUsed } from "@/lib/stripe-trial";
 import { sendTransactionalEmail } from "@/lib/notifications/resend";
@@ -30,6 +30,10 @@ async function upsertFromSubscription(
 ) {
   const admin = supabaseAdmin();
   const tier = subscriptionTier(sub.status);
+  // Scheduled cancel: Stripe keeps the sub trialing/active and only sets the
+  // flag, so persist it or /account claims a "next charge" that will never
+  // happen (2026-07-12).
+  const { cancelAtPeriodEnd, cancelAt } = cancelState(sub);
 
   if (supabaseUserId) {
     // The email→tier bridge: every row carries its lowercased email so the
@@ -48,6 +52,8 @@ async function upsertFromSubscription(
         status: sub.status,
         tier,
         current_period_end: periodEndIso(sub),
+        cancel_at_period_end: cancelAtPeriodEnd,
+        cancel_at: cancelAt,
         ...(email ? { email } : {}),
       },
       { onConflict: "user_id" },
@@ -74,6 +80,8 @@ async function upsertFromSubscription(
       status: sub.status,
       tier,
       current_period_end: periodEndIso(sub),
+      cancel_at_period_end: cancelAtPeriodEnd,
+      cancel_at: cancelAt,
     })
     .eq("user_id", rec.user_id);
 }

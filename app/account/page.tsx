@@ -18,6 +18,12 @@ export default async function AccountPage({
   if (!user) redirect("/login");
 
   const ent = await getEntitlements(supabase, user.id);
+  const fmt = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" }) : null;
+  // A canceling sub ends at cancel_at (Stripe's own scheduled stop); fall back
+  // to the period end, which is the same moment when the flag is set.
+  const endsOn = fmt(ent.cancelAt ?? ent.periodEnd);
+  const nextCharge = fmt(ent.periodEnd);
   const isPro = ent.tier === "pro";
 
   return (
@@ -61,10 +67,24 @@ export default async function AccountPage({
           </p>
           {isPro ? (
             <p className="mt-2 text-sm text-zinc-500">
-              Daily deal drop + personal price watches
-              {ent.periodEnd
-                ? ` · next charge ${new Date(ent.periodEnd).toLocaleDateString("en-US", { dateStyle: "medium" })}`
-                : ""}
+              {/* Honest billing state (2026-07-12): a canceling user is still
+                  Pro until the period ends, but there is NO next charge — the
+                  old copy promised one, which was a false claim about money. */}
+              {ent.cancelAtPeriodEnd ? (
+                <>
+                  Daily deal drop + personal price watches
+                  {endsOn ? ` · Pro ends ${endsOn}` : ""}
+                  <br />
+                  <span className="text-zinc-600 dark:text-zinc-400">
+                    Canceled. You keep Pro until then, and you won&apos;t be charged again.
+                  </span>
+                </>
+              ) : (
+                <>
+                  Daily deal drop + personal price watches
+                  {nextCharge ? ` · next charge ${nextCharge}` : ""}
+                </>
+              )}
             </p>
           ) : (
             <p className="mt-2 text-sm text-zinc-500">
@@ -78,7 +98,7 @@ export default async function AccountPage({
                 type="submit"
                 className="w-full rounded-lg border border-zinc-300 px-4 py-3 text-sm font-medium transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
               >
-                Manage subscription
+                {ent.cancelAtPeriodEnd ? "Resume subscription" : "Manage subscription"}
               </button>
             </form>
           ) : (

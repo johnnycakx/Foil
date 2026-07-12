@@ -34,3 +34,23 @@ export function periodEndIso(sub: Stripe.Subscription): string | null {
   }
   return null;
 }
+
+/** Scheduled-cancel state (2026-07-12). A canceling subscription STAYS
+ *  `trialing`/`active` until its period ends — Stripe only flags it with
+ *  `cancel_at_period_end`. Without this, /account promises a "next charge" to
+ *  someone who already canceled. `cancel_at` is Stripe's own scheduled-end
+ *  timestamp; fall back to the period end, which is when it actually stops. */
+export function cancelState(sub: Stripe.Subscription): {
+  cancelAtPeriodEnd: boolean;
+  cancelAt: string | null;
+} {
+  const flagged = sub.cancel_at_period_end === true;
+  const raw = sub.cancel_at;
+  const cancelAt =
+    typeof raw === "number" && Number.isFinite(raw)
+      ? new Date(raw * 1000).toISOString()
+      : flagged
+        ? periodEndIso(sub)
+        : null;
+  return { cancelAtPeriodEnd: flagged, cancelAt };
+}

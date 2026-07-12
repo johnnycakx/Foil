@@ -12,6 +12,11 @@ export type Entitlements = {
   remainingFreeScans: number;  // Infinity for Pro
   rateLimited: boolean;        // true when a free user has no scans left today
   periodEnd: string | null;    // ISO timestamp for Pro; null for free
+  /** True when the user has ALREADY canceled and Pro just runs out the clock.
+   *  Surfaces so /account never promises a charge that will never happen. */
+  cancelAtPeriodEnd: boolean;
+  /** When Pro actually ends for a canceling user (ISO); null otherwise. */
+  cancelAt: string | null;
 };
 
 export async function getEntitlements(
@@ -19,7 +24,7 @@ export async function getEntitlements(
   userId: string,
 ): Promise<Entitlements> {
   const tier = await getTier(client, userId);
-  const periodEnd = await getCurrentPeriodEnd(client, userId);
+  const billing = await getBillingSchedule(client, userId);
 
   if (tier === PRO_TIER) {
     return {
@@ -27,7 +32,9 @@ export async function getEntitlements(
       scansToday: 0,
       remainingFreeScans: Number.POSITIVE_INFINITY,
       rateLimited: false,
-      periodEnd,
+      periodEnd: billing.periodEnd,
+      cancelAtPeriodEnd: billing.cancelAtPeriodEnd,
+      cancelAt: billing.cancelAt,
     };
   }
 
@@ -39,6 +46,8 @@ export async function getEntitlements(
     remainingFreeScans,
     rateLimited: remainingFreeScans === 0,
     periodEnd: null,
+    cancelAtPeriodEnd: false,
+    cancelAt: null,
   };
 }
 
@@ -108,14 +117,25 @@ export async function proTierEmails(client: Client): Promise<Set<string>> {
   return out;
 }
 
-async function getCurrentPeriodEnd(client: Client, userId: string): Promise<string | null> {
+async function getBillingSchedule(
+  client: Client,
+  userId: string,
+): Promise<{ periodEnd: string | null; cancelAtPeriodEnd: boolean; cancelAt: string | null }> {
   const { data } = await client
     .from("subscriptions")
-    .select("current_period_end")
+    .select("current_period_end, cancel_at_period_end, cancel_at")
     .eq("user_id", userId)
     .maybeSingle();
-  const rec = data as { current_period_end: string | null } | null;
-  return rec?.current_period_end ?? null;
+  const rec = data as {
+    current_period_end: string | null;
+    cancel_at_period_end: boolean | null;
+    cancel_at: string | null;
+  } | null;
+  return {
+    periodEnd: rec?.current_period_end ?? null,
+    cancelAtPeriodEnd: rec?.cancel_at_period_end === true,
+    cancelAt: rec?.cancel_at ?? null,
+  };
 }
 
 function utcDayBoundary(): string {
