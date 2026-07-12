@@ -255,7 +255,7 @@ already lifted before you point at it, drop it back down.
 - **Shape:** Gently rounded (12px / `rounded-xl`). Pills (`rounded-full`) are for
   badges, not buttons.
 - **Primary:** Navy fill, cream text, `padding: 14px 24px`, semibold. The workhorse
-  CTA ("Start tracking cards →", "Track 3 cards →").
+  CTA ("Start tracking cards →", "Fill a page →").
 - **Hover / Focus:** Fill swaps navy → coral, a −0.5/−2px lift, shadow grows to
   Lift, and a `ring-2 ring-foil-gold/40` blooms. Disabled state drops all of it and
   sits at 60% opacity. This is the system's signature motion moment.

@@ -88,7 +88,7 @@ export default async function AccountPage({
             </p>
           ) : (
             <p className="mt-2 text-sm text-zinc-500">
-              3 watches, checked once a day · the weekly digest
+              One binder page (9 cards), checked once a day · the weekly digest
             </p>
           )}
 

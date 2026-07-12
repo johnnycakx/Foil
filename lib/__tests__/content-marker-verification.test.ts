@@ -138,7 +138,7 @@ test("/deals renders the re-locked gate (Pro pitch + free catcher live)", { skip
   assert.equal(status, 200, "/deals must return 200");
   assert.match(
     body,
-    /Not ready\? Free gets you 3 watches and the weekly digest\./,
+    /Not ready\? Free fills a binder page \(9 cards\) and gets the weekly digest\./,
     "the gate's locked free-catcher line must render",
   );
   assert.match(body, /Start your 30-day free trial/, "the gate's Pro trial CTA must render");

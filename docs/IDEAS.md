@@ -20,6 +20,17 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 
 ---
 date: 2026-07-12
+category: monetization
+status: shipped
+---
+## free-tier-is-one-binder-page — the entitlement now matches the metaphor (ADR-116)
+
+Free went 3 watches → one full binder page (9 sleeves, still daily); Pro = more pages + hourly. Rationale: the cycle-2 /start scene made the mismatch visible — a nine-pocket page where six pockets were a locked upsell wall. "Free fills a page. Pro fills the binder." Accepted cost: 3× worst-case free scan volume (noise at current counts; revisit trigger in the ADR). Watch the WTP signal: does a fuller free binder lift or cannibalize trial starts? The ads-run scoreboard (V8) is where that answer shows up.
+
+**Context:** John's product decision, cycle-3 brief 2026-07-12, shipped same day on the start-binder-delight branch.
+
+---
+date: 2026-07-12
 category: infra
 status: captured
 ---
