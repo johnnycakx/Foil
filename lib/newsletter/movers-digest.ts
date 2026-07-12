@@ -154,7 +154,9 @@ export function buildMoversDigestParts(input: MoversDigestInput): MoversDigestPa
   body.push("");
   body.push(`Want the quick reference I built for pricing any card by condition? Grab the free [Pokémon Card Pricing Cheat Sheet](${site}${LEAD_MAGNET_PATH}).`);
   body.push("");
-  body.push(`Browse links are eBay affiliate searches. Foil is free, and when you buy through a link eBay pays us a commission at no cost to you. It does not change which cards we surface, we rank by the move, not the payout.`);
+  // Two-voice rule (ADR-113): the disclosure is product boilerplate, so Foil
+  // speaks; John's editorial "I" lives in the issue body above.
+  body.push(`Browse links are eBay affiliate searches. Foil is free, and when you buy through a link eBay pays Foil a commission at no cost to you. It does not change which cards Foil surfaces. It ranks by the move, not the payout.`);
   body.push("");
   body.push(`Built by John Craig.`);
 

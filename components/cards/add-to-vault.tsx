@@ -80,7 +80,7 @@ export function AddToVault({
         availableVariantKeys={availableVariantKeys}
       />
       <p className="mt-3 text-[11px] uppercase tracking-wider text-foil-cream/60">
-        One email per drop · No spam · Unsubscribe any time from any email we send.
+        One email per drop · No spam · Unsubscribe any time from any email Foil sends.
       </p>
     </div>
   );

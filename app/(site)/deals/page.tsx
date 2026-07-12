@@ -96,7 +96,7 @@ export default async function DealsPage() {
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-foil-cream/60">
           Cards going for less than they usually sell for. Each is a candidate worth a look, not a
-          guarantee. Every figure is a real recent sold average, and we only show a price when
+          guarantee. Every figure is a real recent sold average, and Foil only shows a price when
           enough copies actually sold, so thin or noisy cards never make the list.
         </p>
         {temperature ? (
@@ -145,7 +145,7 @@ export default async function DealsPage() {
         </p>
         <p className="mt-2 text-[13px] leading-relaxed text-foil-cream/70">
           Down versus a card&apos;s 30-day average means it has cooled off lately, which can be a buying
-          window or a sign demand is softening. We surface the move and the numbers behind it. The call is
+          window or a sign demand is softening. Foil surfaces the move and the numbers behind it. The call is
           yours. Every row shows its recent-sale count; built from recent sold data, refreshed daily.
         </p>
       </aside>
@@ -154,9 +154,9 @@ export default async function DealsPage() {
       <section id="below-sold" className="mt-14 scroll-mt-24">
         <h2 className="font-display text-xl font-bold text-foil-cream">Below sold right now</h2>
         <p className="mt-1 text-sm text-foil-cream/60">
-          Individual live listings priced under their condition-matched recent sold price. We check{" "}
-          {trackedCount} cards and only list one when we are confident the listing matches the sold data,
-          on the same condition and currency. Fewer deals we trust beats a long list we do not.
+          Individual live listings priced under their condition-matched recent sold price. Foil checks{" "}
+          {trackedCount} cards and only lists one when it is confident the listing matches the sold data,
+          on the same condition and currency. Fewer deals Foil trusts beats a long list it does not.
         </p>
         <div className="mt-5">
           <DealsBoard deals={deals} />
@@ -165,14 +165,14 @@ export default async function DealsPage() {
 
       {/* Affiliate disclosure (copy doc; FTC + EPN requirement). */}
       <p className="mx-auto mt-4 max-w-xl rounded-xl border border-foil-cream/12 bg-foil-night-2 px-4 py-3 text-center text-xs text-foil-cream/60">
-        Foil is free. When you buy through a link on Foil, eBay pays us a commission.
-        It costs you nothing, and it does not change which deal we show you. We rank by
+        Foil is free. When you buy through a link on Foil, eBay pays Foil a commission.
+        It costs you nothing, and it does not change which deal Foil shows you. Foil ranks by
         the best deal, not the biggest payout.{" "}
         <Link
           href="/pricing-methodology"
           className="text-foil-cream underline decoration-foil-cream/25 underline-offset-4 transition hover:decoration-foil-accent"
         >
-          See how we price.
+          See how Foil prices.
         </Link>
       </p>
 

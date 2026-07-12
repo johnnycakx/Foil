@@ -670,7 +670,7 @@ function SampleAlert() {
             <li className="flex items-start gap-2.5">
               <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foil-accent" />
               Real listings only. Seller, condition, and sold history checked
-              before we bother you.
+              before Foil bothers you.
             </li>
             <li className="flex items-start gap-2.5">
               <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foil-accent" />
@@ -741,7 +741,7 @@ function RequestCard() {
       <div className="mx-auto w-full max-w-3xl px-5 py-14 sm:px-8">
         <div className="rounded-2xl border border-foil-cream/12 bg-foil-night-2/70 p-7 sm:p-8">
           <h2 className="font-display text-2xl font-semibold text-foil-cream sm:text-3xl">
-            Chasing a card we don&apos;t have data on yet?
+            Chasing a card Foil doesn&apos;t have data on yet?
           </h2>
           <p className="mt-3 max-w-xl text-base leading-relaxed text-foil-cream/70">
             Post it at{" "}
@@ -751,7 +751,7 @@ function RequestCard() {
             >
               @FoilTCG
             </a>{" "}
-            on X with a pic of the card and we&apos;ll move it to the front of
+            on X with a pic of the card and Foil moves it to the front of
             the queue.
           </p>
           <a

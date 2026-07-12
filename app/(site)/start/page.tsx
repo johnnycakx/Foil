@@ -22,7 +22,7 @@ export const revalidate = 86400;
 
 const TITLE = "Start tracking cards — Foil";
 const DESCRIPTION =
-  "Tell me the Pokémon TCG cards you want. We email when each one drops to your target price.";
+  "Tell Foil the Pokémon TCG cards you want. It emails you when each one drops to your target price.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -68,11 +68,11 @@ export default function StartPage() {
           Get started
         </p>
         <h1 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-cream sm:text-4xl md:text-5xl">
-          Tell me what cards you want.
+          Tell Foil what cards you want.
         </h1>
         <p className="mt-3 text-base text-foil-cream/70 sm:text-lg">
-          I&apos;ll email you the moment each one drops to a price worth buying. Track
-          up to 50 at once.
+          Foil emails you when each one drops to a price worth buying. Free gets you 3
+          watches, checked daily. Pro watches every card you add, checked hourly.
         </p>
       </header>
 
@@ -105,7 +105,7 @@ export default function StartPage() {
         >
           policy
         </a>
-        . Your email is used for the alerts and (optionally) the weekly newsletter — never sold, shared, or used for AI training.
+        . Your email is used for the alerts and (optionally) the weekly newsletter. Never sold, shared, or used for AI training.
       </p>
     </main>
   );

@@ -48,13 +48,17 @@ export default async function AccountPage({
       <section className="mx-auto w-full max-w-md flex-1 flex flex-col gap-4">
         {params.checkout === "success" && (
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
-            Subscription started — welcome to Foil Pro. It may take a moment for Stripe to confirm; refresh if your tier still shows Free.
+            Subscription started. Welcome to Foil Pro. It may take a moment for Stripe to confirm; refresh if your tier still shows Free.
           </div>
         )}
 
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
           <p className="text-xs uppercase tracking-wide text-zinc-500">Current tier</p>
-          <p className="mt-1 text-3xl font-semibold">{isPro ? "Pro" : "Free"}</p>
+          {/* Explicit ink: the site forces a navy foreground, which vanishes
+              on this card's dark-mode zinc surface. */}
+          <p className="mt-1 text-3xl font-semibold text-zinc-900 dark:text-zinc-100">
+            {isPro ? "Pro" : "Free"}
+          </p>
           {isPro ? (
             <p className="mt-2 text-sm text-zinc-500">
               Daily deal drop + personal price watches
@@ -80,7 +84,7 @@ export default async function AccountPage({
           ) : (
             <form action={createCheckoutSession} className="mt-5">
               <div className="mb-3 flex items-baseline gap-2">
-                <span className="text-2xl font-semibold tabular-nums">$6</span>
+                <span className="text-2xl font-semibold tabular-nums text-zinc-900 dark:text-zinc-100">$6</span>
                 <span className="text-sm text-zinc-500">/ month</span>
               </div>
               <button

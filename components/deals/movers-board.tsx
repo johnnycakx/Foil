@@ -172,7 +172,7 @@ export function MoversBoard({ movers }: { movers: MarketMovers }) {
       <div className="rounded-2xl border border-foil-cream/12 bg-foil-night-2 p-8 text-center shadow-sm shadow-foil-navy/5">
         <p className="text-foil-cream">The market is quiet this week.</p>
         <p className="mt-2 text-sm text-foil-cream/60">
-          We only flag a card when its recent average has moved enough to matter. Nothing cleared the bar
+          Foil only flags a card when its recent average has moved enough to matter. Nothing cleared the bar
           right now. Check back tomorrow, or get the weekly digest by email below.
         </p>
       </div>

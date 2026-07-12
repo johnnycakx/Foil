@@ -162,11 +162,12 @@ export default async function VaultPage({
           <p className="text-xs font-medium uppercase tracking-widest text-foil-accent">Your vault</p>
           <h1 className="font-display mt-1 text-4xl font-bold tracking-[-0.02em] text-foil-cream sm:text-5xl">
             {rows.length === 0
-              ? "Your vault is empty — for now."
+              ? "Your vault is empty, for now."
               : `You're watching ${rows.length} ${rows.length === 1 ? "card" : "cards"}`}
           </h1>
           <p className="mt-3 max-w-xl text-base text-foil-cream/70 sm:text-lg">
-            We check eBay every hour and email you when a card genuinely hits your number.
+            Foil checks your cards once a day on the free plan, every hour on Pro, and emails you
+            when one genuinely hits your number.
           </p>
         </div>
         {rows.length > 0 && (

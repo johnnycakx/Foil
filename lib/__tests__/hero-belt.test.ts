@@ -106,7 +106,8 @@ test("request widget: the site-to-X intake loop — copy, intent link, voice", (
   const src = read("app/(site)/page.tsx");
   const block = src.slice(src.indexOf("function RequestCard"), src.indexOf("function NewsletterBand"));
   assert.ok(block.length > 0, "RequestCard must exist");
-  assert.match(block, /Chasing a card we don(&apos;|')t have data on yet\?/);
+  // Two-voice rule (ADR-113): Foil-the-agent speaks on product surfaces.
+  assert.match(block, /Chasing a card Foil doesn(&apos;|')t have data on yet\?/);
   assert.match(block, /front of\s+the queue/, "the queue promise is verbatim (it binds the human contract)");
   assert.match(src, /https:\/\/x\.com\/intent\/post\?text=/, "one-tap prefilled composer");
   assert.match(block, /x\.com\/FoilTCG/, "the plain handle link for manual mentions");
