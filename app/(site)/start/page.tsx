@@ -1,28 +1,28 @@
-// /start — multi-card onboarding (Task #20 / Session 38).
+// /start — THE DESK (start-binder-delight, 2026-07-12).
 //
-// Twitter-CTA target: a single page where a visitor types a few card names,
-// each becomes a chip with an optional price target, picks newsletter opt-in,
-// and submits — N watchlist rows + Beehiiv subscriber in one shot. Replaces
-// the per-card "search for the card → land on its page → fill the watchlist
-// form" friction with a single multi-add flow.
+// Was: a multi-add form (Task #20). Now: a place. A nine-pocket binder page
+// open on a lamp-lit desk, where filling a pocket IS adding a watch. The
+// interaction taste anchor is baothiento.com (walked live 2026-07-12) —
+// principles borrowed (dormant-until-attention, autonomous four-beat life, the
+// cursor as a real tool, demoted in-world inputs, quiet delight), never assets.
 //
-// Server Component shell + Client component for the interactive form. The
-// shell provides the brand chrome via (site) layout + passes the set of
-// catalogued card IDs to the client so the search results know which cards
-// are actually trackable today (vs "we'll add it soon — drop your email
-// for newsletter and we'll let you know" for non-catalogued hits).
+// Server shell: assembles the REAL deck (live market_movers + the committed
+// sold snapshot, soft-failing) and the viewer's tier, then hands them to the
+// client scene. Dynamic because the deck is live data and the tier is per-user.
 
 import type { Metadata } from "next";
 import { CARD_CATALOG } from "@/lib/cards/catalog";
-import { StartPageForm } from "@/components/start-page-form";
+import { BinderDesk } from "@/components/start/binder-desk";
 import { SakuraAmbience } from "@/components/sakura-ambience";
+import { getBinderDeck } from "@/lib/start/binder-data";
+import { createClient } from "@/lib/supabase/server";
+import { getTier } from "@/lib/entitlements";
 
-export const dynamic = "force-static";
-export const revalidate = 86400;
+export const dynamic = "force-dynamic";
 
-const TITLE = "Start tracking cards — Foil";
+const TITLE = "Fill your binder — Foil";
 const DESCRIPTION =
-  "Tell Foil the Pokémon TCG cards you want. It emails you when each one drops to your target price.";
+  "Fill a binder page with the cards you're chasing. Foil watches the market and emails you when one drops to your price.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -47,65 +47,71 @@ export const metadata: Metadata = {
   },
 };
 
-export default function StartPage() {
-  // Pass the catalog's ID set to the client so the search UI can mark
-  // which hits are actually watchable today. Plain string[] over the
-  // wire — the client builds the Set itself for O(1) lookup.
+export default async function StartPage() {
   const cataloguedIds = CARD_CATALOG.map((e) => e.pokemonTcgId);
 
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Signed-in coherence (stranger-run defect): a signed-in collector never
+  // retypes their address, and Pro is told the truth about its own cadence.
+  const [deck, tier] = await Promise.all([
+    getBinderDeck(),
+    user ? getTier(supabase, user.id) : Promise.resolve("free" as const),
+  ]);
+
   return (
-    // Night register (blackout-brand Workstream D) — the /start funnel entry
-    // shares the charcoal surface with its sibling night pages (/deals, the
-    // vault); the chrome flips via body:has([data-tone="night"]).
-    <main data-tone="night" className="relative mx-auto w-full max-w-3xl bg-foil-night px-5 py-12 text-foil-cream sm:px-8 sm:py-16">
-      {/* Quiet far-layer hanami over the header band only (matches /deals + the
-          vault) — atmosphere above the copy, never beside the form inputs. */}
+    <main
+      data-tone="night"
+      className="relative mx-auto w-full max-w-3xl bg-foil-night px-5 py-12 text-foil-cream sm:px-8 sm:py-16"
+    >
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[180px] overflow-hidden">
         <SakuraAmbience mode="header" />
       </div>
-      <header className="relative mb-10 text-center sm:text-left">
-        <p className="text-xs font-medium uppercase tracking-widest text-foil-accent">
-          Get started
-        </p>
+
+      <header className="relative mb-8 text-center sm:text-left">
+        <p className="text-xs font-medium uppercase tracking-widest text-foil-accent">Your binder</p>
         <h1 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-cream sm:text-4xl md:text-5xl">
-          Tell Foil what cards you want.
+          Fill a page with what you&apos;re chasing.
         </h1>
         <p className="mt-3 text-base text-foil-cream/70 sm:text-lg">
-          Foil emails you when each one drops to a price worth buying. Free gets you 3
-          watches, checked daily. Pro watches every card you add, checked hourly.
+          Foil watches every card you sleeve and emails you when one drops to a price worth buying.
+          {tier === "pro" ? " Pro checks yours every hour." : " Free checks yours once a day. Pro checks hourly."}
         </p>
       </header>
 
-      <StartPageForm cataloguedIds={cataloguedIds} />
+      <BinderDesk
+        deck={deck}
+        cataloguedIds={cataloguedIds}
+        signedInEmail={user?.email ?? null}
+        isPro={tier === "pro"}
+      />
 
-      {/* No-JS fallback (fable-design-overhaul §2 / audit 🟡): the form above
-          is a client component; without JavaScript a visitor still gets a
-          working path — the newsletter form is a plain POST away, and email
-          works everywhere. */}
+      {/* The scene is enhancement. With JavaScript off, the product still works:
+          the catalog is browsable and every card page carries its own watch
+          form (which is a plain server-action POST). */}
       <noscript>
-        <p className="mt-6 rounded-xl border border-foil-cream/15 bg-foil-night-2 p-4 text-sm text-foil-cream">
-          This form needs JavaScript. Without it, you can still get the weekly
-          deals email at{" "}
-          <a href="/newsletter" className="underline underline-offset-4">
-            foiltcg.com/newsletter
-          </a>{" "}
-          — or email{" "}
-          <a href="mailto:john.c.craig24@gmail.com" className="underline underline-offset-4">
-            john.c.craig24@gmail.com
-          </a>{" "}
-          with the cards you want watched and we&apos;ll set it up by hand.
-        </p>
+        <div className="mt-8 rounded-xl border border-foil-cream/15 bg-foil-night-2 p-5 text-sm text-foil-cream/80">
+          <p className="font-medium text-foil-cream">The binder needs JavaScript to open.</p>
+          <p className="mt-1">
+            You can still set a watch without it:{" "}
+            <a href="/cards" className="underline underline-offset-4">
+              browse the catalog
+            </a>{" "}
+            and use the watch form on any card page.
+          </p>
+        </div>
       </noscript>
 
-      <p className="mt-10 text-center text-xs text-foil-cream/60">
+      <p className="mt-8 text-center text-xs text-foil-cream/50">
         Privacy is in the{" "}
-        <a
-          href="/legal/privacy"
-          className="underline decoration-foil-cream/25 underline-offset-4 transition hover:text-foil-cream hover:decoration-foil-accent"
-        >
+        <a href="/legal/privacy" className="underline underline-offset-4">
           policy
         </a>
-        . Your email is used for the alerts and (optionally) the weekly newsletter. Never sold, shared, or used for AI training.
+        . Your email is used for the alerts and (optionally) the weekly digest. Never sold, shared, or used for AI
+        training.
       </p>
     </main>
   );

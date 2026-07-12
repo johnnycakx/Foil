@@ -67,6 +67,10 @@ docs/transcripts/
 # X-bot dry-run drafts (local review artifacts; not source)
 docs/social-drafts/
 
+# Obsidian vault UI config (docs/ is opened as a vault; its workspace/layout
+# state is per-machine and shouldn't pollute the repo).
+docs/.obsidian/
+
 # Cowork goal handoff: NEXT-GOAL.md is written by the Cowork strategy session
 # and read by Claude Code as the goal instruction. Transient, never committed.
 docs/goals/

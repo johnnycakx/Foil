@@ -1,3 +1,5 @@
+> 🗄️ **ARCHIVED / SUPERSEDED (2026-07-06)** — historical record, kept per the never-delete rule. Not current state. See [HOME.md](HOME.md) · index: [archive/README.md](archive/README.md).
+
 # Brand Logo Concepts
 
 **Date:** 2026-06-02

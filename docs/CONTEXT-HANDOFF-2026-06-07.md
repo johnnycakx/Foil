@@ -1,3 +1,5 @@
+> 🗄️ **ARCHIVED / SUPERSEDED (2026-07-06)** — historical record, kept per the never-delete rule. Not current state. See [HOME.md](HOME.md) · index: [archive/README.md](archive/README.md).
+
 # Cowork session handoff — 2026-06-07 (READ THIS FIRST)
 
 Replaces CONTEXT-HANDOFF-2026-06-05.md. Captures end-of-day state after the architecture-pivot session of 2026-06-06/07. New Claude Code / Cowork sessions: read this, then the docs listed at the bottom.

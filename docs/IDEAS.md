@@ -41,6 +41,39 @@ HF scan (2026-07-12) found card-DETECTION models (Matthieu68857/pokemon-cards-de
 **Context:** John's "did we check Hugging Face" question mid-close-out; verdict = no build-time cut, one scanner-era note.
 
 ---
+date: 2026-07-12
+category: product
+status: captured
+---
+## booster-pack-rip — the drag-to-rip gesture on /start (the missing half of the joy)
+
+The binder desk shipped (ADR-115) but the BOOSTER PACK did not. The spec's intent: a sealed pack sits on the desk and a drag gesture RIPS the foil wrapper (the most dopamine-encoded gesture in the hobby), dealing a hand of today's genuinely-hot grails to pick from. Real cards from the live engine, honest label, one pack per visit, re-seals on reload. This is the single highest-value remaining piece of delight on the page and the reason the joy rubric scored 4 and not 5.
+
+**Context:** 2026-07-12 start-binder-delight closure. Deferred deliberately rather than crammed in at the end of a long session.
+
+---
+date: 2026-07-12
+category: product
+status: captured
+---
+## vault-inherits-the-desk — the binder thickens over months (the retention play)
+
+The /w/[token] vault is still a list; the desk scene stops at /start. The retention bet: the vault BECOMES the binder — pages accumulate, the binder visibly thickens as a collector tends it over months, and the shimmer keeps finding the holos. Named as deferred in the binder spec so nobody scope-creeps it; capture it here so it survives.
+
+**Context:** 2026-07-12 start-binder-delight (PM discipline section named it deferred-on-purpose).
+
+---
+date: 2026-07-12
+category: growth
+status: captured
+---
+## start-funnel-metrics — instrument time-to-first-watch, add-completion, adds-per-session
+
+The binder spec asked for these three and the build did not deliver them. Without them the "is the scene actually more addictive than the form?" question is unanswerable — we'd be trusting taste alone on the page whose whole job is making the free moment memorable enough to share.
+
+**Context:** 2026-07-12 start-binder-delight closure (named as a gap in the results memo).
+
+---
 date: 2026-07-11
 category: product
 status: captured

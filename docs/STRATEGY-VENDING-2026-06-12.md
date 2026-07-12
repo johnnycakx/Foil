@@ -1,3 +1,5 @@
+> 🗄️ **ARCHIVED / SUPERSEDED (2026-07-06)** — historical record, kept per the never-delete rule. Not current state. See [HOME.md](HOME.md) · index: [archive/README.md](archive/README.md).
+
 # Strategy — FoilTCG vending route + deal-finder integration (2026-06-12)
 
 **Status:** Adopted direction (John decision 2026-06-12): vending proceeds under the **FoilTCG brand**, vending surfaces added to **foiltcg.com**, target footprint **5+ machines**. LLC formed. John enrolled in the "Trading Card Blueprint" course (Gage Kushner ecosystem — see the 2026-06-09 IDEAS diligence entry; proceed-with-eyes-open).

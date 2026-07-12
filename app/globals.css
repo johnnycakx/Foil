@@ -384,3 +384,384 @@ body {
     box-shadow: 0 10px 40px -12px rgba(217, 138, 160, 0.35);
   }
 }
+
+/* ---------------------------------------------------------------------------
+   THE DESK — /start as a place (start-binder-delight, 2026-07-12).
+
+   Principles walked live at baothiento.com (2026-07-12) and translated, never
+   copied: a scene that is DORMANT until you lean in, life that runs its own
+   four-beat loop (idle, notice, react, settle), and delight that stays quiet.
+   The shimmer is ours alone: a seated card catching the lamp exactly like a
+   real holo in a real binder. We are literally named Foil.
+   --------------------------------------------------------------------------- */
+
+.desk-scene {
+  position: relative;
+}
+
+/* The lamp: dim while the desk is dormant, warm when you lean in. The
+   muted-until-awake move in our register (his pond saturates; our lamp warms). */
+.desk-lamp {
+  position: absolute;
+  left: 50%;
+  top: -12%;
+  width: 120%;
+  height: 70%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: radial-gradient(
+    60% 55% at 50% 0%,
+    rgba(217, 138, 160, 0.16),
+    rgba(217, 138, 160, 0.05) 45%,
+    transparent 70%
+  );
+  opacity: 0.35;
+  transition: opacity 900ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+[data-awake="true"] .desk-lamp {
+  opacity: 1;
+}
+
+/* --- the nine-pocket page ------------------------------------------------- */
+
+.pocket {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sleeve {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 245 / 342;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(248, 245, 240, 0.03);
+  box-shadow: inset 0 1px 0 rgba(248, 245, 240, 0.06), inset 0 -8px 18px -12px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(248, 245, 240, 0.1);
+}
+
+.sleeve-card {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* SETTLE: the card nestles into the pocket. The tactile click of a card meeting
+   plastic, expressed in motion, no audio. */
+.sleeve-seating {
+  animation: sleeve-settle 620ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes sleeve-settle {
+  0% {
+    transform: translateY(-14%) rotate(-2.4deg) scale(1.06);
+    opacity: 0;
+  }
+  55% {
+    transform: translateY(1.5%) rotate(0.6deg) scale(0.995);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* THE SHIMMER: the light sweeps the binder and the holos answer. Staggered so
+   the page never pulses in unison (that reads as a loading bar, not a binder).
+   Slow and rare on purpose: quiet delight. */
+.sleeve-shimmer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.34) 48%,
+    rgba(217, 138, 160, 0.22) 53%,
+    transparent 62%
+  );
+  transform: translateX(-120%);
+  animation: sleeve-shimmer 9s ease-in-out infinite;
+}
+.pocket:nth-child(2) .sleeve-shimmer { animation-delay: 1.4s; }
+.pocket:nth-child(3) .sleeve-shimmer { animation-delay: 3.1s; }
+.pocket:nth-child(4) .sleeve-shimmer { animation-delay: 2.2s; }
+.pocket:nth-child(5) .sleeve-shimmer { animation-delay: 4.6s; }
+.pocket:nth-child(6) .sleeve-shimmer { animation-delay: 0.7s; }
+@keyframes sleeve-shimmer {
+  0%, 62% { transform: translateX(-120%); }
+  76% { transform: translateX(120%); }
+  100% { transform: translateX(120%); }
+}
+
+.sleeve-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  border-radius: 999px;
+  color: rgba(248, 245, 240, 0.85);
+  background: rgba(15, 15, 17, 0.55);
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+.pocket-filled:hover .sleeve-remove,
+.sleeve-remove:focus-visible {
+  opacity: 1;
+}
+
+/* An empty sleeve whispers the ask. Every state stays in-world. */
+.sleeve-empty {
+  cursor: pointer;
+  border-style: dashed;
+  border-color: rgba(248, 245, 240, 0.16);
+  transition: border-color 200ms ease, background 200ms ease, transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.sleeve-empty:hover {
+  border-color: rgba(217, 138, 160, 0.55);
+  background: rgba(217, 138, 160, 0.06);
+  transform: translateY(-2px);
+}
+.sleeve-empty-copy {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(248, 245, 240, 0.4);
+}
+
+/* The free cap as FURNITURE: a Pro sleeve you can see, not an error you hit. */
+.sleeve-locked {
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(248, 245, 240, 0.03),
+    rgba(248, 245, 240, 0.03) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+  transition: border-color 200ms ease;
+}
+.sleeve-locked:hover {
+  border-color: rgba(217, 138, 160, 0.5);
+}
+.sleeve-locked-mark {
+  color: rgba(217, 138, 160, 0.75);
+  font-size: 14px;
+}
+.sleeve-locked-copy {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(248, 245, 240, 0.38);
+}
+
+/* --- the price tag: pencil on paper, knotted to the card ------------------ */
+
+.tag {
+  position: relative;
+  display: block;
+}
+.tag-string {
+  position: absolute;
+  left: 8px;
+  top: -5px;
+  width: 1px;
+  height: 6px;
+  background: rgba(248, 245, 240, 0.25);
+}
+.tag-input {
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid rgba(248, 245, 240, 0.14);
+  background: rgba(248, 245, 240, 0.9);
+  color: #2a2118;
+  padding: 3px 6px;
+  font-size: 11px;
+  font-style: italic;
+  outline: none;
+  transform: rotate(-0.6deg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+.tag-input::placeholder {
+  color: #6b5f52;
+  font-style: italic;
+}
+.tag-input:focus {
+  border-color: rgba(217, 138, 160, 0.8);
+  transform: rotate(0deg);
+}
+.tag-read {
+  margin-top: 2px;
+  font-size: 10px;
+  font-style: italic;
+  color: rgba(248, 245, 240, 0.42);
+}
+
+/* --- the fan: real art in your hand, never a dropdown --------------------- */
+
+.fan-wrap {
+  margin-top: 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(248, 245, 240, 0.12);
+  background: rgba(20, 20, 23, 0.72);
+  padding: 16px;
+}
+.fan {
+  display: flex;
+  justify-content: center;
+  /* ONE arc — a hand of cards. Wrapping to a second row broke the illusion
+     instantly (caught on first render). */
+  flex-wrap: nowrap;
+  gap: 0;
+  padding: 8px 0 4px;
+}
+.fan-card {
+  width: 88px;
+  margin-left: -18px;
+  transform: rotate(calc((var(--i) - 5) * 1.6deg));
+  transform-origin: 50% 110%;
+  transition: transform 260ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.fan-card:first-child {
+  margin-left: 0;
+}
+/* NOTICE: the fan parts around your hand, like fingers walking a binder page. */
+.fan-card:hover,
+.fan-card:focus-within {
+  transform: translateY(-16px) rotate(0deg) scale(1.06);
+  z-index: 5;
+}
+.fan-card:hover + .fan-card,
+.fan-card:focus-within + .fan-card {
+  transform: translateX(12px) rotate(calc((var(--i) - 5) * 1.6deg));
+}
+.fan-card:has(+ .fan-card:hover),
+.fan-card:has(+ .fan-card:focus-within) {
+  transform: translateX(-12px) rotate(calc((var(--i) - 5) * 1.6deg));
+}
+.fan-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+.fan-art {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  box-shadow: 0 8px 22px -10px rgba(0, 0, 0, 0.8);
+}
+.fan-meta {
+  display: block;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  padding-top: 6px;
+}
+.fan-card:hover .fan-meta,
+.fan-card:focus-within .fan-meta {
+  opacity: 1;
+}
+.fan-name {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(248, 245, 240, 0.95);
+}
+.fan-sold {
+  display: block;
+  font-size: 10px;
+  color: rgba(248, 245, 240, 0.6);
+}
+
+/* --- the sticky note: where should Foil write you? ------------------------ */
+
+.sticky-note {
+  max-width: 26rem;
+  margin-inline: auto;
+  border-radius: 4px;
+  padding: 16px 18px 14px;
+  background: linear-gradient(180deg, #f6eec4 0%, #f2e6ad 100%);
+  color: #3a3222;
+  transform: rotate(-0.5deg);
+  box-shadow: 0 12px 30px -14px rgba(0, 0, 0, 0.7);
+}
+.note-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.note-input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid rgba(58, 50, 34, 0.35);
+  background: transparent;
+  padding: 4px 2px;
+  font-size: 15px;
+  color: #2a2418;
+  outline: none;
+}
+.note-input::placeholder {
+  color: rgba(58, 50, 34, 0.45);
+}
+.note-input:focus {
+  border-bottom-color: #9a6f7d;
+}
+.note-sub {
+  margin-top: 6px;
+  font-size: 11px;
+  color: rgba(58, 50, 34, 0.7);
+}
+.note-check {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-top: 10px;
+  font-size: 11px;
+  color: rgba(58, 50, 34, 0.85);
+}
+
+/* --- honest degradation: the scene is enhancement, never the product ------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .sleeve-seating,
+  .sleeve-shimmer {
+    animation: none;
+  }
+  .sleeve-shimmer {
+    opacity: 0;
+  }
+  .desk-lamp {
+    transition: none;
+    opacity: 1;
+  }
+  .fan-card,
+  .sleeve-empty {
+    transition: none;
+    transform: none;
+  }
+  .fan-card:hover,
+  .fan-card:focus-within {
+    transform: none;
+    outline: 2px solid rgba(217, 138, 160, 0.8);
+  }
+  .fan-card:hover + .fan-card,
+  .fan-card:has(+ .fan-card:hover) {
+    transform: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .fan-card {
+    width: 68px;
+    margin-left: -14px;
+  }
+}

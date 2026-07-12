@@ -177,7 +177,7 @@ test("vault link email: welcome + recovery subjects, one link, private-link warn
 test("the link is distributed everywhere (structural): /api/start response, /start screen, card form, alert email", () => {
   assert.match(read("app/api/start/route.ts"), /vault_url:/);
   assert.match(read("app/api/start/route.ts"), /sendVaultLinkEmail\(email, "welcome"\)/);
-  assert.match(read("components/start-page-form.tsx"), /Open your vault/);
+  assert.match(read("components/start/binder-desk.tsx"), /Open your vault/);
   assert.match(read("app/actions/create-watchlist.ts"), /vaultUrl: isFirstWatch \? buildVaultUrl/);
   assert.match(read("components/cards/watchlist-form.tsx"), /Open your vault/);
   assert.match(read("lib/wishlist/scan-batch.ts"), /manageUrl: buildVaultUrl/);
@@ -195,7 +195,7 @@ test("HIGH fix: the inline vault link is returned ONLY for a first-watch (no pre
   assert.match(actionSrc, /vaultUrl: isFirstWatch \? buildVaultUrl\(parsed\.value\.email\) : null/);
   // The success screens fall back to "check your inbox" copy.
   assert.match(read("components/cards/watchlist-form.tsx"), /vaultLinkEmailed/);
-  assert.match(read("components/start-page-form.tsx"), /vaultLinkEmailed/);
+  assert.match(read("components/start/binder-desk.tsx"), /vaultLinkEmailed/);
 });
 
 test("MEDIUM fix: complaint is an ABSORBING pause state — escalates over an existing vault/unsubscribe pause", () => {
@@ -248,5 +248,5 @@ test("binder doctrine (structural): pocket grid, page-turn pagination, one motio
 
 test("add-in-place uses the SHARED typeahead — /start and the vault import the same component (no fork)", () => {
   assert.match(read("components/vault/vault-add-card.tsx"), /from "@\/components\/cards\/card-typeahead"/);
-  assert.match(read("components/start-page-form.tsx"), /from "@\/components\/cards\/card-typeahead"/);
+  assert.match(read("components/start/binder-desk.tsx"), /from "@\/components\/cards\/card-typeahead"/);
 });

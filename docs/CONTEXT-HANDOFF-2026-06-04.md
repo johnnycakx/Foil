@@ -1,3 +1,5 @@
+> 🗄️ **ARCHIVED / SUPERSEDED (2026-07-06)** — historical record, kept per the never-delete rule. Not current state. See [HOME.md](HOME.md) · index: [archive/README.md](archive/README.md).
+
 # Cowork strategy session handoff — 2026-06-04
 
 Read after CONTEXT-HANDOFF-2026-06-02.md. Captures the direction set in the 2026-06-04 Cowork strategy session. Feature-level ROADMAP / ADR / SESSION-LOG updates are written by each Claude Code goal as it runs. This doc captures the cross-cutting strategy no single goal owns.

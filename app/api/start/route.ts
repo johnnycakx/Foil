@@ -48,38 +48,14 @@ import {
 } from "@/lib/start/guards";
 import { buildVaultUrl } from "@/lib/vault-token";
 import { sendVaultLinkEmail } from "@/lib/wishlist/vault-email";
+import { cardSchema, startSchema } from "@/lib/start/wire";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const cardSchema = z.object({
-  pokemon_tcg_id: z.string().min(1).max(40),
-  name: z.string().min(1).max(120),
-  set_name: z.string().min(1).max(120),
-  set_id: z.string().min(1).max(40),
-  number: z.string().min(1).max(20),
-  target_price_cents: z.number().int().min(1).max(10_000_000).nullable().optional(),
-});
-
-const startSchema = z.object({
-  email: z.string().email().max(254),
-  opt_in_newsletter: z.boolean().optional().default(true),
-  cards: z.array(cardSchema).min(1).max(50),
-  /** Inbound source tag (?src= / utm_source alias) — persisted on every
-   *  watchlists row. Untrusted; sanitized to [a-z0-9-] before writing. */
-  src: z.string().max(200).optional(),
-  /** Landing-URL UTM params for the subscriber record (ADR-084). Untrusted;
-   *  recordSubscriber sanitizes. */
-  utm: z
-    .object({
-      source: z.string().max(200).nullable().optional(),
-      medium: z.string().max(200).nullable().optional(),
-      campaign: z.string().max(200).nullable().optional(),
-    })
-    .optional(),
-  /** Honeypot — the form renders it off-screen; humans never fill it. */
-  website: z.string().max(500).optional(),
-});
+// The wire contract lives in lib/start/wire.ts so the client, the route, and
+// the tests all speak ONE schema (start-binder-delight: the binder shipped a
+// payload this route rejected, and the test that claimed to check it didn't).
 
 // Per-instance limiter (module scope survives across requests on a warm
 // function; a cold start resets it — acceptable for a pre-traffic funnel).

@@ -22,7 +22,7 @@ const PUBLIC_SURFACES: readonly string[] = [
   "app/(site)/layout.tsx",
   "app/(site)/page.tsx",
   "app/(site)/start/page.tsx",
-  "components/start-page-form.tsx",
+  "components/start/binder-desk.tsx",
   "app/(site)/cards/page.tsx",
   "app/(site)/cards/cards-search.tsx",
   "app/(site)/cards/[slug]/page.tsx",
@@ -297,26 +297,55 @@ test("Homepage: hero dropped Card3D + MagneticLink (ADR-037 — static foregroun
 });
 
 // ---------------------------------------------------------------------------
-// /start form — section headers replace 1/2/3 numbering (ADR-029)
+// /start — THE DESK (start-binder-delight). The form is gone; the page is a
+// nine-pocket binder. These pin the STRUCTURE a refactor would quietly drop.
 // ---------------------------------------------------------------------------
 
-test("/start form: drops numeric step-numbering (1./2./3.) in favor of named section headers (ADR-029)", () => {
-  const src = readFile("components/start-page-form.tsx");
-  // The pre-Session-39 form had `1. Type a card name`, `2. Set targets`,
-  // `3. Your email`. Section 2 only rendered conditionally, creating a
-  // visible 1→3 jump for first-time visitors. The fix drops numbering.
-  assert.doesNotMatch(src, />\s*1\.\s*Type\s+a\s+card/);
-  assert.doesNotMatch(src, />\s*2\.\s*Set\s+targets/);
-  assert.doesNotMatch(src, />\s*3\.\s*Your\s+email/);
+test("/start: the binder scene replaced the form outright (the old form is deleted)", () => {
+  assert.equal(
+    existsSync(join(ROOT, "components/start-page-form.tsx")),
+    false,
+    "the multi-add form was superseded by the binder; a resurrected copy means the scene got bypassed",
+  );
+  const page = readFile("app/(site)/start/page.tsx");
+  assert.match(page, /BinderDesk/, "/start must render the binder scene");
 });
 
-test("/start form: renders the named section headers (ADR-029)", () => {
-  const src = readFile("components/start-page-form.tsx");
-  // The prompt-style label lives in the shared CardTypeahead's defaults
-  // (ADR-093 extraction); the other two headers stay in the form.
-  assert.match(readFile("components/cards/card-typeahead.tsx"), /Tell Foil what you're chasing…/);
-  assert.match(src, /Set target prices/);
-  assert.match(src, /Where to email you/);
+test("/start binder: the selection mechanism is a SLEEVE, not a dropdown-first form", () => {
+  const src = readFile("components/start/binder-desk.tsx");
+  // The uniqueness bar: picking a card happens by opening a sleeve and taking
+  // from a fanned hand. The typed input survives ONLY as a demoted fallback.
+  assert.match(src, /sleeve-empty/, "empty sleeves are the primary affordance");
+  assert.match(src, /className="fan"/, "the hand of real card art is the picker");
+  assert.match(src, /know the exact card\? type it/, "the typed path stays, demoted and in-world");
+});
+
+test("/start binder: the free cap renders as furniture (visible Pro sleeves), never an error", () => {
+  const src = readFile("components/start/binder-desk.tsx");
+  assert.match(src, /sleeve-locked/);
+  assert.match(src, /Pro sleeve/);
+});
+
+test("/start binder: the foil shimmer + settle motion exist and respect reduced motion", () => {
+  const src = readFile("components/start/binder-desk.tsx");
+  assert.match(src, /sleeve-shimmer/, "seated holos catch the light — the on-brand idle");
+  assert.match(src, /sleeve-seating/, "a card settles into its pocket");
+  const css = readFile("app/globals.css");
+  const reduced = css.slice(css.indexOf("@media (prefers-reduced-motion: reduce)"));
+  assert.match(reduced, /\.sleeve-shimmer/, "the shimmer must be silenced under reduced motion");
+  assert.match(reduced, /\.sleeve-seating/, "the settle must be silenced under reduced motion");
+});
+
+test("/start binder: NO dark patterns (the anti-hype moat is the product)", () => {
+  // Scan SHIPPABLE text only — the source comments legitimately name the
+  // patterns they forbid (the first cut of this test flagged its own
+  // "no streaks" comment).
+  const strip = (t: string) =>
+    t.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'])\/\/.*$/gm, "$1");
+  const src = strip(readFile("components/start/binder-desk.tsx")) + strip(readFile("app/(site)/start/page.tsx"));
+  for (const banned of [/streak/i, /hurry/i, /act now/i, /expires in/i, /only \d+ left/i, /don't miss/i]) {
+    assert.doesNotMatch(src, banned, `dark-pattern copy is banned on /start: ${banned}`);
+  }
 });
 
 // ---------------------------------------------------------------------------

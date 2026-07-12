@@ -1,3 +1,5 @@
+> 🗄️ **ARCHIVED / SUPERSEDED (2026-07-06)** — historical record, kept per the never-delete rule. Not current state. See [HOME.md](HOME.md) · index: [archive/README.md](archive/README.md).
+
 # Cowork session handoff — 2026-06-02
 
 Read this FIRST before doing anything else. This is the replacement-context doc for the new cowork session taking over from yesterday's run.
