@@ -26,6 +26,8 @@ export const metadata: Metadata = {
 const GRAIL_H1 = "Foil watches your grails. You get pinged when one hits your price.";
 const GRAIL_SUB =
   "Set a card and a target. Foil checks the market and emails you the moment a real listing hits it. Sold prices, not asking prices.";
+// John-locked drop-hook headline (2026-07-12): short, exact.
+const DROP_H1 = "The day's best buys. In your inbox.";
 const DROP_TITLE = "The daily deal drop";
 const DROP_BODY =
   "Foil scans the singles market every day and sends only the buys worth it. On a quiet day it says so. No filler.";
@@ -57,8 +59,28 @@ export default async function ProPage({
     if (v) attribution.push([k, v]);
   }
 
-  const h1 = hook === "drop" ? DROP_BODY : GRAIL_H1;
+  const h1 = hook === "drop" ? DROP_H1 : GRAIL_H1;
   const sub = hook === "drop" ? GRAIL_H1 : GRAIL_SUB;
+
+  // Trimmed post-purchase state (John, 2026-07-12): a guest who just paid
+  // gets the next step, not the sales pitch again. The full page stays for
+  // every other state.
+  if (params.checkout === "success") {
+    return (
+      <main data-tone="night" className="relative flex-1 bg-foil-night text-foil-cream">
+        <div className="relative mx-auto w-full max-w-xl px-5 pt-24 pb-24 text-center sm:px-8">
+          <p className="text-xs font-semibold uppercase tracking-wider text-foil-accent">Foil Pro</p>
+          <h1 className="font-display mt-3 text-4xl font-bold tracking-[-0.02em] text-foil-cream">
+            You&apos;re in.
+          </h1>
+          <p className="mx-auto mt-4 max-w-md text-foil-cream/70">
+            Check your email for your sign-in link, then add the cards you&apos;re chasing.
+          </p>
+          <p className="mx-auto mt-8 max-w-md text-sm text-foil-cream/50">{TRUST_LINE}</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main data-tone="night" className="relative flex-1 bg-foil-night text-foil-cream">
@@ -68,12 +90,6 @@ export default async function ProPage({
             No charge made. Your checkout was canceled, start the free trial whenever you're ready.
           </div>
         )}
-        {params.checkout === "success" && (
-          <div className="mb-6 rounded-xl border border-foil-accent/40 bg-foil-night-2 px-4 py-3 text-sm text-foil-cream">
-            You're in. Check your email for your sign-in link, then add the cards you're chasing.
-          </div>
-        )}
-
         <header className="text-center">
           <p className="text-xs font-semibold uppercase tracking-wider text-foil-accent">Foil Pro</p>
           <h1 className="font-display mt-3 text-4xl font-bold tracking-[-0.02em] text-foil-cream">
@@ -115,16 +131,11 @@ export default async function ProPage({
           </p>
         </section>
 
-        {/* hook=drop already leads with the drop line as the H1 — repeating
-            the identical card below it reads as a copy bug, so that variant
-            shows only the watches card, full width. */}
-        <section className={`mt-8 grid gap-3 ${hook === "drop" ? "" : "sm:grid-cols-2"}`}>
-          {hook !== "drop" && (
-            <div className="rounded-xl border border-foil-cream/10 bg-foil-night-2 p-5">
-              <p className="font-semibold text-foil-cream">{DROP_TITLE}</p>
-              <p className="mt-1.5 text-sm text-foil-cream/60">{DROP_BODY}</p>
-            </div>
-          )}
+        <section className="mt-8 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-foil-cream/10 bg-foil-night-2 p-5">
+            <p className="font-semibold text-foil-cream">{DROP_TITLE}</p>
+            <p className="mt-1.5 text-sm text-foil-cream/60">{DROP_BODY}</p>
+          </div>
           <div className="rounded-xl border border-foil-cream/10 bg-foil-night-2 p-5">
             <p className="font-semibold text-foil-cream">{WATCHES_TITLE}</p>
             <p className="mt-1.5 text-sm text-foil-cream/60">{WATCHES_BODY}</p>

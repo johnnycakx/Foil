@@ -89,6 +89,10 @@ test("locked offer copy renders verbatim on /pro", () => {
     /\$6 a month, locked\. The price rises as Foil gets faster\. Founding members keep their rate for life and get everything new first\./,
   );
   assert.match(pro, /Not ready\? Free gets you 3 watches and the weekly digest\./);
+  // John-locked drop-hook H1 (2026-07-12, exact).
+  assert.match(pro, /The day's best buys\. In your inbox\./);
+  // The trimmed post-purchase state (John, 2026-07-12).
+  assert.match(pro, /Check your email for your sign-in link, then add the cards you're chasing\./);
 });
 
 test("locked gate copy: real locked count + Pro line, free catcher present", () => {
