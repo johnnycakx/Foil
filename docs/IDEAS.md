@@ -19,6 +19,28 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-07-12
+category: ux
+status: captured
+---
+## success-page-shows-the-email — the typo-lockout mitigation
+
+The guest success page says "Check your email" without showing WHICH email. John typo'd `.co` on the first live smoke run, paid, and the sign-in link went to a dead address invisibly. One-line fix: render the entered address ("Sign-in link sent to **x@y.com** — not right? …") so the typo is visible at the moment it's cheapest to fix. Stripe's session has the email; the success page already receives the session id.
+
+**Context:** stranger run 2026-07-12, run #1 — the accepted-risk scenario happening to the founder on the first live walk.
+
+---
+date: 2026-07-12
+category: product
+status: captured
+---
+## hf-card-detection-for-v2-scanner — noted, parked with the scanner
+
+HF scan (2026-07-12) found card-DETECTION models (Matthieu68857/pokemon-cards-detection) + card image datasets that could someday cheapen the V2 scanner's detect pass. Nothing on HF touches deal-finding/alerts/revenue. The HF "price predictor" models guess from history — the anti-Foil; useful only as a positioning contrast for "Foil doesn't guess prices."
+
+**Context:** John's "did we check Hugging Face" question mid-close-out; verdict = no build-time cut, one scanner-era note.
+
+---
 date: 2026-07-11
 category: product
 status: captured
