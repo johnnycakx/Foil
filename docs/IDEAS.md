@@ -23,6 +23,39 @@ date: 2026-07-11
 category: product
 status: captured
 ---
+## chat-first-foil-ui — the watch input as a real conversation, post-validation
+
+The offer-lock ratified agent DRESS only (prompt-style box + receipts, no chat surface). The full bet — a chat-first Foil where you talk to the agent about what you're chasing, it shows the board, negotiates targets, reports back in one thread — is deliberately parked until the $6 WTP test validates. If trials convert, this is the product's natural shape; if not, it's a costume on a product nobody paid for.
+
+**Context:** 2026-07-11 offer-lock session (John ratified "agent dress only"; chat UI explicitly parked). Recorded by the offer-implementation goal per its second-brain contract.
+
+---
+date: 2026-07-11
+category: product
+status: captured
+---
+## mobile-app-pwa — unscoped, deliberately NOT promised in copy
+
+An app/PWA keeps coming up as the obvious retention surface for alerts (push beats email for "first in line"). Unscoped, no commitment; the offer-lock's done-beats-coming-soon rule vetoed even mentioning an app in the founding line. Revisit only after the WTP test with real trial-retention data.
+
+**Context:** 2026-07-11 offer-lock session ("app coming soon" vetoed in the founding line). Recorded by the offer-implementation goal.
+
+---
+date: 2026-07-12
+category: ux
+status: captured
+---
+## google-oauth-signin — the LLC deferral reason is gone; one-tap auth beside the magic link
+
+Google OAuth was deferred pre-LLC (domain whitelist needed an entity). Foil TCG LLC exists, so the blocker is dead. Card Ladder offers Google/Apple SSO exactly because instant auth kills the credential-creation abandonment (~25%). Post-validation: add "Continue with Google" beside the magic-link form on /login — one tap, no inbox round-trip, especially for RETURNING users managing watches. NOT a pre-ads blocker (payment-first checkout already removes auth from the buy path); this is the login-page half of the same friction.
+
+**Context:** 2026-07-12 /pro conversion research (Card Ladder auth-first works only because signup is instant SSO; our magic-link wall isn't). Triggered by John's smoke-walk verdict on the /login bounce.
+
+---
+date: 2026-07-11
+category: product
+status: captured
+---
 ## daily-drop-send — build the send the funnel already sells (the funnel-stress-test headline gap)
 
 Every capture surface promises a DAILY deal drop (the /deals gate: "one email a day at most"; the success state: "the day's best buys"; /pro's first $6 value card: "curated daily") — and NO send path exists: no cron, no send code, and even the weekly digest is off on prod (`NEWSLETTER_DIGEST_MODE=""`). A deals_gate subscriber gets one Beehiiv welcome (which says "weekly"!) then silence; a $6 trial would pay for a drop that never arrives. Shape after the offer-lock decides free-vs-paid drop content: daily cron → render the board state (reuse `dealsGateState` + `market_movers` + the thin-day honesty rule — the "quiet day? we'll tell you that too" email is already in-copy) → Resend send to the audience/segment with the existing unsubscribe footer plumbing. Bundle: flip `NEWSLETTER_DIGEST_MODE` decision + reconcile the welcome email's "one email a week" copy.
@@ -918,7 +951,7 @@ Positioning-level read from John: eve's "can u do it for me" is not the edge cas
 
 **Context:** John, 2026-07-03 morning, after seeing belt-driven card-page traffic paths. Also the reason "Add to vault" is the canonical CTA noun (never "+ Watchlist" — one noun sitewide).
 
----
+---
 
 ## Chat-first Foil UI (post-validation bet)
 Rebuild the primary product surface around a conversational, ChatGPT-familiar interface — type a card, Foil answers with the read and offers the watch. Deliberately PARKED during the validation sprint (weeks of new surface on the funnel we're about to pay to test). The bounded in-sprint version ships instead: prompt-style watch input + agent receipts (offer-implementation). Revisit only if the WTP test converts.

@@ -53,12 +53,12 @@ test("subject, market basis: cites the percent under the 30-day sold average", (
   const s = subjectLine(
     inputs({ kind: "dropped", basis: "market", targetPriceCents: null, currentPriceCents: 7500, comp: COMP }),
   );
-  assert.match(s, /dropped to \$75\.00, 18% under its 30-day sold average/);
+  assert.match(s, /dropped to \$75\.00, 18% under what it usually sells for/);
 });
 
 test("evidence line cites the comp with tier + figures; discloses plainly when no comp exists", () => {
   const withComp = evidenceLine(inputs({ currentPriceCents: 7500, comp: COMP }));
-  assert.equal(withComp, "30-day avg sold (Near Mint): $92.00 · this listing: $75.00 (18% under)");
+  assert.equal(withComp, "Usually sells for $92.00 (Near Mint, last 30 days) · this listing: $75.00 (18% under)");
   const overAvg = evidenceLine(inputs({ currentPriceCents: 10000, comp: COMP }));
   assert.match(overAvg, /9% over/);
   const noComp = evidenceLine(inputs({ comp: null }));
@@ -67,7 +67,7 @@ test("evidence line cites the comp with tier + figures; discloses plainly when n
 
 test("body ALWAYS carries the evidence line or the disclosure (the acceptance criterion)", () => {
   const withComp = emailBody(inputs({ currentPriceCents: 7500, comp: COMP }));
-  assert.match(withComp, /30-day avg sold \(Near Mint\): \$92\.00/);
+  assert.match(withComp, /Usually sells for \$92\.00 \(Near Mint, last 30 days\)/);
   const noComp = emailBody(inputs({ comp: null }));
   assert.match(noComp, /No recent sold data for this card/);
 });

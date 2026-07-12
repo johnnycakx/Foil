@@ -25,7 +25,7 @@ type Submission =
   | { state: "idle" }
   | { state: "submitting" }
   | { state: "success"; count: number; vaultUrl: string | null; vaultLinkEmailed: boolean }
-  | { state: "error"; message: string };
+  | { state: "error"; message: string; code?: string };
 
 const MAX_SELECTED = 50;
 
@@ -158,7 +158,13 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
       if (!res.ok || !body.ok) {
         setSubmission({
           state: "error",
-          message: body.error === "invalid_payload" ? "Form data didn't validate. Try again." : "Something broke. Try again, or email john.c.craig24@gmail.com.",
+          code: body.error,
+          message:
+            body.error === "watch_limit_free"
+              ? "Free gets you 3 watches, and you're at the limit. Pro watches every card you're chasing, checked hourly."
+              : body.error === "invalid_payload"
+                ? "Form data didn't validate. Try again."
+                : "Something broke. Try again, or email john.c.craig24@gmail.com.",
         });
         return;
       }
@@ -180,13 +186,13 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
     return (
       <section className="rounded-3xl border border-foil-accent/40 bg-foil-night-2 p-8 sm:p-10">
         <p className="text-xs font-medium uppercase tracking-widest text-foil-accent">
-          You&apos;re tracking {submission.count} {submission.count === 1 ? "card" : "cards"}
+          Foil is now watching {submission.count} {submission.count === 1 ? "card" : "cards"} for you
         </p>
         <h2 className="font-display mt-3 text-2xl font-bold tracking-[-0.02em] text-foil-cream sm:text-3xl">
-          We&apos;ve got it from here.
+          Foil takes it from here.
         </h2>
         <p className="mt-4 text-base text-foil-cream/70">
-          Foil checks eBay every hour. The first time one of your cards drops to a price worth buying, the email lands. <span className="text-foil-cream/60">Add <code className="rounded bg-foil-cream/10 px-1.5 py-0.5 text-sm text-foil-cream">alerts@foiltcg.com</code> to your contacts so Gmail doesn&apos;t hide it.</span>
+          Foil checks your cards once a day on the free plan, every hour on Pro. The first time one drops to a price worth buying, the email lands. <span className="text-foil-cream/60">Add <code className="rounded bg-foil-cream/10 px-1.5 py-0.5 text-sm text-foil-cream">alerts@foiltcg.com</code> to your contacts so Gmail doesn&apos;t hide it.</span>
         </p>
         <div className="mt-6 flex flex-wrap items-center gap-3">
           {submission.vaultUrl ? (
@@ -386,6 +392,14 @@ export function StartPageForm({ cataloguedIds }: { cataloguedIds: string[] }) {
       {submission.state === "error" && (
         <p role="alert" className="mt-3 text-sm text-foil-coral">
           {submission.message}
+          {submission.code === "watch_limit_free" && (
+            <>
+              {" "}
+              <a href="/pro" className="font-semibold underline underline-offset-2 text-foil-cream">
+                Start your 30-day free trial →
+              </a>
+            </>
+          )}
         </p>
       )}
     </form>

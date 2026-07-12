@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./supabase/types";
-import { FREE_DAILY_SCAN_LIMIT, FREE_TIER, PRO_TIER } from "./stripe";
+import { FREE_DAILY_SCAN_LIMIT, FREE_TIER, PRO_TIER } from "./stripe.ts";
 
 type Client = SupabaseClient<Database>;
 
@@ -56,7 +56,13 @@ export async function getTier(
     return FREE_TIER;
   }
   if (!data) return FREE_TIER;
-  const rec = data as { tier: string; status: string | null; current_period_end: string | null };
+  return resolveTierRecord(data as TierRecord);
+}
+
+type TierRecord = { tier: string; status: string | null; current_period_end: string | null };
+
+/** Shared stale-downgrade rule: trialing + active are Pro, everything else free. */
+export function resolveTierRecord(rec: TierRecord): Tier {
   if (rec.tier !== PRO_TIER) return FREE_TIER;
   // Treat past_due / canceled / unpaid as free; trialing + active are Pro.
   if (rec.status && !["active", "trialing"].includes(rec.status)) return FREE_TIER;
@@ -64,6 +70,42 @@ export async function getTier(
     return FREE_TIER;
   }
   return PRO_TIER;
+}
+
+/**
+ * Tier for an EMAIL (the watch subsystem is email-anchored; subscriptions
+ * carries a webhook-written lowercased email as the bridge). Unknown email →
+ * free. If one email somehow maps to several rows, any live Pro row wins.
+ */
+export async function getTierByEmail(client: Client, email: string): Promise<Tier> {
+  const { data, error } = await client
+    .from("subscriptions")
+    .select("tier, status, current_period_end")
+    .eq("email", email.trim().toLowerCase());
+  if (error) {
+    console.error(`[entitlements] tier-by-email read failed: ${error.message}`);
+    return FREE_TIER;
+  }
+  const rows = (data ?? []) as TierRecord[];
+  return rows.some((r) => resolveTierRecord(r) === PRO_TIER) ? PRO_TIER : FREE_TIER;
+}
+
+/** Emails of every live Pro subscription (daily drop + hourly cadence set). */
+export async function proTierEmails(client: Client): Promise<Set<string>> {
+  const { data, error } = await client
+    .from("subscriptions")
+    .select("email, tier, status, current_period_end")
+    .eq("tier", PRO_TIER)
+    .not("email", "is", null);
+  if (error) {
+    console.error(`[entitlements] pro-emails read failed: ${error.message}`);
+    return new Set();
+  }
+  const out = new Set<string>();
+  for (const row of (data ?? []) as Array<TierRecord & { email: string | null }>) {
+    if (row.email && resolveTierRecord(row) === PRO_TIER) out.add(row.email.toLowerCase());
+  }
+  return out;
 }
 
 async function getCurrentPeriodEnd(client: Client, userId: string): Promise<string | null> {

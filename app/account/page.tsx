@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getEntitlements } from "@/lib/entitlements";
-import { FREE_DAILY_SCAN_LIMIT } from "@/lib/stripe";
 import { createCheckoutSession, openCustomerPortal } from "@/app/upload/billing-actions";
 import { signOut } from "@/app/upload/logout-action";
 
@@ -65,7 +64,7 @@ export default async function AccountPage({
             </p>
           ) : (
             <p className="mt-2 text-sm text-zinc-500">
-              {ent.scansToday}/{FREE_DAILY_SCAN_LIMIT} scans used today · resets at 00:00 UTC
+              3 watches, checked once a day · the weekly digest
             </p>
           )}
 
@@ -97,9 +96,9 @@ export default async function AccountPage({
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
           <p className="font-medium text-zinc-900 dark:text-zinc-100">What Pro includes</p>
           <ul className="mt-3 space-y-1.5">
-            <li>· The daily deal drop — the best live buys across the market, curated daily</li>
-            <li>· Personal price watches — we watch the cards you&apos;re chasing and email you the moment one hits</li>
-            <li>· Every figure priced on real sold data, never an asking price</li>
+            <li>· The daily deal drop: Foil scans the singles market every day and sends only the buys worth it</li>
+            <li>· Unlimited price watches on the cards you&apos;re chasing, checked every hour</li>
+            <li>· Foil doesn&apos;t guess prices. It reads real sales.</li>
           </ul>
         </div>
       </section>

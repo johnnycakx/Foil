@@ -166,7 +166,7 @@ test("Homepage: pull-model hero — 'Start your vault' → /start is the primary
   const src = readFile("app/(site)/page.tsx");
   // The hero promise is PULL (tell us what you chase), never push ("stop
   // guessing what your cards are worth"). One primary action: /start.
-  assert.match(src, /Tell me the cards you&apos;re chasing\./, "the pull-model H1 copy must be present (first person — John, 2026-07-03)");
+  assert.match(src, /Tell Foil the cards you&apos;re chasing\./, "the pull-model H1 copy must be present (Foil-the-agent voice — offer-lock 2026-07-11, ADR-113 supersedes the 2026-07-03 first-person rule on product surfaces)");
   assert.doesNotMatch(src, /Stop guessing what your cards are worth/, "the push-model headline must be gone");
   assert.match(src, /href="\/start\?src=home-hero"/, "the primary CTA must link /start with src attribution");
   assert.match(src, /Start your vault/, "the primary CTA copy is 'Start your vault'");
@@ -312,9 +312,9 @@ test("/start form: drops numeric step-numbering (1./2./3.) in favor of named sec
 
 test("/start form: renders the named section headers (ADR-029)", () => {
   const src = readFile("components/start-page-form.tsx");
-  // "Tell me a card" moved into the shared CardTypeahead's default label
+  // The prompt-style label lives in the shared CardTypeahead's defaults
   // (ADR-093 extraction); the other two headers stay in the form.
-  assert.match(readFile("components/cards/card-typeahead.tsx"), /Tell me a card/);
+  assert.match(readFile("components/cards/card-typeahead.tsx"), /Tell Foil what you're chasing…/);
   assert.match(src, /Set target prices/);
   assert.match(src, /Where to email you/);
 });

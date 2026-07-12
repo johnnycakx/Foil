@@ -34,6 +34,7 @@ export type Database = {
           stripe_customer_id: string | null;
           stripe_subscription_id: string | null;
           current_period_end: string | null;
+          email: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -44,6 +45,7 @@ export type Database = {
           stripe_customer_id?: string | null;
           stripe_subscription_id?: string | null;
           current_period_end?: string | null;
+          email?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -54,6 +56,7 @@ export type Database = {
           stripe_customer_id: string | null;
           stripe_subscription_id: string | null;
           current_period_end: string | null;
+          email: string | null;
           created_at: string;
           updated_at: string;
         }>;
@@ -474,9 +477,35 @@ export type Database = {
         }>;
         Relationships: [];
       };
+      market_temperature: {
+        Row: {
+          snapshot_date: string;
+          below_count: number;
+          total_count: number;
+          computed_at: string;
+        };
+        Insert: {
+          snapshot_date: string;
+          below_count: number;
+          total_count: number;
+          computed_at?: string;
+        };
+        Update: Partial<{
+          snapshot_date: string;
+          below_count: number;
+          total_count: number;
+          computed_at: string;
+        }>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      get_user_id_by_email: {
+        Args: { p_email: string };
+        Returns: string | null;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

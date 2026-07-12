@@ -1,10 +1,13 @@
-// /deals gated-teaser logic (validation-sprint Phase 3, ADR-112).
+// /deals gated-teaser logic (ADR-112; copy re-locked by the 2026-07-11
+// offer-lock session).
 //
-// The board shows the top 2 deals fully (the public proof-it's-real teaser) and
-// gates the rest behind an email drop-subscribe. THIN-DAY HONESTY is the whole
-// point: supply is 0–6 deals/day, so the gate must NEVER fabricate a locked
-// count. If there aren't more than 2 deals, there's nothing to lock — say so
-// ("nothing worth locking today" — the trust flex) instead of inventing rows.
+// The board shows the top 2 deals fully (the public proof-it's-real teaser)
+// and gates the rest. THE DROP IS PRO'S DELIVERABLE now, so the gate sells
+// the trial ("Pro sees everything Foil finds, first") and catches the
+// not-ready with the free tier (3 watches + the weekly digest). THIN-DAY
+// HONESTY is unchanged and non-negotiable: supply is 0–6 deals/day and the
+// gate must NEVER fabricate a locked count. If there aren't more than 2
+// deals, there's nothing to lock. Say so.
 //
 // Pure + exported so the split + copy are unit-tested without a live board.
 
@@ -17,7 +20,7 @@ export type DealsGateState = {
   lockedCount: number;
   /** Gate heading — count-aware, never a fabricated number. */
   headline: string;
-  /** Gate supporting line. Always contains "get the drop" (the content marker). */
+  /** Gate supporting line. Always names Pro (the drop is Pro's deliverable). */
   subtext: string;
 };
 
@@ -31,8 +34,9 @@ export function dealsGateState(totalToday: number): DealsGateState {
     return {
       shownCount,
       lockedCount,
-      headline: `${lockedCount} more good ${buys} today`,
-      subtext: "Get the drop — the day's best buys, priced on real sold data, straight to your inbox.",
+      // LOCKED copy (offer item 3): N is the real locked count, never invented.
+      headline: `${lockedCount} more good ${buys} today.`,
+      subtext: "Pro sees everything Foil finds, first.",
     };
   }
 
@@ -42,7 +46,7 @@ export function dealsGateState(totalToday: number): DealsGateState {
       lockedCount: 0,
       headline: "Nothing worth locking today.",
       subtext:
-        "That's the honest read — some days the market's quiet, and we won't fake a deal. Get the drop the day there's a real buy.",
+        "That's the honest read. Some days the market is quiet and Foil won't fake a deal. Pro members hear it first the day there's a real buy.",
     };
   }
 
@@ -51,6 +55,6 @@ export function dealsGateState(totalToday: number): DealsGateState {
     shownCount,
     lockedCount: 0,
     headline: "That's the whole board today.",
-    subtext: "Get the drop the moment there's more — real sold data, never filler.",
+    subtext: "Pro gets every real buy Foil finds in the daily drop, first.",
   };
 }

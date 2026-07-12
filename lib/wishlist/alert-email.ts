@@ -75,7 +75,8 @@ function triggerClause(input: AlertEmailInputs): string {
   const pct = pctUnderAvg(input.currentPriceCents, input.comp);
   // Market basis always has a comp by construction (decideAlert can't pick
   // the market basis without one); the fallback keeps the composer total.
-  return pct != null ? `${pct}% under its 30-day sold average` : `under its market reference`;
+  // Register rule: "under what it usually sells for", not "30-day sold average".
+  return pct != null ? `${pct}% under what it usually sells for` : `under what it usually goes for`;
 }
 
 /**
@@ -92,12 +93,14 @@ export function subjectLine(input: AlertEmailInputs): string {
   return `${namePart} (${input.setName}) ${verb}, ${triggerClause(input)}`;
 }
 
-/** The trust payoff: cite the comp, or disclose its absence plainly. */
+/** The trust payoff: cite the comp, or disclose its absence plainly.
+ *  Register rule (2026-07-11): card-shop words — "usually sells for", not
+ *  "30-day avg sold". Same claim, same figures. */
 export function evidenceLine(input: AlertEmailInputs): string {
   const pct = pctUnderAvg(input.currentPriceCents, input.comp);
   if (input.comp && pct != null) {
     const rel = pct >= 0 ? `${pct}% under` : `${Math.abs(pct)}% over`;
-    return `30-day avg sold (${input.comp.tierLabel}): ${formatUsd(input.comp.avg30dCents)} · this listing: ${formatUsd(input.currentPriceCents)} (${rel})`;
+    return `Usually sells for ${formatUsd(input.comp.avg30dCents)} (${input.comp.tierLabel}, last 30 days) · this listing: ${formatUsd(input.currentPriceCents)} (${rel})`;
   }
   return `No recent sold data for this card. This alert is against your target only.`;
 }
@@ -136,6 +139,8 @@ export function emailBody(input: AlertEmailInputs): string {
   return [
     `<!doctype html>`,
     `<html><body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; line-height: 1.6; color: #1a2333; background: #ffffff;">`,
+    // Agent receipt (offer 4b): the email reads as Foil reporting back.
+    `<p style="font-size: 13px; color: #556; margin: 0 0 12px;">Foil checked your watches. One hit.</p>`,
     `<p style="font-size: 16px; margin: 0 0 8px;"><strong>${headline}</strong></p>`,
     `<p style="font-size: 14px; color: #445; margin: 0 0 16px;">${reason}</p>`,
     trackingLine,
@@ -207,6 +212,7 @@ export function batchEmailBody(unsorted: readonly AlertEmailInputs[]): string {
   return [
     `<!doctype html>`,
     `<html><body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; line-height: 1.6; color: #1a2333; background: #ffffff;">`,
+    `<p style="font-size: 13px; color: #556; margin: 0 0 12px;">Foil checked your watches. ${entries.length} hits.</p>`,
     `<p style="font-size: 16px; margin: 0 0 20px;"><strong>${entries.length} of the cards you watch hit prices worth a look.</strong> Most significant first.</p>`,
     ...sections,
     `<p style="font-size: 11px; color: #99a; line-height: 1.5; margin: 12px 0 0;">You're getting this because you set price alerts at foiltcg.com. Each card goes quiet until its price moves back up and drops again.${

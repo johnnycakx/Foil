@@ -453,8 +453,8 @@ test("ACCEPTANCE: blank target alerts only at ≥15% under the 30-day sold avera
     baseInput({ supabase: under.supabase, resolveListing: fakeResolver(80), getSoldComp: async () => avg, sendEmail }),
   );
   assert.equal(outUnder.alerted, 1);
-  assert.match(sent[0].subject, /20% under its 30-day sold average/);
-  assert.match(sent[0].html, /30-day avg sold \(Near Mint\): \$100\.00/);
+  assert.match(sent[0].subject, /20% under what it usually sells for/);
+  assert.match(sent[0].html, /Usually sells for \$100\.00 \(Near Mint, last 30 days\)/);
   assert.doesNotMatch(sent[0].subject, /100000/, "the sentinel string must never render");
   assert.doesNotMatch(sent[0].html, /100000/);
 });
@@ -526,7 +526,7 @@ test("explicit-target row above the market floor: the floor can lift the trigger
     }),
   );
   assert.equal(out.alerted, 1);
-  assert.match(sent[0].subject, /under its 30-day sold average/);
+  assert.match(sent[0].subject, /under what it usually sells for/);
   assert.doesNotMatch(sent[0].subject, /\$30\.00 target/, "must not claim the user's target was met");
 });
 

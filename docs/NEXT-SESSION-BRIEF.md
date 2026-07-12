@@ -1,4 +1,4 @@
-# Next-Session Brief — updated 2026-07-11 (late, Fable/Cowork close) — THE OFFER IS LOCKED; Stripe live-wiring paused mid-goal; next = resume Stripe → offer-implementation → ads-run spec
+# Next-Session Brief — updated 2026-07-11 (later: V7 + V6 BOTH BUILT) — Stripe live env wired + verified; offer-implementation committed (NO PUSH); next = John's localhost veto → push → activation steps → smoke test → ads-run spec
 
 > Read first: current state + prioritized plan. (Cowork edits this; commits on John's machine.)
 
@@ -17,10 +17,10 @@ The 07-05 validation reframe reached its judgment session: **the offer is fully 
 - **Scope honesty:** NO market-level claims until the market-temperature stat ships (offer-implementation item 6).
 
 ## THE SEQUENCE (do in this order)
-1. **Resume `stripe-live-wiring` (V7 — IN-FLIGHT, PAUSED at step 2).** John, in your OWN terminal at the repo: `vercel env add STRIPE_SECRET_KEY production` (paste the NEW rolled sk_live) and `vercel env add STRIPE_WEBHOOK_SECRET production` (paste the whsec from the foil-prod webhook destination). Then reply **done** + the `pk_live_...` in the paused Claude Code session. The runner finishes: verify 4 vars → redeploy adf55d3 → no-charge checks → docs commit.
-2. **John's live smoke test:** incognito → foiltcg.com/pro → start trial with the real card → verify `subscriptions` goes trialing/pro → cancel via /account → verify revoke. Also: cancel the stray **$14.99 test-mode** Stripe sub (test mode → Subscriptions).
-3. **Fire V6:** `/goal Read docs/goals/offer-implementation.md and execute it end-to-end, honoring the P0 premise check and closure gates.` (It reads the stress-test memo first; includes the daily-drop SEND build, weekly digest back ON via the approve rail, cadence-copy reconciliation, the locked agent-voice copy stack, the register-rule jargon sweep, the market-temperature stat, agent dress, and both mechanics gates.)
-4. **John's copy veto on localhost** → push.
+1. ~~Resume `stripe-live-wiring` (V7)~~ ✅ **DONE 2026-07-11** — all four live vars in Vercel prod, redeployed, no-charge checks passed (/pro 200 with the $6 offer; webhook signature-verifying). Committed `ef48dc7`.
+2. ~~Fire V6 (offer-implementation)~~ ✅ **BUILT 2026-07-11 ([ADR-113](DECISIONS.md#adr-113--the-locked-offer-wired-in-tier-mechanics-payment-first-guest-checkout-the-pro-daily-drop-two-voice-copy--the-register-rule)) — committed, NO PUSH.** Everything locked is wired: 3-watch cap + daily/hourly cadence split + one-trial gate + payment-first guest checkout + the daily-drop send + market-temperature + the full copy stack/agent dress/jargon sweep. See the SESSION-LOG entry for the flagged deviations.
+3. **John's copy veto on localhost** (`npm run dev` → /pro, /deals gate, /, /start success, /account) → **push**.
+4. **John's activation steps (post-push):** `supabase db push` (2 new migrations) · set `NEWSLETTER_DIGEST_MODE=approval` on Vercel prod · **live smoke test** (incognito → foiltcg.com/pro → real card trial → subscriptions row trialing/pro → cancel → revoke; also try the SIGNED-OUT guest checkout — it's the new default buy path) · cancel the stray $14.99 test-mode sub · Beehiiv welcome cadence copy edit (dashboard) · optionally retitle the Supabase magic-link template.
 5. **Fable writes the ads-run spec (V8)** → the gate to ads-live: V6+V7 closed · smoke test passed · zero known funnel bugs · instrumentation proven. Then the ~$300 goes out and the 14-month question gets its answer.
 
 ## State snapshots (2026-07-11)

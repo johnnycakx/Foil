@@ -22,6 +22,7 @@ import { getHydratedVariants } from "@/lib/poketrace/hydration";
 import { buildVaultUrl } from "@/lib/vault-token";
 import { sendVaultLinkEmail } from "@/lib/wishlist/vault-email";
 import { upsertWatchlist } from "@/lib/wishlist/upsert";
+import { checkFreeWatchCap } from "@/lib/wishlist/free-cap";
 import { validateWatchlistSubmission } from "@/lib/wishlist/validate";
 
 // NOTE: a "use server" file may only export async functions — `type` exports
@@ -111,6 +112,13 @@ export async function createWatchlist(
     isFirstWatch = !countError && (count ?? 0) === 0;
   } catch {
     /* skip the welcome */
+  }
+
+  // Free-tier product cap (offer 1a): 3 active watches; re-adding a watched
+  // card passes as an update. The client renders the upgrade prompt.
+  const capCheck = await checkFreeWatchCap(admin, parsed.value.email, [card_slug]);
+  if (!capCheck.allowed) {
+    return { status: "error", error: "watch_limit_free" };
   }
 
   const res = await upsertWatchlist(admin, { ...parsed.value, src: sanitizeSrc(formData.get("src")) });

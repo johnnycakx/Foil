@@ -42,22 +42,40 @@ export function DealsDropGate({ headline, subtext }: { headline: string; subtext
         className="rounded-2xl border border-foil-accent/40 bg-foil-accent/10 p-6 text-center"
         aria-live="polite"
       >
-        <p className="font-semibold text-foil-cream">You&apos;re in — the drop lands in your inbox.</p>
+        <p className="font-semibold text-foil-cream">You&apos;re in. The weekly digest is on its way.</p>
         <p className="mt-1 text-sm text-foil-cream/70">
-          The day&apos;s best buys, priced on real sold data. Quiet day? We&apos;ll tell you that too.
+          The week&apos;s best real buys, priced on real sold data. Quiet week? Foil says so. Want
+          Foil watching your own cards too?{" "}
+          <a href="/start" className="underline decoration-foil-cream/40 underline-offset-2">
+            Free gets you 3 watches →
+          </a>
         </p>
       </div>
     );
   }
 
   const errorId = "deals-drop-error";
+  const proHref = utm.source
+    ? `/pro?hook=drop&utm_source=${encodeURIComponent(utm.source)}${utm.medium ? `&utm_medium=${encodeURIComponent(utm.medium)}` : ""}${utm.campaign ? `&utm_campaign=${encodeURIComponent(utm.campaign)}` : ""}`
+    : "/pro?hook=drop";
 
   return (
     <section className="rounded-2xl border border-foil-cream/12 bg-foil-night-2 p-6 text-center sm:p-8">
       <h2 className="font-display text-2xl font-bold tracking-[-0.02em] text-foil-cream">{headline}</h2>
       <p className="mx-auto mt-2 max-w-md text-sm text-foil-cream/70">{subtext}</p>
 
-      <form onSubmit={onSubmit} className="mx-auto mt-5 flex max-w-md flex-col gap-2 sm:flex-row" noValidate>
+      <a
+        href={proHref}
+        className="mt-5 inline-block rounded-xl bg-foil-accent px-5 py-3 text-base font-semibold text-foil-night transition-all hover:-translate-y-0.5 hover:brightness-110"
+      >
+        Start your 30-day free trial
+      </a>
+      <p className="mt-2 text-xs text-foil-cream/50">
+        The full daily drop plus unlimited watches, checked hourly. $6 a month after the trial.
+      </p>
+
+      <p className="mt-6 text-sm text-foil-cream/70">Not ready? Free gets you 3 watches and the weekly digest.</p>
+      <form onSubmit={onSubmit} className="mx-auto mt-3 flex max-w-md flex-col gap-2 sm:flex-row" noValidate>
         <input type="hidden" name="source" value="deals_gate" />
         <input type="hidden" name="utm_source" value={utm.source} />
         <input type="hidden" name="utm_medium" value={utm.medium} />
@@ -82,10 +100,10 @@ export function DealsDropGate({ headline, subtext }: { headline: string; subtext
           disabled={isPending}
           className="rounded-xl bg-foil-accent px-5 py-3 text-base font-semibold text-foil-night transition-all hover:-translate-y-0.5 hover:brightness-110 disabled:opacity-60 disabled:hover:translate-y-0"
         >
-          {isPending ? "Joining…" : "Get the drop"}
+          {isPending ? "Joining…" : "Get the digest"}
         </button>
       </form>
-      <p className="mt-3 text-xs text-foil-cream/50">Free · one email a day at most · unsubscribe anytime.</p>
+      <p className="mt-3 text-xs text-foil-cream/50">Free · one email a week · unsubscribe anytime.</p>
       {state?.ok === false && (
         <p id={errorId} role="alert" className="mt-2 text-sm text-foil-cream">
           {state.error}

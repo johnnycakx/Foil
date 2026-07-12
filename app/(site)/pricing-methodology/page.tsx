@@ -17,7 +17,7 @@ export const revalidate = 86400;
 export const metadata: Metadata = {
   title: `${METHODOLOGY_TITLE} — Foil`,
   description:
-    "How Foil's buy signal works: the 30-day sold reference, the below/at/above thresholds, condition filtering, the sample-size floor, and the known limitations.",
+    "How Foil's buy signal works: what a card usually sells for, when a listing counts as a real deal, condition filtering, why thin sales don't count, and the known limitations.",
   alternates: { canonical: "/pricing-methodology" },
   // Indexable again (dual-track restore, ADR-064): the deal-finder buy-signal
   // trust page every buy-signal badge links to. The machine-pricing disclosure

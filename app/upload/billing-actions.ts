@@ -2,10 +2,12 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import type Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { FOIL_PRO_LOOKUP_KEY, ensureProProductAndPrice } from "@/lib/stripe-setup";
 import { stripe, PRO_TRIAL_DAYS } from "@/lib/stripe";
+import { trialAlreadyUsed } from "@/lib/stripe-trial";
 
 async function siteOrigin(): Promise<string> {
   const h = await headers();
@@ -42,6 +44,9 @@ async function getOrCreateStripeCustomer(userId: string, email: string): Promise
         user_id: userId,
         stripe_customer_id: customer.id,
         tier: "free",
+        // The email→tier bridge (offer 1a/1b/2a): watches are email-anchored,
+        // so every subscriptions row carries its lowercased email.
+        email: email.trim().toLowerCase() || null,
       },
       { onConflict: "user_id" },
     );
@@ -49,35 +54,75 @@ async function getOrCreateStripeCustomer(userId: string, email: string): Promise
   return customer.id;
 }
 
-export async function createCheckoutSession(): Promise<void> {
+/** Reduce an untrusted hidden-field value to the safe attribution charset. */
+function sanitizeAttribution(raw: FormDataEntryValue | null): string | null {
+  if (typeof raw !== "string") return null;
+  const clean = raw.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-+|-+$/g, "").slice(0, 64);
+  return clean || null;
+}
+
+export async function createCheckoutSession(formData?: FormData): Promise<void> {
+  // Payment-first checkout (offer 1d, 2026-07-12 amendment): a signed-out
+  // buyer goes STRAIGHT to Stripe Checkout — Checkout collects email + card
+  // natively and always creates a Customer in subscription mode (verified:
+  // docs.stripe.com/api/checkout/sessions/create, `customer`). The webhook
+  // resolves the account afterward, when the card is already captured. The
+  // old flow bounced them to /login, an inbox round-trip at the moment of
+  // highest intent (magic-link auth has no instant path back).
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
 
   const priceId = await resolveProPriceId();
-  const customerId = await getOrCreateStripeCustomer(user.id, user.email ?? "");
   const origin = await siteOrigin();
 
-  const session = await stripe().checkout.sessions.create({
+  // Ads attribution (ADR-084/112 passthrough): /pro mirrors its landing
+  // searchParams into hidden fields; they ride on subscription metadata so
+  // the funnel report can tie trials to channels.
+  const attribution: Record<string, string> = {};
+  for (const key of ["utm_source", "utm_medium", "utm_campaign", "hook"] as const) {
+    const v = sanitizeAttribution(formData?.get(key) ?? null);
+    if (v) attribution[key] = v;
+  }
+
+  // One-trial-per-customer (offer 1c), keyed on email. Only checkable here
+  // for signed-in buyers (a guest's email is unknown until Checkout); the
+  // webhook closes the guest side. No-trial sessions show "$6 due today" in
+  // Checkout, so the display is always honest.
+  const params: Stripe.Checkout.SessionCreateParams = {
     mode: "subscription",
-    customer: customerId,
     line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${origin}/account?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/pro?checkout=canceled`,
     allow_promotion_codes: true,
-    client_reference_id: user.id,
-    // 30-day free trial, CARD REQUIRED (payment_method_collection:"always" — the
-    // Stripe default for subscription mode, set explicitly so a $0-due trial
-    // still collects a card; "if_required" would skip it). trial_period_days is
-    // the trial length. Confirmed against docs.stripe.com/payments/checkout/free-trials.
+    // Card REQUIRED on a $0-due trial (payment_method_collection:"always" —
+    // "if_required" would skip it). Confirmed against
+    // docs.stripe.com/payments/checkout/free-trials.
     payment_method_collection: "always",
-    subscription_data: {
+  };
+
+  if (user) {
+    const customerId = await getOrCreateStripeCustomer(user.id, user.email ?? "");
+    const withTrial = !(await trialAlreadyUsed(user.email ?? ""));
+    params.customer = customerId;
+    params.client_reference_id = user.id;
+    params.success_url = `${origin}/account?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
+    params.subscription_data = {
+      ...(withTrial ? { trial_period_days: PRO_TRIAL_DAYS } : {}),
+      metadata: { supabase_user_id: user.id, ...attribution },
+    };
+  } else {
+    // Guest: no `customer` — Checkout creates one from the email it collects.
+    // Success lands on /pro (public) which renders the signed-out "check your
+    // email for your sign-in link" state; /account would bounce to /login.
+    params.success_url = `${origin}/pro?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
+    params.subscription_data = {
       trial_period_days: PRO_TRIAL_DAYS,
-      metadata: { supabase_user_id: user.id },
-    },
-  });
+      metadata: { guest_checkout: "true", ...attribution },
+    };
+  }
+
+  const session = await stripe().checkout.sessions.create(params);
 
   if (!session.url) {
     throw new Error("Stripe Checkout session has no redirect URL.");

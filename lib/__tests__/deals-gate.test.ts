@@ -40,10 +40,16 @@ test("empty day (0 deals): the trust-flex honest degrade, not a fake count", () 
   assert.match(g.headline, /nothing worth locking today/i);
 });
 
-test("every state carries the 'get the drop' CTA copy (the content marker)", () => {
+test("every state names Pro (the drop is Pro's deliverable — the content marker)", () => {
+  // Re-locked by the 2026-07-11 offer-lock: the gate sells the trial, so the
+  // stable marker is "Pro", present in every supply state.
   for (const n of [0, 1, 2, 3, 6, 12]) {
-    assert.match(dealsGateState(n).subtext, /get the drop/i, `n=${n} subtext must anchor the marker`);
+    assert.match(dealsGateState(n).subtext, /\bPro\b/, `n=${n} subtext must anchor the marker`);
   }
+});
+
+test("locked copy verbatim: 'Pro sees everything Foil finds, first.'", () => {
+  assert.equal(dealsGateState(6).subtext, "Pro sees everything Foil finds, first.");
 });
 
 test("lockedCount never exceeds total-minus-teaser and never goes negative", () => {

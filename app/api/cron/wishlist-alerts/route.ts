@@ -21,6 +21,8 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { scanWatchlists, type SupabaseLike, type WatchlistRow } from "@/lib/wishlist/scan-batch";
 import { tierLabel, type SoldComp } from "@/lib/wishlist/alert-decision";
 import { MOVER_FRESHNESS_MS } from "@/lib/deals/market-movers-read";
+import { proTierEmails } from "@/lib/entitlements";
+import { watchDueThisRun } from "@/lib/offer";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -72,6 +74,13 @@ export async function GET(request: Request): Promise<NextResponse> {
           | "armed"
           | "fired",
       })) satisfies WatchlistRow[];
+
+      // Cadence split (offer 1b): pro watches run on every hourly tick; free
+      // watches only on the FREE_ALERT_HOUR_UTC tick. Same engine, one filter.
+      if (!watchDueThisRun("free", now)) {
+        const proEmails = await proTierEmails(admin);
+        return { rows: rows.filter((r) => proEmails.has(r.email.toLowerCase())), error: null };
+      }
       return { rows, error: null };
     },
     async updateWatchState(rowId, patch) {

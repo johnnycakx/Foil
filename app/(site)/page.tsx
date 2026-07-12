@@ -12,7 +12,7 @@ import { HeroBelt } from "@/components/hero-belt";
 
 const SITE_TITLE = "Foil: the best price on any Pokémon card";
 const SITE_DESCRIPTION =
-  "Tell me the cards you're chasing. Foil watches the market and emails you the moment one drops to your price. Judged against what cards really sell for, not asking prices. Free.";
+  "Tell Foil the cards you're chasing. It watches the market and emails you when one drops to your price. Judged against what cards really sell for, not asking prices. Free.";
 
 export const metadata: Metadata = {
   title: SITE_TITLE,
@@ -359,12 +359,12 @@ function Hero() {
           the quiet X follow widget below (the footer keeps the face). */}
       <div className="relative mx-auto w-full max-w-3xl px-5 pt-8 pb-12 text-center sm:px-8 sm:pt-12 sm:pb-16">
         <h1 className="font-display mx-auto max-w-3xl text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.015em] text-foil-cream [text-wrap:balance] sm:text-6xl md:text-7xl">
-          Tell me the cards you&apos;re chasing.
+          Tell Foil the cards you&apos;re chasing.
         </h1>
 
         <p className="mx-auto mt-6 max-w-xl text-xl text-foil-cream/70 sm:text-2xl sm:leading-snug">
-          Foil watches the market and emails you the moment one drops to your
-          price. Judged against what cards really sell for, not asking prices.
+          Foil watches the market and emails you when one drops to your price.
+          Judged against what cards really sell for, not asking prices.
         </p>
 
         <div className="mt-10 flex justify-center">
@@ -377,7 +377,7 @@ function Hero() {
         </div>
 
         <p className="mt-5 text-sm text-foil-cream/60">
-          Free · no account needed · one email when it matters, not a feed to check
+          Free · no account needed · Foil checks your cards daily, every hour on Pro
         </p>
 
         {/* The follow loop (homepage-hero-simplify): a quiet one-tap X follow
@@ -556,7 +556,7 @@ function PullLoop() {
     {
       num: "2",
       title: "Set your price",
-      body: "Name what you'd happily pay. No number in mind? We'll watch for a real dip below what it usually sells for.",
+      body: "Name what you'd happily pay. No number in mind? Foil watches for a real dip below what it usually sells for.",
       artifact: (
         <div className="flex items-center justify-between rounded-lg border border-foil-cream/12 bg-foil-night-2 px-3 py-2">
           <span className="text-[11px] text-foil-cream/55">your price</span>
@@ -566,8 +566,8 @@ function PullLoop() {
     },
     {
       num: "3",
-      title: "We watch the market",
-      body: "Foil checks live listings around the clock and judges every price against what the card actually sells for.",
+      title: "Foil watches the market",
+      body: "Foil checks live listings and judges every price against what the card actually sells for. Free checks once a day. Pro checks every hour.",
       artifact: (
         <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 rounded-lg border border-foil-cream/12 bg-foil-night-2 px-3 py-2">
           <span className="font-mono text-xs tabular-nums text-foil-cream/90">$1,845</span>
@@ -580,7 +580,7 @@ function PullLoop() {
     {
       num: "4",
       title: "You get one email",
-      body: "The moment a real listing hits your number. No feed to check, no tabs to scrub, no junk to wade through.",
+      body: "When a real listing hits your number. No feed to check, no tabs to scrub, no junk to wade through.",
       artifact: (
         <div className="flex items-center gap-2 rounded-lg border border-foil-cream/12 bg-foil-night-2 px-3 py-2">
           <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-3 w-3 shrink-0 text-foil-accent">

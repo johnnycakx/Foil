@@ -54,7 +54,7 @@ export function AddToVault({
           Add to vault
         </button>
         <p className="mt-2.5 text-sm text-foil-cream/60">
-          We watch every listing and email you when the price is right. No
+          Foil watches the listings and emails you when the price is right. No
           account needed.
         </p>
       </div>
@@ -71,8 +71,8 @@ export function AddToVault({
       </p>
       <p className="mt-2 text-sm text-foil-cream/70">
         {hasSoldData
-          ? "Set a target price. We email you the moment a listing meets it, and your vault keeps every card you track on one private page."
-          : "Sold data is still pending for this card. Add it and we start watching right away; we track its sold prices from here on and email you when a listing meets your target."}
+          ? "Set a target price. Foil emails you when a listing meets it, and your vault keeps every card you track on one private page."
+          : "Sold data is still pending for this card. Add it and Foil starts watching right away; it tracks the card's sold prices from here on and emails you when a listing meets your target."}
       </p>
       <WatchlistForm
         cardSlug={cardSlug}

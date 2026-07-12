@@ -37,6 +37,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { subscribeEmail } from "@/lib/beehiiv";
 import { recordSubscriber, sanitizeUtmValue } from "@/lib/newsletter/subscribers";
 import { upsertWatchlist } from "@/lib/wishlist/upsert";
+import { checkFreeWatchCap } from "@/lib/wishlist/free-cap";
 import { getAlertSuppression } from "@/lib/wishlist/pause";
 import { postError } from "@/lib/notifications/discord";
 import {
@@ -190,6 +191,27 @@ export async function POST(request: Request): Promise<NextResponse> {
     .eq("email", email);
   if (!countError && exceedsWatchCap(existingCount ?? 0, accepted.length)) {
     return NextResponse.json({ ok: false, error: "watch_cap_reached" }, { status: 429 });
+  }
+
+  // Free-tier product cap (offer 1a): 3 active watches. Pro is uncapped
+  // (bounded only by the abuse cap above). Gift-vault rows are exempt inside
+  // the check. 200-with-error (not 429) — this is a product line with an
+  // upgrade prompt, not abuse.
+  const capCheck = await checkFreeWatchCap(
+    admin,
+    email,
+    accepted.map((r) => r.slug),
+  );
+  if (!capCheck.allowed) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "watch_limit_free",
+        activeCount: capCheck.activeCount,
+        cap: capCheck.cap,
+      },
+      { status: 200 },
+    );
   }
 
   // UPSERT per row via the shared helper — same conflict target as the

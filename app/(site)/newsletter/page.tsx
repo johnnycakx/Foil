@@ -22,7 +22,7 @@ export const revalidate = 86400;
 const PAGE_TITLE = "Pokémon card deal alerts + weekly market notes";
 
 const PAGE_DESCRIPTION =
-  "Tell me a card; we email you when it drops to your target price. Weekly market notes from John Craig, who runs a Pokémon card store. One email a week.";
+  "Tell Foil a card; it emails you when it drops to your target price. Weekly market notes from John Craig, who runs a Pokémon card store. One email a week.";
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
@@ -63,7 +63,7 @@ export default async function NewsletterPage() {
           The Foil newsletter
         </p>
         <h1 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-navy sm:text-4xl">
-          Tell me a card → I email you when it drops.
+          Tell Foil a card. It emails you when it drops.
         </h1>
         <p className="mt-4 text-base leading-relaxed text-foil-slate sm:text-lg">
           Weekly market notes from John Craig, who runs a Pokémon card store. Specific deals,

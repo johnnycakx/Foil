@@ -22,6 +22,10 @@
       "schedule": "0 9 * * *"
     },
     {
+      "path": "/api/cron/daily-drop",
+      "schedule": "47 9 * * *"
+    },
+    {
       "path": "/api/cron/x-post",
       "schedule": "0 14 * * *"
     },

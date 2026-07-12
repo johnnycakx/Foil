@@ -126,15 +126,22 @@ test("sample curated card page renders (I-006 HTTP layer)", { skip }, async () =
   assert.equal(status, 200, `card page /cards/${SAMPLE_CARD_SLUG} must return 200`);
 });
 
-// validation-sprint Phase 3 (ADR-112): the /deals board is gated — top 2 shown,
-// the rest locked behind the drop subscribe. The gate renders in the SSR HTML in
-// EVERY supply state (0–6 deals/day), so "get the drop" is a stable marker that
-// the gated board shipped. Deal-count-specific copy varies daily, so we don't
-// pin it; the honest-degrade logic is unit-tested in lib/__tests__/deals-gate.test.ts.
-test("/deals renders the gated drop-subscribe (Phase 3 gate is live)", { skip }, async () => {
+// validation-sprint Phase 3 (ADR-112), copy re-locked by the 2026-07-11
+// offer-lock (ADR-113): the /deals board is gated — top 2 shown, the rest
+// locked behind the Pro trial pitch, with the free digest catcher below. The
+// gate renders in the SSR HTML in EVERY supply state (0–6 deals/day), so the
+// free-catcher line is a stable marker that the re-locked gate shipped.
+// Deal-count-specific copy varies daily, so we don't pin it; the honest-degrade
+// logic is unit-tested in lib/__tests__/deals-gate.test.ts.
+test("/deals renders the re-locked gate (Pro pitch + free catcher live)", { skip }, async () => {
   const { status, body } = await fetchText(`${BASE}/deals?cv=${Date.now()}`);
   assert.equal(status, 200, "/deals must return 200");
-  assert.match(body, /get the drop/i, "the gated board's drop-subscribe CTA must render");
+  assert.match(
+    body,
+    /Not ready\? Free gets you 3 watches and the weekly digest\./,
+    "the gate's locked free-catcher line must render",
+  );
+  assert.match(body, /Start your 30-day free trial/, "the gate's Pro trial CTA must render");
   // The board itself still renders its hook (proves the teaser rows, not just the gate).
   assert.match(body, /below sold/i, "the top-2 teaser board still renders");
 });

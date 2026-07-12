@@ -31,6 +31,7 @@ import {
   isModernMoverCard,
   type MomentumEntry,
 } from "@/lib/deals/market-movers";
+import { computeMarketTemperature } from "@/lib/deals/market-temperature";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -167,6 +168,31 @@ export async function GET(request: Request): Promise<NextResponse> {
     else snapshotsWritten = rows.length;
   }
 
+  // Market-temperature stat (offer item 6): one number over the whole
+  // priceable universe this run, stored per day. Soft-fail — the movers
+  // write above is the load-bearing output.
+  let temperature: { belowCount: number; totalCount: number } | null = null;
+  if (result.snapshots.length > 0) {
+    temperature = computeMarketTemperature(
+      result.snapshots.map((s) => ({ avg7d: s.avg7d, avg30d: s.avg30d })),
+    );
+    try {
+      const admin = supabaseAdmin();
+      const snapshotDate = result.snapshots[0].snapshotDate;
+      const { error } = await admin.from("market_temperature").upsert(
+        {
+          snapshot_date: snapshotDate,
+          below_count: temperature.belowCount,
+          total_count: temperature.totalCount,
+        },
+        { onConflict: "snapshot_date" },
+      );
+      if (error) console.warn(`[market-movers] temperature write failed: ${error.message}`);
+    } catch (err) {
+      console.warn(`[market-movers] temperature write threw: ${(err as Error).message}`);
+    }
+  }
+
   return NextResponse.json({
     ok: true,
     durationMs: Date.now() - startedAt,
@@ -178,6 +204,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     moversWritten,
     staleCleared,
     snapshotsWritten,
+    temperature,
     errorCount: result.errors.length,
     capHit: result.capHit,
     moversError,

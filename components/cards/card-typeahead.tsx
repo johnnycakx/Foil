@@ -29,8 +29,9 @@ export function CardTypeahead({
   cataloguedIds,
   pickedIds,
   onPick,
-  placeholder = "charizard, pikachu, lugia…",
-  label = "Tell me a card",
+  // Agent dress (offer item 4a): one prompt-style box, Foil in third person.
+  placeholder = "Tell Foil what you're chasing…",
+  label = "What are you chasing?",
   autoFocus = false,
   pickedBadge = "Selected ✓",
   pickCta = "+ Track",
@@ -52,6 +53,9 @@ export function CardTypeahead({
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<CardSearchHit[]>([]);
   const [searching, setSearching] = useState(false);
+  // Null-over-guess (offer 4a): a completed search with no hits ASKS for more
+  // detail instead of silently showing nothing (or a wrong guess).
+  const [searchedEmpty, setSearchedEmpty] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastQueryRef = useRef<string>("");
@@ -63,6 +67,7 @@ export function CardTypeahead({
     if (q.length < 2) {
       setSearchResults([]);
       setSearching(false);
+      setSearchedEmpty(false);
       return;
     }
     debounceRef.current = setTimeout(async () => {
@@ -83,7 +88,9 @@ export function CardTypeahead({
         // Only update if this is still the latest query — protects against
         // out-of-order responses on slow networks.
         if (lastQueryRef.current === q) {
-          setSearchResults(Array.isArray(body.hits) ? body.hits : []);
+          const hits = Array.isArray(body.hits) ? body.hits : [];
+          setSearchResults(hits);
+          setSearchedEmpty(hits.length === 0);
         }
       } catch (err) {
         if ((err as { name?: string }).name !== "AbortError") {
@@ -112,10 +119,15 @@ export function CardTypeahead({
         />
       </label>
 
-      {(searching || searchResults.length > 0) && (
+      {(searching || searchResults.length > 0 || searchedEmpty) && (
         <ul className="mt-4 space-y-2">
           {searching && searchResults.length === 0 && (
             <li className="text-sm text-foil-slate">Searching…</li>
+          )}
+          {!searching && searchedEmpty && searchResults.length === 0 && (
+            <li className="text-sm text-foil-slate">
+              Foil doesn&apos;t recognize that one yet. Try the full card name, or add the set name.
+            </li>
           )}
           {searchResults.map((hit) => {
             const isCatalogued = cataloguedSet.has(hit.id);

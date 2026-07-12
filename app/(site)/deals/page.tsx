@@ -13,6 +13,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLeaderboard, latestComputedAt } from "@/lib/deals/leaderboard";
 import { getMarketMovers } from "@/lib/deals/market-movers-read";
+import { getMarketTemperature, temperatureSentence } from "@/lib/deals/market-temperature";
 import { DealsBoard } from "@/components/deals/deals-board";
 import { MoversBoard } from "@/components/deals/movers-board";
 import { EmailCapture } from "@/components/email-capture";
@@ -62,7 +63,11 @@ function formatBoardDate(iso: string | null): string {
 export default async function DealsPage() {
   // Insight-led LEAD: market movers (PokeTrace aggregates — can't break on one
   // mispriced listing). Demoted secondary: the single-listing below-sold board.
-  const [movers, deals] = await Promise.all([getMarketMovers(12), getLeaderboard(12)]);
+  const [movers, deals, temperature] = await Promise.all([
+    getMarketMovers(12),
+    getLeaderboard(12),
+    getMarketTemperature(),
+  ]);
   const boardDate = formatBoardDate(latestComputedAt(deals));
   const trackedCount = CARD_CATALOG.length;
 
@@ -90,10 +95,15 @@ export default async function DealsPage() {
           Good buys this week
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-foil-cream/60">
-          Cards whose Near Mint copies are trading below their own 30-day sold average. Each is a
-          candidate worth a look, not a guarantee. Every figure is a real recent average, sample-size
-          gated so thin or noisy cards never make the list.
+          Cards going for less than they usually sell for. Each is a candidate worth a look, not a
+          guarantee. Every figure is a real recent sold average, and we only show a price when
+          enough copies actually sold, so thin or noisy cards never make the list.
         </p>
+        {temperature ? (
+          <p className="mx-auto mt-3 max-w-xl text-sm text-foil-accent/90">
+            {temperatureSentence(temperature)}
+          </p>
+        ) : null}
       </header>
 
       {/* Section jump links (blackout-brand Workstream C readability pass):

@@ -19,6 +19,7 @@ import { verifyVaultToken } from "@/lib/vault-token";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getCatalogEntry } from "@/lib/cards/catalog";
 import { upsertWatchlist } from "@/lib/wishlist/upsert";
+import { checkFreeWatchCap } from "@/lib/wishlist/free-cap";
 import { pauseWatchlistAlerts, resumeWatchlistAlerts } from "@/lib/wishlist/pause";
 import { sendVaultLinkEmail } from "@/lib/wishlist/vault-email";
 import { clientIpKey, createIpRateLimiter } from "@/lib/start/guards";
@@ -236,6 +237,10 @@ export async function vaultAddCard(formData: FormData): Promise<VaultActionResul
 
   try {
     const admin = supabaseAdmin();
+    // Free-tier product cap (offer 1a). The vault view renders the upgrade
+    // prompt on this tag.
+    const capCheck = await checkFreeWatchCap(admin, auth.email, [entry.slug]);
+    if (!capCheck.allowed) return { ok: false, error: "watch_limit_free" };
     const { ok } = await upsertWatchlist(admin, {
       email: auth.email,
       card_slug: entry.slug,

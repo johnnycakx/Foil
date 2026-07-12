@@ -29,6 +29,8 @@ const ERROR_COPY: Record<string, string> = {
   invalid_condition: "That condition isn't available. Try again.",
   unavailable: "Alerts are briefly unavailable. Try again shortly.",
   save_failed: "Couldn't save your alert. Try again.",
+  watch_limit_free:
+    "Free gets you 3 watches, and you're at the limit. Pro watches every card you're chasing, checked hourly.",
 };
 
 export function WatchlistForm({
@@ -60,9 +62,9 @@ export function WatchlistForm({
   if (state.status === "success") {
     return (
       <div className="mt-4 rounded-xl border border-foil-accent/40 bg-foil-accent/10 p-4 text-sm text-foil-cream">
-        <p className="font-medium text-foil-cream">Added to your vault.</p>
+        <p className="font-medium text-foil-cream">Foil is now watching this card for you.</p>
         <p className="mt-1 text-foil-cream/70">
-          We&apos;ll email you the moment {cardName}
+          You&apos;ll get an email when {cardName}
           {targeting ? ` (${targeting})` : ""} hits your target price.
         </p>
         {state.vaultUrl ? (
@@ -136,6 +138,14 @@ export function WatchlistForm({
       {state.status === "error" && (
         <p className="text-xs text-foil-coral" role="alert">
           {ERROR_COPY[state.error ?? ""] ?? "Something went wrong. Try again."}
+          {state.error === "watch_limit_free" && (
+            <>
+              {" "}
+              <a href="/pro" className="font-semibold text-foil-cream underline underline-offset-2">
+                Start your 30-day free trial →
+              </a>
+            </>
+          )}
         </p>
       )}
     </form>
