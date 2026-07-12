@@ -20,6 +20,17 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 
 ---
 date: 2026-07-12
+category: product
+status: captured
+---
+## untracked-cards-are-invitations-not-dead-ends — sleeve it, request tracking, get notified
+
+From John's round-2 QA narration (tour video, 5:19–5:59): sleeve search currently greys out "Not yet tracked" cards as inert rows. Instead: let the user add an untracked card to their binder, offer a one-tap "request tracking," and email them when Foil starts tracking it — "they will not immediately leave foiltcg.com, they will stay because of the promise that there will eventually be that card data." Converts a data-coverage gap into a retention loop AND a demand signal for the ADR-092 hydration queue (watches already allocate the data budget; this extends it to cards PokeTrace hasn't matched yet).
+
+**Context:** Round-2 preview tour of start-binder-delight, design-loop/TOUR-FINDINGS-2026-07-12.md Round 2. Companion open question captured there: what a duplicate-email resubmit should show.
+
+---
+date: 2026-07-12
 category: monetization
 status: shipped
 ---
