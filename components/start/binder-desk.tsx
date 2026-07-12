@@ -280,7 +280,7 @@ export function BinderDesk({
           code: body.error,
           message:
             body.error === "watch_limit_free"
-              ? "Free fills 3 sleeves, and yours are full. Pro fills the whole page and checks hourly."
+              ? "Free fills this page, and yours is full. Pro opens more pages and checks hourly."
               : "Something broke. Try again, or email john.c.craig24@gmail.com.",
         });
         return;

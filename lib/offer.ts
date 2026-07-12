@@ -1,16 +1,23 @@
-// The LOCKED offer (2026-07-11 offer-lock session, ratified by John).
+// The LOCKED offer (2026-07-11 offer-lock session, ratified by John;
+// free cap amended to one binder page by the 2026-07-12 cycle-3 brief).
 //
-// Free: top-2 /deals teaser · weekly digest · 3 active watches checked once
-// daily. Seeded gift vaults are exempt from the cap (flag on the vault's src,
+// Free: top-2 /deals teaser · weekly digest · ONE BINDER PAGE (9 active
+// watches) checked once daily. "Free fills a page. Pro fills the binder."
+// Seeded gift vaults are exempt from the cap (flag on the vault's src,
 // not the email). Pro $6/mo, 30-day card-required trial: unlimited watches
-// checked hourly + the full daily deal drop. These constants are the single
-// source of truth for the tier mechanics; copy quoting them is pinned by the
-// register-rule tests.
+// (more pages) checked hourly + the full daily deal drop. These constants are
+// the single source of truth for the tier mechanics; copy quoting them is
+// pinned by the register-rule tests.
 
 import { SEEDED_VAULTS } from "./vault-seeds.ts";
 
+/** One binder page — the free tier's unit of capacity (cycle-3 brief,
+ *  2026-07-12; supersedes the 3-watch cap). The metaphor and the entitlement
+ *  now align: the /start grid IS the allowance. */
+export const FREE_PAGE_SLEEVES = 9;
+
 /** Free tier: max ACTIVE (un-paused, non-gift) watches per email. */
-export const FREE_WATCH_CAP = 3;
+export const FREE_WATCH_CAP = FREE_PAGE_SLEEVES;
 
 /**
  * The one hourly-cron run per day that evaluates FREE watches (17:00 UTC —

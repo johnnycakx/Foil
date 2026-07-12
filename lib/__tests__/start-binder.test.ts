@@ -45,9 +45,9 @@ const card = (over: Partial<BinderCard> = {}): BinderCard => ({
 
 // --- the page ---------------------------------------------------------------
 
-test("the page is nine pockets and the free tier owns three", () => {
+test("the page is nine pockets and free owns the WHOLE page (cycle-3 entitlement)", () => {
   assert.equal(POCKETS_PER_PAGE, 9);
-  assert.equal(FREE_POCKETS, 3);
+  assert.equal(FREE_POCKETS, 9, "Free fills a page. Pro fills the binder.");
 });
 
 test("FREE_POCKETS must not drift from the offer's watch cap", () => {
@@ -57,12 +57,12 @@ test("FREE_POCKETS must not drift from the offer's watch cap", () => {
   assert.equal(FREE_POCKETS, FREE_WATCH_CAP);
 });
 
-test("the free cap renders as FURNITURE: empty sleeves, then visible Pro sleeves", () => {
+test("a fresh free page is NINE open sleeves — no locked wall (cycle-3 A3)", () => {
   const page = layoutPockets([], {});
   assert.equal(page.length, 9);
   assert.deepEqual(
     page.map((p) => p.kind),
-    ["empty", "empty", "empty", "locked", "locked", "locked", "locked", "locked", "locked"],
+    Array.from({ length: 9 }, () => "empty"),
   );
 });
 
@@ -71,14 +71,14 @@ test("filled cards take pockets in order; the rest of the page stays honest", ()
   assert.equal(page[0]?.kind, "filled");
   assert.equal(page[1]?.kind, "filled");
   assert.equal(page[2]?.kind, "empty");
-  assert.equal(page[3]?.kind, "locked");
+  assert.equal(page[8]?.kind, "empty");
   if (page[0]?.kind === "filled") assert.equal(page[0].targetUsd, "40");
 });
 
 test("freeSlotsLeft never goes negative", () => {
-  assert.equal(freeSlotsLeft(0), 3);
-  assert.equal(freeSlotsLeft(3), 0);
+  assert.equal(freeSlotsLeft(0), 9);
   assert.equal(freeSlotsLeft(9), 0);
+  assert.equal(freeSlotsLeft(12), 0);
 });
 
 // --- truth density ----------------------------------------------------------
@@ -301,6 +301,13 @@ test("taking the pencil back makes the collector's number win, and clearing it p
   );
   assert.ok(cleared.success);
   if (cleared.success) assert.equal(cleared.data.cards[0]?.target_price_cents, null);
+});
+
+test("a full free page (9 cards) parses on the wire in one submit", () => {
+  // The cap itself is SERVER-enforced (evaluateFreeCap, offer-mechanics tests:
+  // 9 accepted, 10th rejected); the wire must not strangle a legal full page.
+  const nine = Array.from({ length: 9 }, (_, i) => card({ id: `sv9-${i}` }));
+  assert.ok(startSchema.safeParse(clientPayload(nine)).success);
 });
 
 test("a card missing its identity is REJECTED by the schema (regression guard)", () => {

@@ -17,8 +17,9 @@ import { marketFloorCents } from "../wishlist/alert-decision.ts";
 /** A nine-pocket page — the most nostalgic object in the hobby. */
 export const POCKETS_PER_PAGE = 9;
 
-/** Free tier fills 3 pockets; the rest are visibly, honestly Pro. */
-export const FREE_POCKETS = 3;
+/** Free fills the whole page (cycle-3 entitlement: one 9-sleeve binder page;
+ *  Pro opens more pages + hourly checks). Pinned equal to FREE_WATCH_CAP. */
+export const FREE_POCKETS = 9;
 
 /** Minimum sales behind a figure before Foil will write it on a tag.
  *  Restated from lib/deals/market-movers.ts::MOVER_MIN_SALES (server-leaning
