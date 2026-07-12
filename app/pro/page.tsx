@@ -115,11 +115,16 @@ export default async function ProPage({
           </p>
         </section>
 
-        <section className="mt-8 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-xl border border-foil-cream/10 bg-foil-night-2 p-5">
-            <p className="font-semibold text-foil-cream">{DROP_TITLE}</p>
-            <p className="mt-1.5 text-sm text-foil-cream/60">{DROP_BODY}</p>
-          </div>
+        {/* hook=drop already leads with the drop line as the H1 — repeating
+            the identical card below it reads as a copy bug, so that variant
+            shows only the watches card, full width. */}
+        <section className={`mt-8 grid gap-3 ${hook === "drop" ? "" : "sm:grid-cols-2"}`}>
+          {hook !== "drop" && (
+            <div className="rounded-xl border border-foil-cream/10 bg-foil-night-2 p-5">
+              <p className="font-semibold text-foil-cream">{DROP_TITLE}</p>
+              <p className="mt-1.5 text-sm text-foil-cream/60">{DROP_BODY}</p>
+            </div>
+          )}
           <div className="rounded-xl border border-foil-cream/10 bg-foil-night-2 p-5">
             <p className="font-semibold text-foil-cream">{WATCHES_TITLE}</p>
             <p className="mt-1.5 text-sm text-foil-cream/60">{WATCHES_BODY}</p>
