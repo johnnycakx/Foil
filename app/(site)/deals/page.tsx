@@ -200,7 +200,7 @@ export default async function DealsPage() {
           source="deals_board"
           variant="inline"
           tone="night"
-          headline="Get the weekly drop, free."
+          headline="Get the weekly digest, free."
           subtext="One email a week: the best live card deals right now, the cards on the move, and one sharp valuation note. No spam."
         />
       </div>

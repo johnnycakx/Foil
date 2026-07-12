@@ -537,7 +537,7 @@ function PullLoop() {
     {
       num: "1",
       title: "Pick your cards",
-      body: "Type a name — 'Moonbreon,' 'Base Set Charizard.' Foil knows every printing, from vintage to Japanese exclusives.",
+      body: "Type a name: 'Moonbreon,' 'Base Set Charizard.' Foil knows every printing, from vintage to Japanese exclusives.",
       artifact: (
         <div className="rounded-lg border border-foil-cream/12 bg-foil-night-2 px-3 py-2">
           <p className="flex items-center gap-2 text-xs text-foil-cream/80">
@@ -602,7 +602,7 @@ function PullLoop() {
           How the chase works
         </h2>
         <p className="mt-3 max-w-2xl text-lg text-foil-cream/60">
-          One chase, start to finish — here&apos;s Moonbreon&apos;s.
+          One chase, start to finish. Here&apos;s Moonbreon&apos;s.
         </p>
         <ol className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s) => (
@@ -663,13 +663,13 @@ function SampleAlert() {
           </h2>
           <p className="mt-4 max-w-md text-lg leading-relaxed text-foil-cream/70">
             No dashboard to babysit. When a live listing for one of your cards
-            drops under your price, this lands in your inbox — with the sold
+            drops under your price, this lands in your inbox, with the sold
             data to prove the deal is real.
           </p>
           <ul className="mt-6 max-w-md space-y-2.5 text-base text-foil-cream/60">
             <li className="flex items-start gap-2.5">
               <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-foil-accent" />
-              Real listings only — seller, condition, and sold history checked
+              Real listings only. Seller, condition, and sold history checked
               before we bother you.
             </li>
             <li className="flex items-start gap-2.5">
@@ -691,8 +691,8 @@ function SampleAlert() {
             </div>
             <p className="mt-4 text-base font-semibold text-foil-navy">
               {listingLine
-                ? `Umbreon VMAX (alt art) dropped to ${listingLine} — 15% under its 30-day sold average`
-                : "Umbreon VMAX (alt art) just dipped below its 30-day sold average"}
+                ? `Umbreon VMAX (alt art) dropped to ${listingLine}, 15% under what it usually sells for`
+                : "Umbreon VMAX (alt art) just dipped below what it usually sells for"}
             </p>
             <div className="mt-4 flex items-center gap-4">
               <Image
@@ -776,7 +776,7 @@ function NewsletterBand() {
           source="homepage_hero"
           variant="inline"
           tone="night"
-          headline="Not chasing one card? Get the weekly drop."
+          headline="Not chasing one card? Get the weekly digest."
           subtext="One email a week: the best live card deals right now, the cards on the move, and one sharp valuation note. No spam."
         />
       </div>
