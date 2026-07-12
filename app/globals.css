@@ -502,8 +502,9 @@ body {
   position: absolute;
   top: 4px;
   right: 4px;
-  width: 20px;
-  height: 20px;
+  /* 24px is the WCAG tap-target floor (a real Lighthouse finding, cycle 2). */
+  width: 24px;
+  height: 24px;
   line-height: 1;
   border-radius: 999px;
   color: rgba(248, 245, 240, 0.85);
@@ -729,6 +730,361 @@ body {
   color: rgba(58, 50, 34, 0.85);
 }
 
+/* --- cycle 2: the desk is ALIVE at rest ------------------------------------
+   Warm lamp pool + paper grain so the resting state reads as a desk under a
+   lamp, never gray boxes on a black void. The grain is an inline SVG
+   turbulence tile (no asset, no request). */
+
+.desk-scene::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  pointer-events: none;
+  border-radius: 20px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+}
+
+/* The lamp pool: warm at rest (amber, not gray), warmer when you lean in. */
+.desk-lamp {
+  background: radial-gradient(
+    60% 55% at 50% 0%,
+    rgba(228, 186, 136, 0.2),
+    rgba(217, 138, 160, 0.06) 45%,
+    transparent 70%
+  );
+  opacity: 0.6;
+}
+
+/* The binder page itself carries a faint warm sheet under the sleeves. */
+.binder {
+  background-image: radial-gradient(
+    120% 90% at 50% 0%,
+    rgba(228, 186, 136, 0.05),
+    rgba(228, 186, 136, 0.015) 55%,
+    transparent 80%
+  );
+}
+
+/* The first sleeve's invitation, in Foil's voice: pencil, not signage. */
+.sleeve-invite {
+  text-transform: none;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  font-size: 12px;
+  color: rgba(248, 245, 240, 0.55);
+}
+
+/* Foil's example card: real, shimmering, clearly labeled, keepable. */
+.demo-keep {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.pocket-demo .sleeve {
+  border-color: rgba(228, 186, 136, 0.28);
+}
+.pocket-demo .sleeve-remove {
+  opacity: 1;
+}
+.demo-note {
+  margin-top: 2px;
+  font-size: 10px;
+  font-style: italic;
+  color: rgba(248, 245, 240, 0.5);
+}
+
+/* --- cycle 2: Foil writes the tag first ------------------------------------
+   The agent's pencil: after the shimmer passes, the tag fills in graphite.
+   The write is a clip reveal (left to right, roughly constant speed, the way
+   a hand writes); one tap takes the pencil back. */
+
+.tag-written {
+  position: relative;
+  display: block;
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid rgba(248, 245, 240, 0.14);
+  background: rgba(248, 245, 240, 0.9);
+  padding: 3px 6px;
+  text-align: left;
+  transform: rotate(-0.6deg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.tag-written:hover {
+  border-color: rgba(217, 138, 160, 0.8);
+}
+.tag-written:active {
+  transform: rotate(-0.6deg) scale(0.97);
+}
+.tag-pencil {
+  display: block;
+  font-size: 11px;
+  font-style: italic;
+  color: #4a4238;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  clip-path: inset(0 0 0 0);
+  animation: tag-write 680ms cubic-bezier(0.4, 0, 0.6, 1) both;
+}
+@keyframes tag-write {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* --- cycle 2: the heartbeat ------------------------------------------------
+   One quiet line once the first card is sleeved: when Foil actually looks
+   next. The dot breathes; nothing bursts. */
+
+.heartbeat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: rgba(248, 245, 240, 0.6);
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms cubic-bezier(0.23, 1, 0.32, 1), transform 300ms cubic-bezier(0.23, 1, 0.32, 1);
+  @starting-style {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+.heartbeat-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(228, 186, 136, 0.9);
+  animation: heartbeat-breathe 2.6s ease-in-out infinite;
+}
+@keyframes heartbeat-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* --- cycle 2: the booster pack ---------------------------------------------
+   Sealed foil on the desk. The drag maps 1:1 to the pointer (no transition
+   mid-drag); release below the tear point snaps back fast; past it the strip
+   flies and the hand deals with a stagger. */
+
+.pack-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+.pack-ask {
+  font-size: 12px;
+  font-style: italic;
+  color: rgba(248, 245, 240, 0.6);
+  text-align: center;
+}
+.pack {
+  position: relative;
+  width: 118px;
+  height: 156px;
+  cursor: grab;
+  transform: rotate(-3deg);
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.pack:active {
+  cursor: grabbing;
+}
+.pack-strip {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 26px;
+  z-index: 2;
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, #2c3350 0%, #232a45 100%);
+  box-shadow: inset 0 1px 0 rgba(248, 245, 240, 0.14);
+  transform: translateX(var(--tear, 0px)) rotate(calc(var(--tear, 0px) * 0.04deg));
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.pack[data-tearing="true"] .pack-strip {
+  transition: none;
+}
+/* The crimp: the pressed zigzag seal every collector has picked at. */
+.pack-strip::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 7px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(248, 245, 240, 0.16) 0 2px,
+    transparent 2px 6px
+  );
+}
+.pack-notch {
+  position: absolute;
+  left: -1px;
+  bottom: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--color-foil-night, #101017);
+}
+.pack-body {
+  position: absolute;
+  inset: 24px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  overflow: hidden;
+  border-radius: 0 0 10px 10px;
+  background:
+    linear-gradient(160deg, rgba(228, 186, 136, 0.12) 0%, transparent 40%),
+    linear-gradient(180deg, #262d49 0%, #1b2138 60%, #232a45 100%);
+  border: 1px solid rgba(248, 245, 240, 0.12);
+  box-shadow: 0 14px 30px -16px rgba(0, 0, 0, 0.8), inset 0 -10px 18px -14px rgba(0, 0, 0, 0.7);
+}
+.pack-body::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 8px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(248, 245, 240, 0.1) 0 2px,
+    transparent 2px 6px
+  );
+}
+/* The idle sheen: sealed foil catching the lamp, same family as the sleeves. */
+.pack-sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.16) 50%,
+    rgba(228, 186, 136, 0.12) 55%,
+    transparent 64%
+  );
+  transform: translateX(-130%);
+  animation: sleeve-shimmer 11s ease-in-out infinite;
+  animation-delay: 2s;
+}
+.pack-wordmark {
+  font-family: var(--font-display, inherit);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.22em;
+  color: rgba(248, 245, 240, 0.92);
+}
+.pack-sub {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(248, 245, 240, 0.45);
+}
+/* The rip: strip flies off with the drag's direction, quick and done. */
+.pack-ripping .pack-strip {
+  transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1), opacity 240ms ease-out;
+  transform: translateX(160%) rotate(9deg);
+  opacity: 0;
+}
+.pack-ripping .pack-body {
+  animation: pack-recoil 240ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+@keyframes pack-recoil {
+  30% {
+    transform: translateY(3px) rotate(0.8deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+.pack-hint {
+  font-size: 11px;
+  font-style: italic;
+  color: rgba(248, 245, 240, 0.5);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.pack-hint-on {
+  opacity: 1;
+}
+
+/* The dealt hand: staggered in, never from scale(0). */
+.pack-area-open {
+  margin-bottom: 26px;
+}
+.pack-hand {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
+}
+.pack-card {
+  width: 76px;
+  margin-left: -14px;
+  transform: rotate(calc((var(--i) - 3) * 2deg));
+  transform-origin: 50% 115%;
+  animation: pack-deal 300ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation-delay: calc(var(--i) * 55ms);
+  transition: transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.pack-card:first-child {
+  margin-left: 0;
+}
+.pack-card:hover,
+.pack-card:focus-within {
+  transform: translateY(-10px) rotate(0deg) scale(1.05);
+  z-index: 5;
+}
+@keyframes pack-deal {
+  from {
+    opacity: 0;
+    transform: translateY(10px) rotate(calc((var(--i) - 3) * 2deg)) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(calc((var(--i) - 3) * 2deg));
+  }
+}
+.pack-card-btn {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+}
+.pack-card-btn:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.pack-card-art {
+  width: 100%;
+  height: auto;
+  border-radius: 5px;
+  box-shadow: 0 8px 20px -10px rgba(0, 0, 0, 0.8);
+}
+.pack-note {
+  font-size: 11px;
+  color: rgba(248, 245, 240, 0.45);
+  text-align: center;
+}
+
 /* --- honest degradation: the scene is enhancement, never the product ------ */
 
 @media (prefers-reduced-motion: reduce) {
@@ -757,11 +1113,62 @@ body {
   .fan-card:has(+ .fan-card:hover) {
     transform: none;
   }
+  /* Cycle 2: fewer and gentler, not zero. Fades stay; movement goes. */
+  .tag-pencil {
+    animation: tag-fade 200ms ease both;
+  }
+  .heartbeat {
+    transition: opacity 200ms ease;
+    transform: none;
+  }
+  .heartbeat-dot {
+    animation: none;
+    opacity: 0.9;
+  }
+  .pack-sheen {
+    animation: none;
+    opacity: 0;
+  }
+  .pack-strip,
+  .pack-ripping .pack-strip {
+    transition: opacity 200ms ease;
+    transform: none;
+  }
+  .pack-ripping .pack-body {
+    animation: none;
+  }
+  .pack-card {
+    animation: tag-fade 200ms ease both;
+    animation-delay: 0ms;
+    transition: none;
+  }
+  .pack-card:hover,
+  .pack-card:focus-within {
+    transform: rotate(calc((var(--i) - 3) * 2deg));
+    outline: 2px solid rgba(217, 138, 160, 0.8);
+  }
+}
+
+@keyframes tag-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @media (max-width: 420px) {
   .fan-card {
     width: 68px;
     margin-left: -14px;
+  }
+  .pack-card {
+    width: 62px;
+    margin-left: -12px;
+  }
+  .pack {
+    width: 104px;
+    height: 140px;
   }
 }

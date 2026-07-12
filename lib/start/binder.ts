@@ -12,11 +12,24 @@
 // PINNED equal to FREE_WATCH_CAP in lib/__tests__/start-binder.test.ts, which
 // runs in node and can see both.
 
+import { marketFloorCents } from "../wishlist/alert-decision.ts";
+
 /** A nine-pocket page — the most nostalgic object in the hobby. */
 export const POCKETS_PER_PAGE = 9;
 
 /** Free tier fills 3 pockets; the rest are visibly, honestly Pro. */
 export const FREE_POCKETS = 3;
+
+/** Minimum sales behind a figure before Foil will write it on a tag.
+ *  Restated from lib/deals/market-movers.ts::MOVER_MIN_SALES (server-leaning
+ *  imports keep that module out of the client bundle) and PINNED equal in
+ *  lib/__tests__/start-binder.test.ts — same seam as FREE_POCKETS above. */
+export const SUGGEST_MIN_SALES = 5;
+
+/** The hour (UTC) of the one daily run that evaluates free watches.
+ *  Restated from lib/offer.ts::FREE_ALERT_HOUR_UTC (node:fs chain — a real
+ *  build break in the client) and PINNED equal in the same test. */
+export const FREE_CHECK_HOUR_UTC = 17;
 
 export type BinderCard = {
   /** Pokemon TCG SDK id — the wire id the watch API already speaks. */
@@ -122,4 +135,79 @@ export function suggestionLine(s: Suggestion, seated: BinderCard): string {
     return `Another ${head} printing.`;
   }
   return `Also from ${s.card.setName}.`;
+}
+
+// --- Foil writes the tag first (cycle 2, beat 1) -----------------------------
+//
+// The product's premise is that FOIL knows the market, so at the moment of
+// maximum attention the agent writes the price, not the user. The number is
+// the SAME below-usual basis the alert engine already runs for a blank tag
+// (ADR-091: 15% under the 30-day sold average, NM axis) — imported, not
+// restated, so it can never drift into new pricing math. If the basis is too
+// thin, the tag honestly stays "any good price": an absent suggestion is
+// correct; a fabricated one is the failure we exist to avoid.
+
+/**
+ * What Foil pencils on a fresh tag, in cents — rounded to a whole dollar so
+ * the written number IS the posted number (a tag reading "under $38" must
+ * arm a $38.00 watch, never $37.61 behind the collector's back).
+ * Null = the basis is too thin for a suggestion (few sales, or no clean read).
+ */
+export function foilSuggestsCents(
+  card: Pick<BinderCard, "soldCents" | "saleCount">,
+): number | null {
+  if (card.soldCents == null || card.soldCents <= 0) return null;
+  if (card.saleCount < SUGGEST_MIN_SALES) return null;
+  const floor = marketFloorCents(
+    { avg30dCents: card.soldCents, saleCount: card.saleCount, tierLabel: "Near Mint", computedAt: "" },
+    "any-raw",
+  );
+  if (floor == null || floor <= 0) return null;
+  const wholeDollars = Math.round(floor / 100);
+  return wholeDollars > 0 ? wholeDollars * 100 : null;
+}
+
+/** The pencil line Foil writes on the tag. */
+export function foilTagLine(cents: number): string {
+  return `Foil suggests: under $${Math.round(cents / 100).toLocaleString("en-US")}`;
+}
+
+// --- the heartbeat (cycle 2, beat 2) -----------------------------------------
+
+/**
+ * One quiet line after the first card seats: when Foil actually looks next.
+ * TIME-HONEST — free watches are evaluated once a day at a fixed UTC hour, so
+ * "tonight" would be a lie for an afternoon add. The line says "later today"
+ * before that run and "tomorrow" after it, which is when the next look truly
+ * happens. Pro is hourly and can say so plainly.
+ */
+export function heartbeatLine(isPro: boolean, utcHour: number): string {
+  if (isPro) return "Foil checks this page every hour.";
+  return utcHour < FREE_CHECK_HOUR_UTC
+    ? "Foil checks this page later today."
+    : "Foil checks this page tomorrow.";
+}
+
+// --- the booster pack (cycle 2, beat 4) --------------------------------------
+
+/** How many cards a ripped pack deals into your hand. */
+export const PACK_SIZE = 7;
+
+/** A pack this thin isn't worth ripping — below this it stays off the desk. */
+export const PACK_MIN_CARDS = 3;
+
+/**
+ * The hand a ripped pack deals: today's genuinely most-chased cards. The deck
+ * arrives ranked by real sale count (market_movers order), so the pack is a
+ * slice of truth, never fake randomness — the surprise is WHICH chase cards
+ * are hot today. Cards without a real sold read don't belong in a pack sold
+ * as "most-chased", and cards already sleeved never deal twice. An empty
+ * array means the desk shows no pack at all (an honest absence).
+ */
+export function dealPack(deck: readonly BinderCard[], alreadyIn: readonly string[]): BinderCard[] {
+  const taken = new Set(alreadyIn);
+  const hand = deck
+    .filter((c) => !taken.has(c.id) && c.soldCents != null && c.soldCents > 0 && c.saleCount > 0)
+    .slice(0, PACK_SIZE);
+  return hand.length >= PACK_MIN_CARDS ? hand : [];
 }

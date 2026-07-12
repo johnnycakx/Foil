@@ -20,6 +20,17 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 
 ---
 date: 2026-07-12
+category: infra
+status: captured
+---
+## body-font-swap-is-the-start-lcp — subset/self-host Geist (mobile-lcp-font-js-floor, part 2)
+
+Cycle 2's Lighthouse trace on /start: LCP is the header PARAGRAPH repainting ~2.6s late when Geist swaps in — the exact failure mode `mobile-lcp-font-js-floor` fixed for the DISPLAY font (Fraunces got a 57KB self-hosted subset; the homepage H1 now paints fast). Any page whose largest above-fold element is body text inherits the body-font swap as its LCP. Same fix, second font: subset + self-host Geist (or make the display H1 the largest above-fold element on /start). Local evidence: /start 85 perf with CLS 0 / TBT 40ms — the paragraph repaint is the whole residual.
+
+**Context:** start-binder-delight cycle 2 closure — the one rubric axis held at 4 (mobile) traces to this, not to the desk scene.
+
+---
+date: 2026-07-12
 category: ux
 status: captured
 ---

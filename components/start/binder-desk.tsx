@@ -31,7 +31,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FREE_POCKETS,
   POCKETS_PER_PAGE,
+  foilSuggestsCents,
+  foilTagLine,
   freeSlotsLeft,
+  heartbeatLine,
   layoutPockets,
   soldLine,
   suggestNeighbor,
@@ -40,7 +43,12 @@ import {
   type BinderCard,
   type Suggestion,
 } from "@/lib/start/binder";
+import { BoosterPack } from "@/components/start/booster-pack";
 import { CardTypeahead, type CardSearchHit } from "@/components/cards/card-typeahead";
+
+/** The shimmer finishes its first pass over a fresh card before Foil writes
+ *  the tag — the agent looks, then suggests. (Reduced motion skips the wait.) */
+const TAG_WRITE_DELAY_MS = 1100;
 
 type Submission =
   | { state: "idle" }
@@ -62,6 +70,12 @@ export function BinderDesk({
 }) {
   const [filled, setFilled] = useState<BinderCard[]>([]);
   const [targets, setTargets] = useState<Record<string, string>>({});
+  // Foil writes the tag first (cycle 2): per-card pencil suggestions in cents,
+  // and the cards where the collector has taken the pencil back.
+  const [suggested, setSuggested] = useState<Record<string, number>>({});
+  const [touched, setTouched] = useState<string[]>([]);
+  const [editNow, setEditNow] = useState<string | null>(null);
+  const writeTimers = useRef<Record<string, number>>({});
   const [email, setEmail] = useState(signedInEmail ?? "");
   const [optIn, setOptIn] = useState(true);
   const [website, setWebsite] = useState(""); // honeypot
@@ -74,6 +88,11 @@ export function BinderDesk({
   const [seating, setSeating] = useState<string | null>(null);
   const [awake, setAwake] = useState(false);
   const [typedOpen, setTypedOpen] = useState(false);
+  // The resting state is ALIVE (cycle 2): one real card sits in the first
+  // sleeve on load, shimmering, so the page opens as a binder mid-tending and
+  // never as gray boxes. It is labeled as Foil's example, counts toward
+  // nothing, posts nothing, and leaves the moment you start your own page.
+  const [demoOn, setDemoOn] = useState(true);
 
   const [utm, setUtm] = useState({ source: "", medium: "", campaign: "" });
   useEffect(() => {
@@ -99,6 +118,14 @@ export function BinderDesk({
     [deck, filledIds],
   );
 
+  /** The example card: prefer one whose read is deep enough for Foil to have
+   *  written a tag, so the demo shows the whole beat honestly. */
+  const demo = useMemo(
+    () => deck.find((c) => foilSuggestsCents(c) != null) ?? deck[0] ?? null,
+    [deck],
+  );
+  const demoVisible = demoOn && filled.length === 0 && demo != null;
+
   // The fan must land IN VIEW next to the binder — on first render it opened
   // below the fold, which severed it from the page it belongs to.
   const fanRef = useRef<HTMLDivElement | null>(null);
@@ -112,9 +139,20 @@ export function BinderDesk({
       if (filled.length >= capacity) return;
       setAwake(true);
       setFanOpen(false);
+      setDemoOn(false);
       setFilled((prev) => (prev.some((c) => c.id === card.id) ? prev : [...prev, card]));
       setSeating(card.id);
       window.setTimeout(() => setSeating(null), 700);
+      // Foil writes the tag first: the shimmer passes, THEN the pencil moves.
+      // Same below-usual basis the alert engine runs; a thin basis writes
+      // nothing and the tag honestly stays "any good price".
+      const pencil = foilSuggestsCents(card);
+      if (pencil != null) {
+        writeTimers.current[card.id] = window.setTimeout(() => {
+          delete writeTimers.current[card.id];
+          setSuggested((prev) => (card.id in prev ? prev : { ...prev, [card.id]: pencil }));
+        }, TAG_WRITE_DELAY_MS);
+      }
       // The one-more loop: ONE quiet neighbor, never a feed.
       const next = suggestNeighbor(card, deck, [...filledIds, card.id, ...dismissed]);
       setSuggestion(next ? { s: next, after: card } : null);
@@ -122,13 +160,56 @@ export function BinderDesk({
     [filled.length, capacity, deck, filledIds, dismissed],
   );
 
+  useEffect(() => {
+    const timers = writeTimers.current;
+    return () => Object.values(timers).forEach((t) => window.clearTimeout(t));
+  }, []);
+
   const unseat = (id: string) => {
     setFilled((prev) => prev.filter((c) => c.id !== id));
     setSuggestion(null);
+    // A card leaving the binder takes its tag state with it.
+    window.clearTimeout(writeTimers.current[id]);
+    delete writeTimers.current[id];
+    setSuggested((prev) => {
+      const { [id]: _, ...rest } = prev;
+      return rest;
+    });
+    setTouched((prev) => prev.filter((t) => t !== id));
+    setTargets((prev) => {
+      const { [id]: _, ...rest } = prev;
+      return rest;
+    });
   };
 
   const setTarget = (id: string, value: string) =>
     setTargets((prev) => ({ ...prev, [id]: value }));
+
+  /** The collector takes the pencil: from here their tag is theirs — a late
+   *  write timer must never overwrite a number a person just typed. */
+  const takePencil = (id: string) => {
+    window.clearTimeout(writeTimers.current[id]);
+    delete writeTimers.current[id];
+    setTouched((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  };
+
+  /** Take the pencil back: the written tag becomes an editable one, prefilled
+   *  with Foil's number so "one tap to edit" is literal. */
+  const editTag = (id: string, cents: number) => {
+    takePencil(id);
+    setTarget(id, String(Math.round(cents / 100)));
+    setEditNow(id);
+  };
+
+  /** What actually arms: the collector's own number if they took the pencil,
+   *  else exactly the number Foil wrote (the tag never lies to the wire),
+   *  else NULL (the ADR-091 market-basis watch). */
+  const targetCentsFor = (c: BinderCard): number | null => {
+    const raw = (targets[c.id] ?? "").trim();
+    if (!touched.includes(c.id) && suggested[c.id] != null) return suggested[c.id];
+    const n = parseFloat(raw);
+    return raw && Number.isFinite(n) && n > 0 ? Math.round(n * 100) : null;
+  };
 
   /** The typed fallback resolves through the same catalog the fan uses. */
   const seatFromSearch = (hit: CardSearchHit) => {
@@ -169,18 +250,15 @@ export function BinderDesk({
         body: JSON.stringify({
           email: email.trim(),
           opt_in_newsletter: optIn,
-          cards: filled.map((c) => {
-            const raw = (targets[c.id] ?? "").trim();
-            const n = parseFloat(raw);
-            return {
-              pokemon_tcg_id: c.id,
-              name: c.name,
-              set_name: c.setName,
-              set_id: c.setId,
-              number: c.number,
-              target_price_cents: raw && Number.isFinite(n) && n > 0 ? Math.round(n * 100) : null,
-            };
-          }),
+          cards: filled.map((c) => ({
+            pokemon_tcg_id: c.id,
+            name: c.name,
+            set_name: c.setName,
+            set_id: c.setId,
+            number: c.number,
+            // The collector's number, or exactly what Foil wrote, or NULL.
+            target_price_cents: targetCentsFor(c),
+          })),
           src: utm.source || undefined,
           utm:
             utm.source || utm.medium || utm.campaign
@@ -281,6 +359,11 @@ export function BinderDesk({
         </label>
       </div>
 
+      {/* THE BOOSTER PACK — the "don't know where to start?" path. A drag
+          rips the wrapper; the pack deals today's most-chased. One per visit;
+          it re-seals on reload. */}
+      <BoosterPack deck={deck} filledIds={filledIds} slotsLeft={slotsLeft} onPick={seat} />
+
       {/* THE BINDER — a nine-pocket page. Filling a pocket is adding a watch. */}
       <div className="binder relative rounded-2xl border border-foil-cream/12 bg-foil-night-2/70 p-4 sm:p-6">
         <div className="mb-4 flex items-baseline justify-between gap-3">
@@ -307,7 +390,7 @@ export function BinderDesk({
                       alt={`${card.name} (${card.setName})`}
                       width={245}
                       height={342}
-                      unoptimized
+                      sizes="(max-width: 640px) 30vw, 210px"
                       className="sleeve-card"
                     />
                     {/* The shimmer — a real holo catching the lamp. Ours alone. */}
@@ -326,25 +409,47 @@ export function BinderDesk({
                   </p>
                   <p className="truncate text-[10px] text-foil-cream/55">{soldLine(card)}</p>
 
-                  {/* THE PRICE TAG — pencil on paper, tied to the card. */}
-                  <label className="tag mt-1.5">
-                    <span className="sr-only">Target price for {card.name}</span>
-                    <span aria-hidden className="tag-string" />
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      min={1}
-                      step={1}
-                      placeholder="any good price"
-                      value={pocket.targetUsd}
-                      onChange={(e) => setTarget(card.id, e.target.value)}
-                      className="tag-input"
-                    />
-                  </label>
-                  {pocket.targetUsd.trim() && (
-                    <p className="tag-read" aria-hidden>
-                      {tagLine(pocket.targetUsd)}
-                    </p>
+                  {/* THE PRICE TAG — pencil on paper, tied to the card.
+                      Foil writes it first (cycle 2): once the shimmer has
+                      passed, the agent pencils its own read from the same
+                      below-usual basis the alerts run. One tap takes the
+                      pencil back. A thin read writes nothing. */}
+                  {!touched.includes(card.id) && suggested[card.id] != null ? (
+                    <button
+                      type="button"
+                      onClick={() => editTag(card.id, suggested[card.id])}
+                      className="tag tag-written mt-1.5"
+                      aria-label={`${foilTagLine(suggested[card.id])} for ${card.name}. Tap to change it.`}
+                    >
+                      <span aria-hidden className="tag-string" />
+                      <span className="tag-pencil">{foilTagLine(suggested[card.id])}</span>
+                    </button>
+                  ) : (
+                    <>
+                      <label className="tag mt-1.5">
+                        <span className="sr-only">Target price for {card.name}</span>
+                        <span aria-hidden className="tag-string" />
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          min={1}
+                          step={1}
+                          placeholder="any good price"
+                          value={pocket.targetUsd}
+                          autoFocus={editNow === card.id}
+                          onChange={(e) => {
+                            takePencil(card.id);
+                            setTarget(card.id, e.target.value);
+                          }}
+                          className="tag-input"
+                        />
+                      </label>
+                      {pocket.targetUsd.trim() && (
+                        <p className="tag-read" aria-hidden>
+                          {tagLine(pocket.targetUsd)}
+                        </p>
+                      )}
+                    </>
                   )}
                 </li>
               );
@@ -365,6 +470,52 @@ export function BinderDesk({
               );
             }
 
+            // The resting state is alive: the first sleeve holds Foil's
+            // example on load — a real card, really shimmering — so the page
+            // opens mid-tending. It counts toward nothing and posts nothing;
+            // tap the card to keep it, or the corner to put it away.
+            if (demoVisible && demo && i === 0) {
+              return (
+                <li key="demo" className="pocket pocket-filled pocket-demo">
+                  <div className="sleeve">
+                    <button
+                      type="button"
+                      onClick={() => seat(demo)}
+                      className="demo-keep"
+                      aria-label={`Keep ${demo.name} in your binder. ${soldLine(demo)}`}
+                    >
+                      {/* Above the fold on load — priority, or the lazy
+                          fetch starves the LCP text on a throttled phone. */}
+                      <Image
+                        src={demo.image}
+                        alt=""
+                        width={245}
+                        height={342}
+                        sizes="(max-width: 640px) 30vw, 210px"
+                        priority
+                        className="sleeve-card"
+                      />
+                      <span aria-hidden className="sleeve-shimmer" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDemoOn(false)}
+                      aria-label="Put Foil's example card away"
+                      className="sleeve-remove"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <p className="mt-1.5 truncate text-[11px] font-medium text-foil-cream/85" title={demo.name}>
+                    {demo.name}
+                  </p>
+                  <p className="truncate text-[10px] text-foil-cream/55">{soldLine(demo)}</p>
+                  <p className="demo-note">Foil&apos;s example. Tap the card to keep it.</p>
+                </li>
+              );
+            }
+
+            const invite = filled.length === 0 && i === (demoVisible ? 1 : 0);
             return (
               <li key={`empty-${i}`} className="pocket">
                 <button
@@ -376,8 +527,8 @@ export function BinderDesk({
                   className="sleeve sleeve-empty"
                   aria-label="Fill this sleeve with a card you're chasing"
                 >
-                  <span className="sleeve-empty-copy">
-                    {filled.length === 0 && i === 0 ? "Start here" : "Empty"}
+                  <span className={`sleeve-empty-copy${invite ? " sleeve-invite" : ""}`}>
+                    {invite ? "tell Foil your grail" : "Empty"}
                   </span>
                 </button>
               </li>
@@ -393,7 +544,7 @@ export function BinderDesk({
               alt=""
               width={40}
               height={56}
-              unoptimized
+              sizes="40px"
               className="h-12 w-9 rounded object-cover ring-1 ring-foil-cream/10"
             />
             <p className="min-w-0 flex-1 text-xs text-foil-cream/75">
@@ -422,6 +573,15 @@ export function BinderDesk({
         )}
       </div>
 
+      {/* THE HEARTBEAT — anticipation made visible, and time-honest: the line
+          names when the next real check happens, never a "tonight" that isn't. */}
+      {filled.length > 0 && (
+        <p className="heartbeat" role="status">
+          <span aria-hidden className="heartbeat-dot" />
+          {heartbeatLine(isPro, new Date().getUTCHours())}
+        </p>
+      )}
+
       {/* THE FAN — real card art fanned in your hand. Not a dropdown. */}
       {fanOpen && (
         <div ref={fanRef} className="fan-wrap" role="dialog" aria-label="Pick a card">
@@ -449,7 +609,7 @@ export function BinderDesk({
                     alt=""
                     width={245}
                     height={342}
-                    unoptimized
+                    sizes="88px"
                     className="fan-art"
                   />
                   <span className="fan-meta">

@@ -146,6 +146,18 @@ test("/deals renders the re-locked gate (Pro pitch + free catcher live)", { skip
   assert.match(body, /below sold/i, "the top-2 teaser board still renders");
 });
 
+// start-binder-delight cycle 2: the desk's resting state is server-rendered,
+// so the live page must carry the in-world invitation and the sealed pack ask.
+// (The heartbeat + written tag are interaction states — client-only, pinned in
+// lib/__tests__/start-binder.test.ts — so they are deliberately NOT here.)
+test("/start renders the living desk (invitation + today's pack live)", { skip }, async () => {
+  const { status, body } = await fetchText(`${BASE}/start?cv=${Date.now()}`);
+  assert.equal(status, 200, "/start must return 200");
+  assert.match(body, /tell Foil your grail/, "the first sleeve's in-world invitation must render");
+  assert.match(body, /Foil packed today/, "the sealed booster pack's ask must render");
+  assert.match(body, /example\. Tap the card to keep it\./, "the demo card must be labeled as the example");
+});
+
 test("content-marker gate is wired (documents the skip when no base URL)", () => {
   // Always runs: makes the gate visible in the offline suite even when skipped.
   assert.ok(

@@ -22,6 +22,36 @@ function slugToId(): Map<string, string> {
   return new Map(CARD_CATALOG.map((e) => [e.slug, e.pokemonTcgId]));
 }
 
+// The binder renders card art through the Next image optimizer (a pocket is
+// ~104px on a phone; the raw pokemontcg.io PNG is ~800KB — cycle 2's Lighthouse
+// run measured that one lazy demo image starving the LCP paragraph on a
+// throttled mobile line). The optimizer hard-errors on hosts outside
+// next.config.ts remotePatterns, so a card whose art lives anywhere else is
+// not offerable — dropped here, server-side, per the soft-fail doctrine
+// (fewer cards, never a broken page).
+const OPTIMIZABLE_IMAGE_HOSTS = new Set([
+  "images.pokemontcg.io",
+  "images.poketrace.com",
+  "cdn.poketrace.com",
+  "images.scrydex.com",
+]);
+
+export function imageOptimizable(url: string): boolean {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== "https:") return false;
+    if (OPTIMIZABLE_IMAGE_HOSTS.has(u.hostname)) return true;
+    const supa = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!supa) return false;
+    return (
+      u.hostname === new URL(supa).hostname &&
+      u.pathname.startsWith("/storage/v1/object/public/card-images/")
+    );
+  } catch {
+    return false;
+  }
+}
+
 /** The committed-snapshot deck. Always available (no network, no DB). */
 function snapshotDeck(): BinderCard[] {
   const out: BinderCard[] = [];
@@ -30,6 +60,7 @@ function snapshotDeck(): BinderCard[] {
     if (!sold) continue;
     const meta = getBakedCardMetadata(entry.pokemonTcgId);
     if (!meta?.image || !meta.name) continue;
+    if (!imageOptimizable(meta.image)) continue;
     out.push({
       id: entry.pokemonTcgId,
       slug: entry.slug,
@@ -68,6 +99,7 @@ async function moversDeck(): Promise<BinderCard[]> {
     }>) {
       const id = ids.get(row.card_slug);
       if (!id || !row.card_name || !row.image_url) continue;
+      if (!imageOptimizable(row.image_url)) continue;
       // set_id + number are NOT in market_movers — take the card's identity
       // from the baked catalog metadata, which is the authority anyway. A card
       // without it cannot be posted to /api/start, so it must not be offered.

@@ -342,9 +342,60 @@ test("/start binder: NO dark patterns (the anti-hype moat is the product)", () =
   // "no streaks" comment).
   const strip = (t: string) =>
     t.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'])\/\/.*$/gm, "$1");
-  const src = strip(readFile("components/start/binder-desk.tsx")) + strip(readFile("app/(site)/start/page.tsx"));
+  const src =
+    strip(readFile("components/start/binder-desk.tsx")) +
+    strip(readFile("app/(site)/start/page.tsx")) +
+    strip(readFile("components/start/booster-pack.tsx"));
   for (const banned of [/streak/i, /hurry/i, /act now/i, /expires in/i, /only \d+ left/i, /don't miss/i]) {
     assert.doesNotMatch(src, banned, `dark-pattern copy is banned on /start: ${banned}`);
+  }
+});
+
+// --- cycle 2: the magic beats ------------------------------------------------
+
+test("/start tag: Foil writes first, from the alert engine's own basis, with the honest fallback intact", () => {
+  const desk = readFile("components/start/binder-desk.tsx");
+  assert.match(desk, /foilSuggestsCents/, "the pencil number comes from the shared basis, never inline math");
+  assert.match(desk, /tag-written/, "the written-tag state must exist");
+  assert.match(desk, /any good price/, "a thin basis still reads 'any good price' — the honest absence survives");
+  assert.match(desk, /TAG_WRITE_DELAY_MS/, "the shimmer passes before the pencil moves");
+});
+
+test("/start heartbeat: rendered from heartbeatLine and TIME-HONEST (no 'tonight' that isn't)", () => {
+  const desk = readFile("components/start/binder-desk.tsx");
+  assert.match(desk, /heartbeatLine\(/, "the line is computed, not hardcoded");
+  const binder = readFile("lib/start/binder.ts");
+  assert.match(binder, /later today/, "before the daily run the next look is later today");
+  assert.match(binder, /tomorrow/, "after the daily run the next look is tomorrow");
+  assert.doesNotMatch(
+    binder.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'])\/\/.*$/gm, "$1"),
+    /tonight/i,
+    "'tonight' would be a lie for an afternoon add — the heartbeat says when Foil truly looks",
+  );
+});
+
+test("/start pack: a real drag-to-rip with a keyboard path, dealing REAL cards (no fake randomness)", () => {
+  const pack = readFile("components/start/booster-pack.tsx");
+  assert.match(pack, /setPointerCapture/, "the drag must keep the pointer once the tear starts");
+  assert.match(pack, /onKeyDown/, "keyboard collectors open the pack directly");
+  assert.match(pack, /dealPack\(/, "the hand comes from the sale-count-ranked deck");
+  assert.doesNotMatch(pack, /Math\.random/, "the surprise is which real cards are hot, never invented randomness");
+  assert.match(pack, /most-chased/, "the in-world note names what the pack honestly is");
+});
+
+test("/start demo card: labeled as Foil's example and never part of the submit", () => {
+  const desk = readFile("components/start/binder-desk.tsx");
+  assert.match(desk, /Foil(&apos;|')s example/, "the example must say it is one");
+  assert.match(desk, /demoVisible/, "the demo leaves when the collector starts their own page");
+  // The POST maps over `filled` only; the demo lives outside it.
+  assert.match(desk, /cards: filled\.map/, "only genuinely seated cards reach the wire");
+});
+
+test("/start cycle-2 motion: pack + pencil + heartbeat all degrade under reduced motion", () => {
+  const css = readFile("app/globals.css");
+  const reduced = css.slice(css.indexOf("@media (prefers-reduced-motion: reduce)"));
+  for (const sel of [".tag-pencil", ".heartbeat-dot", ".pack-sheen", ".pack-card"]) {
+    assert.ok(reduced.includes(sel), `${sel} needs a reduced-motion fallback`);
   }
 });
 

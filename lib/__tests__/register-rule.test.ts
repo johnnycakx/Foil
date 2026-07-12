@@ -37,6 +37,8 @@ const COPY_SURFACES: readonly string[] = [
   "app/(site)/deals/page.tsx",
   "app/(site)/pricing-methodology/page.tsx",
   "components/start/binder-desk.tsx",
+  "components/start/booster-pack.tsx",
+  "lib/start/binder.ts",
   "components/deals/deals-drop-gate.tsx",
   "components/deals/movers-board.tsx",
   "components/cards/add-to-vault.tsx",
