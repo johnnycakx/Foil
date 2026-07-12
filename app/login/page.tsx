@@ -11,20 +11,35 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (user) redirect("/upload");
+  if (user) redirect("/account");
+
+  const params = await searchParams;
 
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm space-y-6">
+        {params.error === "invalid_link" && (
+          <div
+            role="alert"
+            className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-700"
+          >
+            That sign-in link didn&apos;t work. It may have expired or already been used. Send
+            yourself a fresh one below.
+          </div>
+        )}
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">Sign in to Foil</h1>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Enter your email and we&apos;ll send you a magic link.
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Sign in to Foil</h1>
+          <p className="text-sm text-zinc-600">
+            Enter your email and Foil sends you a sign-in link. No password.
           </p>
         </div>
         <LoginForm />

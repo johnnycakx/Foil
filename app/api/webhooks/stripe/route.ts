@@ -177,7 +177,10 @@ async function resolveGuestCheckout(session: Stripe.Checkout.Session, sub: Strip
       const bare = createBareClient(url, anonKey, { auth: { persistSession: false } });
       const { error: otpError } = await bare.auth.signInWithOtp({
         email,
-        options: { shouldCreateUser: false, emailRedirectTo: `${site}/auth/callback?next=/start` },
+        // token_hash flow (auth-hardening, 2026-07-12): must point at
+        // /auth/confirm WITH a query string — the email template appends
+        // &token_hash=… to this URL.
+        options: { shouldCreateUser: false, emailRedirectTo: `${site}/auth/confirm?next=/start` },
       });
       if (otpError) console.warn(`[stripe webhook] magic-link send failed: ${otpError.message}`);
     }
