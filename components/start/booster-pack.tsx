@@ -103,9 +103,6 @@ export function BoosterPack({
     if (stage === "sealed" && sealable.length === 0) return null;
     return (
       <div className="pack-area">
-        <p className="pack-ask">
-          Not sure where to start? Foil packed today&apos;s most-chased.
-        </p>
         <button
           type="button"
           className={`pack${stage === "ripping" ? " pack-ripping" : ""}`}
@@ -121,15 +118,29 @@ export function BoosterPack({
           onKeyDown={onKeyDown}
           aria-label="FOIL today's pack. Drag the tab to rip it open, or press Enter."
         >
+          {/* The tear affordance must be legible AT REST (cycle-3 A1): a
+              lighter strip, a perforation line, and a pull-tab that says
+              "grab here" without the aria-label. One glint pass on load is
+              the single cue; reduced motion gets the static tab. */}
           <span aria-hidden className="pack-strip">
+            <span className="pack-tab">
+              <span className="pack-tab-arrow">≫</span>
+            </span>
+            <span className="pack-glint" />
             <span className="pack-notch" />
           </span>
+          <span aria-hidden className="pack-perforation" />
           <span aria-hidden className="pack-body">
             <span className="pack-sheen" />
             <span className="pack-wordmark">FOIL</span>
             <span className="pack-sub">today&apos;s pack</span>
           </span>
         </button>
+        {/* The pack's own caption (cycle-3 A6): a label, not a floating
+            whisper — it points at the object it belongs to. */}
+        <p className="pack-caption">
+          Not sure where to start? Foil packed today&apos;s most-chased.
+        </p>
         <p className={`pack-hint ${hint ? "pack-hint-on" : ""}`} aria-hidden>
           hold the tab and pull →
         </p>
@@ -141,7 +152,7 @@ export function BoosterPack({
 
   return (
     <div className="pack-area pack-area-open">
-      <p className="pack-ask">
+      <p className="pack-caption">
         {dealt.length > 0
           ? "Fresh from the wrapper. Tap one to sleeve it."
           : "The whole hand is in your binder."}

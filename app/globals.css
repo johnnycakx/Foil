@@ -400,20 +400,22 @@ body {
 }
 
 /* The lamp: dim while the desk is dormant, warm when you lean in. The
-   muted-until-awake move in our register (his pond saturates; our lamp warms). */
+   muted-until-awake move in our register (his pond saturates; our lamp warms).
+   Cycle-3 A2: the pool belongs to the ARTIFACTS — it sits over the pack and
+   the binder's top edge, never bleeding up behind the headline. */
 .desk-lamp {
   position: absolute;
   left: 50%;
-  top: -12%;
-  width: 120%;
-  height: 70%;
+  top: 0;
+  width: 88%;
+  height: 52%;
   transform: translateX(-50%);
   pointer-events: none;
   background: radial-gradient(
-    60% 55% at 50% 0%,
-    rgba(217, 138, 160, 0.16),
-    rgba(217, 138, 160, 0.05) 45%,
-    transparent 70%
+    55% 42% at 50% 14%,
+    rgba(228, 186, 136, 0.18),
+    rgba(217, 138, 160, 0.05) 48%,
+    transparent 72%
   );
   opacity: 0.35;
   transition: opacity 900ms cubic-bezier(0.23, 1, 0.32, 1);
@@ -536,32 +538,23 @@ body {
   color: rgba(248, 245, 240, 0.4);
 }
 
-/* The free cap as FURNITURE: a Pro sleeve you can see, not an error you hit. */
-.sleeve-locked {
-  flex-direction: column;
-  gap: 6px;
-  cursor: pointer;
-  background: repeating-linear-gradient(
-    -45deg,
-    rgba(248, 245, 240, 0.03),
-    rgba(248, 245, 240, 0.03) 6px,
-    transparent 6px,
-    transparent 12px
-  );
-  transition: border-color 200ms ease;
+/* Cycle-3 A3: the locked-sleeve wall is gone (free owns the whole page).
+   The one quiet Pro affordance is a line under the grid, not furniture that
+   upsells before the first card seats. */
+.pro-line {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 12px;
 }
-.sleeve-locked:hover {
-  border-color: rgba(217, 138, 160, 0.5);
+.pro-line a {
+  color: rgba(248, 245, 240, 0.55);
+  text-decoration: underline;
+  text-decoration-color: rgba(248, 245, 240, 0.22);
+  text-underline-offset: 4px;
+  transition: color 200ms ease;
 }
-.sleeve-locked-mark {
-  color: rgba(217, 138, 160, 0.75);
-  font-size: 14px;
-}
-.sleeve-locked-copy {
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: rgba(248, 245, 240, 0.38);
+.pro-line a:hover {
+  color: rgba(248, 245, 240, 0.9);
 }
 
 /* --- the price tag: pencil on paper, knotted to the card ------------------ */
@@ -748,12 +741,6 @@ body {
 
 /* The lamp pool: warm at rest (amber, not gray), warmer when you lean in. */
 .desk-lamp {
-  background: radial-gradient(
-    60% 55% at 50% 0%,
-    rgba(228, 186, 136, 0.2),
-    rgba(217, 138, 160, 0.06) 45%,
-    transparent 70%
-  );
   opacity: 0.6;
 }
 
@@ -776,7 +763,9 @@ body {
   color: rgba(248, 245, 240, 0.55);
 }
 
-/* Foil's example card: real, shimmering, clearly labeled, keepable. */
+/* Foil's example card: real, shimmering, clearly labeled, keepable.
+   Cycle-3 A4: DIM at rest so it never outshines the next action; it glows on
+   attention, like everything else on this desk. */
 .demo-keep {
   display: block;
   width: 100%;
@@ -786,14 +775,30 @@ body {
 .pocket-demo .sleeve {
   border-color: rgba(228, 186, 136, 0.28);
 }
-.pocket-demo .sleeve-remove {
-  opacity: 1;
+.pocket-demo .sleeve-card {
+  filter: saturate(0.82) brightness(0.84);
+  transition: filter 220ms ease;
+}
+.pocket-demo:hover .sleeve-card,
+.pocket-demo:focus-within .sleeve-card {
+  filter: none;
 }
 .demo-note {
   margin-top: 2px;
   font-size: 10px;
-  font-style: italic;
   color: rgba(248, 245, 240, 0.5);
+}
+/* The dismiss is a designed control in the meta line, not chrome on the art. */
+.demo-away {
+  color: rgba(248, 245, 240, 0.65);
+  text-decoration: underline;
+  text-decoration-color: rgba(248, 245, 240, 0.3);
+  text-underline-offset: 2px;
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+.demo-away:hover {
+  color: rgba(248, 245, 240, 0.95);
 }
 
 /* --- cycle 2: Foil writes the tag first ------------------------------------
@@ -887,19 +892,23 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 22px;
+  gap: 6px;
+  margin-bottom: 16px;
 }
-.pack-ask {
+/* The pack's caption: a label attached to its object, not a floating whisper
+   (cycle-3 A6). */
+.pack-caption {
   font-size: 12px;
-  font-style: italic;
   color: rgba(248, 245, 240, 0.6);
   text-align: center;
+  margin-top: 8px;
 }
+/* Cycle-3 A1: the pack is the HERO OBJECT — scaled like one, seated on the
+   desk (contact shadow), with a tear strip you can read at rest. */
 .pack {
   position: relative;
-  width: 118px;
-  height: 156px;
+  width: 176px;
+  height: 232px;
   cursor: grab;
   transform: rotate(-3deg);
   touch-action: none;
@@ -909,14 +918,27 @@ body {
 .pack:active {
   cursor: grabbing;
 }
+/* Seated, not floating: the shadow where foil meets desk. */
+.pack::after {
+  content: "";
+  position: absolute;
+  left: 6%;
+  bottom: -13px;
+  width: 88%;
+  height: 20px;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.5), transparent 75%);
+}
 .pack-strip {
   position: absolute;
   inset: 0 0 auto 0;
-  height: 26px;
+  height: 34px;
   z-index: 2;
-  border-radius: 8px 8px 0 0;
-  background: linear-gradient(180deg, #2c3350 0%, #232a45 100%);
-  box-shadow: inset 0 1px 0 rgba(248, 245, 240, 0.14);
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+  /* Visibly a SEPARATE piece — lighter than the body it tears away from. */
+  background: linear-gradient(180deg, #3a4263 0%, #2c3350 100%);
+  box-shadow: inset 0 1px 0 rgba(248, 245, 240, 0.18);
   transform: translateX(var(--tear, 0px)) rotate(calc(var(--tear, 0px) * 0.04deg));
   transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -935,6 +957,70 @@ body {
     transparent 2px 6px
   );
 }
+/* The pull-tab: "grab here, pull that way" — legible without the aria-label. */
+.pack-tab {
+  position: absolute;
+  left: 7px;
+  top: 50%;
+  transform: translateY(-58%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 17px;
+  border-radius: 4px;
+  background: rgba(248, 245, 240, 0.88);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+.pack-tab-arrow {
+  font-size: 11px;
+  line-height: 1;
+  color: #2c3350;
+  letter-spacing: 0.05em;
+}
+/* ONE affordance cue on load: a single glint pass along the strip.
+   Transform/opacity only; reduced motion gets the static tab. */
+.pack-glint {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 70%
+  );
+  opacity: 0;
+  transform: translateX(-110%);
+  animation: pack-glint 1100ms cubic-bezier(0.23, 1, 0.32, 1) 1.3s 1 both;
+}
+@keyframes pack-glint {
+  0% {
+    opacity: 0;
+    transform: translateX(-110%);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(110%);
+  }
+}
+/* The tear line itself: perforation under the strip. */
+.pack-perforation {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 34px;
+  height: 1px;
+  z-index: 3;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(248, 245, 240, 0.4) 0 4px,
+    transparent 4px 9px
+  );
+}
 .pack-notch {
   position: absolute;
   left: -1px;
@@ -946,7 +1032,7 @@ body {
 }
 .pack-body {
   position: absolute;
-  inset: 24px 0 0 0;
+  inset: 35px 0 0 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -990,12 +1076,12 @@ body {
 .pack-wordmark {
   font-family: var(--font-display, inherit);
   font-weight: 700;
-  font-size: 20px;
+  font-size: 26px;
   letter-spacing: 0.22em;
   color: rgba(248, 245, 240, 0.92);
 }
 .pack-sub {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(248, 245, 240, 0.45);
@@ -1019,7 +1105,6 @@ body {
 }
 .pack-hint {
   font-size: 11px;
-  font-style: italic;
   color: rgba(248, 245, 240, 0.5);
   opacity: 0;
   transition: opacity 200ms ease;
@@ -1125,7 +1210,8 @@ body {
     animation: none;
     opacity: 0.9;
   }
-  .pack-sheen {
+  .pack-sheen,
+  .pack-glint {
     animation: none;
     opacity: 0;
   }
@@ -1167,8 +1253,9 @@ body {
     width: 62px;
     margin-left: -12px;
   }
+  /* Still the hero at 390px, but the whole scene stays above the fold (A8). */
   .pack {
-    width: 104px;
-    height: 140px;
+    width: 140px;
+    height: 186px;
   }
 }

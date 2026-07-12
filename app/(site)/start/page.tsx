@@ -65,20 +65,23 @@ export default async function StartPage() {
   return (
     <main
       data-tone="night"
-      className="relative mx-auto w-full max-w-3xl bg-foil-night px-5 py-12 text-foil-cream sm:px-8 sm:py-16"
+      className="relative mx-auto w-full max-w-3xl bg-foil-night px-5 py-8 text-foil-cream sm:px-8 sm:py-10"
     >
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[180px] overflow-hidden">
         <SakuraAmbience mode="header" />
       </div>
 
-      <header className="relative mb-8 text-center sm:text-left">
+      {/* Hero discipline (cycle-3 A5): ONE value sentence. Tier mechanics
+          live on the quiet Pro line under the binder, not up here. A8: the
+          rhythm is tight enough that the pack sits above the fold on a phone
+          and the binder's top edge shows at 1440×900. */}
+      <header className="relative mb-5 text-center sm:text-left">
         <p className="text-xs font-medium uppercase tracking-widest text-foil-accent">Your binder</p>
-        <h1 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-cream sm:text-4xl md:text-5xl">
+        <h1 className="font-display mt-2 text-3xl font-bold tracking-[-0.02em] text-foil-cream sm:text-4xl">
           Fill a page with what you&apos;re chasing.
         </h1>
-        <p className="mt-3 text-base text-foil-cream/70 sm:text-lg">
+        <p className="mt-2 text-base text-foil-cream/70 sm:text-lg">
           Foil watches every card you sleeve and emails you when one drops to a price worth buying.
-          {tier === "pro" ? " Pro checks yours every hour." : " Free checks yours once a day. Pro checks hourly."}
         </p>
       </header>
 

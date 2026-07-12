@@ -320,10 +320,37 @@ test("/start binder: the selection mechanism is a SLEEVE, not a dropdown-first f
   assert.match(src, /know the exact card\? type it/, "the typed path stays, demoted and in-world");
 });
 
-test("/start binder: the free cap renders as furniture (visible Pro sleeves), never an error", () => {
+test("/start binder: free owns the whole page; ONE quiet Pro line, never a locked wall (cycle-3 A3)", () => {
   const src = readFile("components/start/binder-desk.tsx");
-  assert.match(src, /sleeve-locked/);
-  assert.match(src, /Pro sleeve/);
+  // The cycle-2 locked-sleeve wall was John's veto: "dark-pattern furniture."
+  // Free = one full page now; the only Pro affordance is a single line.
+  assert.doesNotMatch(src, /Pro sleeve/, "the locked-sleeve wall must not return");
+  assert.match(src, /The rest of the binder opens with Pro/, "the one quiet Pro line must exist");
+  assert.equal(
+    (src.match(/href="\/pro"/g) ?? []).length,
+    2,
+    "exactly two /pro links total: the one quiet line at rest + the cap-full ERROR path (which only renders after the server says the page is full)",
+  );
+});
+
+test("/start binder: the counter reads as filling, not inventory (cycle-3 A7)", () => {
+  const src = readFile("components/start/binder-desk.tsx");
+  assert.match(src, /of \$\{POCKETS_PER_PAGE\} sleeves filled/, "count appears only after a card seats");
+  assert.doesNotMatch(src, /sleeves open/, "the inventory-accounting counter is gone");
+});
+
+test("/start pack: tear affordance is legible at rest and the glint respects reduced motion (cycle-3 A1)", () => {
+  const pack = readFile("components/start/booster-pack.tsx");
+  assert.match(pack, /pack-tab/, "the pull-tab must exist");
+  assert.match(pack, /pack-perforation/, "the tear line must exist");
+  const css = readFile("app/globals.css");
+  const reduced = css.slice(css.indexOf("@media (prefers-reduced-motion: reduce)"));
+  assert.ok(reduced.includes(".pack-glint"), "the one-shot glint needs a reduced-motion fallback");
+});
+
+test("/start hero: ONE value sentence; tier mechanics live on the Pro line (cycle-3 A5)", () => {
+  const page = readFile("app/(site)/start/page.tsx");
+  assert.doesNotMatch(page, /checks hourly|checks yours|once a day/i, "no pricing-table work in the hero");
 });
 
 test("/start binder: the foil shimmer + settle motion exist and respect reduced motion", () => {

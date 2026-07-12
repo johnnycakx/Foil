@@ -155,7 +155,7 @@ test("/start renders the living desk (invitation + today's pack live)", { skip }
   assert.equal(status, 200, "/start must return 200");
   assert.match(body, /tell Foil your grail/, "the first sleeve's in-world invitation must render");
   assert.match(body, /Foil packed today/, "the sealed booster pack's ask must render");
-  assert.match(body, /example\. Tap the card to keep it\./, "the demo card must be labeled as the example");
+  assert.match(body, /example\. Tap the card to keep it/, "the demo card must be labeled as the example");
 });
 
 test("content-marker gate is wired (documents the skip when no base URL)", () => {

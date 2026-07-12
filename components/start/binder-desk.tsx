@@ -22,9 +22,10 @@
 // literally named Foil.
 //
 // Honesty rules that outrank the scene: every card is real, every figure is a
-// real sold average with its sale count (or an honest absence), the free cap is
-// furniture (visible Pro sleeves) and never a trap, and nothing here is a dark
-// pattern — no streaks, no timers, no fake scarcity.
+// real sold average with its sale count (or an honest absence), free owns the
+// WHOLE page (cycle-3 entitlement: one 9-sleeve binder page; the only upsell
+// is one quiet line under the grid), and nothing here is a dark pattern — no
+// streaks, no timers, no fake scarcity.
 
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -368,13 +369,13 @@ export function BinderDesk({
       <div className="binder relative rounded-2xl border border-foil-cream/12 bg-foil-night-2/70 p-4 sm:p-6">
         <div className="mb-4 flex items-baseline justify-between gap-3">
           <p className="font-display text-base font-bold text-foil-cream">Your binder page</p>
-          <p className="text-xs text-foil-cream/55">
-            {slotsLeft > 0
-              ? `${slotsLeft} ${slotsLeft === 1 ? "sleeve" : "sleeves"} open`
-              : isPro
-                ? "page full"
-                : "page full on free"}
-          </p>
+          {/* The binder speaks for itself until a card seats (cycle-3 A7);
+              after that the count reads as filling, never as inventory. */}
+          {filled.length > 0 && (
+            <p className="text-xs text-foil-cream/55">
+              {slotsLeft > 0 ? `${filled.length} of ${POCKETS_PER_PAGE} sleeves filled` : "page full"}
+            </p>
+          )}
         </div>
 
         <ul className="grid grid-cols-3 gap-2.5 sm:gap-3.5">
@@ -455,20 +456,10 @@ export function BinderDesk({
               );
             }
 
-            if (pocket.kind === "locked") {
-              return (
-                <li key={`locked-${i}`} className="pocket">
-                  {/* The free cap as FURNITURE — visible, honest, inviting.
-                      Never an error, never a modal. */}
-                  <a href="/pro" className="sleeve sleeve-locked" aria-label="Pro fills the rest of the page">
-                    <span className="sleeve-locked-mark" aria-hidden>
-                      ✦
-                    </span>
-                    <span className="sleeve-locked-copy">Pro sleeve</span>
-                  </a>
-                </li>
-              );
-            }
+            // Free now owns the whole page (cycle-3 entitlement), so a locked
+            // pocket can no longer occur; the single quiet Pro line below the
+            // grid replaced the sleeve wall (cycle-3 A3).
+            if (pocket.kind === "locked") return null;
 
             // The resting state is alive: the first sleeve holds Foil's
             // example on load — a real card, really shimmering — so the page
@@ -497,20 +488,20 @@ export function BinderDesk({
                       />
                       <span aria-hidden className="sleeve-shimmer" />
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setDemoOn(false)}
-                      aria-label="Put Foil's example card away"
-                      className="sleeve-remove"
-                    >
-                      ×
-                    </button>
                   </div>
                   <p className="mt-1.5 truncate text-[11px] font-medium text-foil-cream/85" title={demo.name}>
                     {demo.name}
                   </p>
                   <p className="truncate text-[10px] text-foil-cream/55">{soldLine(demo)}</p>
-                  <p className="demo-note">Foil&apos;s example. Tap the card to keep it.</p>
+                  {/* A designed control, not browser chrome (cycle-3 A4): the
+                      dismiss lives with the card's meta, off the art. */}
+                  <p className="demo-note">
+                    Foil&apos;s example. Tap the card to keep it, or{" "}
+                    <button type="button" onClick={() => setDemoOn(false)} className="demo-away">
+                      put it away
+                    </button>
+                    .
+                  </p>
                 </li>
               );
             }
@@ -527,9 +518,10 @@ export function BinderDesk({
                   className="sleeve sleeve-empty"
                   aria-label="Fill this sleeve with a card you're chasing"
                 >
-                  <span className={`sleeve-empty-copy${invite ? " sleeve-invite" : ""}`}>
-                    {invite ? "tell Foil your grail" : "Empty"}
-                  </span>
+                  {/* One voice (cycle-3 A3): the invitation whispers; every
+                      other empty sleeve is just a sleeve — the dashed pocket
+                      says it, no label needed. */}
+                  {invite && <span className="sleeve-empty-copy sleeve-invite">tell Foil your grail</span>}
                 </button>
               </li>
             );
@@ -570,6 +562,14 @@ export function BinderDesk({
               ×
             </button>
           </div>
+        )}
+
+        {/* The ONE quiet Pro affordance (cycle-3 A3) — a line, not a wall of
+            locked cells. Carries the tier mechanics the hero gave up (A5). */}
+        {!isPro && (
+          <p className="pro-line">
+            <a href="/pro">The rest of the binder opens with Pro: more pages, checked every hour.</a>
+          </p>
         )}
       </div>
 
