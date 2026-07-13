@@ -1145,6 +1145,12 @@ body {
 .pack-hand {
   display: flex;
   justify-content: center;
+  /* `safe center` keeps the first card reachable if the hand ever outgrows
+     the row (round-2 fix: Articuno dealt half offscreen at 390pt — centered
+     overflow clips the LEFT edge with no way to reach it). Declared after
+     plain `center` so unsupporting browsers keep the old value. */
+  justify-content: safe center;
+  max-width: 100%;
   padding: 4px 0;
 }
 .pack-card {
@@ -1278,9 +1284,12 @@ body {
     width: 68px;
     margin-left: -14px;
   }
+  /* The whole 7-card hand must FIT a 390pt content box (round-2 fix): with
+     62px/-12px overlap the row ran 362px and the first card clipped. 58px
+     with a deeper -16px overlap runs 310px — every card whole, still a fan. */
   .pack-card {
-    width: 62px;
-    margin-left: -12px;
+    width: 58px;
+    margin-left: -16px;
   }
   /* Still the hero at 390px, but the whole scene stays above the fold (A8). */
   .pack {

@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { EmailCapture } from "@/components/email-capture";
+import { CtaPendingLabel } from "@/components/home/cta-pending-label";
 import { HoloCard } from "@/components/cards/holo-card";
 import { SakuraAmbience } from "@/components/sakura-ambience";
 import { CARD_CATALOG } from "@/lib/cards/catalog";
@@ -368,11 +369,13 @@ function Hero() {
         </p>
 
         <div className="mt-10 flex justify-center">
+          {/* The tap must answer (round-2 fix): pressed state on the button,
+              working label while the /start render is in flight. */}
           <Link
             href="/start?src=home-hero"
-            className="rounded-xl bg-foil-cream px-9 py-4 text-lg font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-accent/60"
+            className="rounded-xl bg-foil-cream px-9 py-4 text-lg font-semibold text-foil-navy transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-foil-accent/60 active:translate-y-0 active:scale-[0.97]"
           >
-            Start your vault
+            <CtaPendingLabel label="Start your vault" pendingLabel="Opening the binder…" />
           </Link>
         </div>
 

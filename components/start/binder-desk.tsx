@@ -136,6 +136,18 @@ export function BinderDesk({
     fanRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [fanOpen]);
 
+  // Seating must be SEEN (round-2 fix): "Sleeve it" from the suggestion row
+  // sat below the binder, so on a phone the card seated offscreen and nothing
+  // visibly happened. The viewport returns to the seated sleeve — the settle
+  // + shimmer there IS the confirmation.
+  useEffect(() => {
+    if (!seating) return;
+    const el = document.getElementById(`pocket-${seating}`);
+    if (!el) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+  }, [seating]);
+
   const seat = useCallback(
     (card: BinderCard) => {
       if (filled.length >= capacity) return;
@@ -233,6 +245,11 @@ export function BinderDesk({
     setTypedOpen(false);
   };
 
+  // Validation speaks in canon voice (round-2 fix): the form is noValidate,
+  // so the browser's native "Fill out this field" bubble never fires — the
+  // sticky note itself says what Foil needs, and focus returns to it.
+  const emailRef = useRef<HTMLInputElement | null>(null);
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (submission.state === "submitting") return;
@@ -241,7 +258,13 @@ export function BinderDesk({
       return;
     }
     if (!email.trim()) {
-      setSubmission({ state: "error", message: "Foil needs somewhere to write you." });
+      setSubmission({ state: "error", message: "Foil needs an address to write you." });
+      emailRef.current?.focus();
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
+      setSubmission({ state: "error", message: "That address doesn't look complete yet." });
+      emailRef.current?.focus();
       return;
     }
     setSubmission({ state: "submitting" });
@@ -320,18 +343,35 @@ export function BinderDesk({
             contacts so Gmail doesn&apos;t hide it.
           </span>
         </p>
+        {/* The next step is DESIGNED, never a dead end (round-2 fix: "no
+            visual storyboard or progression... nowhere to go"). A fresh vault
+            gets its door as the primary action; an existing vault's link
+            stays inbox-only (the HIGH finding) but reads as the next step,
+            not a footnote. Either way there is somewhere to go. */}
         {submission.vaultUrl ? (
           <a
             href={submission.vaultUrl}
-            className="mt-6 inline-block rounded-xl bg-foil-cream px-6 py-3 text-base font-semibold text-foil-navy transition hover:ring-2 hover:ring-foil-accent/60"
+            className="mt-6 inline-block rounded-xl bg-foil-cream px-6 py-3 text-base font-semibold text-foil-navy transition hover:ring-2 hover:ring-foil-accent/60 active:scale-[0.97]"
           >
             Open your vault →
           </a>
         ) : submission.vaultLinkEmailed ? (
-          <p className="mt-6 text-sm text-foil-cream/70">
-            Your private vault link is in your inbox. It&apos;s the one page with everything you track.
-          </p>
+          <div className="mx-auto mt-6 max-w-md rounded-xl border border-foil-accent/25 bg-foil-accent/[0.06] px-5 py-4">
+            <p className="text-sm font-semibold text-foil-cream">Next: open your inbox.</p>
+            <p className="mt-1 text-sm text-foil-cream/70">
+              Your private vault link is there. It&apos;s the one page with everything you track.
+            </p>
+          </div>
         ) : null}
+        <p className="mt-5 text-sm text-foil-cream/55">
+          While you wait,{" "}
+          <a
+            href="/deals"
+            className="underline decoration-foil-cream/30 underline-offset-2 transition hover:text-foil-cream"
+          >
+            see today&apos;s best buys →
+          </a>
+        </p>
       </section>
     );
   }
@@ -339,6 +379,7 @@ export function BinderDesk({
   return (
     <form
       onSubmit={onSubmit}
+      noValidate
       onMouseEnter={() => setAwake(true)}
       onFocus={() => setAwake(true)}
       data-awake={awake ? "true" : "false"}
@@ -385,7 +426,7 @@ export function BinderDesk({
               const card = pocket.card;
               const isSeating = seating === card.id;
               return (
-                <li key={card.id} className="pocket pocket-filled">
+                <li key={card.id} id={`pocket-${card.id}`} className="pocket pocket-filled">
                   <div className={`sleeve ${isSeating ? "sleeve-seating" : ""}`}>
                     <Image
                       src={card.image}
@@ -551,14 +592,23 @@ export function BinderDesk({
         {/* The one-more loop: ONE quiet neighbor, dismissible, never a feed. */}
         {suggestion && slotsLeft > 0 && (
           <div className="mt-4 flex items-center gap-3 rounded-xl border border-foil-accent/25 bg-foil-accent/[0.06] px-3 py-2">
-            <Image
-              src={suggestion.s.card.image}
-              alt=""
-              width={40}
-              height={56}
-              sizes="40px"
-              className="h-12 w-9 rounded object-cover ring-1 ring-foil-cream/10"
-            />
+            {/* Keyed by the suggested card (round-2 fix): reusing the <img>
+                node let the words swap while the OLD card's art lingered —
+                the row briefly claimed Skarmory was Pikachu. A fresh node per
+                card can only ever show the right art; the cream backing makes
+                the loading beat look intentional, not broken. */}
+            <span
+              key={suggestion.s.card.id}
+              className="relative h-12 w-9 shrink-0 overflow-hidden rounded bg-foil-cream/10 ring-1 ring-foil-cream/10"
+            >
+              <Image
+                src={suggestion.s.card.image}
+                alt=""
+                fill
+                sizes="40px"
+                className="object-cover"
+              />
+            </span>
             <p className="min-w-0 flex-1 text-xs text-foil-cream/75">
               <span className="font-medium text-foil-cream">{suggestion.s.card.name}</span>{" "}
               {suggestionLine(suggestion.s, suggestion.after)}
@@ -673,8 +723,10 @@ export function BinderDesk({
         <label className="block">
           <span className="note-label">Where should Foil write you?</span>
           <input
+            ref={emailRef}
             type="email"
             required
+            aria-required="true"
             autoComplete="email"
             placeholder="you@gmail.com"
             value={email}
