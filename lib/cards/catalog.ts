@@ -40,6 +40,7 @@ export type CatalogEntry = {
 import { LONGTAIL_CATALOG } from "./catalog-longtail.generated.ts";
 import { TOP5_PER_SET_CATALOG } from "./catalog-top5-per-set.generated.ts";
 import { EEVEELUTION_CATALOG } from "./catalog-eeveelutions.generated.ts";
+import { RECENT_SETS_CATALOG } from "./catalog-recent-sets.generated.ts";
 
 const CURATED_CATALOG: readonly CatalogEntry[] = [
   // Base Set (base1) — the foundational holo lineup. Charizard is the most
@@ -333,6 +334,12 @@ export const CARD_CATALOG: readonly CatalogEntry[] = [
   // Additive; the generator dedupes against every entry above at generation
   // time, and catalog.test.ts pins slug uniqueness as the build-time guard.
   ...EEVEELUTION_CATALOG,
+  // Recent-set FULL coverage (quality-bar-fixes, 2026-07-13): every card of
+  // every EN set released in the last ~14 months, regenerated DAILY by
+  // .github/workflows/daily-catalog-bake.yml. "New sets are always the most
+  // popular" (John) — this tier is why a set released Friday is browsable
+  // the same week. Generator dedupes against everything above.
+  ...RECENT_SETS_CATALOG,
 ];
 
 /** Quick lookup by slug. O(1) — built once at module load. */

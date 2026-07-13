@@ -20,6 +20,7 @@
     "og:cards": "node --experimental-strip-types --no-warnings scripts/generate-og-card-art.ts",
     "bake:poketrace-uuids": "node --experimental-strip-types --no-warnings scripts/bake-poketrace-uuids.ts",
     "expand:top5-per-set": "node --experimental-strip-types --no-warnings scripts/expand-top5-per-set.ts",
+    "expand:recent-sets": "node --experimental-strip-types --no-warnings scripts/expand-recent-sets.ts",
     "compliance:check": "node --experimental-strip-types --no-warnings scripts/compliance-check.ts",
     "design:lint": "impeccable detect app/ components/ --json || true",
     "compliance:pdf": "node --experimental-strip-types --no-warnings scripts/generate-compliance-pdf.ts",

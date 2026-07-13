@@ -1,0 +1,111 @@
+# Daily catalog + bake refresh — fully autonomous (quality-bar-fixes,
+# 2026-07-13; the data-source-spike's do-or-die fix).
+#
+# WHY: the three newest sets had ZERO cards on foiltcg.com while every vendor
+# carried them — because catalog generation + the metadata bake were manual.
+# "New sets are always the most popular and get the most searches" (John).
+# This workflow makes new-set coverage automatic: the day pokemontcg.io
+# ingests a set (historically release day), the next 07:23 UTC run adds every
+# card, bakes its metadata, and pushes — Vercel deploys it like any commit.
+# Live proof contract: ME05 Pitch Black (releases 2026-07-17) appears with no
+# human involved.
+#
+#   1. scripts/expand-recent-sets.ts — full coverage of every EN set released
+#      in the last ~14 months (idempotent, deterministic, refuses to shrink
+#      on upstream outage; sets age out naturally, chase cards persist via
+#      the top-5 tier)
+#   2. npm run bake:cards -- --only-missing — bake metadata for net-new
+#      entries only (existing entries keep their records; fast)
+#   3. Guard tests (catalog invariants + bake snapshot invariants) — the
+#      structural review, same philosophy as weekly-content's quality gates
+#   4. Commit + push to main only when something changed
+#
+# Committer pattern copied from weekly-content.yml (ADR-045): the email must
+# associate with a GitHub team user or Vercel blocks the deploy.
+
+name: daily-catalog-bake
+on:
+  schedule:
+    - cron: "23 7 * * *" # 07:23 UTC daily — before the 08:00 deals-refresh, off the :00 stampede
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Configure git author
+        run: |
+          git config user.name  "foil-catalog-bot"
+          git config user.email "john.c.craig24@gmail.com"
+
+      - name: Expand recent-set catalog
+        run: npm run expand:recent-sets
+
+      - name: Bake metadata for net-new cards
+        run: npm run bake:cards -- --only-missing
+
+      - name: Guard tests (catalog + bake invariants)
+        # The structural review before an autonomous push: slug uniqueness +
+        # format pins, curated-tier integrity, bake snapshot shape. A failure
+        # here means the generated output is malformed — no commit happens.
+        run: |
+          node --test --experimental-strip-types \
+            lib/__tests__/catalog.test.ts \
+            lib/__tests__/catalog-qa.test.ts \
+            lib/__tests__/bake-snapshot-invariants.test.ts \
+            lib/__tests__/baked-first-render.test.ts
+
+      - name: Notify matched card requests
+        # Request-tracking V1 (P0-4): people whose searched-for card just
+        # landed get their one promised email. Soft-fail by design — a
+        # notification problem must never block the catalog commit.
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          UNSUBSCRIBE_TOKEN_SECRET: ${{ secrets.UNSUBSCRIBE_TOKEN_SECRET }}
+        run: node --experimental-strip-types --no-warnings scripts/notify-card-requests.ts || true
+
+      - name: Commit + push to main
+        id: commit
+        run: |
+          git add lib/cards/catalog-recent-sets.generated.ts lib/cards/baked-metadata.json
+          if git diff --cached --quiet; then
+            echo "No catalog changes today."
+            echo "committed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Surface WHAT changed in the commit subject (new sets are the news).
+          SUMMARY=$(git diff --cached --stat | tail -1 | tr -s ' ')
+          git commit -m "feat(catalog): daily catalog refresh $(date -u +%Y-%m-%d)" -m "Autonomous run of daily-catalog-bake:$SUMMARY"
+          git push origin main
+          echo "committed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Notify Discord on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_ERRORS: ${{ secrets.DISCORD_WEBHOOK_ERRORS }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_ERRORS" ]; then exit 0; fi
+          TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          PAYLOAD=$(jq -n \
+            --arg url "$RUN_URL" \
+            --arg ts "$TS" \
+            '{username: "Foil Ops", embeds: [{title: ":warning: daily-catalog-bake failed", description: "New-set catalog coverage did not refresh. Chaos-Rising-class gaps reopen if this stays red.", url: $url, color: 15548997, fields: [{name: "Workflow", value: "daily-catalog-bake", inline: true}, {name: "Run", value: ("[Open in GitHub](" + $url + ")"), inline: true}], timestamp: $ts}]}')
+          curl -sS -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK_ERRORS" || true
