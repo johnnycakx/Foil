@@ -1,39 +1,39 @@
-# Next-Session Brief — updated 2026-07-13 (post-ship) — BOTH BRANCHES LIVE ON PROD, veto waived by John. Next = John's on-prod walk → V8 ads-run spec (Fable) → V6.6 cycle-4 → ads.
+# Next-Session Brief — updated 2026-07-13 (final, session close) — POKETRACE IS OUT (John's call: won't fix, don't renew). Two tracks now: A) data independence in ~48h, B) UX re-plan BEFORE any more building. Fable opens next session by AUTHORING BOTH PLANS, not by firing goals.
 
 > Read first: current state + prioritized plan. (Cowork edits this; commits on John's machine.)
 
-## THE HEADLINE
-The binder /start (ADR-115/116), the one-page free tier (9 cards, daily), all round-2/3 QA fixes, AND the V6.5 /pro sales page are LIVE on foiltcg.com (merges `11653da` + `cd9a3d5`, docs `9a8e731`, all deploys Ready). John deliberately waived the design-veto gate — zero-traffic reality, prod is the honest staging; recorded in the merge messages + SESSION-LOG. Live verification all green: content markers 1703 tests / 0 fail against RENDERED prod · trial CTA opens real Stripe checkout (no card entered) · /account gates correctly · 22 QA watch rows deleted with a guarded per-email ledger check · ADR-116 revisit trigger re-stated (escalate when the daily free run nears MAX_BROWSE_CALLS 200 or ~10 min).
+## THE TWO DECISIONS THAT CLOSE THIS SESSION (John, 2026-07-13 night)
+1. **PokeTrace: DO NOT RENEW.** Their eBay sold ingest froze 2026-07-05, it's now user-visible on prod (static "N sales on record", static "usually" prices, the same "most-chased" pack dealt daily), and John's verdict is they won't fix it. Consequence with a CLOCK: the key lapses ~Jul 15; after that, sold tiers/hydration soft-fail to empty and the site's sold-basis data goes from frozen → gone. **Track A must land inside ~48h.**
+2. **No more building until the plan exists.** John's read on the freshly-shipped surfaces: "clunky and outdated… I'm not impressed with the usability." The pattern to break: we keep shipping competent fix-beats into an experience whose overall shape nobody has designed end-to-end. Track B is a PLAN artifact first, ratified by John, THEN build beats.
 
-## THE SEQUENCE
-1. **John's assessment walk on foiltcg.com** — /start (binder desk: pack rip, tag write, heartbeat) and /pro (site chrome, tier table, real Moonbreon specimen, $20 Card Ladder anchor, FAQ) are what changed. His unfiltered read feeds #3.
-2. **V8 — Fable writes the ads-run spec** (judgment work, stays in this seat, NOT the runner's). Inputs: `offer-implementation.md` · `_results/funnel-stress-test.md` · stranger-run evidence in SESSION-LOG 07-12 · QUEUE row 27 (Reddit+Meta 50/50 ~$300, hooks A grail vs B drop, cooling framing on Reddit variants only, UTM per cell, ~$40 no-pulse kill/consolidate, scoreboard: 3+ card-entering trials = green, 0 = decisive no). Gated on John's walk + zero known funnel bugs (currently true).
-3. **V6.6 cycle-4** — the register/feel pass (Finding 6, the "not impressed" direction complaint) — separate future goal, brief gets John's fresh on-prod impressions folded in.
-4. **Ads live.**
+## TRACK A — data independence (~48h, before the lapse)
+Fable's first deliverable next session: `docs/goals/pricing-bridge.md`, written FROM the spike memo (`docs/goals/_results/data-source-spike.md` — adapters, costs, candidates already evaluated). Contents, already decided in principle:
+- Pricing adapter layer with per-quote provenance `{source, basis: sold|listed, lastUpdated}` — product code never knows the vendor.
+- **Honesty rule survives the bridge:** where sold data exists (PokeTrace's frozen-but-real history, PriceCharting within ToS limits), it renders as sold with its date; where only listed exists (tcgcsv), it says listed — "Foil reads real sales" never silently becomes asking-price guessing. Stale sold data gets an honest age label, not silence.
+- tcgcsv ingest is the backbone (free, daily, full catalog incl. presale) → **`presale-ingest.md` (specced, unfired) FOLDS INTO this goal** — one tcgcsv pipeline, presale is a tier of it, not a separate cron.
+- Scrydex Growth + JustTCG trials ride behind the adapter as candidate sold sources; decision by evidence after a week.
+- Kill/keep: strip PriceCharting from user-visible surfaces per R-072 unless permission obtained.
+- **John's parallel human step (the permanent fix): the eBay Marketplace Insights application ($0) — own the sold source. START THE CLOCK.** Also: GCP billing card (past due) still open.
 
-## THE LOCKED OFFER (live as of today)
-- Free = ONE BINDER PAGE: 9 watches, checked daily, weekly digest, top-2 /deals teaser. Pro $6/mo, 30-day card trial: unlimited watches HOURLY + the daily drop.
-- Founding line, two-voice register, "Foil doesn't guess prices. It reads real sales.", drop-hook H1 — unchanged. Register rule: card-shop language, 15-year-old test.
+## TRACK B — the UX plan (Fable authors, John ratifies, THEN we build)
+Fable's second deliverable next session: `docs/UX-DIRECTION.md` — the end-to-end experience design, not a fix list:
+- Inputs: John's "clunky/outdated" verdict + his round-2 tour narration + the audit (`design-loop/SITE-QUALITY-AUDIT-2026-07-13.md`, items 6–9 still open: /start IA flip, hero first-paint, desktop composition, /alert-sample + naming) + the Collectr test (the standing frame) + the Bao/ADR-115 reference feel (Finding 6, twice-complained, still unaddressed).
+- Scope: the FULL stranger journey — land → understand → first card seated → binder alive → alert → return → upgrade — with the clunk named at each step and the intended feel specified before any component is touched.
+- Method: journey-map against Collectr's first-30-seconds, then design the beats; invoke the design skills (impeccable/soft-skill/redesign-skill) at authoring time, not just build time.
+- Output: ratification checklist for John, then sequenced build beats each with its own rubric axis targets. **The ads gate (all axes ≥7) now sits BEHIND Track B's execution.**
+- V8 ads spec: still Fable's, still gated on the re-score clearing. V6.6 cycle-4 merges INTO Track B (it was always the register/feel pass — now it's part of a whole design, not a bolt-on).
 
-## John's open human items
-- **PokeTrace payment ~Jul 15 — URGENT (2 days).** Everything soft-fails to empty without it. Decision 07-08: one more cycle tied to the sprint verdict.
-- **Verify BOTH `+smoke` live trial cancels in Stripe** (`+smoke2` scheduled-cancel Aug 11; the first one still unverified).
-- **⚠️ GCP billing card** (acct `01CBF6-…` past due) — suspension kills the GSC service-account reader.
-- **Beehiiv welcome-email cadence copy** (dashboard edit — tier-split the "about one email a week" line).
-- **Stripe dashboard Branding** (logo + accent `#d98aa0` save — the S5 remainder).
+## Standing state (unchanged from tonight's earlier close, compressed)
+- Prod: main through `03cb076`, deploys Ready, 1,733 live markers / 0 fail. Rubric: 3.5 → 6.5 (history in the audit doc). Catalog bake autonomous + proven; freshness watchdog live; request-tracking V1 live; binder-brain live; moonbreon resolves.
+- Vendor risks: R-070 (PokeTrace — now being executed away), R-071 (pokemontcg.io→Scrydex images), R-072 (PriceCharting ToS).
+- Digest rail: first approval card Wed 14:13 UTC · AUTO_PUBLISH_WEEKLY_POSTS false · @mollipen thread alive.
+- QA hygiene: John saw a full binder page of QA-run watches on his signed-in account — clear them (put-away) so his binder is his real chase list.
 
-## State snapshots (2026-07-13 post-ship)
-- **Prod:** main carries both merges + Monday's content-engine post (`697d8e4`, rode the fast-forward cleanly). Two merge deploys + docs deploy all Ready. No open branches carrying product work.
-- **Digest rail:** `NEWSLETTER_DIGEST_MODE=approval` — first cron Wed 14:13 UTC posts the Discord approval card; nothing sends without /approve.
-- **Market-temperature stat:** un-hides on /deals after the next 09:00 UTC movers run (7-day freshness gate).
-- **Residual critique ledger:** lives in the V6.5 spec (S1–S6) + V6.6 — carried, not lost.
-- **Watch the free-tier scan volume** now that one-page free is live (ADR-116 accepted 3× worst-case; trigger above).
+## Standing doctrine (additions this session — MIGRATE TO COWORK-CONTEXT next session, mount-fresh)
+- The Collectr test frames every product call · the rubric gates ads, re-scored in the audit doc, no vibes.
+- Any recurring script feeding prod content gets a cron + alarm the day it's born (the manual bake cost three sets).
+- **Plan before build when the complaint is about the WHOLE, not a part** (tonight's learning: three competent fix-beats in one day still left "clunky and outdated" — because nobody designed the whole).
+- /clear between goals · ultracode YES for read-only fan-out spikes, NO for prod-touching builds · Cowork mount caveat · zero-traffic veto doctrine · judgment stays in the Fable seat.
 
-## Standing doctrine
-- Judgment artifacts (ads spec, pricing, strategy) stay in the Fable seat; Claude Code executes goals, never authors strategy.
-- AUTO_PUBLISH_WEEKLY_POSTS stays false · cold X lane human forever · repo private · @mollipen warm thread — don't let it die.
-- Veto-gate doctrine amended 2026-07-13 (John): at zero traffic, prod is the staging environment — ship gated work, assess live, iterate. The taste veto returns when real users are watching (ads live).
-- Cowork mount caveat (2026-07-13): the sandbox mount can serve stale/truncated working-tree content + stale reflog after on-machine runs. Git objects/refs sync; file contents may not. Verify on John's machine or via committed gate records before alarming or "fixing".
-
-## Session-close hygiene (2026-07-13 post-ship)
-Runner committed SESSION-LOG/QUEUE and pushed (`9a8e731`). This brief is Cowork's rewrite; John commits via the handed `docs:` one-liner.
+## Next session, first 10 minutes
+Read this brief → author `docs/goals/pricing-bridge.md` (Track A, fire same session — the lapse clock is real) → author `docs/UX-DIRECTION.md` (Track B, John ratifies before anything builds). Don't fire presale-ingest standalone — it's folded into Track A.
