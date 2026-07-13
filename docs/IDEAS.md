@@ -54,9 +54,11 @@ Surfaced by the V6.5 /pro specimen (which renders the REAL composer output verba
 ---
 date: 2026-07-12
 category: product
-status: captured
+status: shipped
 ---
 ## untracked-cards-are-invitations-not-dead-ends — sleeve it, request tracking, get notified
+
+**V1 SHIPPED 2026-07-13** (quality-bar-fixes P0-4, branch `quality-bar-fixes`): search fail state captures query+email → card_requests → #content-engine ping → the daily catalog bake emails "Foil now tracks it" on match. The "add untracked card to the binder" half remains future scope.
 
 From John's round-2 QA narration (tour video, 5:19–5:59): sleeve search currently greys out "Not yet tracked" cards as inert rows. Instead: let the user add an untracked card to their binder, offer a one-tap "request tracking," and email them when Foil starts tracking it — "they will not immediately leave foiltcg.com, they will stay because of the promise that there will eventually be that card data." Converts a data-coverage gap into a retention loop AND a demand signal for the ADR-092 hydration queue (watches already allocate the data budget; this extends it to cards PokeTrace hasn't matched yet).
 
