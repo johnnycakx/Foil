@@ -80,3 +80,6 @@ docs/goals/
 # lives in the committed docs/vending/*.md; the raw PDFs stay out of the repo
 # (internal-only tactics must not ship; also avoids binary bloat).
 docs/vending/source-pdfs/
+
+# QA tour recordings (large, never in git)
+design-loop/tour-videos/
