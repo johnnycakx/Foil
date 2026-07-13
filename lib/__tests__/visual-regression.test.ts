@@ -388,6 +388,29 @@ test("/start tag: Foil writes first, from the alert engine's own basis, with the
   assert.match(desk, /TAG_WRITE_DELAY_MS/, "the shimmer passes before the pencil moves");
 });
 
+test("/start tag fits the grid: SHORT line in the pill, full sentence in aria, and a writing state instead of a rewrite (round-2 fix)", () => {
+  const desk = readFile("components/start/binder-desk.tsx");
+  // The visible pill carries foilTagLineShort ("under $38") so a 390pt
+  // 3-column cell shows the number whole — "Foil suggests: un…" was the
+  // round-1 AND round-2 tour Major.
+  assert.match(
+    desk,
+    /className="tag-pencil">\{foilTagLineShort\(/,
+    "the grid pill must render the short line",
+  );
+  assert.match(
+    desk,
+    /aria-label=\{`\$\{foilTagLine\(/,
+    "the full 'Foil suggests' sentence stays for screen readers",
+  );
+  // While the pencil is pending the tag holds a writing state — it must not
+  // render the 'any good price' input first and then swap words.
+  assert.match(desk, /tag-writing/, "the writing state must exist");
+  assert.match(desk, /tag-stroke/, "the writing state shows the pencil stroke, not placeholder words");
+  const binder = readFile("lib/start/binder.ts");
+  assert.match(binder, /foilTagLineShort/, "the short line lives beside foilTagLine in the binder lib");
+});
+
 test("/start heartbeat: rendered from heartbeatLine and TIME-HONEST (no 'tonight' that isn't)", () => {
   const desk = readFile("components/start/binder-desk.tsx");
   assert.match(desk, /heartbeatLine\(/, "the line is computed, not hardcoded");

@@ -34,6 +34,7 @@ import {
   POCKETS_PER_PAGE,
   foilSuggestsCents,
   foilTagLine,
+  foilTagLineShort,
   freeSlotsLeft,
   heartbeatLine,
   layoutPockets,
@@ -414,7 +415,13 @@ export function BinderDesk({
                       Foil writes it first (cycle 2): once the shimmer has
                       passed, the agent pencils its own read from the same
                       below-usual basis the alerts run. One tap takes the
-                      pencil back. A thin read writes nothing. */}
+                      pencil back. A thin read writes nothing.
+                      GRID WORDS (round-2 fix): the pill carries the SHORT
+                      line ("under $38") so a 390pt cell shows the number
+                      whole; the full sentence lives in the aria-label. While
+                      the pencil is still coming, the tag holds a quiet
+                      writing state — it never says "any good price" first
+                      and then changes its mind. */}
                   {!touched.includes(card.id) && suggested[card.id] != null ? (
                     <button
                       type="button"
@@ -423,7 +430,20 @@ export function BinderDesk({
                       aria-label={`${foilTagLine(suggested[card.id])} for ${card.name}. Tap to change it.`}
                     >
                       <span aria-hidden className="tag-string" />
-                      <span className="tag-pencil">{foilTagLine(suggested[card.id])}</span>
+                      <span className="tag-pencil">{foilTagLineShort(suggested[card.id])}</span>
+                    </button>
+                  ) : !touched.includes(card.id) && foilSuggestsCents(card) != null ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        takePencil(card.id);
+                        setEditNow(card.id);
+                      }}
+                      className="tag tag-written tag-writing mt-1.5"
+                      aria-label={`Foil is writing its suggested price for ${card.name}. Tap to set your own instead.`}
+                    >
+                      <span aria-hidden className="tag-string" />
+                      <span aria-hidden className="tag-stroke" />
                     </button>
                   ) : (
                     <>

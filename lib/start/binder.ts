@@ -168,9 +168,21 @@ export function foilSuggestsCents(
   return wholeDollars > 0 ? wholeDollars * 100 : null;
 }
 
-/** The pencil line Foil writes on the tag. */
+/** The pencil line Foil writes on the tag — the full sentence, for places
+ *  with room (aria labels, wide layouts). */
 export function foilTagLine(cents: number): string {
   return `Foil suggests: under $${Math.round(cents / 100).toLocaleString("en-US")}`;
+}
+
+/**
+ * The same pencil line for the 3-column grid, where a ~110px cell chopped the
+ * full sentence to "Foil suggests: un…" on every phone (round-1 AND round-2
+ * tour Major). In grid context the tag IS Foil's suggestion — the pencil
+ * styling says who wrote it — so the words drop the byline and keep the part
+ * that matters: the number. Must fit a 390pt grid cell whole.
+ */
+export function foilTagLineShort(cents: number): string {
+  return `under $${Math.round(cents / 100).toLocaleString("en-US")}`;
 }
 
 // --- the heartbeat (cycle 2, beat 2) -----------------------------------------

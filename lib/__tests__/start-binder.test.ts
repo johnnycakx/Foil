@@ -16,6 +16,7 @@ import {
   dealPack,
   foilSuggestsCents,
   foilTagLine,
+  foilTagLineShort,
   freeSlotsLeft,
   heartbeatLine,
   layoutPockets,
@@ -137,6 +138,14 @@ test("the sample floor must not drift from the deals engine's", () => {
 test("the pencil line names Foil and the bound", () => {
   assert.equal(foilTagLine(194300), "Foil suggests: under $1,943");
   assert.equal(foilTagLine(3800), "Foil suggests: under $38");
+});
+
+test("the grid pencil line keeps the number and drops the byline (round-2 truncation fix)", () => {
+  // "Foil suggests: under $38" chopped to "Foil suggests: un…" in a 390pt
+  // 3-column cell — twice-confirmed on device. The grid pill says the part
+  // that matters; the pencil styling and the aria-label say who wrote it.
+  assert.equal(foilTagLineShort(194300), "under $1,943");
+  assert.equal(foilTagLineShort(3800), "under $38");
 });
 
 // --- the heartbeat (cycle 2) --------------------------------------------------
