@@ -60,3 +60,26 @@ Money path again passes on the real Vercel preview: home → Start your vault �
 ## Verdict (recommendation)
 
 Hold the merge for **findings 1 and 2**: root-cause the /pro server error on the preview (prove it's env-only or fix it), and actually land the tag-truncation fix — it has now blocked two consecutive tours. Findings 3–5 and 7–10 are contained branch fixes that should ride along before a re-tour of just the failed items; 6 and the product decisions are the cycle-4 brief, not merge-gates. Before calling the cap verified, one deliberate 10th-card attempt on the preview.
+
+---
+
+# Round-2 fix beat — shipped on the branch (2026-07-12, commits `f9cf0b1`…)
+
+**Finding 1 root cause, PROVEN:** all four `STRIPE_*` env vars are **Production-scoped** on Vercel (`vercel env ls`), so every preview deployment threw `STRIPE_SECRET_KEY is not set` inside the `createCheckoutSession` server action and Next rendered its raw digest page. **Prod is unaffected** — the vars exist there, and live $6 trials were verified end-to-end in the 2026-07-12 offer-implementation close-out (two live trials on John's aliases are the standing proof). Fixed regardless: the action now wraps every Stripe touch; failure soft-fail pings #errors and lands on `/pro?checkout=unavailable` with a canon-voice banner. A raw error page can't come back (structural pins). *Optional for John:* scope test-mode Stripe keys to Preview so previews exercise real Checkout.
+
+**Also landed:** finding 2 (grid tag now reads `under $38` whole; full sentence in the aria-label; a quiet writing-state stroke replaces the "any good price"→rewrite flicker) · finding 3 (hero CTA pressed state + "Opening the binder…" pending label) · finding 4 (seating scrolls the seated sleeve into view — the settle is the confirmation) · finding 5 (success slab: vault CTA / "Next: open your inbox" step card + a today's-best-buys link — no more dead end) · finding 7 (all 7 dealt cards fit 390 whole) · finding 8 (canon-voice inline email validation, native bubble gone) · finding 9 (suggestion thumb keyed by card — text can never outrun the art).
+
+**The 10th card, finally seen** (`design-loop/round3-harness/`): a 390×844 puppeteer harness drove the real wire — 9-card submit ACCEPTED (`john.c.craig24+round3qa@gmail.com`, digest unchecked, deletable), then a genuinely new 10th card rejected with "Free fills this page, and yours is full. Pro opens more pages and checks hourly." + trial link. Learning: a duplicate 10th card is an *update* by design, so the rejection needs a new card — worth remembering when touring.
+
+## John's re-tour checklist (failed items only, on the rebuilt preview after push)
+
+1. /pro → tap the trial CTA. Preview should now land back on /pro with the "Checkout didn't open" banner (previews have no Stripe keys), never a raw error page. On prod it should open Stripe Checkout as before.
+2. Grid tags on a filled page: every tag reads whole ("under $38"), and no tag ever says "any good price" and then changes its wording.
+3. Tap "Start your vault" on home: the button presses, and the label answers while /start loads.
+4. "Sleeve it" from the suggestion row: the page comes back up to the binder and you see the card settle.
+5. Submit and look at the success screen: there's somewhere to go.
+6. The dealt hand: the first card is whole at the left edge.
+7. Empty-email submit: the sticky note speaks, no browser bubble.
+8. One deliberate 10th card (pick one NOT already sleeved) — the page-full line with the trial link.
+
+**Tour-data cleanup owed:** `+round3qa` (9 watches) from this harness, plus round 1's `realjohncraig@icloud.com` (9) and round 2's `john@salecore.com` (4) — delete or adopt.
