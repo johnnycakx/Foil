@@ -117,6 +117,10 @@ const PUBLIC_SURFACES: readonly string[] = [
   // coral-hover-only invariants cover both.
   "components/cards/add-to-vault.tsx",
   "components/cards/detail-section.tsx",
+  // V6.5 pro-conversion-redesign: /pro moved into the (site) group (finding
+  // S2 — the sales page carries the full site chrome now). Night register;
+  // the no-raw-hex + coral-hover-only invariants cover it.
+  "app/(site)/pro/page.tsx",
 ];
 
 // ---------------------------------------------------------------------------
@@ -1361,4 +1365,97 @@ test("Movers board: heating-up rows at full parity — shared row, thumbnails, /
   assert.match(page, /aria-label="Board sections"/, "section jump links exist");
   assert.match(page, /How to read this board/, "explainer is a labeled footnote block");
   assert.match(page, /id="below-sold"/, "below-sold jump target exists");
+});
+
+// ---------------------------------------------------------------------------
+// V6.5 pro-conversion-redesign — /pro is a sales page, not a rail with copy.
+// Guards: (site) chrome placement (finding S2), the section order (hero →
+// price → table → specimen → FAQ → trust, work item 4), the comparison
+// table's REAL tier rows (work item 1), the specimen composed by the real
+// alert engine from the committed snapshot (work item 2, null-over-guess),
+// and the banned patterns (item 5: fake social proof, countdown urgency).
+// ---------------------------------------------------------------------------
+
+const PRO_PAGE = "app/(site)/pro/page.tsx";
+
+test("/pro lives inside the (site) group — full chrome, night register (V6.5 S2)", () => {
+  assert.ok(existsSync(join(ROOT, PRO_PAGE)), "/pro renders inside the (site) layout");
+  assert.ok(
+    !existsSync(join(ROOT, "app/pro/page.tsx")),
+    "the chrome-less app/pro page must not return (it would shadow the (site) route)",
+  );
+  const src = readFile(PRO_PAGE);
+  assert.match(src, /data-tone="night"/, "/pro opts into the night tone (flips the chrome dark)");
+  assert.match(src, /bg-foil-night/, "/pro paints the charcoal ground");
+  assert.doesNotMatch(src, /foil-gold/, "gold is wordmark-only on night surfaces");
+});
+
+test("/pro section order: hero → price+CTA → table → specimen → FAQ → trust (V6.5 item 4)", () => {
+  const src = readFile(PRO_PAGE);
+  const hero = src.indexOf("<header");
+  const price = src.indexOf('aria-label="Foil Pro price"');
+  const table = src.indexOf('id="compare-heading"');
+  const specimen = src.indexOf('id="specimen-heading"');
+  const faq = src.indexOf('id="faq-heading"');
+  const trust = src.indexOf("{TRUST_LINE}</p>", faq);
+  for (const [name, idx] of Object.entries({ hero, price, table, specimen, faq, trust })) {
+    assert.ok(idx > -1, `the ${name} section must exist`);
+  }
+  assert.ok(hero < price && price < table && table < specimen && specimen < faq && faq < trust,
+    "the sections render in the researched order (hook → offer → proof → objections → trust)");
+});
+
+test("/pro comparison table: real tier mechanics, semantic table, CTA above AND below (V6.5 item 1)", () => {
+  const src = readFile(PRO_PAGE);
+  // Semantic, fixed-layout table — the 390px no-horizontal-scroll mechanism.
+  assert.match(src, /<table className="[^"]*table-fixed/, "fixed-layout <table> (renders whole at 390px)");
+  assert.match(src, /scope="row"/, "row labels are header cells");
+  // The six rows state the REAL tier split (lib/offer.ts + lib/deals/gate.ts) —
+  // pinned so the table can't drift from the shipped mechanics.
+  for (const marker of [
+    "One binder page (9 cards)",
+    "Once a day",
+    "Every hour, first in line",
+    "The daily deal drop",
+    "The weekly best-buys digest",
+    "Top 2 picks",
+    "Prices from real sold data",
+  ]) {
+    assert.ok(src.includes(marker), `table must state the real mechanic: "${marker}"`);
+  }
+  // Card Ladder pattern: the trial CTA renders above AND below the table.
+  const ctas = src.match(/<TrialCta /g) ?? [];
+  assert.ok(ctas.length >= 2, "the trial CTA mounts at least twice (above + below the fold)");
+});
+
+test("/pro specimen: composed by the REAL alert engine from the committed snapshot — never hand-written (V6.5 item 2)", () => {
+  const src = readFile(PRO_PAGE);
+  assert.match(
+    src,
+    /import \{[\s\S]*?subjectLine,[\s\S]*?evidenceLine,[\s\S]*?\} from "@\/lib\/wishlist\/alert-email"/,
+    "the specimen's subject + evidence strings come from the real composers",
+  );
+  assert.match(src, /getSnapshotSold\(SPECIMEN_SLUG\)/, "figures derive from the committed sold snapshot");
+  assert.match(src, /Math\.round\(sold\.soldCents \* 0\.85\)/, "the example listing sits at the ADR-091 market floor (the real fire point)");
+  assert.match(src, /if \(!sold\) return null/, "null-over-guess: no snapshot → no invented figures");
+  // No hand-written 3+ digit dollar figure anywhere on the page: every sold
+  // figure must flow from the engine. ($6 and the $20 anchor are the only
+  // literals the page is allowed.)
+  assert.doesNotMatch(src, /\$\d{3}/, "no hard-coded sold-figure dollar literals");
+});
+
+test("/pro bans hold: no fake social proof, no countdown urgency, no unshipped promises (V6.5 item 5)", () => {
+  // Comments may NAME the bans (that's documentation); only shippable text is
+  // scanned — same comment-stripping approach as register-rule.test.ts.
+  const src = readFile(PRO_PAGE)
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:"'])\/\/[^\n]*/g, "$1");
+  assert.doesNotMatch(src, /testimonial/i, "no testimonials (we have essentially zero users; honesty is the moat)");
+  assert.doesNotMatch(src, /\d+[,\d]*\+? ?(collectors|members|users|subscribers)/i, "no invented member counts");
+  assert.doesNotMatch(src, /★|⭐|\b\d(\.\d)? stars\b/i, "no star ratings");
+  assert.doesNotMatch(src, /countdown|setInterval|expires (in|at)|only \d+ (left|spots)/i, "no urgency theater");
+  assert.doesNotMatch(src, /coming soon|mobile app|our app\b/i, "no unshipped-feature promises");
+  // The FAQ answers the objections next to the card-required CTA (S4).
+  const dts = src.match(/<dt className/g) ?? [];
+  assert.ok(dts.length >= 3, "a compact FAQ (3+ questions) sits on the page");
 });

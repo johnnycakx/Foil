@@ -31,7 +31,7 @@ function stripComments(source: string): string {
 // The public copy surfaces the register rule governs. New customer-facing
 // surfaces should be appended here.
 const COPY_SURFACES: readonly string[] = [
-  "app/pro/page.tsx",
+  "app/(site)/pro/page.tsx",
   "app/account/page.tsx",
   "app/(site)/page.tsx",
   "app/(site)/deals/page.tsx",
@@ -74,7 +74,7 @@ test("register rule: no finance/tech jargon in public copy surfaces", () => {
 });
 
 test("locked offer copy renders verbatim on /pro", () => {
-  const pro = read("app/pro/page.tsx");
+  const pro = read("app/(site)/pro/page.tsx");
   assert.match(pro, /Foil watches your grails\. You get pinged when one hits your price\./);
   assert.match(
     pro,
@@ -109,7 +109,7 @@ test("locked gate copy: real locked count + Pro line, free catcher present", () 
 test("no em dashes in locked/public copy strings", () => {
   // John's standing voice rule: NO em dashes in customer-facing copy. Scan
   // string literals + JSX text on the core offer surfaces.
-  for (const rel of ["app/pro/page.tsx", "lib/deals/gate.ts", "lib/newsletter/daily-drop.ts"]) {
+  for (const rel of ["app/(site)/pro/page.tsx", "lib/deals/gate.ts", "lib/newsletter/daily-drop.ts"]) {
     const clean = stripComments(read(rel));
     assert.ok(!clean.includes("—"), `${rel} contains an em dash in shippable text`);
   }

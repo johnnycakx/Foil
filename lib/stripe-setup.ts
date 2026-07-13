@@ -13,8 +13,10 @@ const LOOKUP_KEY = "foil_pro_monthly_v2";
 
 // Shown by Stripe Checkout beside the price — must describe the CURRENT
 // deal-finder Pro offer (mirrors /pro), never the parked scanner tier.
+// No em dashes (John's standing voice rule; V6.5 finding S5 — a buyer sees
+// this string beside the price in Stripe Checkout).
 const PRO_PRODUCT_DESCRIPTION =
-  "The daily deal drop + personal price watches — get pinged the moment a card you're chasing hits your price, on real sold data.";
+  "The daily deal drop plus personal price watches. Foil pings you the moment a card you're chasing hits your price, judged on real sold data.";
 
 export type SetupResult = {
   productId: string;

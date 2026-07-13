@@ -19,6 +19,17 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-07-13
+category: ux
+status: captured
+---
+## alert-emails-need-thousands-separators — formatUsd renders "$1942.63" on four-digit cards
+
+Surfaced by the V6.5 /pro specimen (which renders the REAL composer output verbatim): `formatUsd` in `lib/wishlist/alert-email.ts` produces `$1942.63`, not `$1,942.63`. On grail-priced cards (the exact cards the alert audience chases) every live alert email reads slightly off. One-line fix with `toLocaleString`, but it belongs in the composer (where every alert + the specimen inherit it), not patched per-surface. Tests pin composer output, so re-pin when it changes.
+
+**Context:** V6.5 pro-conversion-redesign visual pass, 2026-07-13; the Moonbreon specimen showed the raw formatting on the sales page.
+
+---
 date: 2026-07-12
 category: product
 status: captured
