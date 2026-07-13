@@ -8,6 +8,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { FOIL_PRO_LOOKUP_KEY, ensureProProductAndPrice } from "@/lib/stripe-setup";
 import { stripe, PRO_TRIAL_DAYS } from "@/lib/stripe";
 import { trialAlreadyUsed } from "@/lib/stripe-trial";
+import { postError } from "@/lib/notifications/discord";
 
 async function siteOrigin(): Promise<string> {
   const h = await headers();
@@ -74,7 +75,6 @@ export async function createCheckoutSession(formData?: FormData): Promise<void> 
     data: { user },
   } = await supabase.auth.getUser();
 
-  const priceId = await resolveProPriceId();
   const origin = await siteOrigin();
 
   // Ads attribution (ADR-084/112 passthrough): /pro mirrors its landing
@@ -90,44 +90,65 @@ export async function createCheckoutSession(formData?: FormData): Promise<void> 
   // for signed-in buyers (a guest's email is unknown until Checkout); the
   // webhook closes the guest side. No-trial sessions show "$6 due today" in
   // Checkout, so the display is always honest.
-  const params: Stripe.Checkout.SessionCreateParams = {
-    mode: "subscription",
-    line_items: [{ price: priceId, quantity: 1 }],
-    cancel_url: `${origin}/pro?checkout=canceled`,
-    allow_promotion_codes: true,
-    // Card REQUIRED on a $0-due trial (payment_method_collection:"always" —
-    // "if_required" would skip it). Confirmed against
-    // docs.stripe.com/payments/checkout/free-trials.
-    payment_method_collection: "always",
-  };
+  // Every Stripe touch lives inside this try. An unhandled throw here renders
+  // Next's raw production error page at the moment of highest purchase intent
+  // (seen live in the 2026-07-12 round-2 preview tour: STRIPE_SECRET_KEY is
+  // Production-scoped on Vercel, so every preview deployment threw). Failure
+  // must degrade to an honest /pro state, never the digest page.
+  let checkoutUrl: string | null = null;
+  try {
+    const priceId = await resolveProPriceId();
 
-  if (user) {
-    const customerId = await getOrCreateStripeCustomer(user.id, user.email ?? "");
-    const withTrial = !(await trialAlreadyUsed(user.email ?? ""));
-    params.customer = customerId;
-    params.client_reference_id = user.id;
-    params.success_url = `${origin}/account?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
-    params.subscription_data = {
-      ...(withTrial ? { trial_period_days: PRO_TRIAL_DAYS } : {}),
-      metadata: { supabase_user_id: user.id, ...attribution },
+    const params: Stripe.Checkout.SessionCreateParams = {
+      mode: "subscription",
+      line_items: [{ price: priceId, quantity: 1 }],
+      cancel_url: `${origin}/pro?checkout=canceled`,
+      allow_promotion_codes: true,
+      // Card REQUIRED on a $0-due trial (payment_method_collection:"always" —
+      // "if_required" would skip it). Confirmed against
+      // docs.stripe.com/payments/checkout/free-trials.
+      payment_method_collection: "always",
     };
-  } else {
-    // Guest: no `customer` — Checkout creates one from the email it collects.
-    // Success lands on /pro (public) which renders the signed-out "check your
-    // email for your sign-in link" state; /account would bounce to /login.
-    params.success_url = `${origin}/pro?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
-    params.subscription_data = {
-      trial_period_days: PRO_TRIAL_DAYS,
-      metadata: { guest_checkout: "true", ...attribution },
-    };
+
+    if (user) {
+      const customerId = await getOrCreateStripeCustomer(user.id, user.email ?? "");
+      const withTrial = !(await trialAlreadyUsed(user.email ?? ""));
+      params.customer = customerId;
+      params.client_reference_id = user.id;
+      params.success_url = `${origin}/account?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
+      params.subscription_data = {
+        ...(withTrial ? { trial_period_days: PRO_TRIAL_DAYS } : {}),
+        metadata: { supabase_user_id: user.id, ...attribution },
+      };
+    } else {
+      // Guest: no `customer` — Checkout creates one from the email it collects.
+      // Success lands on /pro (public) which renders the signed-out "check your
+      // email for your sign-in link" state; /account would bounce to /login.
+      params.success_url = `${origin}/pro?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
+      params.subscription_data = {
+        trial_period_days: PRO_TRIAL_DAYS,
+        metadata: { guest_checkout: "true", ...attribution },
+      };
+    }
+
+    const session = await stripe().checkout.sessions.create(params);
+    checkoutUrl = session.url ?? null;
+  } catch (err) {
+    console.error("[billing] Stripe Checkout session failed:", err);
+    const webhook = process.env.DISCORD_WEBHOOK_ERRORS;
+    if (webhook) {
+      // Fire-and-forget; a Discord outage must never block the redirect.
+      void postError(webhook, {
+        source: "pro-checkout",
+        errorType: "checkout_session_failed",
+        message: err instanceof Error ? err.message : String(err),
+        context: { signedIn: user ? "yes" : "no" },
+      }).catch(() => {});
+    }
   }
 
-  const session = await stripe().checkout.sessions.create(params);
-
-  if (!session.url) {
-    throw new Error("Stripe Checkout session has no redirect URL.");
-  }
-  redirect(session.url);
+  if (!checkoutUrl) redirect("/pro?checkout=unavailable");
+  redirect(checkoutUrl);
 }
 
 export async function openCustomerPortal(): Promise<void> {

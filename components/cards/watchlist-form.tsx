@@ -30,7 +30,7 @@ const ERROR_COPY: Record<string, string> = {
   unavailable: "Alerts are briefly unavailable. Try again shortly.",
   save_failed: "Couldn't save your alert. Try again.",
   watch_limit_free:
-    "Free gets you 3 watches, and you're at the limit. Pro watches every card you're chasing, checked hourly.",
+    "Free fills one binder page (9 cards), and yours is full. Pro watches every card you're chasing, checked hourly.",
 };
 
 export function WatchlistForm({

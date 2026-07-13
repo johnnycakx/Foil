@@ -36,7 +36,9 @@ const COPY_SURFACES: readonly string[] = [
   "app/(site)/page.tsx",
   "app/(site)/deals/page.tsx",
   "app/(site)/pricing-methodology/page.tsx",
-  "components/start-page-form.tsx",
+  "components/start/binder-desk.tsx",
+  "components/start/booster-pack.tsx",
+  "lib/start/binder.ts",
   "components/deals/deals-drop-gate.tsx",
   "components/deals/movers-board.tsx",
   "components/cards/add-to-vault.tsx",
@@ -88,7 +90,7 @@ test("locked offer copy renders verbatim on /pro", () => {
     pro,
     /\$6 a month, locked\. The price rises as Foil gets faster\. Founding members keep their rate for life and get everything new first\./,
   );
-  assert.match(pro, /Not ready\? Free gets you 3 watches and the weekly digest\./);
+  assert.match(pro, /Not ready\? Free fills a binder page \(9 cards\) and gets the weekly digest\./);
   // John-locked drop-hook H1 (2026-07-12, exact).
   assert.match(pro, /The day's best buys\. In your inbox\./);
   // The trimmed post-purchase state (John, 2026-07-12). JSX escapes the
@@ -101,7 +103,7 @@ test("locked gate copy: real locked count + Pro line, free catcher present", () 
   assert.match(gate, /more good \$\{buys\} today\./);
   assert.match(gate, /Pro sees everything Foil finds, first\./);
   const gateComponent = read("components/deals/deals-drop-gate.tsx");
-  assert.match(gateComponent, /Not ready\? Free gets you 3 watches and the weekly digest\./);
+  assert.match(gateComponent, /Not ready\? Free fills a binder page \(9 cards\) and gets the weekly digest\./);
 });
 
 test("no em dashes in locked/public copy strings", () => {

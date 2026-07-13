@@ -1,11 +1,18 @@
-// The LOCKED offer's tier mechanics (offer-implementation, 2026-07-11):
-// free 3-watch cap (gift vaults exempt), the free-daily / pro-hourly cadence
+// The LOCKED offer's tier mechanics (offer-implementation, 2026-07-11; free
+// cap amended to ONE BINDER PAGE = 9 by the 2026-07-12 cycle-3 brief):
+// free one-page cap (gift vaults exempt), the free-daily / pro-hourly cadence
 // split, the email-keyed tier resolution, the daily-drop composer's thin-day
 // honesty, and the market-temperature stat.
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { FREE_WATCH_CAP, FREE_ALERT_HOUR_UTC, countsTowardFreeCap, watchDueThisRun } from "../offer.ts";
+import {
+  FREE_PAGE_SLEEVES,
+  FREE_WATCH_CAP,
+  FREE_ALERT_HOUR_UTC,
+  countsTowardFreeCap,
+  watchDueThisRun,
+} from "../offer.ts";
 import { evaluateFreeCap } from "../wishlist/free-cap.ts";
 import { resolveTierRecord } from "../entitlements.ts";
 import { buildDailyDropModel } from "../newsletter/daily-drop.ts";
@@ -35,16 +42,28 @@ const row = (slug: string, opts: { src?: string | null; paused?: boolean } = {})
   alerts_paused_at: opts.paused ? "2026-07-11T00:00:00Z" : null,
 });
 
-test("free cap is 3 active watches", () => {
-  assert.equal(FREE_WATCH_CAP, 3);
-  const existing = [row("a"), row("b"), row("c")];
-  assert.equal(evaluateFreeCap("free", existing, ["d"]).allowed, false);
-  assert.equal(evaluateFreeCap("free", [row("a"), row("b")], ["c"]).allowed, true);
+/** A full free page of active watches (slugs p0..p8). */
+const fullPage = () => Array.from({ length: FREE_PAGE_SLEEVES }, (_, i) => row(`p${i}`));
+
+test("free cap is ONE BINDER PAGE (9 active watches)", () => {
+  assert.equal(FREE_PAGE_SLEEVES, 9);
+  assert.equal(FREE_WATCH_CAP, FREE_PAGE_SLEEVES, "the cap IS the page — one constant");
+  // The whole page fills in one submit…
+  assert.equal(evaluateFreeCap("free", [], Array.from({ length: 9 }, (_, i) => `n${i}`)).allowed, true);
+  // …and the 10th card is rejected server-side (the page is full).
+  assert.equal(evaluateFreeCap("free", fullPage(), ["d"]).allowed, false);
+  assert.equal(evaluateFreeCap("free", [], Array.from({ length: 10 }, (_, i) => `n${i}`)).allowed, false);
+  assert.equal(evaluateFreeCap("free", fullPage().slice(0, 8), ["c"]).allowed, true);
 });
 
-test("re-adding an already-watched card is an update, not a new watch", () => {
-  const existing = [row("a"), row("b"), row("c")];
-  assert.equal(evaluateFreeCap("free", existing, ["a"]).allowed, true);
+test("re-adding an already-watched card is an update, not a new watch (idempotent at a full page)", () => {
+  const existing = fullPage();
+  assert.equal(evaluateFreeCap("free", existing, ["p0"]).allowed, true);
+  // A whole-page duplicate resubmit is still an update, not 9 new watches.
+  assert.equal(
+    evaluateFreeCap("free", existing, existing.map((r) => r.card_slug)).allowed,
+    true,
+  );
 });
 
 test("seeded gift-vault rows never count toward the cap", () => {
@@ -52,13 +71,17 @@ test("seeded gift-vault rows never count toward the cap", () => {
   assert.equal(countsTowardFreeCap("seeded-vault-demo"), false);
   assert.equal(countsTowardFreeCap("vault"), true);
   assert.equal(countsTowardFreeCap(null), true);
-  const seeded = [row("a", { src: "eve-vault" }), row("b", { src: "eve-vault" }), row("c", { src: "eve-vault" })];
-  assert.equal(evaluateFreeCap("free", seeded, ["d", "e", "f"]).allowed, true);
+  const seeded = fullPage().map((r) => ({ ...r, src: "eve-vault" }));
+  assert.equal(
+    evaluateFreeCap("free", seeded, Array.from({ length: 9 }, (_, i) => `d${i}`)).allowed,
+    true,
+  );
 });
 
 test("paused rows don't count as active", () => {
-  const existing = [row("a", { paused: true }), row("b", { paused: true }), row("c")];
-  assert.equal(evaluateFreeCap("free", existing, ["d", "e"]).allowed, true);
+  const existing = [...fullPage().map((r) => ({ ...r, alerts_paused_at: "2026-07-11T00:00:00Z" })), row("z")];
+  assert.equal(evaluateFreeCap("free", existing, Array.from({ length: 8 }, (_, i) => `d${i}`)).allowed, true);
+  assert.equal(evaluateFreeCap("free", existing, Array.from({ length: 9 }, (_, i) => `d${i}`)).allowed, false);
 });
 
 test("pro is uncapped", () => {

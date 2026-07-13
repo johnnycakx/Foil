@@ -22,7 +22,7 @@ const PUBLIC_SURFACES: readonly string[] = [
   "app/(site)/layout.tsx",
   "app/(site)/page.tsx",
   "app/(site)/start/page.tsx",
-  "components/start-page-form.tsx",
+  "components/start/binder-desk.tsx",
   "app/(site)/cards/page.tsx",
   "app/(site)/cards/cards-search.tsx",
   "app/(site)/cards/[slug]/page.tsx",
@@ -297,26 +297,156 @@ test("Homepage: hero dropped Card3D + MagneticLink (ADR-037 — static foregroun
 });
 
 // ---------------------------------------------------------------------------
-// /start form — section headers replace 1/2/3 numbering (ADR-029)
+// /start — THE DESK (start-binder-delight). The form is gone; the page is a
+// nine-pocket binder. These pin the STRUCTURE a refactor would quietly drop.
 // ---------------------------------------------------------------------------
 
-test("/start form: drops numeric step-numbering (1./2./3.) in favor of named section headers (ADR-029)", () => {
-  const src = readFile("components/start-page-form.tsx");
-  // The pre-Session-39 form had `1. Type a card name`, `2. Set targets`,
-  // `3. Your email`. Section 2 only rendered conditionally, creating a
-  // visible 1→3 jump for first-time visitors. The fix drops numbering.
-  assert.doesNotMatch(src, />\s*1\.\s*Type\s+a\s+card/);
-  assert.doesNotMatch(src, />\s*2\.\s*Set\s+targets/);
-  assert.doesNotMatch(src, />\s*3\.\s*Your\s+email/);
+test("/start: the binder scene replaced the form outright (the old form is deleted)", () => {
+  assert.equal(
+    existsSync(join(ROOT, "components/start-page-form.tsx")),
+    false,
+    "the multi-add form was superseded by the binder; a resurrected copy means the scene got bypassed",
+  );
+  const page = readFile("app/(site)/start/page.tsx");
+  assert.match(page, /BinderDesk/, "/start must render the binder scene");
 });
 
-test("/start form: renders the named section headers (ADR-029)", () => {
-  const src = readFile("components/start-page-form.tsx");
-  // The prompt-style label lives in the shared CardTypeahead's defaults
-  // (ADR-093 extraction); the other two headers stay in the form.
-  assert.match(readFile("components/cards/card-typeahead.tsx"), /Tell Foil what you're chasing…/);
-  assert.match(src, /Set target prices/);
-  assert.match(src, /Where to email you/);
+test("/start binder: the selection mechanism is a SLEEVE, not a dropdown-first form", () => {
+  const src = readFile("components/start/binder-desk.tsx");
+  // The uniqueness bar: picking a card happens by opening a sleeve and taking
+  // from a fanned hand. The typed input survives ONLY as a demoted fallback.
+  assert.match(src, /sleeve-empty/, "empty sleeves are the primary affordance");
+  assert.match(src, /className="fan"/, "the hand of real card art is the picker");
+  assert.match(src, /know the exact card\? type it/, "the typed path stays, demoted and in-world");
+});
+
+test("/start binder: free owns the whole page; ONE quiet Pro line, never a locked wall (cycle-3 A3)", () => {
+  const src = readFile("components/start/binder-desk.tsx");
+  // The cycle-2 locked-sleeve wall was John's veto: "dark-pattern furniture."
+  // Free = one full page now; the only Pro affordance is a single line.
+  assert.doesNotMatch(src, /Pro sleeve/, "the locked-sleeve wall must not return");
+  assert.match(src, /The rest of the binder opens with Pro/, "the one quiet Pro line must exist");
+  assert.equal(
+    (src.match(/href="\/pro"/g) ?? []).length,
+    2,
+    "exactly two /pro links total: the one quiet line at rest + the cap-full ERROR path (which only renders after the server says the page is full)",
+  );
+});
+
+test("/start binder: the counter reads as filling, not inventory (cycle-3 A7)", () => {
+  const src = readFile("components/start/binder-desk.tsx");
+  assert.match(src, /of \$\{POCKETS_PER_PAGE\} sleeves filled/, "count appears only after a card seats");
+  assert.doesNotMatch(src, /sleeves open/, "the inventory-accounting counter is gone");
+});
+
+test("/start pack: tear affordance is legible at rest and the glint respects reduced motion (cycle-3 A1)", () => {
+  const pack = readFile("components/start/booster-pack.tsx");
+  assert.match(pack, /pack-tab/, "the pull-tab must exist");
+  assert.match(pack, /pack-perforation/, "the tear line must exist");
+  const css = readFile("app/globals.css");
+  const reduced = css.slice(css.indexOf("@media (prefers-reduced-motion: reduce)"));
+  assert.ok(reduced.includes(".pack-glint"), "the one-shot glint needs a reduced-motion fallback");
+});
+
+test("/start hero: ONE value sentence; tier mechanics live on the Pro line (cycle-3 A5)", () => {
+  const page = readFile("app/(site)/start/page.tsx");
+  assert.doesNotMatch(page, /checks hourly|checks yours|once a day/i, "no pricing-table work in the hero");
+});
+
+test("/start binder: the foil shimmer + settle motion exist and respect reduced motion", () => {
+  const src = readFile("components/start/binder-desk.tsx");
+  assert.match(src, /sleeve-shimmer/, "seated holos catch the light — the on-brand idle");
+  assert.match(src, /sleeve-seating/, "a card settles into its pocket");
+  const css = readFile("app/globals.css");
+  const reduced = css.slice(css.indexOf("@media (prefers-reduced-motion: reduce)"));
+  assert.match(reduced, /\.sleeve-shimmer/, "the shimmer must be silenced under reduced motion");
+  assert.match(reduced, /\.sleeve-seating/, "the settle must be silenced under reduced motion");
+});
+
+test("/start binder: NO dark patterns (the anti-hype moat is the product)", () => {
+  // Scan SHIPPABLE text only — the source comments legitimately name the
+  // patterns they forbid (the first cut of this test flagged its own
+  // "no streaks" comment).
+  const strip = (t: string) =>
+    t.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'])\/\/.*$/gm, "$1");
+  const src =
+    strip(readFile("components/start/binder-desk.tsx")) +
+    strip(readFile("app/(site)/start/page.tsx")) +
+    strip(readFile("components/start/booster-pack.tsx"));
+  for (const banned of [/streak/i, /hurry/i, /act now/i, /expires in/i, /only \d+ left/i, /don't miss/i]) {
+    assert.doesNotMatch(src, banned, `dark-pattern copy is banned on /start: ${banned}`);
+  }
+});
+
+// --- cycle 2: the magic beats ------------------------------------------------
+
+test("/start tag: Foil writes first, from the alert engine's own basis, with the honest fallback intact", () => {
+  const desk = readFile("components/start/binder-desk.tsx");
+  assert.match(desk, /foilSuggestsCents/, "the pencil number comes from the shared basis, never inline math");
+  assert.match(desk, /tag-written/, "the written-tag state must exist");
+  assert.match(desk, /any good price/, "a thin basis still reads 'any good price' — the honest absence survives");
+  assert.match(desk, /TAG_WRITE_DELAY_MS/, "the shimmer passes before the pencil moves");
+});
+
+test("/start tag fits the grid: SHORT line in the pill, full sentence in aria, and a writing state instead of a rewrite (round-2 fix)", () => {
+  const desk = readFile("components/start/binder-desk.tsx");
+  // The visible pill carries foilTagLineShort ("under $38") so a 390pt
+  // 3-column cell shows the number whole — "Foil suggests: un…" was the
+  // round-1 AND round-2 tour Major.
+  assert.match(
+    desk,
+    /className="tag-pencil">\{foilTagLineShort\(/,
+    "the grid pill must render the short line",
+  );
+  assert.match(
+    desk,
+    /aria-label=\{`\$\{foilTagLine\(/,
+    "the full 'Foil suggests' sentence stays for screen readers",
+  );
+  // While the pencil is pending the tag holds a writing state — it must not
+  // render the 'any good price' input first and then swap words.
+  assert.match(desk, /tag-writing/, "the writing state must exist");
+  assert.match(desk, /tag-stroke/, "the writing state shows the pencil stroke, not placeholder words");
+  const binder = readFile("lib/start/binder.ts");
+  assert.match(binder, /foilTagLineShort/, "the short line lives beside foilTagLine in the binder lib");
+});
+
+test("/start heartbeat: rendered from heartbeatLine and TIME-HONEST (no 'tonight' that isn't)", () => {
+  const desk = readFile("components/start/binder-desk.tsx");
+  assert.match(desk, /heartbeatLine\(/, "the line is computed, not hardcoded");
+  const binder = readFile("lib/start/binder.ts");
+  assert.match(binder, /later today/, "before the daily run the next look is later today");
+  assert.match(binder, /tomorrow/, "after the daily run the next look is tomorrow");
+  assert.doesNotMatch(
+    binder.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'])\/\/.*$/gm, "$1"),
+    /tonight/i,
+    "'tonight' would be a lie for an afternoon add — the heartbeat says when Foil truly looks",
+  );
+});
+
+test("/start pack: a real drag-to-rip with a keyboard path, dealing REAL cards (no fake randomness)", () => {
+  const pack = readFile("components/start/booster-pack.tsx");
+  assert.match(pack, /setPointerCapture/, "the drag must keep the pointer once the tear starts");
+  assert.match(pack, /onKeyDown/, "keyboard collectors open the pack directly");
+  assert.match(pack, /dealPack\(/, "the hand comes from the sale-count-ranked deck");
+  assert.doesNotMatch(pack, /Math\.random/, "the surprise is which real cards are hot, never invented randomness");
+  assert.match(pack, /most-chased/, "the in-world note names what the pack honestly is");
+});
+
+test("/start demo card: labeled as Foil's example and never part of the submit", () => {
+  const desk = readFile("components/start/binder-desk.tsx");
+  assert.match(desk, /Foil(&apos;|')s example/, "the example must say it is one");
+  assert.match(desk, /demoVisible/, "the demo leaves when the collector starts their own page");
+  // The POST maps over `filled` only; the demo lives outside it.
+  assert.match(desk, /cards: filled\.map/, "only genuinely seated cards reach the wire");
+});
+
+test("/start cycle-2 motion: pack + pencil + heartbeat all degrade under reduced motion", () => {
+  const css = readFile("app/globals.css");
+  const reduced = css.slice(css.indexOf("@media (prefers-reduced-motion: reduce)"));
+  for (const sel of [".tag-pencil", ".heartbeat-dot", ".pack-sheen", ".pack-card"]) {
+    assert.ok(reduced.includes(sel), `${sel} needs a reduced-motion fallback`);
+  }
 });
 
 // ---------------------------------------------------------------------------

@@ -36,7 +36,7 @@ export function VaultAddCard({
         setMessage(`Foil is now watching ${hit.name} for you.`);
       } else if (res.error === "watch_limit_free") {
         setMessage(
-          "Free gets you 3 watches, and you're at the limit. Pro watches every card you're chasing, checked hourly. Start your 30-day free trial at foiltcg.com/pro.",
+          "Free fills one binder page (9 cards), and yours is full. Pro watches every card you're chasing, checked hourly. Start your 30-day free trial at foiltcg.com/pro.",
         );
       } else {
         setMessage("Couldn't add that card. Try again.");

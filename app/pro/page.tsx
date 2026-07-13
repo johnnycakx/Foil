@@ -36,7 +36,7 @@ const WATCHES_BODY = "Add every card you're chasing. Pro checks hourly. Free che
 const TRUST_LINE = "Foil doesn't guess prices. It reads real sales.";
 const FOUNDING_LINE =
   "$6 a month, locked. The price rises as Foil gets faster. Founding members keep their rate for life and get everything new first.";
-const FREE_CATCHER = "Not ready? Free gets you 3 watches and the weekly digest.";
+const FREE_CATCHER = "Not ready? Free fills a binder page (9 cards) and gets the weekly digest.";
 
 function pick(v: string | string[] | undefined): string | undefined {
   return Array.isArray(v) ? v[0] : v;
@@ -88,6 +88,12 @@ export default async function ProPage({
         {params.checkout === "canceled" && (
           <div className="mb-6 rounded-xl border border-foil-cream/15 bg-foil-night-2 px-4 py-3 text-sm text-foil-cream/70">
             No charge made. Your checkout was canceled, start the free trial whenever you're ready.
+          </div>
+        )}
+        {params.checkout === "unavailable" && (
+          <div className="mb-6 rounded-xl border border-foil-cream/15 bg-foil-night-2 px-4 py-3 text-sm text-foil-cream/70">
+            Checkout didn&apos;t open. No charge was made, and nothing was saved. Try again in a
+            minute, or start free below while Foil sorts it out.
           </div>
         )}
         <header className="text-center">

@@ -384,3 +384,916 @@ body {
     box-shadow: 0 10px 40px -12px rgba(217, 138, 160, 0.35);
   }
 }
+
+/* ---------------------------------------------------------------------------
+   THE DESK — /start as a place (start-binder-delight, 2026-07-12).
+
+   Principles walked live at baothiento.com (2026-07-12) and translated, never
+   copied: a scene that is DORMANT until you lean in, life that runs its own
+   four-beat loop (idle, notice, react, settle), and delight that stays quiet.
+   The shimmer is ours alone: a seated card catching the lamp exactly like a
+   real holo in a real binder. We are literally named Foil.
+   --------------------------------------------------------------------------- */
+
+.desk-scene {
+  position: relative;
+}
+
+/* The lamp: dim while the desk is dormant, warm when you lean in. The
+   muted-until-awake move in our register (his pond saturates; our lamp warms).
+   Cycle-3 A2: the pool belongs to the ARTIFACTS — it sits over the pack and
+   the binder's top edge, never bleeding up behind the headline. */
+.desk-lamp {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 88%;
+  height: 52%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: radial-gradient(
+    55% 42% at 50% 14%,
+    rgba(228, 186, 136, 0.18),
+    rgba(217, 138, 160, 0.05) 48%,
+    transparent 72%
+  );
+  opacity: 0.35;
+  transition: opacity 900ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+[data-awake="true"] .desk-lamp {
+  opacity: 1;
+}
+
+/* --- the nine-pocket page ------------------------------------------------- */
+
+.pocket {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sleeve {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 245 / 342;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(248, 245, 240, 0.03);
+  box-shadow: inset 0 1px 0 rgba(248, 245, 240, 0.06), inset 0 -8px 18px -12px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(248, 245, 240, 0.1);
+}
+
+.sleeve-card {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* SETTLE: the card nestles into the pocket. The tactile click of a card meeting
+   plastic, expressed in motion, no audio. */
+.sleeve-seating {
+  animation: sleeve-settle 620ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes sleeve-settle {
+  0% {
+    transform: translateY(-14%) rotate(-2.4deg) scale(1.06);
+    opacity: 0;
+  }
+  55% {
+    transform: translateY(1.5%) rotate(0.6deg) scale(0.995);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* THE SHIMMER: the light sweeps the binder and the holos answer. Staggered so
+   the page never pulses in unison (that reads as a loading bar, not a binder).
+   Slow and rare on purpose: quiet delight. */
+.sleeve-shimmer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.34) 48%,
+    rgba(217, 138, 160, 0.22) 53%,
+    transparent 62%
+  );
+  transform: translateX(-120%);
+  animation: sleeve-shimmer 9s ease-in-out infinite;
+}
+.pocket:nth-child(2) .sleeve-shimmer { animation-delay: 1.4s; }
+.pocket:nth-child(3) .sleeve-shimmer { animation-delay: 3.1s; }
+.pocket:nth-child(4) .sleeve-shimmer { animation-delay: 2.2s; }
+.pocket:nth-child(5) .sleeve-shimmer { animation-delay: 4.6s; }
+.pocket:nth-child(6) .sleeve-shimmer { animation-delay: 0.7s; }
+@keyframes sleeve-shimmer {
+  0%, 62% { transform: translateX(-120%); }
+  76% { transform: translateX(120%); }
+  100% { transform: translateX(120%); }
+}
+
+.sleeve-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  /* 24px is the WCAG tap-target floor (a real Lighthouse finding, cycle 2). */
+  width: 24px;
+  height: 24px;
+  line-height: 1;
+  border-radius: 999px;
+  color: rgba(248, 245, 240, 0.85);
+  background: rgba(15, 15, 17, 0.55);
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+.pocket-filled:hover .sleeve-remove,
+.sleeve-remove:focus-visible {
+  opacity: 1;
+}
+
+/* An empty sleeve whispers the ask. Every state stays in-world. */
+.sleeve-empty {
+  cursor: pointer;
+  border-style: dashed;
+  border-color: rgba(248, 245, 240, 0.16);
+  transition: border-color 200ms ease, background 200ms ease, transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.sleeve-empty:hover {
+  border-color: rgba(217, 138, 160, 0.55);
+  background: rgba(217, 138, 160, 0.06);
+  transform: translateY(-2px);
+}
+.sleeve-empty-copy {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(248, 245, 240, 0.4);
+}
+
+/* Cycle-3 A3: the locked-sleeve wall is gone (free owns the whole page).
+   The one quiet Pro affordance is a line under the grid, not furniture that
+   upsells before the first card seats. */
+.pro-line {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 12px;
+}
+.pro-line a {
+  color: rgba(248, 245, 240, 0.55);
+  text-decoration: underline;
+  text-decoration-color: rgba(248, 245, 240, 0.22);
+  text-underline-offset: 4px;
+  transition: color 200ms ease;
+}
+.pro-line a:hover {
+  color: rgba(248, 245, 240, 0.9);
+}
+
+/* --- the price tag: pencil on paper, knotted to the card ------------------ */
+
+.tag {
+  position: relative;
+  display: block;
+}
+.tag-string {
+  position: absolute;
+  left: 8px;
+  top: -5px;
+  width: 1px;
+  height: 6px;
+  background: rgba(248, 245, 240, 0.25);
+}
+.tag-input {
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid rgba(248, 245, 240, 0.14);
+  background: rgba(248, 245, 240, 0.9);
+  color: #2a2118;
+  padding: 3px 6px;
+  font-size: 11px;
+  font-style: italic;
+  outline: none;
+  transform: rotate(-0.6deg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+.tag-input::placeholder {
+  color: #6b5f52;
+  font-style: italic;
+}
+.tag-input:focus {
+  border-color: rgba(217, 138, 160, 0.8);
+  transform: rotate(0deg);
+}
+.tag-read {
+  margin-top: 2px;
+  font-size: 10px;
+  font-style: italic;
+  color: rgba(248, 245, 240, 0.42);
+}
+
+/* --- the fan: real art in your hand, never a dropdown --------------------- */
+
+.fan-wrap {
+  margin-top: 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(248, 245, 240, 0.12);
+  background: rgba(20, 20, 23, 0.72);
+  padding: 16px;
+}
+.fan {
+  display: flex;
+  justify-content: center;
+  /* ONE arc — a hand of cards. Wrapping to a second row broke the illusion
+     instantly (caught on first render). */
+  flex-wrap: nowrap;
+  gap: 0;
+  padding: 8px 0 4px;
+}
+.fan-card {
+  width: 88px;
+  margin-left: -18px;
+  transform: rotate(calc((var(--i) - 5) * 1.6deg));
+  transform-origin: 50% 110%;
+  transition: transform 260ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.fan-card:first-child {
+  margin-left: 0;
+}
+/* NOTICE: the fan parts around your hand, like fingers walking a binder page. */
+.fan-card:hover,
+.fan-card:focus-within {
+  transform: translateY(-16px) rotate(0deg) scale(1.06);
+  z-index: 5;
+}
+.fan-card:hover + .fan-card,
+.fan-card:focus-within + .fan-card {
+  transform: translateX(12px) rotate(calc((var(--i) - 5) * 1.6deg));
+}
+.fan-card:has(+ .fan-card:hover),
+.fan-card:has(+ .fan-card:focus-within) {
+  transform: translateX(-12px) rotate(calc((var(--i) - 5) * 1.6deg));
+}
+.fan-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+.fan-art {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  box-shadow: 0 8px 22px -10px rgba(0, 0, 0, 0.8);
+}
+.fan-meta {
+  display: block;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  padding-top: 6px;
+}
+.fan-card:hover .fan-meta,
+.fan-card:focus-within .fan-meta {
+  opacity: 1;
+}
+.fan-name {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(248, 245, 240, 0.95);
+}
+.fan-sold {
+  display: block;
+  font-size: 10px;
+  color: rgba(248, 245, 240, 0.6);
+}
+
+/* --- the sticky note: where should Foil write you? ------------------------ */
+
+.sticky-note {
+  max-width: 26rem;
+  margin-inline: auto;
+  border-radius: 4px;
+  padding: 16px 18px 14px;
+  background: linear-gradient(180deg, #f6eec4 0%, #f2e6ad 100%);
+  color: #3a3222;
+  transform: rotate(-0.5deg);
+  box-shadow: 0 12px 30px -14px rgba(0, 0, 0, 0.7);
+}
+.note-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.note-input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid rgba(58, 50, 34, 0.35);
+  background: transparent;
+  padding: 4px 2px;
+  font-size: 15px;
+  color: #2a2418;
+  outline: none;
+}
+.note-input::placeholder {
+  color: rgba(58, 50, 34, 0.45);
+}
+.note-input:focus {
+  border-bottom-color: #9a6f7d;
+}
+.note-sub {
+  margin-top: 6px;
+  font-size: 11px;
+  color: rgba(58, 50, 34, 0.7);
+}
+.note-check {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-top: 10px;
+  font-size: 11px;
+  color: rgba(58, 50, 34, 0.85);
+}
+
+/* --- cycle 2: the desk is ALIVE at rest ------------------------------------
+   Warm lamp pool + paper grain so the resting state reads as a desk under a
+   lamp, never gray boxes on a black void. The grain is an inline SVG
+   turbulence tile (no asset, no request). */
+
+.desk-scene::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  pointer-events: none;
+  border-radius: 20px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+}
+
+/* The lamp pool: warm at rest (amber, not gray), warmer when you lean in. */
+.desk-lamp {
+  opacity: 0.6;
+}
+
+/* The binder page itself carries a faint warm sheet under the sleeves. */
+.binder {
+  background-image: radial-gradient(
+    120% 90% at 50% 0%,
+    rgba(228, 186, 136, 0.05),
+    rgba(228, 186, 136, 0.015) 55%,
+    transparent 80%
+  );
+}
+
+/* The first sleeve's invitation, in Foil's voice: pencil, not signage. */
+.sleeve-invite {
+  text-transform: none;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  font-size: 12px;
+  color: rgba(248, 245, 240, 0.55);
+}
+
+/* Foil's example card: real, shimmering, clearly labeled, keepable.
+   Cycle-3 A4: DIM at rest so it never outshines the next action; it glows on
+   attention, like everything else on this desk. */
+.demo-keep {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.pocket-demo .sleeve {
+  border-color: rgba(228, 186, 136, 0.28);
+}
+.pocket-demo .sleeve-card {
+  filter: saturate(0.82) brightness(0.84);
+  transition: filter 220ms ease;
+}
+.pocket-demo:hover .sleeve-card,
+.pocket-demo:focus-within .sleeve-card {
+  filter: none;
+}
+.demo-note {
+  margin-top: 2px;
+  font-size: 10px;
+  color: rgba(248, 245, 240, 0.5);
+}
+/* The dismiss is a designed control in the meta line, not chrome on the art. */
+.demo-away {
+  color: rgba(248, 245, 240, 0.65);
+  text-decoration: underline;
+  text-decoration-color: rgba(248, 245, 240, 0.3);
+  text-underline-offset: 2px;
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+.demo-away:hover {
+  color: rgba(248, 245, 240, 0.95);
+}
+
+/* --- cycle 2: Foil writes the tag first ------------------------------------
+   The agent's pencil: after the shimmer passes, the tag fills in graphite.
+   The write is a clip reveal (left to right, roughly constant speed, the way
+   a hand writes); one tap takes the pencil back. */
+
+.tag-written {
+  position: relative;
+  display: block;
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid rgba(248, 245, 240, 0.14);
+  background: rgba(248, 245, 240, 0.9);
+  padding: 3px 6px;
+  text-align: left;
+  transform: rotate(-0.6deg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.tag-written:hover {
+  border-color: rgba(217, 138, 160, 0.8);
+}
+.tag-written:active {
+  transform: rotate(-0.6deg) scale(0.97);
+}
+.tag-pencil {
+  display: block;
+  font-size: 11px;
+  font-style: italic;
+  color: #4a4238;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  clip-path: inset(0 0 0 0);
+  animation: tag-write 680ms cubic-bezier(0.4, 0, 0.6, 1) both;
+}
+@keyframes tag-write {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* The tag while Foil's pencil is still coming (round-2 fix): blank paper with
+   a soft pencil stroke moving where the words will land. The tag never reads
+   "any good price" first and then rewrites itself — a state that changes its
+   words is a UI changing its mind. */
+.tag-writing {
+  cursor: text;
+}
+.tag-stroke {
+  display: block;
+  height: 13px;
+  width: 55%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(74, 66, 56, 0.24), rgba(74, 66, 56, 0.05));
+  background-size: 200% 100%;
+  animation: tag-stroke-move 1.1s ease-in-out infinite;
+}
+@keyframes tag-stroke-move {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+/* --- cycle 2: the heartbeat ------------------------------------------------
+   One quiet line once the first card is sleeved: when Foil actually looks
+   next. The dot breathes; nothing bursts. */
+
+.heartbeat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: rgba(248, 245, 240, 0.6);
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms cubic-bezier(0.23, 1, 0.32, 1), transform 300ms cubic-bezier(0.23, 1, 0.32, 1);
+  @starting-style {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+.heartbeat-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(228, 186, 136, 0.9);
+  animation: heartbeat-breathe 2.6s ease-in-out infinite;
+}
+@keyframes heartbeat-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* --- cycle 2: the booster pack ---------------------------------------------
+   Sealed foil on the desk. The drag maps 1:1 to the pointer (no transition
+   mid-drag); release below the tear point snaps back fast; past it the strip
+   flies and the hand deals with a stagger. */
+
+.pack-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+/* The pack's caption: a label attached to its object, not a floating whisper
+   (cycle-3 A6). */
+.pack-caption {
+  font-size: 12px;
+  color: rgba(248, 245, 240, 0.6);
+  text-align: center;
+  margin-top: 8px;
+}
+/* Cycle-3 A1: the pack is the HERO OBJECT — scaled like one, seated on the
+   desk (contact shadow), with a tear strip you can read at rest. */
+.pack {
+  position: relative;
+  width: 176px;
+  height: 232px;
+  cursor: grab;
+  transform: rotate(-3deg);
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.pack:active {
+  cursor: grabbing;
+}
+/* Seated, not floating: the shadow where foil meets desk. */
+.pack::after {
+  content: "";
+  position: absolute;
+  left: 6%;
+  bottom: -13px;
+  width: 88%;
+  height: 20px;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.5), transparent 75%);
+}
+.pack-strip {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 34px;
+  z-index: 2;
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+  /* Visibly a SEPARATE piece — lighter than the body it tears away from. */
+  background: linear-gradient(180deg, #3a4263 0%, #2c3350 100%);
+  box-shadow: inset 0 1px 0 rgba(248, 245, 240, 0.18);
+  transform: translateX(var(--tear, 0px)) rotate(calc(var(--tear, 0px) * 0.04deg));
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.pack[data-tearing="true"] .pack-strip {
+  transition: none;
+}
+/* The crimp: the pressed zigzag seal every collector has picked at. */
+.pack-strip::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 7px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(248, 245, 240, 0.16) 0 2px,
+    transparent 2px 6px
+  );
+}
+/* The pull-tab: "grab here, pull that way" — legible without the aria-label. */
+.pack-tab {
+  position: absolute;
+  left: 7px;
+  top: 50%;
+  transform: translateY(-58%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 17px;
+  border-radius: 4px;
+  background: rgba(248, 245, 240, 0.88);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+.pack-tab-arrow {
+  font-size: 11px;
+  line-height: 1;
+  color: #2c3350;
+  letter-spacing: 0.05em;
+}
+/* ONE affordance cue on load: a single glint pass along the strip.
+   Transform/opacity only; reduced motion gets the static tab. */
+.pack-glint {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 70%
+  );
+  opacity: 0;
+  transform: translateX(-110%);
+  animation: pack-glint 1100ms cubic-bezier(0.23, 1, 0.32, 1) 1.3s 1 both;
+}
+@keyframes pack-glint {
+  0% {
+    opacity: 0;
+    transform: translateX(-110%);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(110%);
+  }
+}
+/* The tear line itself: perforation under the strip. */
+.pack-perforation {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 34px;
+  height: 1px;
+  z-index: 3;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(248, 245, 240, 0.4) 0 4px,
+    transparent 4px 9px
+  );
+}
+.pack-notch {
+  position: absolute;
+  left: -1px;
+  bottom: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--color-foil-night, #101017);
+}
+.pack-body {
+  position: absolute;
+  inset: 35px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  overflow: hidden;
+  border-radius: 0 0 10px 10px;
+  background:
+    linear-gradient(160deg, rgba(228, 186, 136, 0.12) 0%, transparent 40%),
+    linear-gradient(180deg, #262d49 0%, #1b2138 60%, #232a45 100%);
+  border: 1px solid rgba(248, 245, 240, 0.12);
+  box-shadow: 0 14px 30px -16px rgba(0, 0, 0, 0.8), inset 0 -10px 18px -14px rgba(0, 0, 0, 0.7);
+}
+.pack-body::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 8px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(248, 245, 240, 0.1) 0 2px,
+    transparent 2px 6px
+  );
+}
+/* The idle sheen: sealed foil catching the lamp, same family as the sleeves. */
+.pack-sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.16) 50%,
+    rgba(228, 186, 136, 0.12) 55%,
+    transparent 64%
+  );
+  transform: translateX(-130%);
+  animation: sleeve-shimmer 11s ease-in-out infinite;
+  animation-delay: 2s;
+}
+.pack-wordmark {
+  font-family: var(--font-display, inherit);
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 0.22em;
+  color: rgba(248, 245, 240, 0.92);
+}
+.pack-sub {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(248, 245, 240, 0.45);
+}
+/* The rip: strip flies off with the drag's direction, quick and done. */
+.pack-ripping .pack-strip {
+  transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1), opacity 240ms ease-out;
+  transform: translateX(160%) rotate(9deg);
+  opacity: 0;
+}
+.pack-ripping .pack-body {
+  animation: pack-recoil 240ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+@keyframes pack-recoil {
+  30% {
+    transform: translateY(3px) rotate(0.8deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+.pack-hint {
+  font-size: 11px;
+  color: rgba(248, 245, 240, 0.5);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.pack-hint-on {
+  opacity: 1;
+}
+
+/* The dealt hand: staggered in, never from scale(0). */
+.pack-area-open {
+  margin-bottom: 26px;
+}
+.pack-hand {
+  display: flex;
+  justify-content: center;
+  /* `safe center` keeps the first card reachable if the hand ever outgrows
+     the row (round-2 fix: Articuno dealt half offscreen at 390pt — centered
+     overflow clips the LEFT edge with no way to reach it). Declared after
+     plain `center` so unsupporting browsers keep the old value. */
+  justify-content: safe center;
+  max-width: 100%;
+  padding: 4px 0;
+}
+.pack-card {
+  width: 76px;
+  margin-left: -14px;
+  transform: rotate(calc((var(--i) - 3) * 2deg));
+  transform-origin: 50% 115%;
+  animation: pack-deal 300ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation-delay: calc(var(--i) * 55ms);
+  transition: transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.pack-card:first-child {
+  margin-left: 0;
+}
+.pack-card:hover,
+.pack-card:focus-within {
+  transform: translateY(-10px) rotate(0deg) scale(1.05);
+  z-index: 5;
+}
+@keyframes pack-deal {
+  from {
+    opacity: 0;
+    transform: translateY(10px) rotate(calc((var(--i) - 3) * 2deg)) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(calc((var(--i) - 3) * 2deg));
+  }
+}
+.pack-card-btn {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+}
+.pack-card-btn:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.pack-card-art {
+  width: 100%;
+  height: auto;
+  border-radius: 5px;
+  box-shadow: 0 8px 20px -10px rgba(0, 0, 0, 0.8);
+}
+.pack-note {
+  font-size: 11px;
+  color: rgba(248, 245, 240, 0.45);
+  text-align: center;
+}
+
+/* --- honest degradation: the scene is enhancement, never the product ------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .sleeve-seating,
+  .sleeve-shimmer {
+    animation: none;
+  }
+  .sleeve-shimmer {
+    opacity: 0;
+  }
+  .desk-lamp {
+    transition: none;
+    opacity: 1;
+  }
+  .fan-card,
+  .sleeve-empty {
+    transition: none;
+    transform: none;
+  }
+  .fan-card:hover,
+  .fan-card:focus-within {
+    transform: none;
+    outline: 2px solid rgba(217, 138, 160, 0.8);
+  }
+  .fan-card:hover + .fan-card,
+  .fan-card:has(+ .fan-card:hover) {
+    transform: none;
+  }
+  /* Cycle 2: fewer and gentler, not zero. Fades stay; movement goes. */
+  .tag-pencil {
+    animation: tag-fade 200ms ease both;
+  }
+  .tag-stroke {
+    animation: none;
+    background-position: 50% 0;
+  }
+  .heartbeat {
+    transition: opacity 200ms ease;
+    transform: none;
+  }
+  .heartbeat-dot {
+    animation: none;
+    opacity: 0.9;
+  }
+  .pack-sheen,
+  .pack-glint {
+    animation: none;
+    opacity: 0;
+  }
+  .pack-strip,
+  .pack-ripping .pack-strip {
+    transition: opacity 200ms ease;
+    transform: none;
+  }
+  .pack-ripping .pack-body {
+    animation: none;
+  }
+  .pack-card {
+    animation: tag-fade 200ms ease both;
+    animation-delay: 0ms;
+    transition: none;
+  }
+  .pack-card:hover,
+  .pack-card:focus-within {
+    transform: rotate(calc((var(--i) - 3) * 2deg));
+    outline: 2px solid rgba(217, 138, 160, 0.8);
+  }
+}
+
+@keyframes tag-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 420px) {
+  .fan-card {
+    width: 68px;
+    margin-left: -14px;
+  }
+  /* The whole 7-card hand must FIT a 390pt content box (round-2 fix): with
+     62px/-12px overlap the row ran 362px and the first card clipped. 58px
+     with a deeper -16px overlap runs 310px — every card whole, still a fan. */
+  .pack-card {
+    width: 58px;
+    margin-left: -16px;
+  }
+  /* Still the hero at 390px, but the whole scene stays above the fold (A8). */
+  .pack {
+    width: 140px;
+    height: 186px;
+  }
+}

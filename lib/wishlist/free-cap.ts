@@ -1,4 +1,5 @@
-// Free-tier product cap (offer item 1a): 3 ACTIVE watches per email.
+// Free-tier product cap (offer item 1a; ADR-116): one binder page — 9 ACTIVE
+// watches per email (`FREE_PAGE_SLEEVES`).
 //
 // Distinct from the 100-row abuse cap in lib/start/guards.ts — that one bounds
 // abuse for everyone; this one is the free/pro product line. Seeded gift-vault

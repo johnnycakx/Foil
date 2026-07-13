@@ -20,6 +20,39 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 
 ---
 date: 2026-07-12
+category: product
+status: captured
+---
+## untracked-cards-are-invitations-not-dead-ends — sleeve it, request tracking, get notified
+
+From John's round-2 QA narration (tour video, 5:19–5:59): sleeve search currently greys out "Not yet tracked" cards as inert rows. Instead: let the user add an untracked card to their binder, offer a one-tap "request tracking," and email them when Foil starts tracking it — "they will not immediately leave foiltcg.com, they will stay because of the promise that there will eventually be that card data." Converts a data-coverage gap into a retention loop AND a demand signal for the ADR-092 hydration queue (watches already allocate the data budget; this extends it to cards PokeTrace hasn't matched yet).
+
+**Context:** Round-2 preview tour of start-binder-delight, design-loop/TOUR-FINDINGS-2026-07-12.md Round 2. Companion open question captured there: what a duplicate-email resubmit should show.
+
+---
+date: 2026-07-12
+category: monetization
+status: shipped
+---
+## free-tier-is-one-binder-page — the entitlement now matches the metaphor (ADR-116)
+
+Free went 3 watches → one full binder page (9 sleeves, still daily); Pro = more pages + hourly. Rationale: the cycle-2 /start scene made the mismatch visible — a nine-pocket page where six pockets were a locked upsell wall. "Free fills a page. Pro fills the binder." Accepted cost: 3× worst-case free scan volume (noise at current counts; revisit trigger in the ADR). Watch the WTP signal: does a fuller free binder lift or cannibalize trial starts? The ads-run scoreboard (V8) is where that answer shows up.
+
+**Context:** John's product decision, cycle-3 brief 2026-07-12, shipped same day on the start-binder-delight branch.
+
+---
+date: 2026-07-12
+category: infra
+status: captured
+---
+## body-font-swap-is-the-start-lcp — subset/self-host Geist (mobile-lcp-font-js-floor, part 2)
+
+Cycle 2's Lighthouse trace on /start: LCP is the header PARAGRAPH repainting ~2.6s late when Geist swaps in — the exact failure mode `mobile-lcp-font-js-floor` fixed for the DISPLAY font (Fraunces got a 57KB self-hosted subset; the homepage H1 now paints fast). Any page whose largest above-fold element is body text inherits the body-font swap as its LCP. Same fix, second font: subset + self-host Geist (or make the display H1 the largest above-fold element on /start). Local evidence: /start 85 perf with CLS 0 / TBT 40ms — the paragraph repaint is the whole residual.
+
+**Context:** start-binder-delight cycle 2 closure — the one rubric axis held at 4 (mobile) traces to this, not to the desk scene.
+
+---
+date: 2026-07-12
 category: ux
 status: captured
 ---
@@ -39,6 +72,39 @@ status: captured
 HF scan (2026-07-12) found card-DETECTION models (Matthieu68857/pokemon-cards-detection) + card image datasets that could someday cheapen the V2 scanner's detect pass. Nothing on HF touches deal-finding/alerts/revenue. The HF "price predictor" models guess from history — the anti-Foil; useful only as a positioning contrast for "Foil doesn't guess prices."
 
 **Context:** John's "did we check Hugging Face" question mid-close-out; verdict = no build-time cut, one scanner-era note.
+
+---
+date: 2026-07-12
+category: product
+status: captured
+---
+## booster-pack-rip — the drag-to-rip gesture on /start (the missing half of the joy)
+
+The binder desk shipped (ADR-115) but the BOOSTER PACK did not. The spec's intent: a sealed pack sits on the desk and a drag gesture RIPS the foil wrapper (the most dopamine-encoded gesture in the hobby), dealing a hand of today's genuinely-hot grails to pick from. Real cards from the live engine, honest label, one pack per visit, re-seals on reload. This is the single highest-value remaining piece of delight on the page and the reason the joy rubric scored 4 and not 5.
+
+**Context:** 2026-07-12 start-binder-delight closure. Deferred deliberately rather than crammed in at the end of a long session.
+
+---
+date: 2026-07-12
+category: product
+status: captured
+---
+## vault-inherits-the-desk — the binder thickens over months (the retention play)
+
+The /w/[token] vault is still a list; the desk scene stops at /start. The retention bet: the vault BECOMES the binder — pages accumulate, the binder visibly thickens as a collector tends it over months, and the shimmer keeps finding the holos. Named as deferred in the binder spec so nobody scope-creeps it; capture it here so it survives.
+
+**Context:** 2026-07-12 start-binder-delight (PM discipline section named it deferred-on-purpose).
+
+---
+date: 2026-07-12
+category: growth
+status: captured
+---
+## start-funnel-metrics — instrument time-to-first-watch, add-completion, adds-per-session
+
+The binder spec asked for these three and the build did not deliver them. Without them the "is the scene actually more addictive than the form?" question is unanswerable — we'd be trusting taste alone on the page whose whole job is making the free moment memorable enough to share.
+
+**Context:** 2026-07-12 start-binder-delight closure (named as a gap in the results memo).
 
 ---
 date: 2026-07-11

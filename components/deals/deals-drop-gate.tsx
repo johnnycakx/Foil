@@ -47,7 +47,7 @@ export function DealsDropGate({ headline, subtext }: { headline: string; subtext
           The week&apos;s best real buys, priced on real sold data. Quiet week? Foil says so. Want
           Foil watching your own cards too?{" "}
           <a href="/start" className="underline decoration-foil-cream/40 underline-offset-2">
-            Free gets you 3 watches →
+            Free fills a binder page →
           </a>
         </p>
       </div>
@@ -74,7 +74,7 @@ export function DealsDropGate({ headline, subtext }: { headline: string; subtext
         The full daily drop plus unlimited watches, checked hourly. $6 a month after the trial.
       </p>
 
-      <p className="mt-6 text-sm text-foil-cream/70">Not ready? Free gets you 3 watches and the weekly digest.</p>
+      <p className="mt-6 text-sm text-foil-cream/70">Not ready? Free fills a binder page (9 cards) and gets the weekly digest.</p>
       <form onSubmit={onSubmit} className="mx-auto mt-3 flex max-w-md flex-col gap-2 sm:flex-row" noValidate>
         <input type="hidden" name="source" value="deals_gate" />
         <input type="hidden" name="utm_source" value={utm.source} />

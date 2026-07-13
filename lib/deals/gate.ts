@@ -1,10 +1,11 @@
 // /deals gated-teaser logic (ADR-112; copy re-locked by the 2026-07-11
-// offer-lock session).
+// offer-lock session; free tier re-stated as one binder page by the
+// 2026-07-12 cycle-3 brief).
 //
 // The board shows the top 2 deals fully (the public proof-it's-real teaser)
 // and gates the rest. THE DROP IS PRO'S DELIVERABLE now, so the gate sells
 // the trial ("Pro sees everything Foil finds, first") and catches the
-// not-ready with the free tier (3 watches + the weekly digest). THIN-DAY
+// not-ready with the free tier (one binder page + the weekly digest). THIN-DAY
 // HONESTY is unchanged and non-negotiable: supply is 0–6 deals/day and the
 // gate must NEVER fabricate a locked count. If there aren't more than 2
 // deals, there's nothing to lock. Say so.
