@@ -16,7 +16,8 @@ import { join } from "node:path";
 
 const ROOT = join(import.meta.dirname, "..", "..");
 const actions = readFileSync(join(ROOT, "app", "upload", "billing-actions.ts"), "utf8");
-const proPage = readFileSync(join(ROOT, "app", "pro", "page.tsx"), "utf8");
+// V6.5 moved /pro into the (site) group (chrome via the shared layout).
+const proPage = readFileSync(join(ROOT, "app", "(site)", "pro", "page.tsx"), "utf8");
 
 function sliceBetween(src: string, start: string, end: string): string {
   const a = src.indexOf(start);

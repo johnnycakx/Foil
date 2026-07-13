@@ -158,6 +158,27 @@ test("/start renders the living desk (invitation + today's pack live)", { skip }
   assert.match(body, /example\. Tap the card to keep it/, "the demo card must be labeled as the example");
 });
 
+// V6.5 pro-conversion-redesign: the /pro sales page renders the locked copy,
+// the comparison table's real tier rows, the value anchor, and the specimen
+// heading in the SSR HTML — and none of the banned fabrications. Pins that
+// the redesign actually REACHED the deploy (R-015: a 200 with the old sparse
+// page would pass an HTTP check and fail the goal).
+test("/pro renders the V6.5 sales page (locked copy + table + specimen + anchor)", { skip }, async () => {
+  const { status, body } = await fetchText(`${BASE}/pro?cv=${Date.now()}`);
+  assert.equal(status, 200, "/pro must return 200");
+  assert.match(body, /Foil watches your grails\. You get pinged when one hits your price\./, "the locked H1 renders");
+  assert.match(body, /What free gets\. What \$6 gets\./, "the comparison-table heading renders");
+  assert.match(body, /One binder page \(9 cards\)/, "the real free-tier row renders");
+  assert.match(body, /Every hour, first in line/, "the real Pro cadence row renders");
+  assert.match(body, /Card Ladder Pro, the nearest tool to this, runs \$20 a month/, "the value anchor renders");
+  assert.match(body, /What lands in your inbox/, "the specimen section renders");
+  assert.match(body, /Fair questions/, "the FAQ renders");
+  assert.match(body, /Foil doesn't guess prices\. It reads real sales\./, "the locked trust line renders");
+  // Banned-fabrication absence on the RENDERED page (V6.5 item 5).
+  assert.doesNotMatch(body, /testimonial/i, "no testimonials render");
+  assert.doesNotMatch(body, /\d+[,\d]*\+? (collectors|members) (love|trust|use)/i, "no invented social proof renders");
+});
+
 test("content-marker gate is wired (documents the skip when no base URL)", () => {
   // Always runs: makes the gate visible in the offline suite even when skipped.
   assert.ok(
