@@ -462,6 +462,45 @@ Status values: `accepted` (we've decided the trade-off is worth it), `mitigating
 
 ---
 
+## R-070 — Single-pricing-source dependency on PokeTrace (anonymous vendor, ingest stall observed)
+
+**Severity:** High
+**Status:** `mitigating` (data-source-spike 2026-07-13 produced the evidence + the adapter plan; renewal decision is John's, due ~Jul 15)
+
+**The risk.** Every sold figure Foil renders — the brand promise itself — flows through one vendor: PokeTrace, whose domain was registered 2025-12-26 (1-year term), whose operator is anonymous, which publishes no uptime history, and whose own comparison blog concedes it is "less established than competitors." The spike found its eBay sold ingest **stalled at 2026-07-05 across a 35-card sample including 500+-sale velocity cards** (probe evidence in `docs/goals/_results/data-source-spike.md`). If the vendor dies or stays frozen, /deals, alerts, the vault sold lines, and the card-page evidence all go stale SILENTLY (the /deals board stale since 07-11 is the live demonstration; quality-bar-fixes P0-3 owns that cron's root cause).
+
+**Trigger to escalate.** PokeTrace support non-response by the ~Jul 15 renewal date · a second multi-day freshness stall after renewal · any 401/403 on the key while paid.
+
+**Mitigation.** (1) The pricing-adapter chain with per-source provenance + freshness gates (`{source, basis, lastUpdated}` on every quote, stale degrades honestly on-page). (2) tcgcsv (free, daily, presale-aware) as the clearly-labeled listed-basis fallback. (3) Trial keys for Scrydex Growth + JustTCG. (4) Apply for eBay Marketplace Insights (own the sold source). The renewal recommendation paragraph in the spike memo is the decision input.
+
+---
+
+## R-071 — pokemontcg.io → Scrydex continuity (our catalog spine has no continuity promise)
+
+**Severity:** High
+**Status:** `monitoring` (spike evidence gathered 2026-07-13; the bake-automation fix is vendor-independent)
+
+**The risk.** Our card catalog, ids, slugs, search typeahead, and metadata bake all key off pokemontcg.io, which now redirects its identity to Scrydex ("The Pokémon TCG API is now part of Scrydex"), already serves card images from `images.scrydex.com`, and publishes **no deprecation timeline, no migration guide, and no continuity promise anywhere**. Community reports show repo decay (unanswered issues/PRs; maintainers telling users to email support@scrydex.com). The API still works keyless today with release-day set data through ME04 — but it could be turned off or paywalled with zero notice, and our typeahead live-queries it per keystroke (searchCards → api.pokemontcg.io). Scrydex's paid floor for our feature set is $99/mo, and its id compatibility with our slugs is unverified.
+
+**Trigger to escalate.** Any pokemontcg.io outage >24h · a published deprecation date · v2 responses starting to require a key · Scrydex answering the id-compat question (either answer changes the migration cost estimate materially).
+
+**Mitigation.** (1) Automate the bake NOW (the baked catalog makes browse/card pages outage-proof; only typeahead is live-coupled). (2) The catalog-adapter interface with a Scrydex implementation ready (email sent for id-compat + ingest SLA). (3) TCGdex static id-mapping table as the free fallback. Costed in the spike memo Phase 3.
+
+---
+
+## R-072 — PriceCharting ToS bars displaying its prices to users (the /upload graded ladder already does)
+
+**Severity:** Medium
+**Status:** `monitoring`
+
+**The risk.** PriceCharting's ToS licenses price data for "Internal Business Purposes" only — explicitly NOT usable "in any software, application, or system that is accessible to third parties, **including customers**" without separately negotiated written permission. Our gated `/upload` scanner (V2 surface, near-zero traffic) renders a PriceCharting-sourced graded ladder to logged-in users via `lib/pricing.ts::gradedLadder`. Exposure is small today (gated page, parked surface) but it forecloses PriceCharting as a public pricing source entirely and is a compliance defect if the scanner surface ever re-launches.
+
+**Trigger to escalate.** Any plan to surface graded prices publicly · scanner V2 revival · a PriceCharting notice.
+
+**Mitigation.** Either strip PriceCharting quotes from user-visible rendering (keep for internal QA/cross-checks, which the ToS permits) or request written display permission. Decide alongside the V2 scanner's fate; do not build new user-facing features on this source.
+
+---
+
 ## How to log a new risk
 
 1. Next available ID (`R-NNN`, monotonically increasing).

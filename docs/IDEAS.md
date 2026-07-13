@@ -20,6 +20,28 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 
 ---
 date: 2026-07-13
+category: product
+status: captured
+---
+## presale-price-watches — tcgcsv sees new sets weeks before street date; nobody serves presale watchers
+
+The data-source spike found tcgcsv (free TCGplayer mirror) lists presale sets with full product+price files long before release: ME05 Pitch Black had 148 products with 212 price rows 4 days pre-street, and ME: 30th Celebration was stubbed ~2 months out. No catalog source we evaluated (pokemontcg.io, TCGdex, Scrydex) shows presale sets at all. Product angle: "watch a card from the set that isn't out yet" — set the watch during hype week, Foil arms it the day sold data exists. Also the free ingredient for a new-set watcher cron (poll tcgcsv groups daily → Discord ping → auto-catalog at street date), which the spike memo's architecture section costs out.
+
+**Context:** docs/goals/_results/data-source-spike.md Phase 1; John's "new sets are the most popular" mandate is exactly the presale-demand window.
+
+---
+date: 2026-07-13
+category: infra
+status: captured
+---
+## ebay-marketplace-insights-application — own the sold-price source instead of renting it
+
+Every sold-data vendor we evaluated ultimately resells eBay sold comps. We already run eBay Browse + EPN in production with a developer account. eBay's Marketplace Insights API IS the sold-comps source; access is application-gated and slow, but approval would permanently remove the single-vendor dependency (R-070) at $0. Apply now so the clock runs while PokeTrace/Scrydex decisions play out.
+
+**Context:** data-source-spike renewal evaluation, 2026-07-13; R-070.
+
+---
+date: 2026-07-13
 category: ux
 status: captured
 ---
