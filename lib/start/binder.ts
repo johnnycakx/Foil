@@ -91,6 +91,27 @@ export function soldLine(card: Pick<BinderCard, "soldCents" | "saleCount">): str
   return `Usually ${usd} · ${sales} on record`;
 }
 
+/** The market brain's distance sentence (quality-bar-fixes item 5). Pure so
+ *  the wording is test-pinned without a DOM. */
+export function distanceLine(listingCents: number, targetCents: number): string {
+  if (listingCents <= targetCents) {
+    return "That one is already at your number.";
+  }
+  const gap = ((listingCents - targetCents) / 100).toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  });
+  return `${gap} above your number today. Foil emails you the moment one crosses.`;
+}
+
+/** Percent-under-usual for a live ask against the sold basis. Null = no
+ *  clean read (never invented). */
+export function pctUnderUsual(listingCents: number, soldCents: number | null): number | null {
+  if (soldCents == null || soldCents <= 0) return null;
+  return Math.round(((soldCents - listingCents) / soldCents) * 100);
+}
+
 /** The pencil tag knotted to the card. Blank is a real, honest state. */
 export function tagLine(targetUsd: string): string {
   const n = parseFloat(targetUsd);

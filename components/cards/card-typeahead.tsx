@@ -22,6 +22,9 @@ export type CardSearchHit = {
   setId: string;
   number: string;
   image: string;
+  /** Foil catalog slug when the card is tracked (mirrors lib/cards/sdk.ts —
+   *  the pocket brain hydrates its live listing with it). */
+  slug?: string;
 };
 
 const SEARCH_DEBOUNCE_MS = 200;

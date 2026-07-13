@@ -14,6 +14,16 @@ import { NextResponse } from "next/server";
 import { searchCards, getCardMetadata, type CardSearchHit } from "@/lib/cards/sdk";
 import { resolveAlias } from "@/lib/cards/search-aliases";
 import { searchLocalCatalog, suggestNearMisses } from "@/lib/cards/local-search";
+import { CARD_CATALOG } from "@/lib/cards/catalog";
+
+// id → Foil slug for hit annotation (item 5: the pocket brain hydrates its
+// live listing by slug). Built once per warm instance.
+const SLUG_BY_ID = new Map(CARD_CATALOG.map((e) => [e.pokemonTcgId, e.slug]));
+
+function withSlug(h: CardSearchHit): CardSearchHit {
+  const slug = SLUG_BY_ID.get(h.id);
+  return slug ? { ...h, slug } : h;
+}
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -48,14 +58,16 @@ export async function GET(request: Request): Promise<NextResponse> {
     const metas = await Promise.all(aliasIds.map((id) => getCardMetadata({ id })));
     const hits: CardSearchHit[] = metas
       .filter((m) => m && m.name)
-      .map((m) => ({
-        id: m.id,
-        name: m.name,
-        setName: m.setName,
-        setId: m.setId,
-        number: m.number,
-        image: m.image,
-      }));
+      .map((m) =>
+        withSlug({
+          id: m.id,
+          name: m.name,
+          setName: m.setName,
+          setId: m.setId,
+          number: m.number,
+          image: m.image,
+        }),
+      );
     if (hits.length > 0) return NextResponse.json({ hits });
     // Fall through to the name search if metadata resolution failed — a
     // broken alias must degrade to normal search, never to a dead end.
@@ -72,10 +84,12 @@ export async function GET(request: Request): Promise<NextResponse> {
     [] as CardSearchHit[],
   );
   const seen = new Set(local.map((h) => h.id));
-  const hits = [...local, ...upstream.filter((h) => !seen.has(h.id))].slice(0, RESULT_LIMIT);
+  const hits = [...local, ...upstream.filter((h) => !seen.has(h.id))]
+    .slice(0, RESULT_LIMIT)
+    .map(withSlug);
 
   // Converting fail state (P0-4): a true miss ships near-miss corrections so
   // the UI can offer "did you mean" instead of a dead end.
-  const suggestions = hits.length === 0 ? suggestNearMisses(q) : [];
+  const suggestions = hits.length === 0 ? suggestNearMisses(q).map(withSlug) : [];
   return NextResponse.json({ hits, suggestions });
 }

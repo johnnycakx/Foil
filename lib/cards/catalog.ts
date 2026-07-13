@@ -342,6 +342,16 @@ export const CARD_CATALOG: readonly CatalogEntry[] = [
   ...RECENT_SETS_CATALOG,
 ];
 
+/** Slugs that entered via the recent-sets FULL-coverage tier (quality-bar-
+ *  fixes, 2026-07-13). The movers cron EXCLUDES these from its modern-set
+ *  widening — full new-set coverage is a browse/search promise, not a
+ *  1,300-card daily PokeTrace sweep. A recent-set card joins the movers
+ *  universe the moment someone watches it (ADR-092 hydration), which is the
+ *  demand-driven economy the sweep was designed around. */
+export const RECENT_SETS_SLUGS: ReadonlySet<string> = new Set(
+  RECENT_SETS_CATALOG.map((e) => e.slug),
+);
+
 /** Quick lookup by slug. O(1) — built once at module load. */
 const BY_SLUG: Map<string, CatalogEntry> = new Map(
   CARD_CATALOG.map((entry) => [entry.slug, entry]),
