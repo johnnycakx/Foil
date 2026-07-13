@@ -47,6 +47,7 @@ import {
 } from "@/lib/start/binder";
 import { BoosterPack } from "@/components/start/booster-pack";
 import { CardTypeahead, type CardSearchHit } from "@/components/cards/card-typeahead";
+import { PocketBrain } from "@/components/start/pocket-brain";
 
 /** The shimmer finishes its first pass over a fresh card before Foil writes
  *  the tag — the agent looks, then suggests. (Reduced motion skips the wait.) */
@@ -88,6 +89,10 @@ export function BinderDesk({
   const [suggestion, setSuggestion] = useState<{ s: Suggestion; after: BinderCard } | null>(null);
   const [dismissed, setDismissed] = useState<string[]>([]);
   const [seating, setSeating] = useState<string | null>(null);
+  // The market brain follows the LAST seated card (item 5): the grid pocket
+  // is too small for three lines at 390px, so the brain panel lives under
+  // the page, beside the suggestion row, always about the card just seated.
+  const [lastSeated, setLastSeated] = useState<string | null>(null);
   const [awake, setAwake] = useState(false);
   const [typedOpen, setTypedOpen] = useState(false);
   // The resting state is ALIVE (cycle 2): one real card sits in the first
@@ -156,6 +161,7 @@ export function BinderDesk({
       setDemoOn(false);
       setFilled((prev) => (prev.some((c) => c.id === card.id) ? prev : [...prev, card]));
       setSeating(card.id);
+      setLastSeated(card.id);
       window.setTimeout(() => setSeating(null), 700);
       // Foil writes the tag first: the shimmer passes, THEN the pencil moves.
       // Same below-usual basis the alert engine runs; a thin basis writes
@@ -182,6 +188,7 @@ export function BinderDesk({
   const unseat = (id: string) => {
     setFilled((prev) => prev.filter((c) => c.id !== id));
     setSuggestion(null);
+    setLastSeated((prev) => (prev === id ? null : prev));
     // A card leaving the binder takes its tag state with it.
     window.clearTimeout(writeTimers.current[id]);
     delete writeTimers.current[id];
@@ -231,7 +238,9 @@ export function BinderDesk({
     seat(
       known ?? {
         id: hit.id,
-        slug: "",
+        // Search hits carry the Foil slug when the card is tracked (item 5:
+        // the pocket brain hydrates its live listing with it).
+        slug: hit.slug ?? "",
         name: hit.name,
         setName: hit.setName,
         // The typeahead carries the full identity; /api/start requires it.
@@ -589,6 +598,21 @@ export function BinderDesk({
           })}
         </ul>
 
+        {/* THE MARKET BRAIN (item 5, the Collectr answer): the instant a card
+            seats, the desk shows what it really sells for, today's best live
+            listing, and the distance from your number — the brain the emails
+            come from, working on screen. Follows the last-seated card. */}
+        {(() => {
+          const brainCard = lastSeated ? filled.find((c) => c.id === lastSeated) : undefined;
+          return brainCard ? (
+            <PocketBrain
+              key={brainCard.id}
+              card={brainCard}
+              targetCents={targetCentsFor(brainCard)}
+            />
+          ) : null;
+        })()}
+
         {/* The one-more loop: ONE quiet neighbor, dismissible, never a feed. */}
         {suggestion && slotsLeft > 0 && (
           <div className="mt-4 flex items-center gap-3 rounded-xl border border-foil-accent/25 bg-foil-accent/[0.06] px-3 py-2">
@@ -705,6 +729,7 @@ export function BinderDesk({
               pickedIds={filledIds}
               onPick={seatFromSearch}
               autoFocus
+              requesterEmail={email}
             />
           </div>
         ) : (

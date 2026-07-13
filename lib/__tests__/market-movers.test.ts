@@ -342,13 +342,26 @@ test("catalog: the modern chase expansion landed in the movers universe", async 
   for (const setId of ["sv8pt5", "sv8", "me1", "sv9", "sv10", "sv7"]) {
     assert.ok(modern.some((e) => setIdOf(e.pokemonTcgId) === setId), `no cards from ${setId}`);
   }
-  // The movers universe (curated + modern) must fit one run (<= MAX_MOMENTUM_CARDS).
+  // The movers universe (curated + modern MINUS the recent-sets full-coverage
+  // tier — quality-bar-fixes 2026-07-13: full new-set coverage is browse
+  // inventory, not sweep inventory; recent-set cards join via hydration when
+  // watched) must fit one run (<= MAX_MOMENTUM_CARDS). Same filter as the
+  // cron route.
   const { MAX_MOMENTUM_CARDS } = await import("../deals/market-movers.ts");
-  const universe = CARD_CATALOG.filter((e) => cardTier(e.slug) === "curated" || isModernMoverCard(e.pokemonTcgId));
+  const { RECENT_SETS_SLUGS } = await import("../cards/catalog.ts");
+  const universe = CARD_CATALOG.filter(
+    (e) =>
+      cardTier(e.slug) === "curated" ||
+      (isModernMoverCard(e.pokemonTcgId) && !RECENT_SETS_SLUGS.has(e.slug)),
+  );
   assert.ok(
     universe.length <= MAX_MOMENTUM_CARDS,
     `movers universe ${universe.length} exceeds the one-run cap ${MAX_MOMENTUM_CARDS} — paginate or raise the cap`,
   );
+  // And the route actually applies the exclusion (drift guard).
+  const { readFileSync } = await import("node:fs");
+  const route = readFileSync("app/api/cron/market-movers/route.ts", "utf8");
+  assert.match(route, /!RECENT_SETS_SLUGS\.has\(e\.slug\)/, "the cron excludes recent-sets bulk from the sweep");
 });
 
 test("rankMovers: splits + ranks down/up, honors limit", () => {

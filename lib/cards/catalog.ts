@@ -40,6 +40,7 @@ export type CatalogEntry = {
 import { LONGTAIL_CATALOG } from "./catalog-longtail.generated.ts";
 import { TOP5_PER_SET_CATALOG } from "./catalog-top5-per-set.generated.ts";
 import { EEVEELUTION_CATALOG } from "./catalog-eeveelutions.generated.ts";
+import { RECENT_SETS_CATALOG } from "./catalog-recent-sets.generated.ts";
 
 const CURATED_CATALOG: readonly CatalogEntry[] = [
   // Base Set (base1) — the foundational holo lineup. Charizard is the most
@@ -333,7 +334,23 @@ export const CARD_CATALOG: readonly CatalogEntry[] = [
   // Additive; the generator dedupes against every entry above at generation
   // time, and catalog.test.ts pins slug uniqueness as the build-time guard.
   ...EEVEELUTION_CATALOG,
+  // Recent-set FULL coverage (quality-bar-fixes, 2026-07-13): every card of
+  // every EN set released in the last ~14 months, regenerated DAILY by
+  // .github/workflows/daily-catalog-bake.yml. "New sets are always the most
+  // popular" (John) — this tier is why a set released Friday is browsable
+  // the same week. Generator dedupes against everything above.
+  ...RECENT_SETS_CATALOG,
 ];
+
+/** Slugs that entered via the recent-sets FULL-coverage tier (quality-bar-
+ *  fixes, 2026-07-13). The movers cron EXCLUDES these from its modern-set
+ *  widening — full new-set coverage is a browse/search promise, not a
+ *  1,300-card daily PokeTrace sweep. A recent-set card joins the movers
+ *  universe the moment someone watches it (ADR-092 hydration), which is the
+ *  demand-driven economy the sweep was designed around. */
+export const RECENT_SETS_SLUGS: ReadonlySet<string> = new Set(
+  RECENT_SETS_CATALOG.map((e) => e.slug),
+);
 
 /** Quick lookup by slug. O(1) — built once at module load. */
 const BY_SLUG: Map<string, CatalogEntry> = new Map(

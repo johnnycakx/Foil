@@ -60,6 +60,16 @@ function formatBoardDate(iso: string | null): string {
   });
 }
 
+/** The newest write across BOTH board sources (quality-bar-fixes P0-3: the
+ *  stamp used to read only the listings cache, so a fresh movers run could
+ *  still render yesterday's date — the exact "board looks dead" misread from
+ *  the 07-13 audit walk). */
+function newestComputedAt(dealsIso: string | null, moverIsos: string[]): string | null {
+  const all = [dealsIso, ...moverIsos].filter((v): v is string => !!v);
+  if (all.length === 0) return null;
+  return all.reduce((a, b) => (Date.parse(b) > Date.parse(a) ? b : a));
+}
+
 export default async function DealsPage() {
   // Insight-led LEAD: market movers (PokeTrace aggregates — can't break on one
   // mispriced listing). Demoted secondary: the single-listing below-sold board.
@@ -68,7 +78,12 @@ export default async function DealsPage() {
     getLeaderboard(12),
     getMarketTemperature(),
   ]);
-  const boardDate = formatBoardDate(latestComputedAt(deals));
+  const boardDate = formatBoardDate(
+    newestComputedAt(
+      latestComputedAt(deals),
+      [...movers.down, ...movers.up].map((m) => m.computedAt),
+    ),
+  );
   const trackedCount = CARD_CATALOG.length;
 
   return (
@@ -89,7 +104,13 @@ export default async function DealsPage() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-foil-accent opacity-60" />
             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-foil-accent" />
           </span>
-          foiltcg.com · {boardDate}
+          foiltcg.com · refreshed {boardDate}
+        </p>
+        {/* The cadence promise (P0-3): a small-hours visitor sees yesterday's
+            date before the 08:00/09:00 UTC runs — say the rhythm out loud so
+            "yesterday" reads as a schedule, not a dead product. */}
+        <p className="mt-1 text-[11px] text-foil-cream/40">
+          Foil rebuilds this board every morning.
         </p>
         <h1 className="font-display mt-3 text-3xl font-bold tracking-[-0.02em] text-foil-cream sm:text-4xl">
           Good buys this week

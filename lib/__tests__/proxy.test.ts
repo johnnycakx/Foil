@@ -242,6 +242,9 @@ test("/start onboarding page + supporting APIs are public (Task #20 / Session 38
   assert.equal(isPublicRoute("/start"), true);
   assert.equal(isPublicRoute("/api/start"), true);
   assert.equal(isPublicRoute("/api/cards/search"), true);
+  // Request-tracking capture (quality-bar-fixes P0-4): the search fail
+  // state's POST target — a stranger's card request needs no account.
+  assert.equal(isPublicRoute("/api/card-requests"), true);
 });
 
 test("/newsletter prefix doesn't bleed (exact route, not prefix)", () => {

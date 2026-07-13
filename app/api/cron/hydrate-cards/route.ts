@@ -28,6 +28,11 @@ import {
   type HydrationRow,
 } from "@/lib/poketrace/hydration";
 import { postError } from "@/lib/notifications/discord";
+import {
+  checkBoardFreshness,
+  freshnessAlarmMessage,
+  type FreshnessVerdict,
+} from "@/lib/deals/board-freshness";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -101,9 +106,38 @@ export async function GET(request: Request): Promise<NextResponse> {
     cap: HYDRATION_RUN_CAP,
   });
 
+  // Board-freshness alarm (quality-bar-fixes P0-3): this hourly cron doubles
+  // as the watchdog for the two DAILY board writers, because a dead daily
+  // cron can't report its own death and every read path soft-fails to a calm
+  // empty board. Two cheap max() reads; soft-fail (an alarm outage must not
+  // block hydration).
+  let freshness: FreshnessVerdict | null = null;
+  try {
+    const [signals, movers] = await Promise.all([
+      db.from("buy_signals").select("computed_at").order("computed_at", { ascending: false }).limit(1).maybeSingle(),
+      db.from("market_movers").select("computed_at").order("computed_at", { ascending: false }).limit(1).maybeSingle(),
+    ]);
+    freshness = checkBoardFreshness({
+      signalsMax: (signals.data as { computed_at: string } | null)?.computed_at ?? null,
+      moversMax: (movers.data as { computed_at: string } | null)?.computed_at ?? null,
+      now: new Date(),
+    });
+    const webhook = process.env.DISCORD_WEBHOOK_ERRORS;
+    if (freshness.stale && freshness.shouldPing && webhook) {
+      void postError(webhook, {
+        source: "board-freshness",
+        errorType: "stale_board",
+        message: freshnessAlarmMessage(freshness),
+      }).catch(() => {});
+    }
+  } catch (err) {
+    console.warn(`[hydrate-cron] freshness check failed: ${(err as Error).message}`);
+  }
+
   return NextResponse.json({
     ok: true,
     durationMs: Date.now() - startedAt,
+    boardStale: freshness?.stale ?? null,
     ...result,
   });
 }

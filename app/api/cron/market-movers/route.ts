@@ -24,7 +24,7 @@ import { NextResponse } from "next/server";
 import { getCardMetadata, getBakedCardMetadata } from "@/lib/cards/sdk";
 import { getSoldHistory } from "@/lib/poketrace/by-uuid";
 import { getAllHydratedVariants } from "@/lib/poketrace/hydration";
-import { CARD_CATALOG, cardTier } from "@/lib/cards/catalog";
+import { CARD_CATALOG, cardTier, RECENT_SETS_SLUGS } from "@/lib/cards/catalog";
 import {
   refreshMarketMovers,
   createRateLimiter,
@@ -65,11 +65,16 @@ export async function GET(request: Request): Promise<NextResponse> {
   // MAX_MOMENTUM_CARDS; the materiality filter keeps sub-$10 bulk from
   // surfacing on the /deals board (its avg30d still lands for the alerts).
   const hydrated = await getAllHydratedVariants();
+  // The recent-sets FULL-coverage tier is browse/search inventory, not sweep
+  // inventory: without the exclusion the modern-set widening would balloon
+  // the daily run from ~390 to ~880 cards the day a big set lands
+  // (quality-bar-fixes, 2026-07-13). A recent-set card still joins the sweep
+  // the moment someone watches it — via the hydrated branch below.
   const entries: MomentumEntry[] = CARD_CATALOG
     .filter(
       (e) =>
         cardTier(e.slug) === "curated" ||
-        isModernMoverCard(e.pokemonTcgId) ||
+        (isModernMoverCard(e.pokemonTcgId) && !RECENT_SETS_SLUGS.has(e.slug)) ||
         hydrated.has(e.slug),
     )
     .map((e) => ({ slug: e.slug, pokemonTcgId: e.pokemonTcgId }));

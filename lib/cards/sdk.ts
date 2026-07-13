@@ -673,6 +673,9 @@ export type CardSearchHit = {
   number: string;
   /** Small thumbnail URL — the search surface uses thumbnails, not hi-res. */
   image: string;
+  /** Foil catalog slug when the card is tracked (quality-bar-fixes item 5:
+   *  lets a searched seat hydrate its pocket brain via /api/listing). */
+  slug?: string;
 };
 
 export type SearchCardsInput = {

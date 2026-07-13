@@ -171,6 +171,10 @@ export const PUBLIC_ROUTES: readonly PublicRouteRule[] = [
   { kind: "exact", path: "/start" },
   { kind: "exact", path: "/api/start" },
   { kind: "exact", path: "/api/cards/search" },
+  // Request-tracking capture (quality-bar-fixes P0-4): the search fail state
+  // posts the missed query + email here. Anonymous by definition — the
+  // requester is a stranger whose card we don't have yet.
+  { kind: "exact", path: "/api/card-requests" },
 
   // Live curated-listing endpoint (SEO crawlability fix, ADR-047 v2). The
   // per-card page hydrates its live eBay best-listing + buy-signal from

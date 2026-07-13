@@ -99,6 +99,9 @@ test("binder: surfaces the server's free-cap answer with an honest upgrade path"
 });
 
 test("shared CardTypeahead: still the demoted typed path, debounced", () => {
-  assert.match(readFile("components/cards/card-typeahead.tsx"), /SEARCH_DEBOUNCE_MS\s*=\s*300/);
+  // 300ms → 200ms (quality-bar-fixes P0-4): the debounce spends a third of
+  // the 600ms perceived-latency budget; the local-first route made the
+  // remainder near-instant, so the tighter debounce is safe.
+  assert.match(readFile("components/cards/card-typeahead.tsx"), /SEARCH_DEBOUNCE_MS\s*=\s*200/);
   assert.match(readFile(DESK), /CardTypeahead/, "the typed fallback survives for power users + a11y");
 });
