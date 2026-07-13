@@ -90,6 +90,12 @@ export default async function ProPage({
             No charge made. Your checkout was canceled, start the free trial whenever you're ready.
           </div>
         )}
+        {params.checkout === "unavailable" && (
+          <div className="mb-6 rounded-xl border border-foil-cream/15 bg-foil-night-2 px-4 py-3 text-sm text-foil-cream/70">
+            Checkout didn&apos;t open. No charge was made, and nothing was saved. Try again in a
+            minute, or start free below while Foil sorts it out.
+          </div>
+        )}
         <header className="text-center">
           <p className="text-xs font-semibold uppercase tracking-wider text-foil-accent">Foil Pro</p>
           <h1 className="font-display mt-3 text-4xl font-bold tracking-[-0.02em] text-foil-cream">
