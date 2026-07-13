@@ -705,6 +705,7 @@ export function BinderDesk({
               pickedIds={filledIds}
               onPick={seatFromSearch}
               autoFocus
+              requesterEmail={email}
             />
           </div>
         ) : (
