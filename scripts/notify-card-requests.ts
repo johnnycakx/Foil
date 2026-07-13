@@ -75,6 +75,10 @@ for (const row of data ?? []) {
     notified++;
     continue;
   }
+  // SECURITY (2026-07-13 review, M1): the email must carry ZERO
+  // requester-authored text. The stored query drove the MATCH; the body
+  // speaks only in catalog terms (card name, set, our URL) so this can
+  // never relay an attacker-composed message to an unverified address.
   const sent = await sendTransactionalEmail({
     to: row.email,
     subject: `Foil now tracks ${hit.name} (${hit.setName})`,
@@ -82,9 +86,9 @@ for (const row of data ?? []) {
       `<!doctype html><html><body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; line-height: 1.6; color: #1a2333; background: #ffffff;">`,
       `<p style="font-size: 13px; color: #556; margin: 0 0 12px;">You asked Foil to hunt a card down. It did.</p>`,
       `<p style="font-size: 16px; margin: 0 0 8px;"><strong>${escapeHtml(hit.name)} (${escapeHtml(hit.setName)}) is on Foil now.</strong></p>`,
-      `<p style="font-size: 14px; color: #445; margin: 0 0 16px;">You searched for &quot;${escapeHtml(row.query)}&quot;. Foil tracks this card's real sold prices from here on, and you can set a price watch in one tap.</p>`,
+      `<p style="font-size: 14px; color: #445; margin: 0 0 16px;">Foil tracks this card's real sold prices from here on, and you can set a price watch in one tap.</p>`,
       `<p style="font-size: 15px; margin: 0 0 24px;"><a href="${escapeHtml(cardUrl)}" style="color: #0F1E3A; text-decoration: underline; text-underline-offset: 3px; font-weight: 600;">See the card and set your watch on Foil</a></p>`,
-      `<p style="font-size: 11px; color: #99a; line-height: 1.5; margin: 0;">One email, as promised. Foil only writes again if you set a watch.</p>`,
+      `<p style="font-size: 11px; color: #99a; line-height: 1.5; margin: 0;">One email, as promised. Foil only writes again if you set a watch. If you didn't ask for this, ignore it and Foil stays quiet.</p>`,
       `</body></html>`,
     ].join("\n"),
   });

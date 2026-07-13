@@ -58,6 +58,22 @@ export async function POST(request: Request): Promise<NextResponse> {
     // Untyped client (same pattern as hydrate-cards): card_requests postdates
     // the generated Supabase types; regenerate types on the next schema sync.
     const admin = supabaseAdmin() as unknown as SupabaseClient;
+
+    // SECURITY (2026-07-13 review, M1): the address is unverified, so cap
+    // PENDING requests per email — an attacker can queue at most
+    // MAX_PENDING_PER_EMAIL future "Foil now tracks it" emails at a victim
+    // (each catalog-terms-only, zero attacker text). Cap hit reads as
+    // success: no oracle for probing.
+    const MAX_PENDING_PER_EMAIL = 3;
+    const { count } = await admin
+      .from("card_requests")
+      .select("*", { count: "exact", head: true })
+      .eq("email", email)
+      .eq("status", "pending");
+    if ((count ?? 0) >= MAX_PENDING_PER_EMAIL) {
+      return NextResponse.json({ ok: true });
+    }
+
     const { error } = await admin.from("card_requests").insert({ query, email });
     // 23505 = the pending-uniq index: same email already asked for the same
     // card. That's a success, not an error (idempotent resubmit).
@@ -77,12 +93,17 @@ export async function POST(request: Request): Promise<NextResponse> {
     // person telling us which card the catalog is missing.
     const webhook = process.env.DISCORD_WEBHOOK_CONTENT_ENGINE;
     if (webhook && !error) {
+      // SECURITY (2026-07-13 review, M2): Discord renders masked links in
+      // embed descriptions — strip markdown metacharacters and pin the
+      // untrusted query inside a code span so an attacker can't place a
+      // clickable link or spoofed ops text in the channel.
+      const safeQuery = query.replace(/[`\[\]()*_~|]/g, "");
       void postWebhook({
         webhookUrl: webhook,
         embeds: [
           {
             title: "Card request captured",
-            description: `Someone asked Foil to hunt: **${query}**`,
+            description: `Someone asked Foil to hunt: \`${safeQuery}\``,
             color: 0xd98aa0,
             fields: [{ name: "Notify", value: "on catalog match (daily bake)", inline: true }],
           },

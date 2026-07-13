@@ -77,3 +77,20 @@ test("the request API is guarded: honeypot, IP limiter, zod caps, idempotent res
   assert.match(src, /23505/, "duplicate pending request is success, not error");
   assert.match(src, /DISCORD_WEBHOOK_CONTENT_ENGINE/, "demand signal pings #content-engine");
 });
+
+test("security review fixes hold: no attacker text in email or Discord, pending cap per address (2026-07-13 M1/M2)", () => {
+  const route = read("app/api/card-requests/route.ts");
+  // M1: unverified addresses get at most MAX_PENDING_PER_EMAIL queued sends,
+  // and the cap answers success (no probing oracle).
+  assert.match(route, /MAX_PENDING_PER_EMAIL = 3/, "pending cap exists");
+  assert.match(route, /\.eq\("status", "pending"\)/, "cap counts pending rows only");
+  // M2: the Discord embed strips markdown metacharacters and code-spans the
+  // query — no masked links, no spoofed ops text.
+  assert.match(route, /query\.replace\(\/\[`\\\[\\\]\(\)\*_~\|\]\/g, ""\)/, "markdown stripped");
+  assert.match(route, /hunt: \\`\$\{safeQuery\}\\`/, "query pinned in a code span");
+  // M1: the notify email carries ZERO requester-authored text — the stored
+  // query never reaches the body.
+  const notifier = read("scripts/notify-card-requests.ts");
+  assert.doesNotMatch(notifier, /You searched for/, "the query reflection is gone");
+  assert.doesNotMatch(notifier, /escapeHtml\(row\.query\)/, "row.query never enters the HTML");
+});
