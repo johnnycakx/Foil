@@ -19,7 +19,7 @@ export type ChannelSafety =
   /** Someone else's community — auto-post = ban risk. NEVER auto; human only. */
   | "human_only";
 
-export type ChannelTransport = "x_api" | "postiz" | "discord_webhook" | "telegram_bot";
+export type ChannelTransport = "x_api" | "postiz" | "discord_webhook" | "telegram_bot" | "manual_paste";
 
 export type SyndicationChannel = {
   key: string;
@@ -74,6 +74,17 @@ export const SYNDICATION_CHANNELS: readonly SyndicationChannel[] = [
     safety: "auto_safe_needs_account",
     transport: "postiz",
     note: "Own account, but John must create it first; the MP4 is the asset.",
+  },
+  {
+    key: "linkedin",
+    label: "John's personal LinkedIn profile",
+    safety: "human_only",
+    transport: "manual_paste",
+    note:
+      "PERSONAL profile (John's call, 2026-07-14 — retargeted off the company page): " +
+      "the paste rail generates the caption (lib/social/linkedin-caption.ts), John posts " +
+      "it himself. Human-posted FOREVER — authenticity is the point; no LinkedIn API " +
+      "client may be added without a new policy decision.",
   },
   {
     key: "reddit",

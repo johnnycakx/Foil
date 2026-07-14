@@ -1095,3 +1095,8 @@ John wanted "app coming soon" in the founding-member copy; vetoed as vaporware (
 John DMs 4–5 flipper/shop mutuals offering a free 2-week "I'll watch your sourcing targets" pilot — smells the high-price lane (the labor-priced agent idea above) without building anything. If the $6 consumer test returns 0 trials, this is the required second data point before any "nobody pays" conclusion.
 
 **Context:** 2026-07-11 architecture discussion — the $6 ads test can only measure consumer-priced offers; the flipper lane needs warm outreach, not ads.
+
+## LinkedIn is John's only existing audience — treat the paste rail as the cheap test, not the strategy
+The `linkedin-page-syndication` rail (ADR-117) makes it ~20 seconds to put a published Foil post on John's personal feed (~1,800 followers). Two things to watch on the Sunday review: (a) does `utm_source=linkedin` ever convert a signup — kill the channel at ~8 posts with zero, per the standing criterion; (b) the higher-value use may not be the funnel at all but the **job-proof / build-in-public** artifact, which is worth keeping even at zero signups. Do not let the rail's existence pull effort away from the X reply lane, which is still the discovery lever.
+
+**Context:** 2026-07-14, during the goal. LinkedIn is off-audience for Pokémon collectors but on-audience for John's professional network — those are different products for the same post.

@@ -36,7 +36,8 @@ import {
 import { createDraftPost } from "../lib/beehiiv-posts.ts";
 import { serializeNewsletterFile } from "../lib/newsletter/file-writer.ts";
 import { sendNewsletterDraftEmail } from "../lib/notifications/resend.ts";
-import { postContentPublished, postError } from "../lib/notifications/discord.ts";
+import { postContentPublished, postError, postLinkedInDraft } from "../lib/notifications/discord.ts";
+import { buildLinkedInCaption } from "../lib/social/linkedin-caption.ts";
 import { POSTS_DIR } from "../lib/blog/posts-dir.ts";
 
 const NEWSLETTER_DRAFTS_DIR = path.join(process.cwd(), "docs", "newsletter-drafts");
@@ -375,6 +376,51 @@ if (SKIP_NEWSLETTER) {
           runUrl: process.env.GITHUB_RUN_URL,
         });
       }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// LinkedIn paste-rail tap (linkedin-page-syndication goal). Human_only channel:
+// this only drops a paste-ready caption card in #content-engine — John posts it
+// to his personal feed himself; nothing auto-posts to LinkedIn, ever.
+// Fires ONLY when the flag is on AND the post actually published live —
+// a _pending/ draft has no live URL, so its caption link would 404.
+// Soft-fail: a caption/Discord failure never affects the publish or exit code.
+// ---------------------------------------------------------------------------
+if (process.env.LINKEDIN_SYNDICATION_ENABLED === "true" && AUTO_PUBLISH) {
+  try {
+    const { caption, link } = buildLinkedInCaption({
+      slug: finalSlug,
+      title: result.draft.frontmatter.title,
+      description: result.draft.frontmatter.description,
+    });
+    if (process.env.DISCORD_WEBHOOK_CONTENT_ENGINE) {
+      const liRes = await postLinkedInDraft(process.env.DISCORD_WEBHOOK_CONTENT_ENGINE, {
+        slug: finalSlug,
+        title: result.draft.frontmatter.title,
+        caption,
+        link,
+      });
+      console.log(
+        liRes.ok
+          ? "[linkedin] ✓ paste-ready caption card posted to #content-engine"
+          : `[linkedin] ⚠ caption card failed (${liRes.error}) — publish unaffected`,
+      );
+    } else {
+      console.log("[linkedin] DISCORD_WEBHOOK_CONTENT_ENGINE not set — caption below (publish unaffected):");
+      console.log(caption);
+    }
+  } catch (err) {
+    console.warn(`[linkedin] ⚠ caption generation failed (publish unaffected): ${(err as Error).message}`);
+    if (process.env.DISCORD_WEBHOOK_ERRORS) {
+      await postError(process.env.DISCORD_WEBHOOK_ERRORS, {
+        source: "content-engine",
+        errorType: "LinkedInCaptionFailed",
+        message: (err as Error).message,
+        context: { slug: finalSlug },
+        runUrl: process.env.GITHUB_RUN_URL,
+      });
     }
   }
 }

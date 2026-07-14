@@ -33,6 +33,17 @@ test("own accounts that don't exist yet are NOT auto-safe now (deferred, not hum
   }
 });
 
+test("linkedin (John's PERSONAL profile) is human_only with manual_paste transport — forever", () => {
+  // John's retarget call (2026-07-14): personal profile, not the company page;
+  // posting stays manual-paste for authenticity. No LinkedIn API client may be
+  // added without a new policy decision — this pin is the tripwire.
+  const c = SYNDICATION_CHANNELS.find((ch) => ch.key === "linkedin");
+  assert.equal(c?.safety, "human_only", "linkedin must be human_only");
+  assert.equal(c?.transport, "manual_paste", "linkedin transport is manual paste, not an API");
+  assert.equal(isAutoSafe("linkedin"), false, "linkedin must never auto-post");
+  assert.ok(!autoSafeChannels().some((ch) => ch.key === "linkedin"));
+});
+
 test("isAutoSafe is default-deny: an unknown channel key never auto-posts", () => {
   assert.equal(isAutoSafe("some-future-community"), false);
   assert.equal(isAutoSafe(""), false);

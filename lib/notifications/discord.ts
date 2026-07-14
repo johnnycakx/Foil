@@ -351,6 +351,51 @@ export async function postSocialApprovalRequest(
   });
 }
 
+export type LinkedInDraftInput = {
+  /** The published blog post slug the caption was generated from. */
+  slug: string;
+  title: string;
+  /** The full paste-ready caption (already voice-swept, ends with the UTM link). */
+  caption: string;
+  /** The UTM-tagged blog link (also the caption's last line). */
+  link: string;
+};
+
+/**
+ * Post a LinkedIn PASTE-READY caption to Discord (#content-engine). LinkedIn is
+ * a human_only channel (syndication-channels.ts): this card is the END of the
+ * automated rail — John copies the caption and posts it to his personal feed
+ * himself. Nothing approves or executes from this card. Soft-fail per the lib
+ * contract.
+ */
+export async function postLinkedInDraft(
+  webhookUrl: string,
+  ev: LinkedInDraftInput,
+  opts: { fetchImpl?: typeof fetch } = {},
+): Promise<PostWebhookResult> {
+  return postWebhook({
+    webhookUrl,
+    embeds: [
+      {
+        title: "💼 LinkedIn caption ready (paste to your feed)",
+        description:
+          "Copy the block below and post it on your personal LinkedIn. " +
+          "Edit freely first. Human-posts-this: nothing auto-posts to LinkedIn, ever.\n" +
+          "```\n" +
+          ev.caption.replace(/`/g, "'").slice(0, 3800) +
+          "\n```",
+        color: COLOR_FOIL_ORANGE,
+        timestamp: new Date().toISOString(),
+        fields: [
+          { name: "Post", value: ev.title.slice(0, 256), inline: false },
+          { name: "UTM link", value: ev.link.slice(0, 1024), inline: false },
+        ],
+      },
+    ],
+    fetchImpl: opts.fetchImpl,
+  });
+}
+
 export type NewsletterApprovalInput = {
   /** The persisted pending-draft id the owner approves by. */
   draftId: string;
