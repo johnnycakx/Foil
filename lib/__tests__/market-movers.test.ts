@@ -302,9 +302,9 @@ test("refreshMarketMovers: acquire() is called once per getSoldHistory", async (
 
 test("sortMovers: down most-negative first, up most-positive first", () => {
   const movers: CardMomentum[] = [
-    { slug: "a", cardName: "A", setName: "S", imageUrl: "", poketraceId: "ua", variantKey: "holofoil", avg7d: 90, avg30d: 100, saleCount: 20, momentumPct: -10, direction: "down" },
-    { slug: "b", cardName: "B", setName: "S", imageUrl: "", poketraceId: "ub", variantKey: "holofoil", avg7d: 70, avg30d: 100, saleCount: 20, momentumPct: -30, direction: "down" },
-    { slug: "c", cardName: "C", setName: "S", imageUrl: "", poketraceId: "uc", variantKey: "holofoil", avg7d: 120, avg30d: 100, saleCount: 20, momentumPct: 20, direction: "up" },
+    { slug: "a", cardName: "A", setName: "S", imageUrl: "", poketraceId: "ua", variantKey: "holofoil", avg7d: 90, avg30d: 100, saleCount: 20, momentumPct: -10, direction: "down", soldAsOfIso: "2026-07-13T00:00:00.000Z" },
+    { slug: "b", cardName: "B", setName: "S", imageUrl: "", poketraceId: "ub", variantKey: "holofoil", avg7d: 70, avg30d: 100, saleCount: 20, momentumPct: -30, direction: "down", soldAsOfIso: "2026-07-13T00:00:00.000Z" },
+    { slug: "c", cardName: "C", setName: "S", imageUrl: "", poketraceId: "uc", variantKey: "holofoil", avg7d: 120, avg30d: 100, saleCount: 20, momentumPct: 20, direction: "up", soldAsOfIso: "2026-07-13T00:00:00.000Z" },
   ];
   const down = sortMovers(movers, "down");
   assert.deepEqual(down.map((m) => m.slug), ["b", "a"]);

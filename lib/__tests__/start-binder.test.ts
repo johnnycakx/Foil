@@ -41,6 +41,7 @@ const card = (over: Partial<BinderCard> = {}): BinderCard => ({
   image: "/x.webp",
   soldCents: 228545,
   saleCount: 64,
+  soldAsOf: "2026-07-13T00:00:00.000Z",
   ...over,
 });
 
@@ -84,9 +85,23 @@ test("freeSlotsLeft never goes negative", () => {
 
 // --- truth density ----------------------------------------------------------
 
-test("the payoff line is a REAL figure with its sale count", () => {
-  assert.equal(soldLine(card()), "Usually $2,285.45 · 64 sales on record");
-  assert.equal(soldLine(card({ soldCents: 1322, saleCount: 1 })), "Usually $13.22 · 1 sale on record");
+test("the payoff line is a REAL figure with its sale count — AND its date", () => {
+  // /start is where a stranger first meets us. An undated "Usually $2,285.45"
+  // let a five-week-old comp pass for this week's (audit 2026-07-14), so the
+  // age now rides with the figure. Fixed clock → the assertion is exact.
+  const NOW = Date.parse("2026-07-14T12:00:00Z"); // card() sold on 2026-07-13
+  assert.equal(soldLine(card(), NOW), "Usually $2,285.45 as of Jul 13 · 64 sales on record");
+  assert.equal(
+    soldLine(card({ soldCents: 1322, saleCount: 1 }), NOW),
+    "Usually $13.22 as of Jul 13 · 1 sale on record",
+  );
+  // Older comp → the age is said OUT LOUD, not left as date arithmetic.
+  assert.equal(
+    soldLine(card({ soldAsOf: "2026-07-01T00:00:00.000Z" }), NOW),
+    "Usually $2,285.45 as of Jul 1 · 13 days ago · 64 sales on record",
+  );
+  // Unknown age → no temporal claim at all, rather than an implied-fresh one.
+  assert.equal(soldLine(card({ soldAsOf: null }), NOW), "Usually $2,285.45 · 64 sales on record");
 });
 
 test("no clean figure means an HONEST ABSENCE, never a fabricated number", () => {
@@ -113,7 +128,7 @@ test("the pencil number IS the alert engine's below-usual basis, dollar-rounded"
   // dollar so the written number is exactly what arms.
   const c = card();
   const floor = marketFloorCents(
-    { avg30dCents: c.soldCents!, saleCount: c.saleCount, tierLabel: "Near Mint", computedAt: "" },
+    { avg30dCents: c.soldCents!, saleCount: c.saleCount, tierLabel: "Near Mint", computedAt: "", soldAsOfIso: null },
     "any-raw",
   );
   assert.ok(floor != null);

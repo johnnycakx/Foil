@@ -74,7 +74,14 @@ test("windowedValue: avg30d first, median30d fallback, NEVER the last-sale avg",
 });
 
 test("displayFor: fresh windowed → 30-day figure; stale → dated last sale; undated → nothing", () => {
-  assert.deepEqual(displayFor(stat({ avg30d: 100 }), NOW), { kind: "windowed", value: 100 });
+  // A windowed figure carries its date too (audit 2026-07-14). It is a claim
+  // about a MOMENT — its window is anchored to the last recorded sale, not to
+  // today — so shipping it bare let a 34-day-old comp read as this week's.
+  assert.deepEqual(displayFor(stat({ avg30d: 100 }), NOW), {
+    kind: "windowed",
+    value: 100,
+    asOfIso: FRESH,
+  });
   assert.deepEqual(displayFor(stat({ avg30d: 100, avg: 90, lastUpdated: STALE }), NOW), {
     kind: "last-sale",
     value: 90,

@@ -247,8 +247,11 @@ export function BinderDesk({
         setId: hit.setId,
         number: hit.number,
         image: hit.image,
+        // The typeahead has no sold read yet — soldLine renders its honest
+        // "no clean sold read" branch, so there is no figure to date.
         soldCents: null,
         saleCount: 0,
+        soldAsOf: null,
       },
     );
     setTypedOpen(false);

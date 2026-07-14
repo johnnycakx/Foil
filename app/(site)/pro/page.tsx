@@ -103,6 +103,9 @@ function specimenInputs(): AlertEmailInputs | null {
       saleCount: sold.saleCount,
       tierLabel: sold.tierLabel,
       computedAt: "",
+      // The sample alert must look like a REAL one — including its comp date,
+      // which the committed snapshot has carried all along.
+      soldAsOfIso: sold.soldAsOf,
     },
     cardPageUrl: `/cards/${SPECIMEN_SLUG}`,
     unsubscribeUrl: null,

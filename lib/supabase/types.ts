@@ -418,6 +418,8 @@ export type Database = {
           sale_count: number;
           matched_tier: string;
           computed_at: string;
+          /** Migration 20260714120000 — the market's last trade, not our cache time. */
+          sold_as_of: string | null;
         };
         Insert: {
           card_slug: string;
@@ -431,6 +433,7 @@ export type Database = {
           sale_count?: number;
           matched_tier?: string;
           computed_at?: string;
+          sold_as_of?: string | null;
         };
         Update: Partial<{
           card_slug: string;
@@ -444,6 +447,7 @@ export type Database = {
           sale_count: number;
           matched_tier: string;
           computed_at: string;
+          sold_as_of: string | null;
         }>;
         Relationships: [];
       };

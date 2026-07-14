@@ -46,7 +46,13 @@ export type SoldComp = {
   saleCount: number;
   /** Human tier label for the evidence line, e.g. "Near Mint". */
   tierLabel: string;
+  /** When WE cached this comp. Drives the 36h staleness filter — NOT a date we
+   *  may show a reader, because it says nothing about the market. */
   computedAt: string;
+  /** When the MARKET last traded the card: the date the average is true of.
+   *  Null = unknown age, which the evidence line must DISCLOSE rather than
+   *  paper over (audit 2026-07-14 — see lib/cards/comp-age.ts). */
+  soldAsOfIso: string | null;
 };
 
 export type WatchRowState = {

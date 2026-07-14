@@ -24,6 +24,7 @@ import { getCatalogEntry } from "@/lib/cards/catalog";
 import { getBakedCardMetadata } from "@/lib/cards/sdk";
 import { effectiveTargetCents } from "@/lib/wishlist/alert-decision";
 import { getSnapshotSold, type SeededVault } from "@/lib/vault-seeds";
+import { compAgeLabel } from "@/lib/cards/comp-age";
 import { claimSeededVault } from "@/app/actions/seeded-vault";
 import { SakuraAmbience } from "@/components/sakura-ambience";
 
@@ -48,23 +49,28 @@ export async function SeededVaultView({
     // (the action re-checks and flags err). The gift page must load.
   }
 
-  // One movers read for live sold averages; committed bake as fallback.
-  const soldBySlug = new Map<string, { soldCents: number; saleCount: number }>();
+  // One movers read for live sold averages; committed bake as fallback. Both
+  // carry soldAsOf — the date the figure is true of — because this view RENDERS
+  // the number ("Sold for ~$X"), and an undated sold figure is the exact defect
+  // the 2026-07-14 audit closed everywhere else.
+  const soldBySlug = new Map<string, { soldCents: number; saleCount: number; soldAsOf: string | null }>();
   if (admin) {
     const { data: movers } = await admin
       .from("market_movers")
-      .select("card_slug, avg30d, sample_size")
+      .select("card_slug, avg30d, sample_size, sold_as_of")
       .in("card_slug", vault.pockets);
     for (const m of movers ?? []) {
       if (typeof m.avg30d === "number" && m.avg30d > 0) {
         soldBySlug.set(m.card_slug as string, {
           soldCents: Math.round((m.avg30d as number) * 100),
           saleCount: typeof m.sample_size === "number" ? (m.sample_size as number) : 0,
+          soldAsOf: (m.sold_as_of as string | null) ?? null,
         });
       }
     }
   }
 
+  const nowMs = Date.now();
   const pockets = vault.pockets.map((slug) => {
     const entry = getCatalogEntry(slug);
     const meta = entry ? getBakedCardMetadata(entry.pokemonTcgId) : null;
@@ -72,11 +78,18 @@ export async function SeededVaultView({
     const effective = sold
       ? effectiveTargetCents(
           null,
-          { avg30dCents: sold.soldCents, saleCount: sold.saleCount, tierLabel: "Near Mint", computedAt: "" },
+          {
+            avg30dCents: sold.soldCents,
+            saleCount: sold.saleCount,
+            tierLabel: "Near Mint",
+            computedAt: "",
+            soldAsOfIso: sold.soldAsOf,
+          },
           "any-raw",
         )
       : null;
-    return { slug, meta, sold, effective };
+    const soldAge = sold?.soldAsOf ? compAgeLabel(sold.soldAsOf, nowMs) : null;
+    return { slug, meta, sold, effective, soldAge };
   });
 
   // Per-visitor post-submit states (the ?c= flag on the action's redirect).
@@ -180,7 +193,7 @@ export async function SeededVaultView({
       {/* THE POCKETS — read-only binder page; targets/pauses live in each
           claimer's personal vault. */}
       <ul className="mt-8 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3">
-        {pockets.map(({ slug, meta, sold, effective }) => (
+        {pockets.map(({ slug, meta, sold, effective, soldAge }) => (
           <li
             key={slug}
             className="rounded-2xl bg-foil-night-2 p-3 shadow-[inset_0_1px_3px_rgba(4,9,18,0.7),inset_0_-1px_2px_rgba(248,245,240,0.05)] ring-1 ring-foil-cream/10 transition hover:-translate-y-0.5 hover:ring-foil-cream/30"
@@ -209,9 +222,13 @@ export async function SeededVaultView({
               <p className="truncate font-mono text-[11px] uppercase tracking-wider text-foil-cream/50">
                 {meta?.setName ?? ""} {meta?.number ? `· #${meta.number}` : ""}
               </p>
+              {/* "recently" was a temporal claim we could not keep — the figure
+                  carried no date, so a five-week-old comp read as this week's.
+                  Say WHEN, or say nothing about when. */}
               {sold && (
                 <p className="mt-2 text-xs text-foil-cream/60">
-                  Sold for ~<span className="font-mono tabular-nums text-foil-cream">{usdWhole(sold.soldCents)}</span> recently
+                  Sold for ~<span className="font-mono tabular-nums text-foil-cream">{usdWhole(sold.soldCents)}</span>
+                  {soldAge ? <> {soldAge}</> : null}
                 </p>
               )}
               {effective != null && (

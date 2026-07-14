@@ -13,6 +13,7 @@
 // runs in node and can see both.
 
 import { marketFloorCents } from "../wishlist/alert-decision.ts";
+import { compAgeLabel } from "../cards/comp-age.ts";
 
 /** A nine-pocket page — the most nostalgic object in the hobby. */
 export const POCKETS_PER_PAGE = 9;
@@ -46,6 +47,10 @@ export type BinderCard = {
   soldCents: number | null;
   /** How many sales that figure rests on. */
   saleCount: number;
+  /** WHEN that figure is true of (the tier's last recorded sale). Null = unknown
+   *  age — soldLine then omits the temporal claim rather than implying recency
+   *  (audit 2026-07-14: /start is the primary funnel and it shipped undated). */
+  soldAsOf: string | null;
 };
 
 export type PocketState =
@@ -78,7 +83,10 @@ export function freeSlotsLeft(filledCount: number): number {
  * The payoff line, the instant a card seats. Register rule: card-shop words.
  * TRUTH DENSITY — a card with no clean figure says so; we never invent one.
  */
-export function soldLine(card: Pick<BinderCard, "soldCents" | "saleCount">): string {
+export function soldLine(
+  card: Pick<BinderCard, "soldCents" | "saleCount" | "soldAsOf">,
+  nowMs: number = Date.now(),
+): string {
   if (card.soldCents == null || card.soldCents <= 0 || card.saleCount <= 0) {
     return "No clean sold read yet. Foil starts watching from here.";
   }
@@ -88,7 +96,10 @@ export function soldLine(card: Pick<BinderCard, "soldCents" | "saleCount">): str
     maximumFractionDigits: 2,
   });
   const sales = card.saleCount === 1 ? "1 sale" : `${card.saleCount} sales`;
-  return `Usually ${usd} · ${sales} on record`;
+  // The age, when we know it. "Usually $2,285" with no date let a five-week-old
+  // comp read as this week's, on the surface where a stranger first meets us.
+  const age = card.soldAsOf ? compAgeLabel(card.soldAsOf, nowMs) : null;
+  return age ? `Usually ${usd} ${age} · ${sales} on record` : `Usually ${usd} · ${sales} on record`;
 }
 
 /** The market brain's distance sentence (quality-bar-fixes item 5). Pure so
@@ -181,7 +192,8 @@ export function foilSuggestsCents(
   if (card.soldCents == null || card.soldCents <= 0) return null;
   if (card.saleCount < SUGGEST_MIN_SALES) return null;
   const floor = marketFloorCents(
-    { avg30dCents: card.soldCents, saleCount: card.saleCount, tierLabel: "Near Mint", computedAt: "" },
+    // Numeric only — this derives a target, it renders no date.
+    { avg30dCents: card.soldCents, saleCount: card.saleCount, tierLabel: "Near Mint", computedAt: "", soldAsOfIso: null },
     "any-raw",
   );
   if (floor == null || floor <= 0) return null;

@@ -35,6 +35,7 @@ import { SoldHistoryPanel } from "@/components/cards/sold-history-panel";
 import { AddToVault } from "@/components/cards/add-to-vault";
 import { aboutListingCopy } from "@/lib/cards/about-copy";
 import { getHeroSoldStat } from "@/lib/cards/sold-headline";
+import { compAgeLabel } from "@/lib/cards/comp-age";
 import { resolveListedFallback } from "@/lib/pricing/listed-fallback";
 import { deriveAvailableVariants } from "@/lib/poketrace/variant";
 import { getHydratedVariants } from "@/lib/poketrace/hydration";
@@ -146,10 +147,14 @@ export default async function CardPage({
   // cards → the hero renders the honest pending line, never a figure.
   // getSoldHistory is in-process cached, so this adds no network call beyond
   // the panel's own fetch.
+  // One clock for the whole render: the hero's freshness gate and the age line
+  // it prints must describe the SAME instant, or a comp could resolve fresh and
+  // then label itself a day older.
+  const nowMs = Date.now();
   const heroStat =
     tier === "metadata-only"
       ? null
-      : await getHeroSoldStat(variants, selectedVariant, selectedCondition, Date.now());
+      : await getHeroSoldStat(variants, selectedVariant, selectedCondition, nowMs);
 
   // LISTED fallback (pricing-bridge / ADR-118). When the sold spine is dark —
   // a lapsed PokeTrace key (R-070) makes getSoldHistory return null on EVERY
@@ -303,6 +308,13 @@ export default async function CardPage({
                 <p className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span className="font-display text-4xl font-semibold tabular-nums text-foil-cream sm:text-5xl">
                     {formatUsd(heroStat.value)}
+                  </span>
+                  {/* The age, always. A sold figure is a claim about a MOMENT —
+                      the window is anchored to the last recorded sale, not to
+                      today — and rendering it bare was the 2026-07-14 audit's
+                      central defect. Same register as the listed branch below. */}
+                  <span className="text-sm text-foil-cream/60">
+                    {compAgeLabel(heroStat.asOfIso, nowMs)}
                   </span>
                   {heroStat.saleCount != null && (
                     <span className="text-sm text-foil-cream/60">

@@ -24,6 +24,7 @@ function mover(over: Partial<MoverRow>): MoverRow {
     saleCount: 40,
     matchedTier: "NEAR_MINT",
     computedAt: "2026-06-25T09:00:00Z",
+    soldAsOfIso: null,
     ...over,
   };
 }

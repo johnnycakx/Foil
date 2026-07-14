@@ -71,6 +71,9 @@ export type HeroSoldStat = {
   tierLabel: string;
   /** The variant the figure belongs to ("Holofoil", …). */
   variantLabel: string;
+  /** WHEN the figure's window closed. The hero renders this via
+   *  lib/cards/comp-age.ts — an undated hero number is forbidden. */
+  asOfIso: string;
 };
 
 /**
@@ -98,5 +101,6 @@ export async function getHeroSoldStat(
     approxSaleCount: model.headline.approxSaleCount,
     tierLabel: tierLabel(model.headline.tierKey),
     variantLabel: selected.variant.variantLabel,
+    asOfIso: model.headline.asOfIso,
   };
 }

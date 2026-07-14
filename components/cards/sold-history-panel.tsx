@@ -29,6 +29,7 @@ import { ConditionPicker } from "@/components/cards/condition-picker";
 import { DetailSection } from "@/components/cards/detail-section";
 import { SoldHistoryChart } from "@/components/cards/sold-history-chart";
 import { conditionToTier, conditionLabel, DEFAULT_CONDITION } from "@/lib/cards/conditions";
+import { compAgeLabel } from "@/lib/cards/comp-age";
 import {
   resolveSoldPanel,
   describeViolations,
@@ -97,10 +98,19 @@ function HonestEmptyState({ className }: { className?: string }) {
   );
 }
 
-/** One value cell: fresh windowed → plain money; stale → dated last sale. */
+/** One value cell. BOTH kinds are dated: tiers age independently (a NM tier can
+ *  be 2 days old while LP is 30), so a bare windowed figure in this table hid
+ *  exactly the drift the headline hid. Every sold number states its moment. */
 function DisplayCell({ row }: { row: SoldRowModel }) {
   if (row.display.kind === "windowed") {
-    return <span className="font-mono tabular-nums text-foil-cream">{money(row.display.value)}</span>;
+    return (
+      <span className="inline-flex flex-col items-end leading-tight">
+        <span className="font-mono tabular-nums text-foil-cream">{money(row.display.value)}</span>
+        <span className="font-mono text-[10px] tabular-nums text-foil-cream/50">
+          {formatDate(row.display.asOfIso)}
+        </span>
+      </span>
+    );
   }
   return (
     <span className="font-mono text-[12px] tabular-nums text-foil-cream/60">
@@ -237,9 +247,14 @@ export async function SoldHistoryPanel({
                 <p className="text-xs uppercase tracking-wide text-foil-cream/60">
                   30-day sold avg · {selected.variant.variantLabel} · {headlineSuffix}
                 </p>
-                <p className="mt-1 flex items-baseline gap-3">
+                <p className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span className="font-display text-4xl font-semibold tabular-nums text-foil-cream">
                     {money(model.headline.value)}
+                  </span>
+                  {/* The age, always — same primitive as the card-page hero, so
+                      the two figures can never disagree about their own date. */}
+                  <span className="text-sm text-foil-cream/60">
+                    {compAgeLabel(model.headline.asOfIso, nowMs)}
                   </span>
                   {model.headline.saleCount != null && (
                     <span className="text-sm text-foil-cream/60">
@@ -323,8 +338,16 @@ export async function SoldHistoryPanel({
               </tbody>
               </table>
             </details>
+            {/* HONESTY (audit 2026-07-14). This line used to read "refreshed
+                hourly" unconditionally. That described OUR POLL (a 1h SWR cache
+                on the PokeTrace client), not the DATA — a card whose last
+                recorded sale was five weeks ago was still captioned "refreshed
+                hourly". We check hourly; the market sets the pace. Every figure
+                above now carries the date it is actually true of, so this line
+                no longer has to carry a freshness claim it cannot keep. */}
             <p className="mt-4 text-[11px] uppercase tracking-wider text-foil-cream/60">
-              Sold prices via PokeTrace · refreshed hourly · {cardName} actual completed sales, not active listings.
+              Sold prices via PokeTrace · {cardName} actual completed sales, not active listings. We check for new
+              sales hourly; each figure is dated with the last one we found.
               {hydratedSince ? <> · Sold data tracked since {formatDate(hydratedSince)}.</> : null}
             </p>
           </div>

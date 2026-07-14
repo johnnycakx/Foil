@@ -17,8 +17,14 @@ const COMP: SoldComp = {
   avg30dCents: 9200,
   saleCount: 14,
   tierLabel: "Near Mint",
-  computedAt: "2026-07-01T00:00:00Z",
+  // When WE cached it. Says nothing about the market — never shown to a reader.
+  computedAt: "2026-07-14T00:00:00Z",
+  // When the MARKET last traded it. This is the date the evidence line cites.
+  soldAsOfIso: "2026-07-01T00:00:00.000Z",
 };
+
+/** Fixed clock so the dated evidence line asserts exactly. 13 days after COMP. */
+const NOW_MS = Date.parse("2026-07-14T12:00:00Z");
 
 function inputs(over: Partial<AlertEmailInputs> = {}): AlertEmailInputs {
   return {
@@ -56,18 +62,37 @@ test("subject, market basis: cites the percent under the 30-day sold average", (
   assert.match(s, /dropped to \$75\.00, 18% under what it usually sells for/);
 });
 
-test("evidence line cites the comp with tier + figures; discloses plainly when no comp exists", () => {
-  const withComp = evidenceLine(inputs({ currentPriceCents: 7500, comp: COMP }));
-  assert.equal(withComp, "Usually sells for $92.00 (Near Mint, last 30 days) · this listing: $75.00 (18% under)");
-  const overAvg = evidenceLine(inputs({ currentPriceCents: 10000, comp: COMP }));
+test("evidence line cites the comp with tier + figures + ITS DATE; discloses plainly when no comp exists", () => {
+  // The evidence line is the paid product's core artifact. It used to assert
+  // "(Near Mint, last 30 days)" — a temporal claim — while carrying no date, so
+  // a comp whose last real sale was weeks ago read exactly like yesterday's
+  // (audit 2026-07-14). It now says WHEN, always.
+  const withComp = evidenceLine(inputs({ currentPriceCents: 7500, comp: COMP }), NOW_MS);
+  assert.equal(
+    withComp,
+    "Usually sells for $92.00 (Near Mint, as of Jul 1 · 13 days ago) · this listing: $75.00 (18% under)",
+  );
+  const overAvg = evidenceLine(inputs({ currentPriceCents: 10000, comp: COMP }), NOW_MS);
   assert.match(overAvg, /9% over/);
-  const noComp = evidenceLine(inputs({ comp: null }));
+  const noComp = evidenceLine(inputs({ comp: null }), NOW_MS);
   assert.equal(noComp, "No recent sold data for this card. This alert is against your target only.");
+});
+
+test("an UNDATED comp discloses its unknown age — it never implies freshness", () => {
+  // A pre-migration market_movers row has no sold_as_of. The honest move is to
+  // say we don't know when, not to quietly drop the qualifier and let the
+  // reader assume "recent".
+  const undated = evidenceLine(
+    inputs({ currentPriceCents: 7500, comp: { ...COMP, soldAsOfIso: null } }),
+    NOW_MS,
+  );
+  assert.match(undated, /sale date unknown/);
+  assert.ok(!/last 30 days/.test(undated), "must not re-assert a 30-day window it cannot date");
 });
 
 test("body ALWAYS carries the evidence line or the disclosure (the acceptance criterion)", () => {
   const withComp = emailBody(inputs({ currentPriceCents: 7500, comp: COMP }));
-  assert.match(withComp, /Usually sells for \$92\.00 \(Near Mint, last 30 days\)/);
+  assert.match(withComp, /Usually sells for \$92\.00 \(Near Mint, as of /);
   const noComp = emailBody(inputs({ comp: null }));
   assert.match(noComp, /No recent sold data for this card/);
 });
