@@ -366,6 +366,36 @@ export type Database = {
         }>;
         Relationships: [];
       };
+      funnel_events: {
+        Row: {
+          id: number;
+          stage: "card_view" | "watch_set" | "pro_view" | "checkout_start" | "trial_start";
+          visitor_id: string | null;
+          utm_source: string | null;
+          utm_campaign: string | null;
+          meta: Record<string, unknown> | null;
+          occurred_at: string;
+        };
+        Insert: {
+          id?: number;
+          stage: "card_view" | "watch_set" | "pro_view" | "checkout_start" | "trial_start";
+          visitor_id?: string | null;
+          utm_source?: string | null;
+          utm_campaign?: string | null;
+          meta?: Record<string, unknown> | null;
+          occurred_at?: string;
+        };
+        Update: Partial<{
+          id: number;
+          stage: "card_view" | "watch_set" | "pro_view" | "checkout_start" | "trial_start";
+          visitor_id: string | null;
+          utm_source: string | null;
+          utm_campaign: string | null;
+          meta: Record<string, unknown> | null;
+          occurred_at: string;
+        }>;
+        Relationships: [];
+      };
       buy_signals: {
         Row: {
           card_slug: string;

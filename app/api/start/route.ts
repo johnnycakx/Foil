@@ -37,6 +37,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { subscribeEmail } from "@/lib/beehiiv";
 import { recordSubscriber, sanitizeUtmValue } from "@/lib/newsletter/subscribers";
 import { upsertWatchlist } from "@/lib/wishlist/upsert";
+import { logFunnelEvent, hashVisitorId } from "@/lib/telemetry/funnel-events";
 import { checkFreeWatchCap } from "@/lib/wishlist/free-cap";
 import { getAlertSuppression } from "@/lib/wishlist/pause";
 import { postError } from "@/lib/notifications/discord";
@@ -233,6 +234,17 @@ export async function POST(request: Request): Promise<NextResponse> {
       failed: failedSlugs.join(","),
     });
   }
+
+  // Funnel: watch_set — the activation stage, fired once per successful /start
+  // submission (the primary acquisition surface). Fire-and-forget; never blocks
+  // the response. meta.count is how many chases the visitor seated in one go.
+  void logFunnelEvent({
+    stage: "watch_set",
+    visitorId: hashVisitorId(clientIpKey(request.headers)),
+    utmSource: sanitizeUtmValue(parsed.data.utm?.source ?? parsed.data.src) ?? null,
+    utmCampaign: sanitizeUtmValue(parsed.data.utm?.campaign) ?? null,
+    meta: { count: upserted, surface: "start" },
+  }).catch(() => {});
 
   // Tri-store newsletter opt-in (ADR-078 + ADR-084, mirroring
   // app/actions/subscribe.ts). recordSubscriber (Supabase owned list — the

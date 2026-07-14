@@ -16,6 +16,7 @@
 
 import { cache } from "react";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -36,6 +37,8 @@ import { AddToVault } from "@/components/cards/add-to-vault";
 import { aboutListingCopy } from "@/lib/cards/about-copy";
 import { getHeroSoldStat } from "@/lib/cards/sold-headline";
 import { compAgeLabel } from "@/lib/cards/comp-age";
+import { logFunnelEvent, hashVisitorId } from "@/lib/telemetry/funnel-events";
+import { clientIpKey } from "@/lib/start/guards";
 import { resolveListedFallback } from "@/lib/pricing/listed-fallback";
 import { deriveAvailableVariants } from "@/lib/poketrace/variant";
 import { getHydratedVariants } from "@/lib/poketrace/hydration";
@@ -118,12 +121,28 @@ export default async function CardPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ v?: string; c?: string; src?: string }>;
+  searchParams: Promise<{ v?: string; c?: string; src?: string; utm_source?: string; utm_campaign?: string }>;
 }) {
   const { slug } = await params;
-  const { v: selectedVariant, c: selectedCondition, src } = await searchParams;
+  const { v: selectedVariant, c: selectedCondition, src, utm_source, utm_campaign } = await searchParams;
   const entry = getCatalogEntry(slug);
   if (!entry) notFound();
+
+  // Funnel: card_view — ATTRIBUTED visits only. The card page is force-dynamic
+  // and crawler-heavy; logging every render would swamp the table and teach us
+  // nothing, so we record it only when an ad landed here (src/utm present). The
+  // funnel's unattributed denominator is Vercel Analytics' page views; this
+  // table is for tying paid traffic to conversions. Fire-and-forget.
+  if (src || utm_source) {
+    const hdrs = await headers();
+    void logFunnelEvent({
+      stage: "card_view",
+      visitorId: hashVisitorId(clientIpKey(hdrs)),
+      utmSource: utm_source ?? src ?? null,
+      utmCampaign: utm_campaign ?? null,
+      meta: { slug },
+    }).catch(() => {});
+  }
 
   const card = await getCard(entry.pokemonTcgId);
   const tier = cardTier(slug);

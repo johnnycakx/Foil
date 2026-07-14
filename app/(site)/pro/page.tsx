@@ -33,8 +33,11 @@
 // zero users and honesty is the moat), countdown urgency, unshipped-feature
 // promises.
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Image from "next/image";
 import { createCheckoutSession } from "@/app/upload/billing-actions";
+import { logFunnelEvent, hashVisitorId } from "@/lib/telemetry/funnel-events";
+import { clientIpKey } from "@/lib/start/guards";
 import { PRO_TRIAL_DAYS } from "@/lib/stripe";
 import { getSnapshotSold } from "@/lib/vault-seeds";
 import {
@@ -157,6 +160,20 @@ export default async function ProPage({
   for (const k of ["utm_source", "utm_medium", "utm_campaign"] as const) {
     const v = pick(params[k]);
     if (v) attribution.push([k, v]);
+  }
+
+  // Funnel: pro_view. The intent gate of the whole funnel — fire-and-forget,
+  // never blocks the render. Skipped on the post-checkout success state below
+  // (that's a return, not a fresh view). See lib/telemetry/funnel-events.ts.
+  if (params.checkout !== "success") {
+    const hdrs = await headers();
+    void logFunnelEvent({
+      stage: "pro_view",
+      visitorId: hashVisitorId(clientIpKey(hdrs)),
+      utmSource: pick(params.utm_source) ?? null,
+      utmCampaign: pick(params.utm_campaign) ?? null,
+      meta: { hook },
+    }).catch(() => {});
   }
 
   const h1 = hook === "drop" ? DROP_H1 : GRAIL_H1;
