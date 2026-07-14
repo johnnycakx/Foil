@@ -123,6 +123,10 @@ export async function POST(request: Request): Promise<NextResponse> {
     slug: string;
     /** null = blank target ("alert at ≥15% under the 30-day sold avg"). */
     target_price_cents: number | null;
+    /** Raw condition the alert targets ("any-raw" default). Zod already
+     *  constrained it to the raw ladder; this carries it to the upsert so the
+     *  binder finally delivers condition-targeted alerts (audit 2026-07-14). */
+    condition: string;
   };
   const accepted: AcceptedRow[] = [];
   const rejected: { id: string; reason: string }[] = [];
@@ -141,6 +145,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     accepted.push({
       slug: catalogSlug,
       target_price_cents: card.target_price_cents ?? null,
+      condition: card.condition ?? "any-raw",
     });
   }
 
@@ -212,7 +217,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         email,
         card_slug: row.slug,
         variant: "default",
-        condition: "any-raw",
+        condition: row.condition,
         target_price_cents: row.target_price_cents,
         src,
       },

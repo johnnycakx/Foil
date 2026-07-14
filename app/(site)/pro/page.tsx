@@ -67,10 +67,16 @@ const FOUNDING_LINE =
   "$6 a month, locked. The price rises as Foil gets faster. Founding members keep their rate for life and get everything new first.";
 const FREE_CATCHER = "Not ready? Free fills a binder page (9 cards) and gets the weekly digest.";
 
-// V6.5 item 3, the value anchor: honest, specific, no bashing. Card Ladder
-// Pro is $20/mo (verified on their pricing page, 2026-07-12 research pass).
+// The value anchor (audit 2026-07-14 re-anchor). The old line compared Foil to
+// Card Ladder Pro ($20/mo) as "the nearest tool" — but Card Ladder is a
+// SPORTS-card tool, and in Pokémon the real field is free sold-price trackers
+// (PokePrices, CardVex) plus price GUIDES. "We show sold prices" is table
+// stakes there, not a differentiator. What none of them do is WATCH the market
+// and ping you on a real dip below what a card has been selling for — a buy
+// signal, not another chart. So the anchor sells the alert, not the data, and
+// cites no competitor price we can't verify (AGENTS.md external-facts rule).
 const ANCHOR_LINE =
-  "Card Ladder Pro, the nearest tool to this, runs $20 a month. Foil Pro is $6, and one avoided overpay pays for months of it.";
+  "Free trackers show you what a card sold for. Foil watches the market for you, and emails the moment a real listing dips under what it's been selling for. A buy signal, not another price chart. $6 a month, and one avoided overpay covers months of it.";
 
 // The comparison table (V6.5 item 1, the conversion engine). Rows state the
 // REAL tier split from lib/offer.ts — nothing invented. Register rule on

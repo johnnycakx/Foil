@@ -266,6 +266,7 @@ function clientPayload(
   targets: Record<string, string> = {},
   suggested: Record<string, number> = {},
   touched: string[] = [],
+  conditions: Record<string, string> = {},
 ) {
   const targetCentsFor = (c: BinderCard): number | null => {
     const raw = (targets[c.id] ?? "").trim();
@@ -283,6 +284,7 @@ function clientPayload(
       set_id: c.setId,
       number: c.number,
       target_price_cents: targetCentsFor(c),
+      condition: conditions[c.id] ?? "any-raw",
     })),
   };
 }
@@ -302,6 +304,27 @@ test("a written tag parses as cents", () => {
   const res = startSchema.safeParse(clientPayload([card()], { "swsh7-215": "40" }));
   assert.ok(res.success);
   if (res.success) assert.equal(res.data.cards[0]?.target_price_cents, 4000);
+});
+
+test("the binder now carries a CONDITION target (audit 2026-07-14 — was hardcoded any-raw)", () => {
+  // A picked condition rides the wire, so the primary funnel finally delivers
+  // the condition-specific alerts Pro is sold on.
+  const nm = startSchema.safeParse(clientPayload([card()], {}, {}, [], { "swsh7-215": "nm" }));
+  assert.ok(nm.success, nm.success ? "" : JSON.stringify(nm.error.issues));
+  if (nm.success) assert.equal(nm.data.cards[0]?.condition, "nm");
+
+  // Default stays "any-raw" — an untouched pocket behaves exactly as before.
+  const dflt = startSchema.safeParse(clientPayload([card()]));
+  if (dflt.success) assert.equal(dflt.data.cards[0]?.condition, "any-raw");
+});
+
+test("the wire REJECTS a graded/invalid condition (binder offers the raw ladder only)", () => {
+  // Graded targeting lives on the card page; the binder's enum must not accept
+  // it, and a junk token must never reach the upsert.
+  const graded = startSchema.safeParse(clientPayload([card()], {}, {}, [], { "swsh7-215": "psa-10" }));
+  assert.equal(graded.success, false, "psa-10 is not in the raw ladder");
+  const junk = startSchema.safeParse(clientPayload([card()], {}, {}, [], { "swsh7-215": "mint-9000" }));
+  assert.equal(junk.success, false);
 });
 
 test("an untouched Foil-written tag posts EXACTLY the penciled cents (the tag never lies to the wire)", () => {
