@@ -28,3 +28,31 @@ export function overlayFreshMetadata(
   const { variants: _freshVariants, ...freshMeta } = fresh;
   return { ...prior, ...freshMeta };
 }
+
+/**
+ * Overlay ONLY the TCGplayer listed-price fields onto a prior entry — the
+ * `--refresh-prices` path (pricing-bridge / ADR-118).
+ *
+ * Why this exists: the daily bake runs `--only-missing`, which by design leaves
+ * an already-baked card "exactly as it is" — including its prices. So a card's
+ * `tcgplayerPrices` were frozen at whatever they were the day it was first
+ * baked (measured 2026-07-14: median age 13 days, worst 1,231 days). That is
+ * fine while prices are decoration, but ADR-118 makes them the FALLBACK the
+ * card page falls to when the sold spine goes dark — and a fallback that ages
+ * past LISTED_FRESHNESS_MAX_DAYS silently becomes no fallback at all. The
+ * refresh keeps it alive.
+ *
+ * Surgical by construction: everything except the two price fields is taken
+ * from `prior`, so a refresh can never clobber the baked PokeTrace `variants`
+ * (the exact bug overlayFreshMetadata exists to prevent) or any other field.
+ */
+export function overlayListedPrices(
+  prior: CardMetadata,
+  fresh: CardMetadata,
+): CardMetadata {
+  return {
+    ...prior,
+    tcgplayerPrices: fresh.tcgplayerPrices,
+    tcgplayerUpdatedAt: fresh.tcgplayerUpdatedAt,
+  };
+}

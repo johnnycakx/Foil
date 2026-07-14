@@ -1,0 +1,98 @@
+# Weekly LISTED-price refresh — keeps the sold-spine fallback alive
+# (pricing-bridge, ADR-118).
+#
+# WHY THIS EXISTS. ADR-118 promoted the baked TCGplayer `tcgplayerPrices` from
+# decoration to LOAD-BEARING: when the sold spine goes dark (a lapsed PokeTrace
+# key, R-070), the card page falls through to that listed figure, labeled
+# "TCGplayer listed (may lag)" with its date, instead of showing every card as
+# "Sold data pending."
+#
+# But the daily bake runs `--only-missing`, which by design leaves an
+# already-baked card untouched — INCLUDING its prices. So every card's listed
+# price was frozen at the day it was first baked (measured 2026-07-14: median
+# age 13 days, worst 1,231). Left alone, they all age past
+# LISTED_FRESHNESS_MAX_DAYS (30) and the fallback silently resolves to null —
+# i.e. the safety net rots away exactly when we start depending on it.
+#
+# This job re-fetches every baked card and overlays ONLY the two price fields
+# (lib/cards/bake-merge.ts::overlayListedPrices — surgical, so a refresh can
+# never clobber the baked PokeTrace `variants`). Weekly, not daily: it touches
+# all ~3.2k cards against a flaky upstream, and a 7-day cadence keeps every
+# figure comfortably inside the 30-day window without hammering pokemontcg.io
+# or racing the daily catalog job.
+#
+# Standing rule honored (John, 2026-07-13): any recurring script feeding prod
+# content gets a cron AND an alarm the day it's born.
+
+name: weekly-price-refresh
+on:
+  schedule:
+    - cron: "41 6 * * 0" # Sundays 06:41 UTC — before the daily bake's 07:23, off the :00 stampede
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-prices:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Configure git author
+        # ADR-045: the email must associate with a GitHub team user or Vercel
+        # blocks the deploy.
+        run: |
+          git config user.name  "foil-catalog-bot"
+          git config user.email "john.c.craig24@gmail.com"
+
+      - name: Refresh TCGplayer listed prices
+        # --refresh-prices overlays price fields on existing cards;
+        # --only-missing still bakes any net-new entry fully. They compose.
+        run: npm run bake:cards -- --refresh-prices --only-missing
+
+      - name: Guard tests (bake + pricing invariants)
+        # The structural review before an autonomous push. The pricing guards
+        # are the load-bearing ones here: a sold-labeled surface may never
+        # receive a non-sold-basis price, and the fallback must stay honest.
+        run: |
+          node --test --experimental-strip-types \
+            lib/__tests__/bake-snapshot-invariants.test.ts \
+            lib/__tests__/pricing-basis.test.ts \
+            lib/__tests__/listed-fallback.test.ts \
+            lib/__tests__/baked-first-render.test.ts
+
+      - name: Commit + push to main
+        run: |
+          git add lib/cards/baked-metadata.json
+          if git diff --cached --quiet; then
+            echo "No price changes this week."
+            exit 0
+          fi
+          SUMMARY=$(git diff --cached --stat | tail -1 | tr -s ' ')
+          git commit -m "chore(pricing): weekly listed-price refresh $(date -u +%Y-%m-%d)" -m "Autonomous run of weekly-price-refresh:$SUMMARY"
+          git push origin main
+
+      - name: Notify Discord on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_ERRORS: ${{ secrets.DISCORD_WEBHOOK_ERRORS }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_ERRORS" ]; then exit 0; fi
+          TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          PAYLOAD=$(jq -n \
+            --arg url "$RUN_URL" \
+            --arg ts "$TS" \
+            '{username: "Foil Ops", embeds: [{title: ":warning: weekly-price-refresh failed", description: "Listed prices did not refresh. They age out of the 30-day window silently — if the sold spine is also dark, card pages lose their fallback price entirely.", url: $url, color: 15548997, fields: [{name: "Workflow", value: "weekly-price-refresh", inline: true}, {name: "Run", value: ("[Open in GitHub](" + $url + ")"), inline: true}], timestamp: $ts}]}')
+          curl -sS -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK_ERRORS" || true

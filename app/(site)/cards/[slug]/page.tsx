@@ -35,6 +35,7 @@ import { SoldHistoryPanel } from "@/components/cards/sold-history-panel";
 import { AddToVault } from "@/components/cards/add-to-vault";
 import { aboutListingCopy } from "@/lib/cards/about-copy";
 import { getHeroSoldStat } from "@/lib/cards/sold-headline";
+import { resolveListedFallback } from "@/lib/pricing/listed-fallback";
 import { deriveAvailableVariants } from "@/lib/poketrace/variant";
 import { getHydratedVariants } from "@/lib/poketrace/hydration";
 
@@ -149,6 +150,22 @@ export default async function CardPage({
     tier === "metadata-only"
       ? null
       : await getHeroSoldStat(variants, selectedVariant, selectedCondition, Date.now());
+
+  // LISTED fallback (pricing-bridge / ADR-118). When the sold spine is dark —
+  // a lapsed PokeTrace key (R-070) makes getSoldHistory return null on EVERY
+  // card — the hero would otherwise show the pending line site-wide. Instead we
+  // fall through to the baked TCGplayer listed figure, rendered under an
+  // explicit "listed (may lag)" label with its date. Sold ALWAYS wins when it
+  // exists; this is a fallback, never a promotion. Zero network (it's in the
+  // committed snapshot), so it cannot fail with the vendor.
+  const listedFallback = heroStat
+    ? null
+    : resolveListedFallback(
+        card.tcgplayerPrices,
+        card.tcgplayerUpdatedAt,
+        selectedVariant,
+        Date.now(),
+      );
 
   // The curated-tier LIVE listing + buy-signal are NO LONGER fetched in this
   // server render (the ~38s eBay block that throttled crawl). They hydrate
@@ -295,6 +312,29 @@ export default async function CardPage({
                   )}
                 </p>
               </div>
+            ) : listedFallback ? (
+              /* No sold figure we can stand behind — fall through to the baked
+                 TCGplayer LISTED price, labeled as what it is (ADR-118). This
+                 is an asking-price index, never a sold comp: the label and the
+                 date carry that, and the type system forbids it reaching the
+                 sold-labeled branch above. */
+              <div className="mt-4 sm:mt-6">
+                <p className="text-xs uppercase tracking-wide text-foil-cream/60">
+                  {listedFallback.label}
+                </p>
+                <p className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span className="font-display text-4xl font-semibold tabular-nums text-foil-cream/90 sm:text-5xl">
+                    {formatUsd(listedFallback.amount)}
+                  </span>
+                  <span className="text-sm text-foil-cream/60">
+                    as of {formatListedDate(listedFallback.lastUpdated)}
+                  </span>
+                </p>
+                <p className="mt-2 text-xs text-foil-cream/50">
+                  No recent sold data for this card right now, so this is what
+                  it&rsquo;s listed at, not what it sold for.
+                </p>
+              </div>
             ) : (
               <p className="mt-4 text-sm text-foil-cream/60 sm:mt-6">
                 Sold data pending for this card. We only show figures we can
@@ -437,6 +477,14 @@ export default async function CardPage({
       </article>
     </main>
   );
+}
+
+/** "Jul 1" — the honest age stamp on a listed fallback figure (ADR-118). */
+function formatListedDate(iso: string | null): string {
+  if (!iso) return "an unknown date";
+  const d = new Date(iso);
+  if (!Number.isFinite(d.getTime())) return "an unknown date";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 }
 
 function formatReleaseYear(release: string): string {

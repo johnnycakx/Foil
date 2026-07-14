@@ -14,7 +14,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { overlayFreshMetadata } from "../cards/bake-merge.ts";
+import { overlayFreshMetadata, overlayListedPrices } from "../cards/bake-merge.ts";
 import type { CardMetadata } from "../cards/sdk.ts";
 
 const ROOT = new URL("../..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
@@ -114,6 +114,46 @@ test("overlayFreshMetadata: preserves prior baked-only variants against a fresh 
   const merged = overlayFreshMetadata(prior, fresh);
   assert.equal(merged.variants?.length, 2, "prior PokeTrace variants must survive the overlay");
   assert.equal(merged.tcgplayerPrices.holofoil.market, 420.5, "fresh prices must land");
+});
+
+test("overlayListedPrices: refreshes ONLY the price fields, preserving everything else", () => {
+  // The --refresh-prices path (ADR-118). Prices are now the card page's
+  // fallback when the sold spine is dark, so they must refresh — but a refresh
+  // that clobbered the baked PokeTrace `variants` would silently wipe every
+  // card's sold-history panel (the exact bug overlayFreshMetadata exists to
+  // prevent). This pin is why the price overlay is surgical.
+  const prior = {
+    id: "base1-4",
+    name: "Charizard",
+    rarity: "Rare Holo",
+    artist: "Mitsuhiro Arita",
+    tcgplayerPrices: { holofoil: { low: 1, mid: 2, high: 3, market: 4, directLow: null } },
+    tcgplayerUpdatedAt: "2026/01/01",
+    variants: [
+      { uuid: "poketrace-uuid-1", label: "Holofoil", key: "holofoil" },
+      { uuid: "poketrace-uuid-2", label: "Shadowless", key: "shadowless" },
+    ],
+  } as unknown as CardMetadata;
+  const fresh = {
+    id: "base1-4",
+    name: "CLOBBERED",
+    rarity: "CLOBBERED",
+    artist: "CLOBBERED",
+    tcgplayerPrices: { holofoil: { low: 300, mid: 450, high: 900, market: 420.5, directLow: null } },
+    tcgplayerUpdatedAt: "2026/07/14",
+    variants: [], // what a live SDK fetch always emits
+  } as unknown as CardMetadata;
+
+  const merged = overlayListedPrices(prior, fresh);
+
+  // The prices refreshed…
+  assert.equal(merged.tcgplayerPrices.holofoil.market, 420.5, "fresh prices must land");
+  assert.equal(merged.tcgplayerUpdatedAt, "2026/07/14", "the freshness stamp must land");
+  // …and NOTHING else moved.
+  assert.equal(merged.variants?.length, 2, "baked PokeTrace variants must survive a price refresh");
+  assert.equal(merged.name, "Charizard", "a price refresh must not touch metadata");
+  assert.equal(merged.rarity, "Rare Holo");
+  assert.equal(merged.artist, "Mitsuhiro Arita");
 });
 
 test("overlayFreshMetadata: net-new card passes through unchanged", () => {

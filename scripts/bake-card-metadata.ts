@@ -37,7 +37,7 @@ import { CARD_CATALOG } from "../lib/cards/catalog.ts";
 // snapshot ever committed (tsconfig excluded scripts/, so tsc never saw the
 // shape mismatch). Do not re-inline a parser here.
 import { parseCard, type CardMetadata, type RawCard, type SetMetadata } from "../lib/cards/sdk.ts";
-import { overlayFreshMetadata } from "../lib/cards/bake-merge.ts";
+import { overlayFreshMetadata, overlayListedPrices } from "../lib/cards/bake-merge.ts";
 import { createBakeCheckpoint } from "./bake-checkpoint.ts";
 
 const STATE_PATH = ".bake-cards-state.json";
@@ -48,6 +48,22 @@ const RESUME = process.argv.includes("--resume");
 // an incremental catalog expansion (avoids re-fetching ~1.2k already-baked cards
 // when the SDK is slow). Existing entries keep their full baked record.
 const ONLY_MISSING = process.argv.includes("--only-missing");
+// --refresh-prices: re-fetch already-baked cards and overlay ONLY their
+// TCGplayer listed-price fields (ADR-118 — those prices are now the card
+// page's fallback when the sold spine is dark, so they must not rot). Composes
+// with --only-missing: net-new cards bake fully, existing cards refresh prices.
+const REFRESH_PRICES = process.argv.includes("--refresh-prices");
+// --limit N: process only the first N catalog entries. A testing/debugging
+// affordance — the snapshot is seeded from the existing one, so a limited run
+// refreshes N cards and preserves every other entry untouched. Used to prove
+// the --refresh-prices path live without hammering pokemontcg.io with 3.2k
+// requests; also how you debug the weekly cron on one card.
+const LIMIT = (() => {
+  const i = process.argv.indexOf("--limit");
+  if (i < 0) return Infinity;
+  const n = Number(process.argv[i + 1]);
+  return Number.isFinite(n) && n > 0 ? n : Infinity;
+})();
 
 const POKEMON_TCG_API_BASE = "https://api.pokemontcg.io/v2/cards";
 const POKEMON_TCG_SETS_BASE = "https://api.pokemontcg.io/v2/sets";
@@ -202,6 +218,7 @@ async function main(): Promise<void> {
   let preserved = 0;
   let stillMissing = 0;
   let completed = 0;
+  let pricesRefreshed = 0;
   // IDs whose fresh fetch failed in the concurrent pass — retried
   // sequentially afterwards (same self-heal discipline as
   // scripts/expand-top5-per-set.ts; pokemontcg.io flaps under load).
@@ -232,6 +249,29 @@ async function main(): Promise<void> {
     if (checkpoint.shouldSkip(id)) {
       completed++;
       resumeSkipped++;
+      return;
+    }
+    // --refresh-prices: an already-baked card gets its TCGplayer LISTED prices
+    // re-fetched and overlaid (price fields ONLY — see overlayListedPrices).
+    // ADR-118 promoted those prices from decoration to the card page's fallback
+    // when the sold spine is dark, and --only-missing would otherwise freeze
+    // them at first-bake forever until they aged out of the freshness window.
+    // Ordered BEFORE the --only-missing skip so the two compose: net-new cards
+    // bake fully, existing cards refresh prices.
+    if (REFRESH_PRICES && existing.cards[id]) {
+      const fresh = await bakeCard(id);
+      completed++;
+      if (fresh) {
+        mergedCards[id] = overlayListedPrices(existing.cards[id], fresh);
+        pricesRefreshed++;
+        console.log(`  [${completed}/${CARD_CATALOG.length}] ${id} -> prices refreshed (${fresh.tcgplayerUpdatedAt || "no stamp"})`);
+      } else {
+        // Upstream failed: keep the prior entry untouched. A stale price that
+        // ages out renders as nothing (honest), never as a wrong number.
+        preserved++;
+        failedIds.push(id);
+        console.log(`  [${completed}/${CARD_CATALOG.length}] ${id} -> price refresh failed, preserving prior`);
+      }
       return;
     }
     // --only-missing: leave already-baked cards exactly as they are (metadata +
@@ -277,7 +317,7 @@ async function main(): Promise<void> {
   async function worker(): Promise<void> {
     while (true) {
       const idx = nextIdx++;
-      if (idx >= CARD_CATALOG.length) return;
+      if (idx >= Math.min(CARD_CATALOG.length, LIMIT)) return;
       await processOne(CARD_CATALOG[idx]);
     }
   }
@@ -294,6 +334,18 @@ async function main(): Promise<void> {
       const card = await bakeCard(id);
       if (card) {
         const hadPrior = Boolean(existing.cards[id]);
+        // The retry must honor the SAME overlay contract as the pass it's
+        // retrying. Under --refresh-prices an existing card gets the surgical
+        // price-only overlay here too — otherwise a card that merely failed
+        // once and recovered would silently receive a full metadata rewrite,
+        // which is wider than the "prices only" contract this mode promises.
+        if (REFRESH_PRICES && hadPrior) {
+          mergedCards[id] = overlayListedPrices(existing.cards[id], card);
+          pricesRefreshed++;
+          preserved--;
+          console.log(`  retry ${id} -> prices refreshed (${card.tcgplayerUpdatedAt || "no stamp"})`);
+          continue;
+        }
         mergedCards[id] = overlayFreshMetadata(existing.cards[id], card);
         baked++;
         if (hadPrior) preserved--;
@@ -317,6 +369,7 @@ async function main(): Promise<void> {
   console.log("");
   console.log(`Wrote ${OUTPUT_PATH} (${outputJson.length.toLocaleString()} bytes).`);
   console.log(`  fresh bakes this run:   ${baked}`);
+  if (REFRESH_PRICES) console.log(`  listed prices refreshed:${pricesRefreshed}`);
   console.log(`  preserved prior bakes:  ${preserved}`);
   console.log(`  still uncovered:        ${stillMissing}`);
   console.log(`  total card coverage:    ${Object.keys(mergedCards).length}/${CARD_CATALOG.length}`);
