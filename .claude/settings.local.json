@@ -335,7 +335,8 @@
       "Bash(CONTENT_VERIFY_BASE_URL=https://foiltcg.com node --test --experimental-strip-types \"lib/__tests__/content-marker-verification.test.ts\")",
       "Bash(sort -t- -k2 -n)",
       "Bash(echo \"exit=$?\")",
-      "Bash(tail *)"
+      "Bash(tail *)",
+      "Skill(watch)"
     ]
   },
   "enableAllProjectMcpServers": true,

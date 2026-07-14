@@ -83,3 +83,7 @@ docs/vending/source-pdfs/
 
 # QA tour recordings (large, never in git)
 design-loop/tour-videos/
+
+# Graphify codebase-graph output (generated, ~7.6MB — regenerate, never commit).
+# The .graphifyignore config IS committed so the scan is reproducible.
+graphify-out/

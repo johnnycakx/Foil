@@ -68,5 +68,6 @@ The product consequence (this is the biggest finding in the audit): **the binder
 
 ## Scoring history
 - **2026-07-13 (this audit): 2 / 3 / 2 / 5 / 3 / 6 — overall 3.5. Ads: NO.**
+- **2026-07-13 late (post `quality-bar-fixes`, merged `f90db64`, live-verified): 7 / 6 / 8 / 5 / 6 / 7 — overall ~6.5. Ads: NOT YET.** What moved: moonbreon + all marketing-taught queries resolve (pinned) · search local-first/instant, fail state converts to card_requests · pipeline verdict INVERTED (never dead; honest "refreshed <date>" stamp + 26h watchdog shipped; the stale layer is PokeTrace's vendor ingest) · catalog +1,363 cards, daily autonomous bake proven live · binder shows its brain per seat (the Collectr answer, on the wire) · market-temperature line live. **P0-2 correction (honesty owed): the renderer freezes were almost certainly the audit tooling (the browser extension froze on a blank page too); /start passes the new 200ms long-task harness at 57ms against live prod. Struck as a product defect; the harness stays as the regression gate.** Axes still under 7: task success (the /start IA flip is deferred — type-path still demoted), design craft (hero first-paint, desktop composition untouched), proof (no /alert-sample, no social proof, below-sold board = 1 deal today). Those are exactly audit items 6–9 + presale-ingest.
 
-Next re-score: after `docs/goals/quality-bar-fixes.md` closes.
+Next re-score: after the deferred-items beat (IA flip, hero first-paint, desktop composition, /alert-sample + naming) and `presale-ingest` close. Expectation: that clears the gate.

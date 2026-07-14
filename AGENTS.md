@@ -25,3 +25,13 @@ This rule exists because training data is stale, platforms change, and the cost 
 
 **For eBay specifically:** see [`docs/EBAY-COMPLIANCE.md`](docs/EBAY-COMPLIANCE.md) for the canonical requirement → enforcement → test map. Before touching any code path that calls `api.ebay.com`, constructs an affiliate URL, or persists Browse-related data, read that doc and run `npm run compliance:check`. The structural guards in [`lib/__tests__/ebay-compliance-invariants.test.ts`](lib/__tests__/ebay-compliance-invariants.test.ts) will fail the build on any regression — if they trip, treat that as a load-bearing signal that the change crosses a compliance boundary and update the doc + the test exception list deliberately, not by silencing.
 <!-- END:external-platform-rules -->
+
+<!-- BEGIN:ship-gate-rules -->
+# Ship gate: preview-first QA (2026-07-12)
+
+Merging to main requires a **toured Vercel preview**, not just green gates. The full process — flow, John's tour checklist, severity ladder, and the agent's obligations — is canonical in [`docs/QA-PREVIEW-PROCESS.md`](docs/QA-PREVIEW-PROCESS.md). The short form:
+
+branch + beats → gates → push + PR (with a change-specific, plain-words tour checklist in the body) → Vercel preview → **John tours on his phone** → findings triaged by severity → merge ONLY on John's explicit word → agent verifies prod and reports.
+
+Never merge, push to main, or promote to prod on your own initiative. Localhost demos are for mid-cycle feedback; the preview tour is the merge gate.
+<!-- END:ship-gate-rules -->
