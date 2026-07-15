@@ -50,6 +50,9 @@ export type CardMomentum = {
   /** (avg7d - avg30d) / avg30d * 100, rounded to 1 dp. Negative = trending down. */
   momentumPct: number;
   direction: MoverDirection;
+  /** The tier's most recent recorded sale — what these averages are true OF.
+   *  Distinct from the row's `computed_at` (when we cached it). */
+  soldAsOfIso: string;
 };
 
 /** Minimal daily snapshot row — the append-only time-series seed (per card per
@@ -190,6 +193,11 @@ export function classifyMomentum(stat: SoldStat | null, nowMs: number = Date.now
   saleCount: number;
   momentumPct: number;
   direction: MoverDirection;
+  /** The tier's most recent recorded sale — the date these averages are
+   *  actually true of. Carried (not dropped) so the alert email's evidence
+   *  line can date its comp; `computed_at` is when WE cached the row, which is
+   *  a different and much more flattering number (audit 2026-07-14). */
+  soldAsOfIso: string;
 } | null {
   if (!stat) return null;
   if (!isFreshStat(stat, nowMs)) return null;
@@ -206,7 +214,8 @@ export function classifyMomentum(stat: SoldStat | null, nowMs: number = Date.now
   let direction: MoverDirection = "flat";
   if (momentumPct <= MOVER_DOWN_THRESHOLD_PCT) direction = "down";
   else if (momentumPct >= MOVER_UP_THRESHOLD_PCT) direction = "up";
-  return { avg7d, avg30d, saleCount, momentumPct, direction };
+  // isFreshStat above already proved lastUpdated is a parseable non-null date.
+  return { avg7d, avg30d, saleCount, momentumPct, direction, soldAsOfIso: stat.lastUpdated ?? "" };
 }
 
 /** UTC YYYY-MM-DD for the snapshot date. */
@@ -330,6 +339,7 @@ export async function refreshMarketMovers(input: RefreshMoversInput): Promise<Re
       saleCount: classified.saleCount,
       momentumPct: classified.momentumPct,
       direction: classified.direction,
+      soldAsOfIso: classified.soldAsOfIso,
     });
     snapshots.push({
       cardSlug: entry.slug,

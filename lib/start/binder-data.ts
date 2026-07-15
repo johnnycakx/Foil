@@ -71,6 +71,7 @@ function snapshotDeck(): BinderCard[] {
       image: meta.image,
       soldCents: sold.soldCents,
       saleCount: sold.saleCount,
+      soldAsOf: sold.soldAsOf,
     });
   }
   return out.sort((a, b) => b.saleCount - a.saleCount);
@@ -83,7 +84,7 @@ async function moversDeck(): Promise<BinderCard[]> {
     const admin = supabaseAdmin();
     const { data, error } = await admin
       .from("market_movers")
-      .select("card_slug, card_name, set_name, image_url, avg30d, sale_count")
+      .select("card_slug, card_name, set_name, image_url, avg30d, sale_count, sold_as_of")
       .order("sale_count", { ascending: false })
       .limit(80);
     if (error || !data) return [];
@@ -96,6 +97,7 @@ async function moversDeck(): Promise<BinderCard[]> {
       image_url: string | null;
       avg30d: number | null;
       sale_count: number | null;
+      sold_as_of: string | null;
     }>) {
       const id = ids.get(row.card_slug);
       if (!id || !row.card_name || !row.image_url) continue;
@@ -116,6 +118,7 @@ async function moversDeck(): Promise<BinderCard[]> {
         image: row.image_url,
         soldCents: avg == null ? null : Math.round(avg * 100),
         saleCount: row.sale_count ?? 0,
+        soldAsOf: row.sold_as_of ?? null,
       });
     }
     return out;

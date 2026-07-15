@@ -9,6 +9,7 @@
 // Now the test runs the real parser over the real payload.
 
 import { z } from "zod";
+import { RAW_CONDITION_TOKENS } from "../cards/conditions.ts";
 
 export const cardSchema = z.object({
   pokemon_tcg_id: z.string().min(1).max(40),
@@ -17,6 +18,11 @@ export const cardSchema = z.object({
   set_id: z.string().min(1).max(40),
   number: z.string().min(1).max(20),
   target_price_cents: z.number().int().min(1).max(10_000_000).nullable().optional(),
+  /** Which condition the alert targets. The binder offers the RAW ladder only
+   *  (graded targeting lives on the card page); absent → the "any-raw" default.
+   *  This is what makes the binder deliver the condition-targeted alerts Pro is
+   *  sold on (audit 2026-07-14 — the route used to hardcode "any-raw"). */
+  condition: z.enum(RAW_CONDITION_TOKENS).optional(),
 });
 
 export const startSchema = z.object({

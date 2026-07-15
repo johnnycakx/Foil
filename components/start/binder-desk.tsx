@@ -45,6 +45,7 @@ import {
   type BinderCard,
   type Suggestion,
 } from "@/lib/start/binder";
+import { RAW_CONDITION_TOKENS, conditionLabel } from "@/lib/cards/conditions";
 import { BoosterPack } from "@/components/start/booster-pack";
 import { CardTypeahead, type CardSearchHit } from "@/components/cards/card-typeahead";
 import { PocketBrain } from "@/components/start/pocket-brain";
@@ -73,6 +74,8 @@ export function BinderDesk({
 }) {
   const [filled, setFilled] = useState<BinderCard[]>([]);
   const [targets, setTargets] = useState<Record<string, string>>({});
+  // Per-pocket condition target ("any-raw" default). See setCondition.
+  const [conditions, setConditions] = useState<Record<string, string>>({});
   // Foil writes the tag first (cycle 2): per-card pencil suggestions in cents,
   // and the cards where the collector has taken the pencil back.
   const [suggested, setSuggested] = useState<Record<string, number>>({});
@@ -206,6 +209,12 @@ export function BinderDesk({
   const setTarget = (id: string, value: string) =>
     setTargets((prev) => ({ ...prev, [id]: value }));
 
+  /** The condition each pocket's alert targets. Absent → "any-raw" (the honest
+   *  default: any raw copy). This is what lets the binder — the primary funnel —
+   *  actually deliver the condition-targeted alerts Pro is sold on. */
+  const setCondition = (id: string, token: string) =>
+    setConditions((prev) => ({ ...prev, [id]: token }));
+
   /** The collector takes the pencil: from here their tag is theirs — a late
    *  write timer must never overwrite a number a person just typed. */
   const takePencil = (id: string) => {
@@ -247,8 +256,11 @@ export function BinderDesk({
         setId: hit.setId,
         number: hit.number,
         image: hit.image,
+        // The typeahead has no sold read yet — soldLine renders its honest
+        // "no clean sold read" branch, so there is no figure to date.
         soldCents: null,
         saleCount: 0,
+        soldAsOf: null,
       },
     );
     setTypedOpen(false);
@@ -292,6 +304,8 @@ export function BinderDesk({
             number: c.number,
             // The collector's number, or exactly what Foil wrote, or NULL.
             target_price_cents: targetCentsFor(c),
+            // The condition the alert targets ("any-raw" unless they picked one).
+            condition: conditions[c.id] ?? "any-raw",
           })),
           src: utm.source || undefined,
           utm:
@@ -520,6 +534,26 @@ export function BinderDesk({
                           {tagLine(pocket.targetUsd)}
                         </p>
                       )}
+                      {/* Condition target (audit 2026-07-14): the binder can now
+                          deliver the condition-specific alerts Pro is sold on.
+                          Defaults to Any; the alert's identity gate holds the
+                          eBay listing to the picked grade. Raw ladder only —
+                          graded targeting stays on the card page. */}
+                      <label className="mt-1.5 flex items-center justify-center gap-1.5 text-[11px] text-foil-cream/50">
+                        <span className="sr-only">Condition to watch for {card.name}</span>
+                        <span aria-hidden>Condition</span>
+                        <select
+                          value={conditions[card.id] ?? "any-raw"}
+                          onChange={(e) => setCondition(card.id, e.target.value)}
+                          className="rounded border border-foil-cream/15 bg-foil-night px-1.5 py-0.5 text-[11px] text-foil-cream/80 outline-none focus-visible:ring-1 focus-visible:ring-foil-accent/40"
+                        >
+                          {RAW_CONDITION_TOKENS.map((t) => (
+                            <option key={t} value={t}>
+                              {t === "any-raw" ? "Any" : conditionLabel(t)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
                     </>
                   )}
                 </li>

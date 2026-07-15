@@ -128,8 +128,10 @@ export default async function VaultPage({
       const soldCents = soldBySlug.get(row.card_slug) ?? null;
       const effective = effectiveTargetCents(
         row.target_price_cents,
+        // Numeric use only (the alert floor) — no comp date is rendered on this
+        // surface, so null is honest rather than a dropped fact.
         soldCents
-          ? { avg30dCents: soldCents, saleCount: 0, tierLabel: "Near Mint", computedAt: "" }
+          ? { avg30dCents: soldCents, saleCount: 0, tierLabel: "Near Mint", computedAt: "", soldAsOfIso: null }
           : null,
         row.condition,
       );

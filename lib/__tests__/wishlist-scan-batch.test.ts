@@ -107,7 +107,7 @@ function fakeResolver(price: number): ScanWatchlistsInput["resolveListing"] {
 const NO_COMP: ScanWatchlistsInput["getSoldComp"] = async () => null;
 
 function comp(avg30dCents: number): SoldComp {
-  return { avg30dCents, saleCount: 12, tierLabel: "Near Mint", computedAt: NOW.toISOString() };
+  return { avg30dCents, saleCount: 12, tierLabel: "Near Mint", computedAt: NOW.toISOString(), soldAsOfIso: null };
 }
 
 function baseInput(over: Partial<ScanWatchlistsInput> = {}): ScanWatchlistsInput {
@@ -454,7 +454,10 @@ test("ACCEPTANCE: blank target alerts only at ≥15% under the 30-day sold avera
   );
   assert.equal(outUnder.alerted, 1);
   assert.match(sent[0].subject, /20% under what it usually sells for/);
-  assert.match(sent[0].html, /Usually sells for \$100\.00 \(Near Mint, last 30 days\)/);
+  // The evidence line names the tier and DATES the comp (audit 2026-07-14).
+  // This fixture's comp carries no sold_as_of, so it must disclose that rather
+  // than re-assert an undatable "last 30 days".
+  assert.match(sent[0].html, /Usually sells for \$100\.00 \(Near Mint, sale date unknown\)/);
   assert.doesNotMatch(sent[0].subject, /100000/, "the sentinel string must never render");
   assert.doesNotMatch(sent[0].html, /100000/);
 });

@@ -20,6 +20,7 @@ const COMP: SoldComp = {
   saleCount: 12,
   tierLabel: "Near Mint",
   computedAt: "2026-07-01T00:00:00Z",
+  soldAsOfIso: null,
 };
 
 test("constants: 15% blank-target discount, 5% re-arm hysteresis", () => {

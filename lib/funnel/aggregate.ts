@@ -61,3 +61,54 @@ export function summarizeSubscriptions(rows: SubRow[]): SubscriptionFunnel {
     trialToPaidPct: resolved > 0 ? (converted / resolved) * 100 : null,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Signal 0 — the visitor→trial STAGE funnel (funnel_events, audit 2026-07-14).
+// The gap the other three signals can't close: WHERE a visitor dropped between
+// landing and paying. This is owned first-party data, so unlike signup%/trial%
+// these are real counts we can act on — the missing middle of the funnel.
+// ---------------------------------------------------------------------------
+
+export type FunnelEventRow = {
+  stage: string;
+  utm_source: string | null;
+  occurred_at: string;
+};
+
+/** The stages in funnel order. A stage that never fired still appears (count 0)
+ *  so a hole reads as a hole, not as missing data. */
+export const FUNNEL_STAGE_ORDER = [
+  "card_view",
+  "watch_set",
+  "pro_view",
+  "checkout_start",
+  "trial_start",
+] as const;
+
+export type StageFunnel = {
+  stages: Array<{
+    stage: string;
+    count: number;
+    /** Percent of the PREVIOUS non-empty stage that reached this one. Null on
+     *  the first stage and whenever the prior stage had zero events (no honest
+     *  denominator — never renders a fake 0% or 100%). */
+    fromPrevPct: number | null;
+  }>;
+};
+
+/** Ordered stage counts + step-to-step conversion. Counts EVENTS, not unique
+ *  visitors — one visitor firing a stage twice counts twice (a deliberately
+ *  simple V1; dedup by visitor_id is a later refinement if volume warrants). */
+export function summarizeStageFunnel(rows: FunnelEventRow[]): StageFunnel {
+  const counts = new Map<string, number>();
+  for (const r of rows) counts.set(r.stage, (counts.get(r.stage) ?? 0) + 1);
+
+  let prevCount: number | null = null;
+  const stages = FUNNEL_STAGE_ORDER.map((stage) => {
+    const count = counts.get(stage) ?? 0;
+    const fromPrevPct = prevCount != null && prevCount > 0 ? (count / prevCount) * 100 : null;
+    prevCount = count;
+    return { stage, count, fromPrevPct };
+  });
+  return { stages };
+}

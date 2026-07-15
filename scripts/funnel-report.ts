@@ -18,7 +18,14 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
-import { tallyBy, summarizeSubscriptions, type SignupRow, type SubRow } from "../lib/funnel/aggregate.ts";
+import {
+  tallyBy,
+  summarizeSubscriptions,
+  summarizeStageFunnel,
+  type SignupRow,
+  type SubRow,
+  type FunnelEventRow,
+} from "../lib/funnel/aggregate.ts";
 
 const envPath = path.join(process.cwd(), ".env.local");
 if (fs.existsSync(envPath)) {
@@ -78,7 +85,32 @@ async function main(): Promise<void> {
   if (subErr) { console.error("[funnel] subscriptions query failed:", subErr.message); process.exit(1); }
   const subs = summarizeSubscriptions((subData ?? []) as SubRow[]);
 
+  // 0. The stage funnel (funnel_events) — WHERE visitors drop between landing
+  // and paying. Owned first-party data, so these are real, actionable counts.
+  // Degrades silently if the table isn't there yet (migration unapplied).
+  let stageRows: FunnelEventRow[] = [];
+  {
+    let fq = db.from("funnel_events").select("stage, utm_source, occurred_at");
+    if (since) fq = fq.gte("occurred_at", since);
+    const { data: fData, error: fErr } = await fq;
+    if (fErr) console.warn(`[funnel] funnel_events query failed (migration applied?): ${fErr.message}`);
+    else stageRows = (fData ?? []) as FunnelEventRow[];
+  }
+  const stageFunnel = summarizeStageFunnel(stageRows);
+
   console.log(`Validation funnel — ${days ? `last ${days}d` : "all-time"}`);
+
+  console.log(`\n════ Signal 0: visitor → trial stage funnel (WHERE do they drop?) ════`);
+  if (stageRows.length === 0) {
+    console.log("  (no funnel events yet — ad traffic not landed, or migration unapplied)");
+  } else {
+    const w = Math.max(...stageFunnel.stages.map((s) => s.stage.length));
+    for (const s of stageFunnel.stages) {
+      const step = s.fromPrevPct == null ? "" : `  (${s.fromPrevPct.toFixed(0)}% of prior stage)`;
+      console.log(`  ${s.stage.padEnd(w)}  ${String(s.count).padStart(5)}${step}`);
+    }
+    console.log("  (counts EVENTS, not unique visitors; card_view is attributed traffic only)");
+  }
   console.log(`\n════ Signal 1: email signups (offer compelling?) ════`);
   console.log(`Total signups: ${signups.length}${unsubscribedCount > 0 ? ` (${unsubscribedCount} later unsubscribed)` : ""}`);
   printTally("By utm_source (inbound channel):", tallyBy(signups, (r) => r.utm_source), signups.length);

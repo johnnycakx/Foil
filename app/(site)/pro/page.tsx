@@ -33,8 +33,12 @@
 // zero users and honesty is the moat), countdown urgency, unshipped-feature
 // promises.
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Image from "next/image";
 import { createCheckoutSession } from "@/app/upload/billing-actions";
+import { logFunnelEvent, hashVisitorId } from "@/lib/telemetry/funnel-events";
+import { clientIpKey } from "@/lib/start/guards";
+import { sanitizeUtmValue } from "@/lib/newsletter/subscribers";
 import { PRO_TRIAL_DAYS } from "@/lib/stripe";
 import { getSnapshotSold } from "@/lib/vault-seeds";
 import {
@@ -64,10 +68,16 @@ const FOUNDING_LINE =
   "$6 a month, locked. The price rises as Foil gets faster. Founding members keep their rate for life and get everything new first.";
 const FREE_CATCHER = "Not ready? Free fills a binder page (9 cards) and gets the weekly digest.";
 
-// V6.5 item 3, the value anchor: honest, specific, no bashing. Card Ladder
-// Pro is $20/mo (verified on their pricing page, 2026-07-12 research pass).
+// The value anchor (audit 2026-07-14 re-anchor). The old line compared Foil to
+// Card Ladder Pro ($20/mo) as "the nearest tool" — but Card Ladder is a
+// SPORTS-card tool, and in Pokémon the real field is free sold-price trackers
+// (PokePrices, CardVex) plus price GUIDES. "We show sold prices" is table
+// stakes there, not a differentiator. What none of them do is WATCH the market
+// and ping you on a real dip below what a card has been selling for — a buy
+// signal, not another chart. So the anchor sells the alert, not the data, and
+// cites no competitor price we can't verify (AGENTS.md external-facts rule).
 const ANCHOR_LINE =
-  "Card Ladder Pro, the nearest tool to this, runs $20 a month. Foil Pro is $6, and one avoided overpay pays for months of it.";
+  "Free trackers show you what a card sold for. Foil watches the market for you, and emails the moment a real listing dips under what it's been selling for. A buy signal, not another price chart. $6 a month, and one avoided overpay covers months of it.";
 
 // The comparison table (V6.5 item 1, the conversion engine). Rows state the
 // REAL tier split from lib/offer.ts — nothing invented. Register rule on
@@ -103,6 +113,9 @@ function specimenInputs(): AlertEmailInputs | null {
       saleCount: sold.saleCount,
       tierLabel: sold.tierLabel,
       computedAt: "",
+      // The sample alert must look like a REAL one — including its comp date,
+      // which the committed snapshot has carried all along.
+      soldAsOfIso: sold.soldAsOf,
     },
     cardPageUrl: `/cards/${SPECIMEN_SLUG}`,
     unsubscribeUrl: null,
@@ -154,6 +167,21 @@ export default async function ProPage({
   for (const k of ["utm_source", "utm_medium", "utm_campaign"] as const) {
     const v = pick(params[k]);
     if (v) attribution.push([k, v]);
+  }
+
+  // Funnel: pro_view. The intent gate of the whole funnel — fire-and-forget,
+  // never blocks the render. Skipped on the post-checkout success state below
+  // (that's a return, not a fresh view). See lib/telemetry/funnel-events.ts.
+  if (params.checkout !== "success") {
+    const hdrs = await headers();
+    void logFunnelEvent({
+      stage: "pro_view",
+      visitorId: hashVisitorId(clientIpKey(hdrs)),
+      // Sanitize on write (security-review 2026-07-14 consistency fix).
+      utmSource: sanitizeUtmValue(pick(params.utm_source)),
+      utmCampaign: sanitizeUtmValue(pick(params.utm_campaign)),
+      meta: { hook },
+    }).catch(() => {});
   }
 
   const h1 = hook === "drop" ? DROP_H1 : GRAIL_H1;

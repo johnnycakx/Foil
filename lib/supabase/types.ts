@@ -366,6 +366,36 @@ export type Database = {
         }>;
         Relationships: [];
       };
+      funnel_events: {
+        Row: {
+          id: number;
+          stage: "card_view" | "watch_set" | "pro_view" | "checkout_start" | "trial_start";
+          visitor_id: string | null;
+          utm_source: string | null;
+          utm_campaign: string | null;
+          meta: Record<string, unknown> | null;
+          occurred_at: string;
+        };
+        Insert: {
+          id?: number;
+          stage: "card_view" | "watch_set" | "pro_view" | "checkout_start" | "trial_start";
+          visitor_id?: string | null;
+          utm_source?: string | null;
+          utm_campaign?: string | null;
+          meta?: Record<string, unknown> | null;
+          occurred_at?: string;
+        };
+        Update: Partial<{
+          id: number;
+          stage: "card_view" | "watch_set" | "pro_view" | "checkout_start" | "trial_start";
+          visitor_id: string | null;
+          utm_source: string | null;
+          utm_campaign: string | null;
+          meta: Record<string, unknown> | null;
+          occurred_at: string;
+        }>;
+        Relationships: [];
+      };
       buy_signals: {
         Row: {
           card_slug: string;
@@ -418,6 +448,8 @@ export type Database = {
           sale_count: number;
           matched_tier: string;
           computed_at: string;
+          /** Migration 20260714120000 — the market's last trade, not our cache time. */
+          sold_as_of: string | null;
         };
         Insert: {
           card_slug: string;
@@ -431,6 +463,7 @@ export type Database = {
           sale_count?: number;
           matched_tier?: string;
           computed_at?: string;
+          sold_as_of?: string | null;
         };
         Update: Partial<{
           card_slug: string;
@@ -444,6 +477,7 @@ export type Database = {
           sale_count: number;
           matched_tier: string;
           computed_at: string;
+          sold_as_of: string | null;
         }>;
         Relationships: [];
       };

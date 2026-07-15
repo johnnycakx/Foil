@@ -22,6 +22,7 @@
 //     sentinel).
 
 import type { SoldComp } from "./alert-decision.ts";
+import { compAgeLabel } from "../cards/comp-age.ts";
 
 export type AlertEmailInputs = {
   cardName: string;
@@ -95,12 +96,21 @@ export function subjectLine(input: AlertEmailInputs): string {
 
 /** The trust payoff: cite the comp, or disclose its absence plainly.
  *  Register rule (2026-07-11): card-shop words — "usually sells for", not
- *  "30-day avg sold". Same claim, same figures. */
-export function evidenceLine(input: AlertEmailInputs): string {
+ *  "30-day avg sold". Same claim, same figures.
+ *
+ *  DATED (audit 2026-07-14). "Usually sells for $92.00 (Near Mint, last 30
+ *  days)" is a claim about a MOMENT, and it used to ship undated — so a comp
+ *  whose last real sale was five weeks ago read exactly like one from
+ *  yesterday. The evidence line is the paid product's core artifact; it is the
+ *  last place an undated number belongs. When the age is unknown we SAY so
+ *  rather than let the reader assume recency. */
+export function evidenceLine(input: AlertEmailInputs, nowMs: number = Date.now()): string {
   const pct = pctUnderAvg(input.currentPriceCents, input.comp);
   if (input.comp && pct != null) {
     const rel = pct >= 0 ? `${pct}% under` : `${Math.abs(pct)}% over`;
-    return `Usually sells for ${formatUsd(input.comp.avg30dCents)} (${input.comp.tierLabel}, last 30 days) · this listing: ${formatUsd(input.currentPriceCents)} (${rel})`;
+    const age = input.comp.soldAsOfIso ? compAgeLabel(input.comp.soldAsOfIso, nowMs) : null;
+    const dated = age ?? "sale date unknown";
+    return `Usually sells for ${formatUsd(input.comp.avg30dCents)} (${input.comp.tierLabel}, ${dated}) · this listing: ${formatUsd(input.currentPriceCents)} (${rel})`;
   }
   return `No recent sold data for this card. This alert is against your target only.`;
 }
