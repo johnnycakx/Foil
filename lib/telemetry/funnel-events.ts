@@ -35,20 +35,26 @@ export type LogFunnelEventInput = {
 };
 
 /**
- * One-way, non-reversible visitor id from the client IP. Keyed with a
- * server-side salt so a leaked table can't be dictionary-attacked back to IPs
- * (the lib/unsubscribe-token.ts / vault-token.ts crypto posture, hash form).
- * Returns null when the IP is unknown — an unattributable event, not a fake id.
+ * A PSEUDONYMOUS visitor id from the client IP — a coarse "same visitor across
+ * funnel stages" key, NOT anonymization. Be honest about the crypto (the whole
+ * point of this branch): IPv4 is only ~4.3B values and SHA-256 is cheap, so a
+ * reader who holds BOTH this table AND the salt can brute-force the id back to
+ * an IP. The salt is the one thing standing between a leaked table and that
+ * reversal, so it must be a real SECRET, and — following lib/vault-token.ts's
+ * fail-closed posture, NOT a source-visible constant — we return null without
+ * it rather than write a trivially-reversible id under a fake "anonymous" label.
  *
- * FUNNEL_VISITOR_SALT is optional: without it we fall back to a fixed build
- * constant so the hash is still stable and non-reversible-in-practice; set the
- * env var to rotate the visitor epoch or harden against IP dictionary attacks.
+ * Consequence: until FUNNEL_VISITOR_SALT is provisioned (see docs/ENV-VARS.md),
+ * visitor_id is null and the funnel still records stages + utm (the load-bearing
+ * attribution) — it just can't link a visitor across stages yet. Honest and
+ * safe beats linked-but-deanonymizable.
  */
-const SALT = process.env.FUNNEL_VISITOR_SALT ?? "foil-funnel.v1";
-
 export function hashVisitorId(ip: string | null | undefined): string | null {
-  if (!ip || ip === "unknown") return null;
-  return createHash("sha256").update(`${SALT}|${ip}`).digest("hex").slice(0, 32);
+  // Read at call time (not module load): fail-closed without the secret, and
+  // provisionable without a redeploy.
+  const salt = process.env.FUNNEL_VISITOR_SALT ?? null;
+  if (!salt || !ip || ip === "unknown") return null;
+  return createHash("sha256").update(`${salt}|${ip}`).digest("hex").slice(0, 32);
 }
 
 /**

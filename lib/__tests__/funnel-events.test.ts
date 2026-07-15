@@ -25,15 +25,27 @@ function fakeClient(mode: "ok" | "error" | "throw"): { client: SupabaseClient; c
   return { client, captured };
 }
 
-test("hashVisitorId: one-way, stable, and null for an unknown IP", () => {
-  const a = hashVisitorId("203.0.113.7");
-  const b = hashVisitorId("203.0.113.7");
-  assert.equal(a, b, "same IP → same id (stable within the salt epoch)");
-  assert.notEqual(a, "203.0.113.7", "the raw IP never appears in the id");
-  assert.ok(!a!.includes("203"), "no fragment of the IP survives");
-  assert.equal(hashVisitorId(null), null);
-  assert.equal(hashVisitorId("unknown"), null, "the clientIpKey sentinel is not a visitor");
-  assert.notEqual(hashVisitorId("203.0.113.7"), hashVisitorId("203.0.113.8"), "different IPs → different ids");
+test("hashVisitorId: FAILS CLOSED without the secret salt (security-review 2026-07-14)", () => {
+  // No salt → null, never a source-visible-constant-salted id that a leaked
+  // table could be brute-forced back to an IP (IPv4 is a small keyspace).
+  delete process.env.FUNNEL_VISITOR_SALT;
+  assert.equal(hashVisitorId("203.0.113.7"), null, "no salt → no id (fail closed, per vault-token.ts)");
+});
+
+test("hashVisitorId: salted → one-way, stable, and null for an unknown IP", () => {
+  process.env.FUNNEL_VISITOR_SALT = "test-secret-salt";
+  try {
+    const a = hashVisitorId("203.0.113.7");
+    const b = hashVisitorId("203.0.113.7");
+    assert.equal(a, b, "same IP → same id (stable within the salt epoch)");
+    assert.notEqual(a, "203.0.113.7", "the raw IP never appears in the id");
+    assert.ok(!a!.includes("203"), "no fragment of the IP survives");
+    assert.equal(hashVisitorId(null), null);
+    assert.equal(hashVisitorId("unknown"), null, "the clientIpKey sentinel is not a visitor");
+    assert.notEqual(hashVisitorId("203.0.113.7"), hashVisitorId("203.0.113.8"), "different IPs → different ids");
+  } finally {
+    delete process.env.FUNNEL_VISITOR_SALT;
+  }
 });
 
 test("logFunnelEvent: writes the shaped row on success", async () => {

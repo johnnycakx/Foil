@@ -38,6 +38,7 @@ import Image from "next/image";
 import { createCheckoutSession } from "@/app/upload/billing-actions";
 import { logFunnelEvent, hashVisitorId } from "@/lib/telemetry/funnel-events";
 import { clientIpKey } from "@/lib/start/guards";
+import { sanitizeUtmValue } from "@/lib/newsletter/subscribers";
 import { PRO_TRIAL_DAYS } from "@/lib/stripe";
 import { getSnapshotSold } from "@/lib/vault-seeds";
 import {
@@ -176,8 +177,9 @@ export default async function ProPage({
     void logFunnelEvent({
       stage: "pro_view",
       visitorId: hashVisitorId(clientIpKey(hdrs)),
-      utmSource: pick(params.utm_source) ?? null,
-      utmCampaign: pick(params.utm_campaign) ?? null,
+      // Sanitize on write (security-review 2026-07-14 consistency fix).
+      utmSource: sanitizeUtmValue(pick(params.utm_source)),
+      utmCampaign: sanitizeUtmValue(pick(params.utm_campaign)),
       meta: { hook },
     }).catch(() => {});
   }

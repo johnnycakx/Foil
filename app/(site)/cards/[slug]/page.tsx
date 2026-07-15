@@ -39,6 +39,7 @@ import { getHeroSoldStat } from "@/lib/cards/sold-headline";
 import { compAgeLabel } from "@/lib/cards/comp-age";
 import { logFunnelEvent, hashVisitorId } from "@/lib/telemetry/funnel-events";
 import { clientIpKey } from "@/lib/start/guards";
+import { sanitizeUtmValue } from "@/lib/newsletter/subscribers";
 import { resolveListedFallback } from "@/lib/pricing/listed-fallback";
 import { deriveAvailableVariants } from "@/lib/poketrace/variant";
 import { getHydratedVariants } from "@/lib/poketrace/hydration";
@@ -138,8 +139,11 @@ export default async function CardPage({
     void logFunnelEvent({
       stage: "card_view",
       visitorId: hashVisitorId(clientIpKey(hdrs)),
-      utmSource: utm_source ?? src ?? null,
-      utmCampaign: utm_campaign ?? null,
+      // Sanitize on write — same [a-z0-9-]{0,64} discipline as /api/start and
+      // billing-actions, so these GET-rendered sites can't push arbitrary
+      // strings into funnel_events (security-review 2026-07-14 consistency fix).
+      utmSource: sanitizeUtmValue(utm_source ?? src),
+      utmCampaign: sanitizeUtmValue(utm_campaign),
       meta: { slug },
     }).catch(() => {});
   }

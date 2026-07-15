@@ -11,12 +11,15 @@
 -- newsletter_subscribers / subscriptions in funnel-report.ts for a real
 -- visitor→trial diagnosis, with no third-party analytics SaaS.
 --
--- PII posture: NO raw email, NO raw IP. `visitor_id` is a SHA-256 hash of the
--- client IP (+ a server-side salt), one-way and non-reversible — same
--- discipline as browse_calls (operational metadata only). Attribution is the
--- ad-network utm_* the /pro CTA already threads. Service-role only: RLS enabled
--- with NO policies (same posture as browse_calls / card_requests); the app
--- writes through supabaseAdmin, nothing client-side reads or writes it.
+-- PII posture: NO raw email, NO raw IP. `visitor_id` is a SALTED SHA-256 of the
+-- client IP: PSEUDONYMOUS, not anonymous. IPv4 is a small keyspace, so it is
+-- reversible by anyone holding BOTH this table AND the salt. The salt is a
+-- required SECRET (FUNNEL_VISITOR_SALT); without it lib/telemetry/funnel-events.ts
+-- writes visitor_id = NULL rather than a trivially-reversible id (fail-closed,
+-- per lib/vault-token.ts). Treat visitor_id as PII-adjacent for retention.
+-- Attribution is the ad-network utm_* the /pro CTA already threads. Service-role
+-- only: RLS enabled with NO policies (same posture as browse_calls /
+-- card_requests); the app writes through supabaseAdmin, nothing client reads it.
 
 create table if not exists funnel_events (
   id bigint generated always as identity primary key,
