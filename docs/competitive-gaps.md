@@ -4,8 +4,9 @@ _Generated against 86 known Foil topics._
 
 ## https://pokescope.app/blog
 
-- Pokemon TCG Chaos Rising: Complete Guide, Top 10 Chase Cards &amp; Mega Greninja Prices (2026)
+- Pokemon TCG Pitch Black: Complete Guide, Top 10 Chase Cards &amp; Mega Darkrai Prices (2026)
 - All Articles
+- Pokemon TCG Chaos Rising: Complete Guide, Top 10 Chase Cards &amp; Mega Greninja Prices (2026)
 - Pokemon TCG Perfect Order: Complete Guide, Chase Cards &amp; Prices (2026)
 - Pokemon TCG Ascended Heroes: Complete Guide to 2026&#x27;s First &amp; Largest Set Ever
 - Logan Paul&#x27;s $12M Pikachu Illustrator Auction: The Most Valuable Pokemon Card Ever (2026)

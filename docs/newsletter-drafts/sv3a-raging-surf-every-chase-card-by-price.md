@@ -1,48 +1,56 @@
 ---
 blogSlug: "sv3a-raging-surf-every-chase-card-by-price"
-blogTitle: "sv3a Raging Surf Prices: Every Chase Card Ranked (2026)"
+blogTitle: "sv3a Raging Surf Prices: Every Chase Card Ranked"
 blogUrl: "https://foiltcg.com/blog/sv3a-raging-surf-every-chase-card-by-price"
-subject: "Garchomp ex SIR: raw vs PSA 10 math for sv3a"
-previewText: "The sv3a grading spread that makes PSA 9s worthless"
-wordCount: 556
-sourceWordCount: 1566
-generatedAt: "2026-07-20T15:57:18.096Z"
+subject: "Raging Surf SIRs: what they actually clear in 2026"
+previewText: "The sv3a card that makes grading math work"
+wordCount: 573
+sourceWordCount: 1582
+generatedAt: "2026-07-23T16:02:03.249Z"
 beehiivStatus: "deferred-manual-paste"
 subjectCandidates:
-  - "Garchomp ex SIR: raw vs PSA 10 math for sv3a"
-  - "The sv3a grading spread that makes PSA 9s worthless"
-  - "Raging Surf prices ranked, every chase card"
+  - "Raging Surf SIRs: what they actually clear in 2026"
+  - "The sv3a card that makes grading math work"
+  - "sv3a Raging Surf prices, ranked by chase tier"
 topicRationale: |
   Selected from the **japanese pokemon cards value** pillar (URL: /japanese-pokemon-cards-value). This was rank #3 of 11 cluster posts in that pillar; 9 remain unshipped after this one. Tied at rank 3 with the **pokemon-card-condition-guide, pokemon-card-value-calculator** pillar(s) — broke ties by alphabetical pillar slug (per pickNextCandidate). Long-tail keywords from the strategy doc: sv3a raging surf prices..
 ---
 
 ## Newsletter body (paste-ready)
 
-**Subject:** Garchomp ex SIR: raw vs PSA 10 math for sv3a
-**Preview text:** The sv3a grading spread that makes PSA 9s worthless
+**Subject:** Raging Surf SIRs: what they actually clear in 2026
+**Preview text:** The sv3a card that makes grading math work
 
 ---
 
-<p>A raw Garchomp ex SIR from sv3a Raging Surf is trading between $45 and $65 on TCGplayer right now. The PSA 10 of that same card has cleared $130 to $160 at auction. That spread is the entire thesis of this set.</p>
+<p>The Garchomp ex SIR from sv3a Raging Surf has raw copies closing between $90 and $120 on eBay and PSA 10s clearing $280 to $340. That spread is the widest in the set, and it's the only card in Raging Surf where the grading math is straightforwardly positive.</p>
 
-<p>Raging Surf is a compact Japanese set with a 71-card base and exactly 10 over-number chase cards. Every premium card sits in the 072/071 through 081/071 range. That structure makes it unusually clean to analyze: you either own something in that band, or you don't. The price table doesn't lie.</p>
+<p>New post is up walking through every chase card in sv3a, ranked by 2026 price. Here's what you need before you check any of those numbers.</p>
 
-<h2>The two cards doing the work</h2>
+<h2>The three-field read</h2>
 
-<p><strong>Garchomp ex SIR (081/071)</strong> is the set anchor. Raw copies are in the $45-$65 range. PSA 10 has run $80 to $100 over a solid raw copy historically, enough margin to justify a standard-tier submission if you can source a centering-clean copy below $50. The PSA grading fee at standard tier is approximately $25 per card, so the math holds, but only if you're playing for a 10. A PSA 9 Garchomp ex SIR trades in the $55-$75 range, which overlaps with raw value after fees. PSA 9s on this card are essentially a break-even outcome at best.</p>
+<p>sv3a has standard cards numbered up to 066 and over-numbered SIRs and Art Rares running from 067 through 090. Name alone doesn't tell you which you have. A standard Garchomp ex holo and the SIR share a name and similar artwork at a glance. The SIR is 086/066. If your card reads at or below 066, it's a standard card. Chase value lives entirely in the over-numbered slots.</p>
 
-<p><strong>Palafin ex SIR (080/071)</strong> gets far less YouTube oxygen but has held its raw price in the $30-$50 range without significant bleed through 2025 and into 2026. PSA 10 copies have sold in the $90-$120 band. Palafin also has a cleaner centering profile than Garchomp ex SIR on average, which matters when you're deciding whether a raw copy is worth submitting.</p>
+<p>The post flags a specific confusion point worth knowing now: the Pidgeot ex AR and the Pidgeot ex SIR get mixed up constantly by sellers listing by artwork. The AR trades around $15 to $22 raw. The SIR sits at $25 to $40 raw. If you buy what's listed as an AR expecting an SIR, you've already lost $10 to $20 before the card ships. Collector number is the only clean fix: AR lives in the 068 to 075 range, SIR is 082.</p>
 
-<h2>The supporting cast</h2>
+<h2>Where the other SIRs sit</h2>
 
-<p>Below the SIRs, the Garchomp ex SAR (078/071) runs $18-$28 raw with PSA 10 in the $55-$75 range. Cynthia Full Art (074/071) is $10-$16 raw. The grading math on Cynthia is marginal: a $13 raw submitted at $25 needs a PSA 10 at $55 or better to clear costs. Trainer Full Arts from this set have graded more consistently than the ex SIRs, so the population of PSA 10s is thinner than you'd expect. PSA 9 Cynthia copies have sold in the $28-$38 range, which can still clear costs if the raw was sourced cheaply. That's the exception in this set, not the rule.</p>
+<p>Below Garchomp, the SIR tier looks like this as of July 2026:</p>
 
-<h2>Why these prices are rational</h2>
+<p><strong>Iono SIR (084/066):</strong> Raw copies in the $70 to $100 range. PSA 10s have cleared $200 to $260. The raw-to-graded spread is narrower than Garchomp, which signals the grading demand here is more speculative than arbitrage-driven. Two separate buyer pools, competitive players and character collectors, are holding the floor.</p>
 
-<p>Creator mention counts for Garchomp ex SIR sit at 9 across tracked channels as of July 2026. Moonbreon pulled 46 mentions across the same channels in the same window. Low mention counts are a stabilizing signal: these prices aren't running on hype. The PSA 30th anniversary discussion is pulling collector attention elsewhere, which is part of why sv3a raw prices have stayed fair. If you prefer buying at rational prices rather than chasing sentiment, this set is worth your attention right now.</p>
+<p><strong>Mew ex SIR (081/066):</strong> Raw sits around $40 to $65. PSA 10s have sold in the $130 to $180 range. PSA submission fees run $25 to $50 per card at Regular tier in 2026, which means the Mew grading economics only work at the high end of that graded range. The margin is tight enough that surface condition and centering confidence need to be high before you submit.</p>
 
-<p>One identification note before you buy: the collector number in the bottom-left corner is the only reliable check. Garchomp ex SIR is <strong>081/071</strong>. Garchomp ex standard rare is <strong>060/071</strong>. Same Pokémon, roughly $45 price difference. Pricing by artwork alone is how mistakes happen.</p>
+<p><strong>Pidgeot ex SIR (082/066) and Lugia ex SIR (083/066)</strong> anchor the bottom of the SIR tier. Both trade below $40 raw and below $130 at PSA 10. Grade these only if you're holding multi-year.</p>
 
-<p>The full post has the complete chase card table, sealed box EV analysis, and grading ladder notes for every card in the set. <a href="/blog/sv3a-raging-surf-every-chase-card-by-price">Read the full post →</a></p>
+<h2>Box context</h2>
 
-<p>If you have sv3a cards sitting in a binder and you're not sure where they land, the scanner resolves name plus collector number automatically, no manual lookup required. <a href="https://foiltcg.com/upload">Try Foil free →</a></p>
+<p>Sealed sv3a boxes have been listed between $70 and $115 on TCGplayer as of mid-2026. That range compresses the expected value math significantly compared to where boxes were at launch. The post covers sealed versus singles expected value if you're trying to decide which side of that trade makes sense for your position.</p>
+
+<p>One thing the post notes that's worth sitting with: Foil's scan data for sv3a is thin right now. Collector interest has shifted toward grading existing copies rather than opening new product. That's consistent with a set in the recovery phase of its price curve, and it's a reasonable read on where sv3a stands in 2026.</p>
+
+<p><a href="/blog/sv3a-raging-surf-every-chase-card-by-price">Read the full post →</a></p>
+
+<p>If you're holding sv3a cards and want a faster read than manually cross-referencing eBay sold listings, Foil pulls name, set code, and collector number off a photo and returns eBay comps, TCGplayer market price, and the PriceCharting graded ladder in one step. That identification layer is what separates a confident price check from a guess based on artwork.</p>
+
+<p><a href="https://foiltcg.com/upload">Try Foil free →</a></p>
