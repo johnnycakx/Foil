@@ -1,32 +1,73 @@
-# Internal link suggestions for How Vending Machine Revenue-Share Hosting Works for Bay Area Businesses
+# Internal link suggestions for eBay Sold vs TCGplayer Market Price: Which Is Real?
 
-Target: `/blog/how-vending-machine-revenue-share-hosting-works`
+Target: `/blog/ebay-sold-averages-vs-tcgplayer-market-which-price-is-the-real-one`
 
-## Existing posts that should link IN (1)
+## Existing posts that should link IN (6)
 
-### Pokémon Card Vending Machine Placement in Napa, CA
-- **File:** `app/(site)/blog/posts/pokemon-card-vending-machine-placement-in-napa.mdx`
-- **Anchor:** vending machine revenue share
-- **Target:** `/blog/how-vending-machine-revenue-share-hosting-works`
-- **Matched phrase:** `Pokémon card vending machine`
-- **Context:** > Most vending placement conversations center on snacks and drinks. This one is different. A Pokémon card vending machine is a specialty retail amenity, not a food service. It occupies roughly 3 to 4 sq
+### How Much Is My Pokémon Card Worth? A 60-Second Checklist
+- **File:** `app/(site)/blog/posts/how-much-is-my-pokemon-card-worth-a-60-second-checklist.mdx`
+- **Anchor:** ebay sold vs tcgplayer market price.
+- **Target:** `/blog/ebay-sold-averages-vs-tcgplayer-market-which-price-is-the-real-one`
+- **Matched phrase:** `eBay`
+- **Context:** > A raw Charizard ex from Obsidian Flames sold for $47 on eBay last week. The same card in a PSA 10 slab moved for $210. If you don't know which version you're holding, or whether your card is even from
 
-## Pillars and clusters the new post should link OUT to (3)
+### How to Read a Japanese Pokémon Card (English Guide)
+- **File:** `app/(site)/blog/posts/how-to-read-a-japanese-pokemon-card.mdx`
+- **Anchor:** ebay sold vs tcgplayer market price.
+- **Target:** `/blog/ebay-sold-averages-vs-tcgplayer-market-which-price-is-the-real-one`
+- **Matched phrase:** `pricing`
+- **Context:** > Pack-kingdom.com covers rarity symbols briefly. Here's the complete breakdown with 2026-relevant pricing context.
 
-### → Is a Trading Card Vending Machine Worth It for a Gas Station?
-- **Target:** `/blog/is-a-trading-card-vending-machine-worth-it-for-a-gas-station`
-- **Anchor:** vending machine for gas station
-- **Matched phrase:** `Bay Area`
-- **Context:** > If you own or run a business in the Bay Area and you have a few spare square feet of floor or wall space, this is the full picture of how the model works, what you are responsible for, and what you ar
+### Is a Trading Card Vending Machine Worth It for a Gas Station?
+- **File:** `app/(site)/blog/posts/is-a-trading-card-vending-machine-worth-it-for-a-gas-station.mdx`
+- **Anchor:** ebay sold vs tcgplayer market price.
+- **Target:** `/blog/ebay-sold-averages-vs-tcgplayer-market-which-price-is-the-real-one`
+- **Matched phrase:** `selling`
+- **Context:** > In 2026, Pokémon remains one of the best-selling trading card games in the world, and the majority of that spending comes from adult collectors and players, not children. That changes the calculus for
 
-### → Pokémon Card Vending Machine Placement in Napa, CA
-- **Target:** `/blog/pokemon-card-vending-machine-placement-in-napa`
-- **Anchor:** napa vending machine placement
-- **Matched phrase:** `Napa`
-- **Context:** > The locations where this model works best share one trait: people who are already waiting, browsing, or spending time. A barbershop in Vallejo, a laundromat in Fairfield, a brewery taproom in Napa, an
+### Japanese SAR vs English SIR Pokémon: Which Is Worth More?
+- **File:** `app/(site)/blog/posts/japanese-sar-vs-english-special-illustration-rare.mdx`
+- **Anchor:** ebay sold vs tcgplayer market price.
+- **Target:** `/blog/ebay-sold-averages-vs-tcgplayer-market-which-price-is-the-real-one`
+- **Matched phrase:** `eBay`
+- **Context:** > A Japanese SAR of the same character typically sells for 15–40% more than its English SIR counterpart on eBay sold listings as of mid-2026, but that premium is card-dependent, grade-dependent, and shr
+
+### Near Mint vs Lightly Played Pokémon: The Condition Gap That Doubles Card Prices
+- **File:** `app/(site)/blog/posts/near-mint-vs-lightly-played-the-difference-that-doubles-a-card-s-price.mdx`
+- **Anchor:** ebay sold vs tcgplayer market price.
+- **Target:** `/blog/ebay-sold-averages-vs-tcgplayer-market-which-price-is-the-real-one`
+- **Matched phrase:** `pricing`
+- **Context:** > If you're pricing raw cards to sell or deciding whether to submit for grading, getting this wrong costs real money. The top results on this topic (TCGplayer's conditioning overview, PokeScope's condit
+
+### PSA 9 vs PSA 10 Pokémon: Is the $200 Grading Jump Worth It?
+- **File:** `app/(site)/blog/posts/psa-9-vs-psa-10-is-the-200-grading-jump-worth-it.mdx`
+- **Anchor:** ebay sold vs tcgplayer market price.
+- **Target:** `/blog/ebay-sold-averages-vs-tcgplayer-market-which-price-is-the-real-one`
+- **Matched phrase:** `pricing`
+- **Context:** > PSA's standard tier pricing as of 2026 sits at $25 per card for the economy tier (cards valued under $499). That means for a modern SIR with a raw value around $120, you're paying $25 to find out if y
+
+## Pillars and clusters the new post should link OUT to (4)
+
+### → How Much Is My Pokémon Card Worth? A 60-Second Checklist
+- **Target:** `/blog/how-much-is-my-pokemon-card-worth-a-60-second-checklist`
+- **Anchor:** how much is my pokemon card worth
+- **Matched phrase:** `TCGplayer`
+- **Context:** > The "real" price of a Pokémon card is the number a stranger paid for it yesterday, not the number a seller hopes to get today. That distinction separates eBay sold averages from TCGplayer market price
+
+### → Japanese SAR vs English SIR Pokémon: Which Is Worth More?
+- **Target:** `/blog/japanese-sar-vs-english-special-illustration-rare`
+- **Anchor:** japanese sar vs english sir pokemon.
+- **Matched phrase:** `Special Illustration Rare`
+- **Context:** > TCGplayer's slab marketplace exists but is thin compared to eBay. For PSA 10 copies of anything meaningful, eBay sold is the only data source with enough volume to price confidently. A PSA 10 Charizar
+
+### → Near Mint vs Lightly Played Pokémon: The Condition Gap That Doubles Card Prices
+- **Target:** `/blog/near-mint-vs-lightly-played-the-difference-that-doubles-a-card-s-price`
+- **Anchor:** near mint vs lightly played pokemon.
+- **Matched phrase:** `TCGplayer`
+- **Context:** > The "real" price of a Pokémon card is the number a stranger paid for it yesterday, not the number a seller hopes to get today. That distinction separates eBay sold averages from TCGplayer market price
 
 ### → PSA 9 vs PSA 10 Pokémon: Is the $200 Grading Jump Worth It?
 - **Target:** `/blog/psa-9-vs-psa-10-is-the-200-grading-jump-worth-it`
 - **Anchor:** psa 9 vs psa 10 pokemon worth.
-- **Matched phrase:** `card values`
-- **Context:** > You will not be fielding customer questions about pack prices or card values. You will not be approving refunds. You will not be calling us to report that the machine is empty. All of that is our oper
+- **Matched phrase:** `PSA`
+- **Context:** > TCGplayer's slab marketplace exists but is thin compared to eBay. For PSA 10 copies of anything meaningful, eBay sold is the only data source with enough volume to price confidently. A PSA 10 Charizar

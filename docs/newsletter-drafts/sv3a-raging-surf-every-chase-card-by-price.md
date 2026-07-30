@@ -1,42 +1,54 @@
 ---
 blogSlug: "sv3a-raging-surf-every-chase-card-by-price"
-blogTitle: "sv3a Raging Surf Prices: Every Chase Card Ranked (2026)"
+blogTitle: "sv3a Raging Surf Prices: Every Chase Card Ranked"
 blogUrl: "https://foiltcg.com/blog/sv3a-raging-surf-every-chase-card-by-price"
-subject: "Garchomp ex SIR: $90-$130 raw, $300+ graded"
-previewText: "sv3a Raging Surf: every chase card ranked by price"
-wordCount: 511
-sourceWordCount: 1518
-generatedAt: "2026-07-27T16:29:37.289Z"
+subject: "Garchomp ex SIR: the grading math in 2026"
+previewText: "sv3a Raging Surf chase card prices, ranked"
+wordCount: 580
+sourceWordCount: 1537
+generatedAt: "2026-07-30T16:00:04.778Z"
 beehiivStatus: "deferred-manual-paste"
 subjectCandidates:
-  - "Garchomp ex SIR: $90-$130 raw, $300+ graded"
-  - "sv3a Raging Surf: every chase card ranked by price"
-  - "The collector number check that prevents bad buys"
+  - "Garchomp ex SIR: the grading math in 2026"
+  - "sv3a Raging Surf chase card prices, ranked"
+  - "When a $70 box beats cracking packs on sv3a"
 topicRationale: |
   Selected from the **japanese pokemon cards value** pillar (URL: /japanese-pokemon-cards-value). This was rank #3 of 11 cluster posts in that pillar; 9 remain unshipped after this one. Tied at rank 3 with the **pokemon-card-condition-guide, pokemon-card-value-calculator** pillar(s) — broke ties by alphabetical pillar slug (per pickNextCandidate). Long-tail keywords from the strategy doc: sv3a raging surf prices..
 ---
 
 ## Newsletter body (paste-ready)
 
-**Subject:** Garchomp ex SIR: $90-$130 raw, $300+ graded
-**Preview text:** sv3a Raging Surf: every chase card ranked by price
+**Subject:** Garchomp ex SIR: the grading math in 2026
+**Preview text:** sv3a Raging Surf chase card prices, ranked
 
 ---
 
-<p>The most expensive card in sv3a Raging Surf is the Garchomp ex SIR (083/066), trading $90-$130 raw and climbing past $300 in PSA 10. If you're holding one and aren't certain of the collector number, that uncertainty is costing you before you've listed it.</p>
+<p>A raw Garchomp ex SIR from sv3a will cost you $80 to $120 right now depending on condition. A PSA 10 of the same card has cleared $200 to $250 at auction. That spread is the entire decision.</p>
 
-<p>Raging Surf shipped in Japan in September 2023 and never got an English equivalent. Three years later the SIR lineup is still tight and collector demand is consistent. The set has four Special Illustration Rares: Garchomp ex at the top, then Mew ex ($55-$80 raw), Lugia ex ($45-$70 raw), and Ting-Lu ex ($28-$45 raw). That's a clean price ladder, and each slot has a specific collector number that confirms you have the right variant. Garchomp ex SIR is 083/066. If the card says Garchomp ex and the number isn't 083/066, you have a cheaper card.</p>
+<p>The new post on the Foil blog breaks down every chase card in sv3a Raging Surf by current 2026 price, with grading math and sealed product context that actually changes how you should be approaching the set. Here's the short version.</p>
 
-<p>The Ting-Lu ex SIR (086/066) is the one to watch on resale platforms. It regularly gets listed without the SIR designation. The standard Ting-Lu ex RR is worth well under $10 raw. Confirm 086/066 before paying SIR prices.</p>
+<h2>The Garchomp ex SIR grading question</h2>
 
-<p>Below the SIR tier, the Garchomp ex IR (080/066) at $18-$30 is the set's best volume mover for storefront sellers. Low enough that buyers don't hesitate, enough demand that NM copies at the low end of market range move faster than holding for ceiling bids. The Crispin Trainer AR (079/066) sits in the $8-$14 range and gets slept on more than it should given the illustration quality.</p>
+<p>PSA standard service runs approximately $25 to $30 per card in 2026. Buy a raw copy at $90, pay $28 to grade, and you're in at $118 before you know the result. A PSA 9 typically clears $130 to $155 on Garchomp ex SIR. That's a thin margin. The PSA 10 at $220 to $250 is where the upside lives, but sv3a Japanese SIR cards are not easy grades. The holo layers pick up scratches in shipping. Pack-fresh does not mean gem.</p>
 
-<p>On sealed product: booster boxes are ranging $70-$115 on TCGplayer completed listings. The math on cracking doesn't work at current singles prices. One SIR per box on average means you're paying box cost for a single SIR pull plus bulk. The Garchomp ex SIR raw at $90-$130 makes cracking close to breakeven on a good pull and a loss on anything else. Buy singles.</p>
+<p>The PSA 10 premium on Garchomp ex SIR is currently in the 2x to 2.5x range over raw NM. Across Japanese SV-era SIRs historically, that premium compresses toward 1.5x to 1.8x as population grows. If you're buying PSA 10s expecting that premium to hold, you're making a specific bet on stagnant submission volume. Know what you're betting on.</p>
 
-<p>For grading decisions, Garchomp ex SIR is the only card in the set with a clear positive expected value on a PSA submission at current fee levels. The PSA 10 range is $280-$340 against a raw cost of $90-$130, and PSA's standard value tier fee starts at $25 per card. Everything else in sv3a is a closer call or worse.</p>
+<h2>Palafin ex SIR is the better risk-adjusted target</h2>
 
-<p>The identification problem is where most buyers leave money on the table. A search for "Garchomp ex" across PriceCharting, Pokellector, or TCGplayer returns results from multiple sets and rarities with prices ranging from $3 to $300 or more. Those tools require you to already know which variant you have. The correct method is name, set code (sv3a), and collector number off the physical card, in that order. Artwork alone will get you into trouble.</p>
+<p>Palafin ex SIR (073/086) trades at roughly 60 cents on the dollar relative to Garchomp at the raw level, with NM copies moving $30 to $50 in 2026. Lower entry, PSA 10 pop that isn't dramatically higher than Garchomp's, and real upside asymmetry if Palafin ever sees competitive play. The post makes the case that character fixation on Garchomp is suppressing attention on the second SIR in a way that creates an entry point.</p>
 
-<p>The full breakdown covers every price tier in the set, the PSA population context, where sv3a sits relative to the broader Japanese SV market right now, and the grading math card by card. <a href="/blog/sv3a-raging-surf-every-chase-card-by-price">Read the full post →</a></p>
+<h2>Trainer SARs: don't grade these speculatively</h2>
 
-<p>If you have sv3a cards in hand and want to skip the manual lookup entirely, Foil reads name, set code, and collector number directly from a photo. <a href="https://foiltcg.com/upload">Try Foil free →</a></p>
+<p>Misty's Pokémon Research SAR trades $25 to $45 raw. Arven SAR sits $20 to $35. Neither is a grading target unless you have strong conviction on a PSA 10 result. On a $35 raw card, the grade premium is narrow once fees are in. The cleaner play: buy graded if you want slabbed, hold raw if you're collecting.</p>
+
+<h2>The sealed box math has shifted</h2>
+
+<p>Sealed sv3a booster boxes were listed as low as $69.99 on TCGplayer as of mid-2026. When boxes are under $75, the EV on cracking versus buying singles changes materially. The SIR pull rate on sv3a is approximately 1 in 6 to 1 in 10 boxes depending on lot reports. A single Garchomp ex SIR pull at $80 to $100 represents more than the cost of a full box, but the odds don't support cracking at current prices. Buying singles is the mathematically sound call here.</p>
+
+<h2>One thing to check before you list anything</h2>
+
+<p>Garchomp appears in multiple slots across sv3a: standard rare, IR (#068), and SIR (#072). Mislabeling collector numbers is one of the more common errors on this set. A #068 and a #072 are different products at meaningfully different prices. Read name + sv3a set code + exact collector number together before you price or list anything.</p>
+
+<p><a href="/blog/sv3a-raging-surf-every-chase-card-by-price">Read the full post →</a></p>
+
+<p>If you're sitting on sv3a singles and want to check your prices against live 2026 completed sales rather than stale catalog data, Foil reads the collector number directly off a card photo and pulls eBay sold, TCGplayer market, and PriceCharting graded results in one view. <a href="https://foiltcg.com/upload">Try Foil free →</a></p>
