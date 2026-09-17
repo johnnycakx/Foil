@@ -1,5 +1,5 @@
 {
-  "bakedAt": "2026-09-16T12:39:20.776Z",
+  "bakedAt": "2026-09-17T12:41:37.194Z",
   "cards": {
     "base1-2": {
       "id": "base1-2",
@@ -192365,6 +192365,7419 @@
       "tcgplayerPrices": {},
       "tcgplayerUpdatedAt": "",
       "variants": []
+    },
+    "me55-5": {
+      "id": "me55-5",
+      "name": "Tropius",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "5",
+      "image": "https://images.scrydex.com/pokemon/me55-5/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Grass"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "120",
+      "artist": "Minahamu",
+      "attacks": [
+        {
+          "name": "Rally Back",
+          "damage": "30+",
+          "cost": [
+            "Grass",
+            "Colorless"
+          ],
+          "text": "If any of your Pokémon were Knocked Out by damage from an attack during your opponent's last turn, this attack does 90 more damage."
+        },
+        {
+          "name": "Cutting Wind",
+          "damage": "90",
+          "cost": [
+            "Grass",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-4": {
+      "id": "me55-4",
+      "name": "Illumise",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "4",
+      "image": "https://images.scrydex.com/pokemon/me55-4/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Grass"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "80",
+      "artist": "Shibuzoh.",
+      "attacks": [
+        {
+          "name": "Ram",
+          "damage": "30",
+          "cost": [
+            "Grass",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-1": {
+      "id": "me55-1",
+      "name": "Exeggcute",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "1",
+      "image": "https://images.scrydex.com/pokemon/me55-1/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Grass"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "Nelnal",
+      "attacks": [
+        {
+          "name": "Hypnosis",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Your opponent's Active Pokémon is now Asleep."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-2": {
+      "id": "me55-2",
+      "name": "Alolan Exeggutor",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "2",
+      "image": "https://images.scrydex.com/pokemon/me55-2/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Grass"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "150",
+      "artist": "Oswaldo KATO",
+      "attacks": [
+        {
+          "name": "Mega Drain",
+          "damage": "150",
+          "cost": [
+            "Grass",
+            "Colorless",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "Heal 50 damage from this Pokémon"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-11": {
+      "id": "me55-11",
+      "name": "Moltres",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "11",
+      "image": "https://images.scrydex.com/pokemon/me55-11/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Fire"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "120",
+      "artist": "HYOGONOSUKE",
+      "attacks": [
+        {
+          "name": "Fire Spin",
+          "damage": "130",
+          "cost": [
+            "Fire",
+            "Fire",
+            "Colorless"
+          ],
+          "text": "Discard 2 Energy from this Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Water",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-8": {
+      "id": "me55-8",
+      "name": "Vivillon",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "8",
+      "image": "https://images.scrydex.com/pokemon/me55-8/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Grass"
+      ],
+      "subtypes": [
+        "Stage 2"
+      ],
+      "hp": "120",
+      "artist": "Jerky",
+      "attacks": [
+        {
+          "name": "Poison Powder",
+          "damage": "60",
+          "cost": [
+            "Grass",
+            "Colorless"
+          ],
+          "text": "Your opponent's Active Pokémon is now Poisoned."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-12": {
+      "id": "me55-12",
+      "name": "Ho-Oh",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "12",
+      "image": "https://images.scrydex.com/pokemon/me55-12/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Fire"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "130",
+      "artist": "Anesaki Dynamic",
+      "attacks": [
+        {
+          "name": "Sacred Breath",
+          "damage": null,
+          "cost": [
+            "Fire",
+            "Fire"
+          ],
+          "text": "Discard all Energy from this Pokémon. Heal all damage from 1 of your Benched Pokémon."
+        },
+        {
+          "name": "Fire Wing",
+          "damage": "100",
+          "cost": [
+            "Fire",
+            "Fire",
+            "Fire"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Water",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-13": {
+      "id": "me55-13",
+      "name": "Victini",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "13",
+      "image": "https://images.scrydex.com/pokemon/me55-13/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Fire"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "80",
+      "artist": "Jiro Sasumo",
+      "attacks": [
+        {
+          "name": "Call for Family",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Search your deck for up to 2 Basic Pokémon and put them onto your Bench. Then, shuffle your deck."
+        },
+        {
+          "name": "V-Flame",
+          "damage": "50",
+          "cost": [
+            "Fire",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Water",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-15": {
+      "id": "me55-15",
+      "name": "Fuecoco ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "15",
+      "image": "https://images.scrydex.com/pokemon/me55-15/large",
+      "rarity": "Double Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Fire"
+      ],
+      "subtypes": [
+        "Basic",
+        "ex"
+      ],
+      "hp": "210",
+      "artist": "5ban Graphics",
+      "attacks": [
+        {
+          "name": "Singe",
+          "damage": null,
+          "cost": [
+            "Fire"
+          ],
+          "text": "Your opponent's Active Pokémon is now Burned."
+        },
+        {
+          "name": "Cheerful Flame",
+          "damage": "70×",
+          "cost": [
+            "Fire",
+            "Fire",
+            "Colorless"
+          ],
+          "text": "This attack does 70 damage for each Prize card you have taken."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Water",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-16": {
+      "id": "me55-16",
+      "name": "Slowpoke",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "16",
+      "image": "https://images.scrydex.com/pokemon/me55-16/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Water"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "80",
+      "artist": "Uninori",
+      "attacks": [
+        {
+          "name": "Well-Hidden",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Flip a coin. If heads, during your opponent's next turn, prevent all damage from and effects of attacks done to this Pokémon."
+        },
+        {
+          "name": "Water Gun",
+          "damage": "20",
+          "cost": [
+            "Water",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Lightning",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-17": {
+      "id": "me55-17",
+      "name": "Lapras",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "17",
+      "image": "https://images.scrydex.com/pokemon/me55-17/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Water"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "130",
+      "artist": "Masa",
+      "attacks": [
+        {
+          "name": "Ferry Across",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Search your deck for a Supporter card, reveal it, and put it into your hand. Then, shuffle your deck."
+        },
+        {
+          "name": "Ice Beam",
+          "damage": "80",
+          "cost": [
+            "Water",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "Flip a coin. If heads, your opponent's Active Pokémon is now Paralyzed."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Metal",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-18": {
+      "id": "me55-18",
+      "name": "Articuno",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "18",
+      "image": "https://images.scrydex.com/pokemon/me55-18/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Water"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "120",
+      "artist": "HYOGONOSUKE",
+      "attacks": [
+        {
+          "name": "Hail",
+          "damage": null,
+          "cost": [
+            "Water",
+            "Water",
+            "Colorless"
+          ],
+          "text": "This attack does 30 damage to each of your opponent's Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Metal",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-14": {
+      "id": "me55-14",
+      "name": "Reshiram",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "14",
+      "image": "https://images.scrydex.com/pokemon/me55-14/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Fire"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "130",
+      "artist": "Uta",
+      "attacks": [
+        {
+          "name": "Slash",
+          "damage": "50",
+          "cost": [
+            "Fire",
+            "Colorless"
+          ],
+          "text": null
+        },
+        {
+          "name": "Laser Flame",
+          "damage": "80+",
+          "cost": [
+            "Fire",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "If this Pokémon has any Lightning Energy attached, this attack does 80 more damage."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Water",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-19": {
+      "id": "me55-19",
+      "name": "Kyogre",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "19",
+      "image": "https://images.scrydex.com/pokemon/me55-19/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Water"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "140",
+      "artist": "Tonji Matsuno",
+      "attacks": [
+        {
+          "name": "Hydro Pump",
+          "damage": "60+",
+          "cost": [
+            "Colorless",
+            "Colorless",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "This attack does 30 more damage for each Water Energy attached to this Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Lightning",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-20": {
+      "id": "me55-20",
+      "name": "Palkia",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "20",
+      "image": "https://images.scrydex.com/pokemon/me55-20/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Water"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "130",
+      "artist": "kawayoo",
+      "attacks": [
+        {
+          "name": "Wormhole",
+          "damage": "100",
+          "cost": [
+            "Water",
+            "Water",
+            "Colorless"
+          ],
+          "text": "Switch this Pokémon with 1 of your Benched Pokémon. If you do, switch out your oppoennt's Active Pokémon to the Bench. (Your opponent chooses the new Active Pokémon.)"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Lightning",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-3": {
+      "id": "me55-3",
+      "name": "Volbeat",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "3",
+      "image": "https://images.scrydex.com/pokemon/me55-3/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Grass"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "80",
+      "artist": "Yoriyuki Ikegami",
+      "attacks": [
+        {
+          "name": "Luring Glow",
+          "damage": null,
+          "cost": [
+            "Grass"
+          ],
+          "text": "Switch in 1 of your opponent's Benched Pokémon to the Active Spot."
+        },
+        {
+          "name": "Bug Buzz",
+          "damage": "90",
+          "cost": [
+            "Colorless",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-25": {
+      "id": "me55-25",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "25",
+      "image": "https://images.scrydex.com/pokemon/me55-25/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "satoma",
+      "attacks": [
+        {
+          "name": "Spark",
+          "damage": "20",
+          "cost": [
+            "Lightning",
+            "Colorless"
+          ],
+          "text": "This attack also does 20 damage to 1 of your opponent's Benched Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-23": {
+      "id": "me55-23",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "23",
+      "image": "https://images.scrydex.com/pokemon/me55-23/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Ken Sugimori",
+      "attacks": [
+        {
+          "name": "Thunder Shock",
+          "damage": "20",
+          "cost": [
+            "Lightning",
+            "Colorless"
+          ],
+          "text": "Flip a coin. If heads, your opponent's Active Pokémon is now Paralyzed."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-6": {
+      "id": "me55-6",
+      "name": "Cherubi",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "6",
+      "image": "https://images.scrydex.com/pokemon/me55-6/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Grass"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "40",
+      "artist": "Kurata So",
+      "attacks": [
+        {
+          "name": "Hide",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Flip a coin. If heads, during your opponent's next turn, prevent all damage from and effects of attacks done to this Pokémon."
+        },
+        {
+          "name": "Flop",
+          "damage": "10",
+          "cost": [
+            "Grass"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-21": {
+      "id": "me55-21",
+      "name": "Greninja ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "21",
+      "image": "https://images.scrydex.com/pokemon/me55-21/large",
+      "rarity": "Double Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Water"
+      ],
+      "subtypes": [
+        "Stage 2",
+        "ex"
+      ],
+      "hp": "300",
+      "artist": "5ban Graphics",
+      "attacks": [
+        {
+          "name": "Stealthy Slash",
+          "damage": null,
+          "cost": [
+            "Water"
+          ],
+          "text": "This attack does 30 damage to 1 of your opponent's Pokémon for each damage counter on that Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        },
+        {
+          "name": "Aqua Edge",
+          "damage": "160",
+          "cost": [
+            "Water",
+            "Water"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Lightning",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-22": {
+      "id": "me55-22",
+      "name": "Wishiwashi",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "22",
+      "image": "https://images.scrydex.com/pokemon/me55-22/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Water"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "30",
+      "artist": "Narano",
+      "attacks": [
+        {
+          "name": "Surprise Attack",
+          "damage": "30",
+          "cost": [
+            "Water"
+          ],
+          "text": "Flip a coin. If tails, this attack does nothing."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Lightning",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-24": {
+      "id": "me55-24",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "24",
+      "image": "https://images.scrydex.com/pokemon/me55-24/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "danciao",
+      "attacks": [
+        {
+          "name": "Volt Tackle",
+          "damage": "80",
+          "cost": [
+            "Lightning",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "This Pokémon also does 30 damage to itself."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-26": {
+      "id": "me55-26",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "26",
+      "image": "https://images.scrydex.com/pokemon/me55-26/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Takeshi Nakamura",
+      "attacks": [
+        {
+          "name": "Peer At",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Your opponent reveals their hand."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-27": {
+      "id": "me55-27",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "27",
+      "image": "https://images.scrydex.com/pokemon/me55-27/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "80",
+      "artist": "Asako Ito",
+      "attacks": [
+        {
+          "name": "Nap",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Heal 30 damage from this Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-34": {
+      "id": "me55-34",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "34",
+      "image": "https://images.scrydex.com/pokemon/me55-34/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "USGMEN",
+      "attacks": [
+        {
+          "name": "Pika Chain",
+          "damage": "40×",
+          "cost": [
+            "Lightning",
+            "Lightning",
+            "Lightning"
+          ],
+          "text": "This attack does 40 damage for each of your Pikachu and Pikachu ex in play."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-32": {
+      "id": "me55-32",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "32",
+      "image": "https://images.scrydex.com/pokemon/me55-32/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "50",
+      "artist": "Tomokazu Komiya",
+      "attacks": [
+        {
+          "name": "Scurry About",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Switch this Pokémon with 1 of your Benched Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-36": {
+      "id": "me55-36",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "36",
+      "image": "https://images.scrydex.com/pokemon/me55-36/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "OKACHEKE",
+      "attacks": [
+        {
+          "name": "Slight Intrusion",
+          "damage": "40",
+          "cost": [
+            "Lightning",
+            "Colorless"
+          ],
+          "text": "This Pokémon also does 10 damage to itself."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-31": {
+      "id": "me55-31",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "31",
+      "image": "https://images.scrydex.com/pokemon/me55-31/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "50",
+      "artist": "Atsushi Furusawa",
+      "attacks": [
+        {
+          "name": "Gnaw",
+          "damage": "10",
+          "cost": [
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-33": {
+      "id": "me55-33",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "33",
+      "image": "https://images.scrydex.com/pokemon/me55-33/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "Narumi Sato",
+      "attacks": [
+        {
+          "name": "Tiny Charge",
+          "damage": "10",
+          "cost": [
+            "Lightning"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-39": {
+      "id": "me55-39",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "39",
+      "image": "https://images.scrydex.com/pokemon/me55-39/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Teeziro",
+      "attacks": [
+        {
+          "name": "Iron Tail",
+          "damage": "20×",
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Flip a coin until you get tails. This attack does 20 damage for each heads."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-29": {
+      "id": "me55-29",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "29",
+      "image": "https://images.scrydex.com/pokemon/me55-29/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "James Turner",
+      "attacks": [
+        {
+          "name": "Find a Friend",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Search your deck for a Pokémon, reveal it, and put it into your hand. Then, shuffle your deck."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-40": {
+      "id": "me55-40",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "40",
+      "image": "https://images.scrydex.com/pokemon/me55-40/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "80",
+      "artist": "Shinji Kanda",
+      "attacks": [
+        {
+          "name": "Overwriting Bolt",
+          "damage": "10",
+          "cost": [
+            "Lightning"
+          ],
+          "text": "The Defending Pokémon's Weakness is now Lightning until the end of your next turn. (Apply Weakness as x2.)"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-41": {
+      "id": "me55-41",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "41",
+      "image": "https://images.scrydex.com/pokemon/me55-41/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "Rianti Hidayat",
+      "attacks": [
+        {
+          "name": "Hang Down",
+          "damage": "10",
+          "cost": [
+            "Colorless"
+          ],
+          "text": null
+        },
+        {
+          "name": "Zap Kick",
+          "damage": "40",
+          "cost": [
+            "Lightning",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-9": {
+      "id": "me55-9",
+      "name": "Vulpix",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "9",
+      "image": "https://images.scrydex.com/pokemon/me55-9/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Fire"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "miki kudo",
+      "attacks": [
+        {
+          "name": "Wild Kick",
+          "damage": "30",
+          "cost": [
+            "Fire"
+          ],
+          "text": "Flip a coin. If tails, this attack does nothing."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Water",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-44": {
+      "id": "me55-44",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "44",
+      "image": "https://images.scrydex.com/pokemon/me55-44/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "akagi",
+      "attacks": [
+        {
+          "name": "Agility",
+          "damage": "10",
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Flip a coin. If heads, during your opponent's next turn, prevent all damage from and effects of attacks done to this Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-35": {
+      "id": "me55-35",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "35",
+      "image": "https://images.scrydex.com/pokemon/me55-35/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "Susumu Maeya",
+      "attacks": [
+        {
+          "name": "Rollout",
+          "damage": "30",
+          "cost": [
+            "Colorless",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-28": {
+      "id": "me55-28",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "28",
+      "image": "https://images.scrydex.com/pokemon/me55-28/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "sowsow",
+      "attacks": [
+        {
+          "name": "Pika Ball",
+          "damage": "20",
+          "cost": [
+            "Lightning",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-30": {
+      "id": "me55-30",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "30",
+      "image": "https://images.scrydex.com/pokemon/me55-30/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "DOM",
+      "attacks": [
+        {
+          "name": "Mach Bolt",
+          "damage": "30",
+          "cost": [
+            "Lightning"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-37": {
+      "id": "me55-37",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "37",
+      "image": "https://images.scrydex.com/pokemon/me55-37/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Yuu Nishida",
+      "attacks": [
+        {
+          "name": "Energized Tail",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Search your deck for an Energy card, reveal it, and put it into your hand. Then, shuffle your deck."
+        },
+        {
+          "name": "Pika Punch",
+          "damage": "30",
+          "cost": [
+            "Lightning",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-48": {
+      "id": "me55-48",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "48",
+      "image": "https://images.scrydex.com/pokemon/me55-48/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "KIYOTAKA OSHIYAMA",
+      "attacks": [
+        {
+          "name": "Store Up",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Put up to 2 Basic Energy cards from your discard pile into your hand."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-47": {
+      "id": "me55-47",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "47",
+      "image": "https://images.scrydex.com/pokemon/me55-47/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Atsuko Nishida",
+      "attacks": [
+        {
+          "name": "Play Rough",
+          "damage": "10+",
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Flip a coin. If heads, this attack does 20 more damage."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-46": {
+      "id": "me55-46",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "46",
+      "image": "https://images.scrydex.com/pokemon/me55-46/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "svlt",
+      "attacks": [
+        {
+          "name": "Get Some Air",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "This Pokémon recovers from all Special Conditions."
+        },
+        {
+          "name": "Smash Kick",
+          "damage": "20",
+          "cost": [
+            "Colorless",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-49": {
+      "id": "me55-49",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "49",
+      "image": "https://images.scrydex.com/pokemon/me55-49/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "80",
+      "artist": "Nurikabe",
+      "attacks": [
+        {
+          "name": "Fighting Lightning",
+          "damage": "20+",
+          "cost": [
+            "Lightning",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "If your opponent's Active Pokémon is a Pokémon ex, this attack does 80 more damage."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-42": {
+      "id": "me55-42",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "42",
+      "image": "https://images.scrydex.com/pokemon/me55-42/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "Akira Komayama",
+      "attacks": [
+        {
+          "name": "Charge-Up Dash",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Flip a coin until you get tails. Search your deck for an amount of Basic Lightning Energy up to the number of heads and attach it to this Pokémon. Then, shuffle your deck."
+        },
+        {
+          "name": "Pika Bolt",
+          "damage": "50",
+          "cost": [
+            "Lightning",
+            "Lightning",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-53": {
+      "id": "me55-53",
+      "name": "Pikachu ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "53",
+      "image": "https://images.scrydex.com/pokemon/me55-53/large",
+      "rarity": "Double Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic",
+        "ex"
+      ],
+      "hp": "190",
+      "artist": "5ban Graphics",
+      "attacks": [
+        {
+          "name": "Pika-Pika Parade",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Search your deck for any number of Basic Pokémon and put them onto your Bench. Then, shuffle your deck."
+        },
+        {
+          "name": "Thunderbolt",
+          "damage": "200",
+          "cost": [
+            "Lightning",
+            "Lightning",
+            "Colorless"
+          ],
+          "text": "Discard all Energy from this Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-52": {
+      "id": "me55-52",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "52",
+      "image": "https://images.scrydex.com/pokemon/me55-52/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Kazuki Minami",
+      "attacks": [
+        {
+          "name": "Angry Bolt",
+          "damage": "10+",
+          "cost": [
+            "Lightning"
+          ],
+          "text": "This attack does 10 more damage for each damage counter on this Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-55": {
+      "id": "me55-55",
+      "name": "Zapdos",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "55",
+      "image": "https://images.scrydex.com/pokemon/me55-55/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "120",
+      "artist": "HYOGONOSUKE",
+      "attacks": [
+        {
+          "name": "Thundering Lightning",
+          "damage": "210",
+          "cost": [
+            "Lightning",
+            "Lightning",
+            "Lightning",
+            "Colorless"
+          ],
+          "text": "This Pokémon also does 60 damage to itself."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-59": {
+      "id": "me55-59",
+      "name": "Toxtricity",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "59",
+      "image": "https://images.scrydex.com/pokemon/me55-59/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "130",
+      "artist": "Haru Akasaka",
+      "attacks": [
+        {
+          "name": "Mach Bolt",
+          "damage": "80",
+          "cost": [
+            "Lightning",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-58": {
+      "id": "me55-58",
+      "name": "Toxel",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "58",
+      "image": "https://images.scrydex.com/pokemon/me55-58/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Shimaris Yukichi",
+      "attacks": [
+        {
+          "name": "Ram",
+          "damage": "10",
+          "cost": [
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-66": {
+      "id": "me55-66",
+      "name": "Mew ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "66",
+      "image": "https://images.scrydex.com/pokemon/me55-66/large",
+      "rarity": "Double Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic",
+        "ex"
+      ],
+      "hp": "160",
+      "artist": "aky CG Works",
+      "attacks": [
+        {
+          "name": "Teleportation Burst",
+          "damage": "30",
+          "cost": [
+            "Psychic"
+          ],
+          "text": "You may switch this Pokémon with 1 of your Benched Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-68": {
+      "id": "me55-68",
+      "name": "Azumarill",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "68",
+      "image": "https://images.scrydex.com/pokemon/me55-68/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "130",
+      "artist": "Kagemaru Himeno",
+      "attacks": [
+        {
+          "name": "Body Slam",
+          "damage": "90",
+          "cost": [
+            "Psychic",
+            "Psychic",
+            "Colorless"
+          ],
+          "text": "Flip a coin. If heads, your opponent's Active Pokémon is now paralyzed."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Metal",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-67": {
+      "id": "me55-67",
+      "name": "Marill",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "67",
+      "image": "https://images.scrydex.com/pokemon/me55-67/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Saya Tsuruta",
+      "attacks": [
+        {
+          "name": "Tackle",
+          "damage": "30",
+          "cost": [
+            "Psychic",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Metal",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-63": {
+      "id": "me55-63",
+      "name": "Mewtwo",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "63",
+      "image": "https://images.scrydex.com/pokemon/me55-63/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "130",
+      "artist": "nagimiso",
+      "attacks": [
+        {
+          "name": "Empower",
+          "damage": null,
+          "cost": [
+            "Psychic"
+          ],
+          "text": "Attach up to 2 Basic Energy cards from your discard pile to 1 of your Pokémon."
+        },
+        {
+          "name": "Psydrive",
+          "damage": "120",
+          "cost": [
+            "Psychic",
+            "Psychic",
+            "Colorless"
+          ],
+          "text": "Discard an Energy from this Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-71": {
+      "id": "me55-71",
+      "name": "Sylveon ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "71",
+      "image": "https://images.scrydex.com/pokemon/me55-71/large",
+      "rarity": "Double Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Stage 1",
+        "ex"
+      ],
+      "hp": "270",
+      "artist": "5ban Graphics",
+      "attacks": [
+        {
+          "name": "Colorful Harmony",
+          "damage": "50×",
+          "cost": [
+            "Psychic",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "This attack does 50 damage for each type of Basic Energy attached to all of your Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Metal",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-62": {
+      "id": "me55-62",
+      "name": "Miraidon",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "62",
+      "image": "https://images.scrydex.com/pokemon/me55-62/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "120",
+      "artist": "Kazumasa Yasukuni",
+      "attacks": [
+        {
+          "name": "Mach Bolt",
+          "damage": "20",
+          "cost": [
+            "Lightning"
+          ],
+          "text": null
+        },
+        {
+          "name": "Electro Drift",
+          "damage": "140",
+          "cost": [
+            "Lightning",
+            "Lightning",
+            "Colorless"
+          ],
+          "text": "Discard 2 Lightning Energy from this Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-61": {
+      "id": "me55-61",
+      "name": "Morpeko",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "61",
+      "image": "https://images.scrydex.com/pokemon/me55-61/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Naoki Saito",
+      "attacks": [
+        {
+          "name": "Select a Snack",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Discard the top 3 cards of your deck and put 1 of them into your hand."
+        },
+        {
+          "name": "Slap",
+          "damage": "30",
+          "cost": [
+            "Lightning"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-70": {
+      "id": "me55-70",
+      "name": "Espeon ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "70",
+      "image": "https://images.scrydex.com/pokemon/me55-70/large",
+      "rarity": "Double Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Stage 1",
+        "ex"
+      ],
+      "hp": "260",
+      "artist": "5ban Graphics",
+      "attacks": [
+        {
+          "name": "Solar Beatdown",
+          "damage": "30×",
+          "cost": [
+            "Psychic",
+            "Colorless"
+          ],
+          "text": "This attack does 30 damage for each of your Pokémon in play."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-72": {
+      "id": "me55-72",
+      "name": "Unown",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "72",
+      "image": "https://images.scrydex.com/pokemon/me55-72/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "80",
+      "artist": "mingo",
+      "attacks": [
+        {
+          "name": "Mysterious Signal",
+          "damage": "40",
+          "cost": [
+            "Psychic",
+            "Psychic"
+          ],
+          "text": "If your opponent's Pokémon is Knocked Out by damage from this attack, take 1 more Prize card."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-65": {
+      "id": "me55-65",
+      "name": "Mew",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "65",
+      "image": "https://images.scrydex.com/pokemon/me55-65/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "danciao",
+      "attacks": [
+        {
+          "name": "Psychic",
+          "damage": "10+",
+          "cost": [
+            "Psychic",
+            "Psychic"
+          ],
+          "text": "This attack does 40 more damage for each Energy attached to your opponent's Active Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-73": {
+      "id": "me55-73",
+      "name": "Drifloon",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "73",
+      "image": "https://images.scrydex.com/pokemon/me55-73/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Shinya Komatsu",
+      "attacks": [
+        {
+          "name": "Float Up",
+          "damage": "20",
+          "cost": [
+            "Psychic"
+          ],
+          "text": "You may shuffle this Pokémon and all attached cards into your deck."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-78": {
+      "id": "me55-78",
+      "name": "Cosmog",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "78",
+      "image": "https://images.scrydex.com/pokemon/me55-78/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "Mina Nakai",
+      "attacks": [
+        {
+          "name": "Splash",
+          "damage": "10",
+          "cost": [
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-82": {
+      "id": "me55-82",
+      "name": "Groudon",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "82",
+      "image": "https://images.scrydex.com/pokemon/me55-82/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Fighting"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "140",
+      "artist": "Takumi Wada",
+      "attacks": [
+        {
+          "name": "Break Ground",
+          "damage": "250",
+          "cost": [
+            "Fighting",
+            "Fighting",
+            "Fighting",
+            "Fighting",
+            "Fighting"
+          ],
+          "text": "This attack also does 20 damage to each of your Benched Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-80": {
+      "id": "me55-80",
+      "name": "Lunala",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "80",
+      "image": "https://images.scrydex.com/pokemon/me55-80/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Stage 2"
+      ],
+      "hp": "160",
+      "artist": "Bun Toujo",
+      "attacks": [
+        {
+          "name": "Midnight Ray",
+          "damage": "20+",
+          "cost": [
+            "Psychic"
+          ],
+          "text": "This attack does 20 more damage for each Energy card in your discard pile."
+        },
+        {
+          "name": "Lunar Blast",
+          "damage": "120",
+          "cost": [
+            "Psychic",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-76": {
+      "id": "me55-76",
+      "name": "Xerneas",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "76",
+      "image": "https://images.scrydex.com/pokemon/me55-76/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "120",
+      "artist": "kodama",
+      "attacks": [
+        {
+          "name": "Geonavigation",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Search your deck for up to 2 Stadium card, reveal them, and put them into your hand. Then, shuffle your deck."
+        },
+        {
+          "name": "Aurora Horns",
+          "damage": "100",
+          "cost": [
+            "Psychic",
+            "Psychic",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Metal",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-85": {
+      "id": "me55-85",
+      "name": "Lycanroc",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "85",
+      "image": "https://images.scrydex.com/pokemon/me55-85/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Fighting"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "130",
+      "artist": "matazo",
+      "attacks": [
+        {
+          "name": "Counter",
+          "damage": "10+",
+          "cost": [
+            "Fighting"
+          ],
+          "text": "If this Pokémon was damaged by an attack during your opponent's last turn, this attack does that much more damage."
+        },
+        {
+          "name": "Boulder Crush",
+          "damage": "80",
+          "cost": [
+            "Fighting",
+            "Fighting"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-83": {
+      "id": "me55-83",
+      "name": "Lucario",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "83",
+      "image": "https://images.scrydex.com/pokemon/me55-83/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Fighting"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "120",
+      "artist": "Hideki Ishikawa",
+      "attacks": [
+        {
+          "name": "Aura Sphere",
+          "damage": "100",
+          "cost": [
+            "Fighting",
+            "Fighting",
+            "Colorless"
+          ],
+          "text": "This attack also does 60 damage to 1 of your opponent's Benched Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Psychic",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-75": {
+      "id": "me55-75",
+      "name": "Chandelure",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "75",
+      "image": "https://images.scrydex.com/pokemon/me55-75/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Stage 2"
+      ],
+      "hp": "140",
+      "artist": "Yoshioka",
+      "attacks": [
+        {
+          "name": "Eerie Glow",
+          "damage": "130",
+          "cost": [
+            "Psychic",
+            "Psychic"
+          ],
+          "text": "Your opponent's Active Pokémon is now Burned and Confused."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-87": {
+      "id": "me55-87",
+      "name": "Nidoran ♀",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "87",
+      "image": "https://images.scrydex.com/pokemon/me55-87/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "Taira Akitsu",
+      "attacks": [
+        {
+          "name": "Growl",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "During your opponent's next turn, attacks used by the Defending Pokémon do 30 less damage (before applying Weakness and Resistance)."
+        },
+        {
+          "name": "Headbutt",
+          "damage": "10",
+          "cost": [
+            "Darkness"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-88": {
+      "id": "me55-88",
+      "name": "Nidorina",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "88",
+      "image": "https://images.scrydex.com/pokemon/me55-88/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "90",
+      "artist": "Miki Tanaka",
+      "attacks": [
+        {
+          "name": "Bite",
+          "damage": "30",
+          "cost": [
+            "Colorless",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-89": {
+      "id": "me55-89",
+      "name": "Alolan Meowth",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "89",
+      "image": "https://images.scrydex.com/pokemon/me55-89/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "Natsumi Yoshida",
+      "attacks": [
+        {
+          "name": "Pay Day",
+          "damage": "10",
+          "cost": [],
+          "text": "Draw a card."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-86": {
+      "id": "me55-86",
+      "name": "Koraidon",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "86",
+      "image": "https://images.scrydex.com/pokemon/me55-86/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Fighting"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "130",
+      "artist": "Mitsuhiro Arita",
+      "attacks": [
+        {
+          "name": "Low Kick",
+          "damage": "50",
+          "cost": [
+            "Fighting",
+            "Fighting"
+          ],
+          "text": null
+        },
+        {
+          "name": "Collision Course",
+          "damage": "140",
+          "cost": [
+            "Fighting",
+            "Fighting",
+            "Colorless"
+          ],
+          "text": "Discard 2 Fighting Energy from this Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Psychic",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-90": {
+      "id": "me55-90",
+      "name": "Gengar ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "90",
+      "image": "https://images.scrydex.com/pokemon/me55-90/large",
+      "rarity": "Double Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Stage 2",
+        "ex"
+      ],
+      "hp": "280",
+      "artist": "5ban Graphics",
+      "attacks": [
+        {
+          "name": "Chaotic Pain",
+          "damage": null,
+          "cost": [
+            "Darkness",
+            "Darkness"
+          ],
+          "text": "Place 13 damage counters on 1 of your opponent's Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-91": {
+      "id": "me55-91",
+      "name": "Umbreon",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "91",
+      "image": "https://images.scrydex.com/pokemon/me55-91/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "110",
+      "artist": "Iori Suzuki",
+      "attacks": [
+        {
+          "name": "Retaliate",
+          "damage": "30+",
+          "cost": [
+            "Darkness"
+          ],
+          "text": "If any of your Pokémon were Knocked Out by damage from an attack during your opponent's last turn, this attack does 100 more damage."
+        },
+        {
+          "name": "Darkness Fang",
+          "damage": "100",
+          "cost": [
+            "Darkness",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-93": {
+      "id": "me55-93",
+      "name": "Murkrow",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "93",
+      "image": "https://images.scrydex.com/pokemon/me55-93/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "80",
+      "artist": "Kouki Saitou",
+      "attacks": [
+        {
+          "name": "Clumsily Clutch",
+          "damage": "20",
+          "cost": [
+            "Darkness"
+          ],
+          "text": "Flip a coin. If heads, during your opponent's next turn, the Defending Pokémon can't retreat."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Lightning",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-97": {
+      "id": "me55-97",
+      "name": "Deino",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "97",
+      "image": "https://images.scrydex.com/pokemon/me55-97/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Gapao",
+      "attacks": [
+        {
+          "name": "Gnaw",
+          "damage": "10",
+          "cost": [
+            "Darkness"
+          ],
+          "text": null
+        },
+        {
+          "name": "Headbutt",
+          "damage": "20",
+          "cost": [
+            "Darkness",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-96": {
+      "id": "me55-96",
+      "name": "Zoroark",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "96",
+      "image": "https://images.scrydex.com/pokemon/me55-96/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "120",
+      "artist": "Shiburingaru",
+      "attacks": [
+        {
+          "name": "Slashing Claw",
+          "damage": "90",
+          "cost": [
+            "Darkness",
+            "Darkness",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-95": {
+      "id": "me55-95",
+      "name": "Zorua",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "95",
+      "image": "https://images.scrydex.com/pokemon/me55-95/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Atsuya Uki",
+      "attacks": [
+        {
+          "name": "Darkness Fang",
+          "damage": "40",
+          "cost": [
+            "Darkness",
+            "Darkness"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-99": {
+      "id": "me55-99",
+      "name": "Hydreigon",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "99",
+      "image": "https://images.scrydex.com/pokemon/me55-99/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Stage 2"
+      ],
+      "hp": "170",
+      "artist": "Ryuta Fuse",
+      "attacks": [
+        {
+          "name": "Three-Headed Bite",
+          "damage": null,
+          "cost": [
+            "Darkness"
+          ],
+          "text": "Flip 3 coins. For each heads, discard an Energy from your opponent's Active Pokémon."
+        },
+        {
+          "name": "Pitch-Black Fangs",
+          "damage": "140",
+          "cost": [
+            "Darkness",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-94": {
+      "id": "me55-94",
+      "name": "Scraggy",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "94",
+      "image": "https://images.scrydex.com/pokemon/me55-94/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "80",
+      "artist": "Souichirou Gunjima",
+      "attacks": [
+        {
+          "name": "Nitpick",
+          "damage": null,
+          "cost": [
+            "Darkness"
+          ],
+          "text": "Your opponent shuffles their hand into their deck and draws 4 cards."
+        },
+        {
+          "name": "Corkscrew Punch",
+          "damage": "30",
+          "cost": [
+            "Darkness",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-102": {
+      "id": "me55-102",
+      "name": "Jirachi ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "102",
+      "image": "https://images.scrydex.com/pokemon/me55-102/large",
+      "rarity": "Double Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Metal"
+      ],
+      "subtypes": [
+        "Basic",
+        "ex"
+      ],
+      "hp": "160",
+      "artist": "5ban Graphics",
+      "attacks": [
+        {
+          "name": "Wish Granter",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Draw cards until you have 7 cards in your hand."
+        },
+        {
+          "name": "Swift",
+          "damage": "150",
+          "cost": [
+            "Colorless",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "This attack's damage isn't affected by Weakness or Resistance, or by any effects on your opponent's Active Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-98": {
+      "id": "me55-98",
+      "name": "Zweilous",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "98",
+      "image": "https://images.scrydex.com/pokemon/me55-98/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "100",
+      "artist": "IKEDA Saki",
+      "attacks": [
+        {
+          "name": "Bite",
+          "damage": "20",
+          "cost": [
+            "Darkness"
+          ],
+          "text": null
+        },
+        {
+          "name": "Hammer In",
+          "damage": "50",
+          "cost": [
+            "Darkness",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-100": {
+      "id": "me55-100",
+      "name": "Yveltal",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "100",
+      "image": "https://images.scrydex.com/pokemon/me55-100/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "120",
+      "artist": "hncl",
+      "attacks": [
+        {
+          "name": "Dark Cutter",
+          "damage": "90",
+          "cost": [
+            "Darkness",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Lightning",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-105": {
+      "id": "me55-105",
+      "name": "Solgaleo",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "105",
+      "image": "https://images.scrydex.com/pokemon/me55-105/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Metal"
+      ],
+      "subtypes": [
+        "Stage 2"
+      ],
+      "hp": "170",
+      "artist": "Nurikabe",
+      "attacks": [
+        {
+          "name": "Sunsteel Strike",
+          "damage": "220",
+          "cost": [
+            "Metal",
+            "Metal",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "Discard all Energy from this Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-101": {
+      "id": "me55-101",
+      "name": "Galarian Meowth",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "101",
+      "image": "https://images.scrydex.com/pokemon/me55-101/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Metal"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Mékayu",
+      "attacks": [
+        {
+          "name": "Pay Day",
+          "damage": "10",
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Draw a card."
+        },
+        {
+          "name": "Treasure Rush",
+          "damage": "10×",
+          "cost": [
+            "Metal"
+          ],
+          "text": "This attack does 10 damage for each card in your hand."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-107": {
+      "id": "me55-107",
+      "name": "Zamazenta",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "107",
+      "image": "https://images.scrydex.com/pokemon/me55-107/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Metal"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "130",
+      "artist": "Tsuyoshi Nagano",
+      "attacks": [
+        {
+          "name": "Fend Off",
+          "damage": "20",
+          "cost": [
+            "Metal"
+          ],
+          "text": "Before doing damage, discard all Pokémon Tools from your opponent's Active Pokémon."
+        },
+        {
+          "name": "Shield Press",
+          "damage": "100",
+          "cost": [
+            "Metal",
+            "Metal",
+            "Colorless"
+          ],
+          "text": "During your opponent's next turn, this Pokémon takes 50 less damage from attacks (after applying Weakness and Resistance)."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-103": {
+      "id": "me55-103",
+      "name": "Dialga",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "103",
+      "image": "https://images.scrydex.com/pokemon/me55-103/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Metal"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "130",
+      "artist": "toriyufu",
+      "attacks": [
+        {
+          "name": "Reversed Clock",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Shuffle up to 3 in any combination of Pokémon and Basic Energy cards from your discard pile into your deck."
+        },
+        {
+          "name": "Heavy Impact",
+          "damage": "110",
+          "cost": [
+            "Metal",
+            "Metal",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-104": {
+      "id": "me55-104",
+      "name": "Ferrothorn",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "104",
+      "image": "https://images.scrydex.com/pokemon/me55-104/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Metal"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "130",
+      "artist": "Po-Suzuki",
+      "attacks": [
+        {
+          "name": "Spike Sting",
+          "damage": "50",
+          "cost": [
+            "Colorless",
+            "Colorless"
+          ],
+          "text": null
+        },
+        {
+          "name": "Kaboom Needles",
+          "damage": null,
+          "cost": [
+            "Metal",
+            "Metal"
+          ],
+          "text": "This attack does 50 damage to each of your opponent's Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.) This Pokémon also does 130 damage to itself."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-110": {
+      "id": "me55-110",
+      "name": "Jangmo-o",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "110",
+      "image": "https://images.scrydex.com/pokemon/me55-110/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Dragon"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "miki kudo",
+      "attacks": [
+        {
+          "name": "Screech",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "During your next turn, the Defending Pokémon takes 30 more damage from attacks (after applying Weakness and Resistance)."
+        },
+        {
+          "name": "Dragon Claw",
+          "damage": "40",
+          "cost": [
+            "Lightning",
+            "Fighting"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-106": {
+      "id": "me55-106",
+      "name": "Zacian",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "106",
+      "image": "https://images.scrydex.com/pokemon/me55-106/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Metal"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "130",
+      "artist": "AKIRA EGAWA",
+      "attacks": [
+        {
+          "name": "Hardened Blade",
+          "damage": "20+",
+          "cost": [
+            "Metal"
+          ],
+          "text": "If this Pokémon has a Pokémon Tool attached, this attack does 40 more damage."
+        },
+        {
+          "name": "Slashing Strike",
+          "damage": "120",
+          "cost": [
+            "Metal",
+            "Metal",
+            "Colorless"
+          ],
+          "text": "During your next turn, this Pokémon can't use Slashing Strike"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-113": {
+      "id": "me55-113",
+      "name": "Meowth",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "113",
+      "image": "https://images.scrydex.com/pokemon/me55-113/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "MINAMINAMI Take",
+      "attacks": [
+        {
+          "name": "Pay Day",
+          "damage": "30",
+          "cost": [
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "Draw a card."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-109": {
+      "id": "me55-109",
+      "name": "Salamence ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "109",
+      "image": "https://images.scrydex.com/pokemon/me55-109/large",
+      "rarity": "Double Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Dragon"
+      ],
+      "subtypes": [
+        "Stage 2",
+        "ex"
+      ],
+      "hp": "330",
+      "artist": "5ban Graphics",
+      "attacks": [
+        {
+          "name": "Booming Call",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Put up to 3 Dragon Pokémon from your discard pile onto your Bench."
+        },
+        {
+          "name": "Dragon Pulse",
+          "damage": "240",
+          "cost": [
+            "Fire",
+            "Water"
+          ],
+          "text": "Discard the top 2 cards of your deck."
+        }
+      ],
+      "weaknesses": [],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-114": {
+      "id": "me55-114",
+      "name": "Kangaskhan",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "114",
+      "image": "https://images.scrydex.com/pokemon/me55-114/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "130",
+      "artist": "Pani Kobayashi",
+      "attacks": [
+        {
+          "name": "Rage",
+          "damage": "20+",
+          "cost": [
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "This attack does 10 more damage for each damage counter on this Pokémon."
+        },
+        {
+          "name": "Mega Punch",
+          "damage": "100",
+          "cost": [
+            "Colorless",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-116": {
+      "id": "me55-116",
+      "name": "Eevee",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "116",
+      "image": "https://images.scrydex.com/pokemon/me55-116/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Wintr Wandr",
+      "attacks": [
+        {
+          "name": "Fetch and Hide",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Your opponent reveals their hand, and you put an Item card you find there on the bottom of your opponent's deck."
+        },
+        {
+          "name": "Tackle",
+          "damage": "10",
+          "cost": [
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-118": {
+      "id": "me55-118",
+      "name": "Eevee",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "118",
+      "image": "https://images.scrydex.com/pokemon/me55-118/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Hitoshi Ariga",
+      "attacks": [
+        {
+          "name": "Quick Attack",
+          "damage": "20+",
+          "cost": [
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "Flip a coin. If heads, this attack does 20 more damage."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-119": {
+      "id": "me55-119",
+      "name": "Snorlax",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "119",
+      "image": "https://images.scrydex.com/pokemon/me55-119/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "160",
+      "artist": "Aya Kusube",
+      "attacks": [
+        {
+          "name": "Collapse",
+          "damage": "130",
+          "cost": [
+            "Colorless",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "This Pokémon is now Asleep."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-122": {
+      "id": "me55-122",
+      "name": "Hisuian Zorua",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "122",
+      "image": "https://images.scrydex.com/pokemon/me55-122/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "Megumi Mizutani",
+      "attacks": [
+        {
+          "name": "Scratch",
+          "damage": "20",
+          "cost": [
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-121": {
+      "id": "me55-121",
+      "name": "Lugia",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "121",
+      "image": "https://images.scrydex.com/pokemon/me55-121/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "120",
+      "artist": "Kazuki Minami",
+      "attacks": [
+        {
+          "name": "Elemental Blast",
+          "damage": "250",
+          "cost": [
+            "Fire",
+            "Water",
+            "Lightning"
+          ],
+          "text": "Discard a Fire Energy, a Water Energy, and a Lightning Energy from this Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Lightning",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-123": {
+      "id": "me55-123",
+      "name": "Hisuian Zoroark",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "123",
+      "image": "https://images.scrydex.com/pokemon/me55-123/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "120",
+      "artist": "Kamome Shirahama",
+      "attacks": [
+        {
+          "name": "Scratch",
+          "damage": "30",
+          "cost": [
+            "Colorless"
+          ],
+          "text": null
+        },
+        {
+          "name": "Swirling Resentment",
+          "damage": null,
+          "cost": [
+            "Colorless",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "Place damage counters on your opponent's Active Pokémon until its remaining HP is 50."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-124": {
+      "id": "me55-124",
+      "name": "Minior",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "124",
+      "image": "https://images.scrydex.com/pokemon/me55-124/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "90",
+      "artist": "ryoma uratsuka",
+      "attacks": [
+        {
+          "name": "Shoot Meteors",
+          "damage": null,
+          "cost": [
+            "Colorless",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "Discard all Energy from this Pokémon, and this attack does 120 damage to 1 of your opponent's Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Lightning",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-126": {
+      "id": "me55-126",
+      "name": "Poké Pad",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "126",
+      "image": "https://images.scrydex.com/pokemon/me55-126/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [],
+      "subtypes": [
+        "Item"
+      ],
+      "hp": null,
+      "artist": "Yuka Morii",
+      "attacks": [],
+      "weaknesses": [],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-128": {
+      "id": "me55-128",
+      "name": "Ultra Ball",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "128",
+      "image": "https://images.scrydex.com/pokemon/me55-128/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [],
+      "subtypes": [
+        "Item"
+      ],
+      "hp": null,
+      "artist": "Yuka Morii",
+      "attacks": [],
+      "weaknesses": [],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-115": {
+      "id": "me55-115",
+      "name": "Ditto",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "115",
+      "image": "https://images.scrydex.com/pokemon/me55-115/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Toshinao Aoki",
+      "attacks": [
+        {
+          "name": "Surprisingly Transform",
+          "damage": null,
+          "cost": [
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "Flip a coin. If heads, search your deck for a Pokémon and switch it with this Pokémon. Any attached cards, damage counters, Special Conditions, turns in play, and any other effects remain on the new Pokémon. If you switched a Pokémon in this way, put this card into your deck. Then, shuffle your deck."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-125": {
+      "id": "me55-125",
+      "name": "Maushold",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "125",
+      "image": "https://images.scrydex.com/pokemon/me55-125/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "80",
+      "artist": "Kariya",
+      "attacks": [
+        {
+          "name": "Gnaw Together",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Flip a coin for each Maushold you have in play. For each heads, discard the top 2 cards of your opponent's deck."
+        },
+        {
+          "name": "Pound",
+          "damage": "40",
+          "cost": [
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-127": {
+      "id": "me55-127",
+      "name": "Switch",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "127",
+      "image": "https://images.scrydex.com/pokemon/me55-127/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [],
+      "subtypes": [
+        "Item"
+      ],
+      "hp": null,
+      "artist": "Yuka Morii",
+      "attacks": [],
+      "weaknesses": [],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-130": {
+      "id": "me55-130",
+      "name": "Moltres",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "130",
+      "image": "https://images.scrydex.com/pokemon/me55-130/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Fire"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "120",
+      "artist": "mashu",
+      "attacks": [
+        {
+          "name": "Fire Spin",
+          "damage": "130",
+          "cost": [
+            "Fire",
+            "Fire",
+            "Colorless"
+          ],
+          "text": "Discard 2 Energy from this Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Water",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-120": {
+      "id": "me55-120",
+      "name": "Igglybuff",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "120",
+      "image": "https://images.scrydex.com/pokemon/me55-120/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "30",
+      "artist": "Kanami Ogata",
+      "attacks": [
+        {
+          "name": "Bouncy Circle",
+          "damage": "30×",
+          "cost": [],
+          "text": "This attack does 30 damage for each of your Benched Pokémon that has a maximum HP of 30."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-129": {
+      "id": "me55-129",
+      "name": "Alolan Exeggutor",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "129",
+      "image": "https://images.scrydex.com/pokemon/me55-129/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Grass"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "150",
+      "artist": "AYUMI ODASHIMA",
+      "attacks": [
+        {
+          "name": "Mega Drain",
+          "damage": "150",
+          "cost": [
+            "Grass",
+            "Colorless",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "Heal 50 damage from this Pokémon"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-74": {
+      "id": "me55-74",
+      "name": "Cresselia",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "74",
+      "image": "https://images.scrydex.com/pokemon/me55-74/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "120",
+      "artist": "KEIICHIRO ITO",
+      "attacks": [
+        {
+          "name": "Aurora Gain",
+          "damage": "30",
+          "cost": [
+            "Psychic",
+            "Colorless"
+          ],
+          "text": "Heal 30 damage from this Pokémon."
+        },
+        {
+          "name": "Lunar Blast",
+          "damage": "100",
+          "cost": [
+            "Psychic",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-132": {
+      "id": "me55-132",
+      "name": "Articuno",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "132",
+      "image": "https://images.scrydex.com/pokemon/me55-132/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Water"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "120",
+      "artist": "mashu",
+      "attacks": [
+        {
+          "name": "Hail",
+          "damage": null,
+          "cost": [
+            "Water",
+            "Water",
+            "Colorless"
+          ],
+          "text": "This attack does 30 damage to each of your opponent's Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Metal",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-134": {
+      "id": "me55-134",
+      "name": "Toxtricity",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "134",
+      "image": "https://images.scrydex.com/pokemon/me55-134/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "140",
+      "artist": "Kazumasa Yasukuni",
+      "attacks": [
+        {
+          "name": "Light Punch",
+          "damage": "40",
+          "cost": [
+            "Lightning"
+          ],
+          "text": null
+        },
+        {
+          "name": "Thunderous Bolt",
+          "damage": "150",
+          "cost": [
+            "Lightning",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "During your next turn, this Pokémon can't use attacks."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-135": {
+      "id": "me55-135",
+      "name": "Morpeko",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "135",
+      "image": "https://images.scrydex.com/pokemon/me55-135/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Yoshimi Miyoshi",
+      "attacks": [
+        {
+          "name": "Select a Snack",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Discard the top 3 cards of your deck and put 1 of them into your hand."
+        },
+        {
+          "name": "Slap",
+          "damage": "30",
+          "cost": [
+            "Lightning"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-84": {
+      "id": "me55-84",
+      "name": "Seismitoad",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "84",
+      "image": "https://images.scrydex.com/pokemon/me55-84/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Fighting"
+      ],
+      "subtypes": [
+        "Stage 2"
+      ],
+      "hp": "160",
+      "artist": "Kurata So",
+      "attacks": [
+        {
+          "name": "Quaking Fist",
+          "damage": "60",
+          "cost": [
+            "Fighting"
+          ],
+          "text": "During your opponent's next turn, whenever they try to use a Trainer card from their hand, they flip a coin. If tails, your opponent discards that Trainer card instead of using it."
+        },
+        {
+          "name": "Mega Punch",
+          "damage": "180",
+          "cost": [
+            "Fighting",
+            "Colorless",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-133": {
+      "id": "me55-133",
+      "name": "Zapdos",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "133",
+      "image": "https://images.scrydex.com/pokemon/me55-133/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "120",
+      "artist": "mashu",
+      "attacks": [
+        {
+          "name": "Thundering Lightning",
+          "damage": "210",
+          "cost": [
+            "Lightning",
+            "Lightning",
+            "Lightning",
+            "Colorless"
+          ],
+          "text": "This Pokémon also does 60 damage to itself."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-137": {
+      "id": "me55-137",
+      "name": "Chandelure",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "137",
+      "image": "https://images.scrydex.com/pokemon/me55-137/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Stage 2"
+      ],
+      "hp": "140",
+      "artist": "YASHIRO Nanaco",
+      "attacks": [
+        {
+          "name": "Eerie Glow",
+          "damage": "130",
+          "cost": [
+            "Psychic",
+            "Psychic"
+          ],
+          "text": "Your opponent's Active Pokémon is now Burned and Confused."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-143": {
+      "id": "me55-143",
+      "name": "Kommo-o",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "143",
+      "image": "https://images.scrydex.com/pokemon/me55-143/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Dragon"
+      ],
+      "subtypes": [
+        "Stage 2"
+      ],
+      "hp": "180",
+      "artist": "Gemi",
+      "attacks": [
+        {
+          "name": "Blazing Uppercut",
+          "damage": "250",
+          "cost": [
+            "Lightning",
+            "Fighting",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-138": {
+      "id": "me55-138",
+      "name": "Lycanroc",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "138",
+      "image": "https://images.scrydex.com/pokemon/me55-138/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Fighting"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "130",
+      "artist": "Raita Kazama",
+      "attacks": [
+        {
+          "name": "Counter",
+          "damage": "10+",
+          "cost": [
+            "Fighting"
+          ],
+          "text": "If this Pokémon was damaged by an attack during your opponent's last turn, this attack does that much more damage."
+        },
+        {
+          "name": "Boulder Crush",
+          "damage": "80",
+          "cost": [
+            "Fighting",
+            "Fighting"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-139": {
+      "id": "me55-139",
+      "name": "Alolan Meowth",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "139",
+      "image": "https://images.scrydex.com/pokemon/me55-139/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "OKUBO",
+      "attacks": [
+        {
+          "name": "Pay Day",
+          "damage": "10",
+          "cost": [],
+          "text": "Draw a card."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-142": {
+      "id": "me55-142",
+      "name": "Gholdengo",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "142",
+      "image": "https://images.scrydex.com/pokemon/me55-142/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Metal"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "130",
+      "artist": "toriyufu",
+      "attacks": [
+        {
+          "name": "Celebration",
+          "damage": null,
+          "cost": [
+            "Metal"
+          ],
+          "text": "if you have exactly 30 cards in your hand, take 2 Prize cards. If you do, shuffle your hand into your deck."
+        },
+        {
+          "name": "Triple Smash",
+          "damage": "50×",
+          "cost": [
+            "Metal"
+          ],
+          "text": "Flip 3 coins. This attack does 50 damage for each heads."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-146": {
+      "id": "me55-146",
+      "name": "Maushold",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "146",
+      "image": "https://images.scrydex.com/pokemon/me55-146/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "80",
+      "artist": "osare",
+      "attacks": [
+        {
+          "name": "Gnaw Together",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Flip a coin for each Maushold you have in play. For each heads, discard the top 2 cards of your opponent's deck."
+        },
+        {
+          "name": "Pound",
+          "damage": "40",
+          "cost": [
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-149": {
+      "id": "me55-149",
+      "name": "Pikachu ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "149",
+      "image": "https://images.scrydex.com/pokemon/me55-149/large",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic",
+        "ex"
+      ],
+      "hp": "190",
+      "artist": "kantaro",
+      "attacks": [
+        {
+          "name": "Pika-Pika Parade",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Search your deck for any number of Basic Pokémon and put them onto your Bench. Then, shuffle your deck."
+        },
+        {
+          "name": "Thunderbolt",
+          "damage": "200",
+          "cost": [
+            "Lightning",
+            "Lightning",
+            "Colorless"
+          ],
+          "text": "Discard all Energy from this Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-148": {
+      "id": "me55-148",
+      "name": "Greninja ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "148",
+      "image": "https://images.scrydex.com/pokemon/me55-148/large",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Water"
+      ],
+      "subtypes": [
+        "Stage 2",
+        "ex"
+      ],
+      "hp": "300",
+      "artist": "GIDORA",
+      "attacks": [
+        {
+          "name": "Stealthy Slash",
+          "damage": null,
+          "cost": [
+            "Water"
+          ],
+          "text": "This attack does 30 damage to 1 of your opponent's Pokémon for each damage counter on that Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        },
+        {
+          "name": "Aqua Edge",
+          "damage": "160",
+          "cost": [
+            "Water",
+            "Water"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Lightning",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-140": {
+      "id": "me55-140",
+      "name": "Scraggy",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "140",
+      "image": "https://images.scrydex.com/pokemon/me55-140/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "80",
+      "artist": "GOSSAN",
+      "attacks": [
+        {
+          "name": "Nitpick",
+          "damage": null,
+          "cost": [
+            "Darkness"
+          ],
+          "text": "Your opponent shuffles their hand into their deck and draws 4 cards."
+        },
+        {
+          "name": "Corkscrew Punch",
+          "damage": "30",
+          "cost": [
+            "Darkness",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-152": {
+      "id": "me55-152",
+      "name": "Mew ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "152",
+      "image": "https://images.scrydex.com/pokemon/me55-152/large",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic",
+        "ex"
+      ],
+      "hp": "160",
+      "artist": "Kuroimori",
+      "attacks": [
+        {
+          "name": "Teleportation Burst",
+          "damage": "30",
+          "cost": [
+            "Psychic"
+          ],
+          "text": "You may switch this Pokémon with 1 of your Benched Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-154": {
+      "id": "me55-154",
+      "name": "Gengar ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "154",
+      "image": "https://images.scrydex.com/pokemon/me55-154/large",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Stage 2",
+        "ex"
+      ],
+      "hp": "280",
+      "artist": "CHORISO",
+      "attacks": [
+        {
+          "name": "Chaotic Pain",
+          "damage": null,
+          "cost": [
+            "Darkness",
+            "Darkness"
+          ],
+          "text": "Place 13 damage counters on 1 of your opponent's Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-77": {
+      "id": "me55-77",
+      "name": "Comfey",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "77",
+      "image": "https://images.scrydex.com/pokemon/me55-77/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "sui",
+      "attacks": [
+        {
+          "name": "Comforting Aroma",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Heal 80 damage from 1 of your Benched Pokémon."
+        },
+        {
+          "name": "Magical Shot",
+          "damage": "30",
+          "cost": [
+            "Psychic"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Metal",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-136": {
+      "id": "me55-136",
+      "name": "Drifloon",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "136",
+      "image": "https://images.scrydex.com/pokemon/me55-136/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "Whisker",
+      "attacks": [
+        {
+          "name": "Float Up",
+          "damage": "20",
+          "cost": [
+            "Psychic"
+          ],
+          "text": "You may shuffle this Pokémon and all attached cards into your deck."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-156": {
+      "id": "me55-156",
+      "name": "Salamence ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "156",
+      "image": "https://images.scrydex.com/pokemon/me55-156/large",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Dragon"
+      ],
+      "subtypes": [
+        "Stage 2",
+        "ex"
+      ],
+      "hp": "330",
+      "artist": "Ryota Murayama",
+      "attacks": [
+        {
+          "name": "Booming Call",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Put up to 3 Dragon Pokémon from your discard pile onto your Bench."
+        },
+        {
+          "name": "Dragon Pulse",
+          "damage": "240",
+          "cost": [
+            "Fire",
+            "Water"
+          ],
+          "text": "Discard the top 2 cards of your deck."
+        }
+      ],
+      "weaknesses": [],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-144": {
+      "id": "me55-144",
+      "name": "Meowth",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "144",
+      "image": "https://images.scrydex.com/pokemon/me55-144/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "OKUBO",
+      "attacks": [
+        {
+          "name": "Pay Day",
+          "damage": "30",
+          "cost": [
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "Draw a card."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-155": {
+      "id": "me55-155",
+      "name": "Jirachi ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "155",
+      "image": "https://images.scrydex.com/pokemon/me55-155/large",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Metal"
+      ],
+      "subtypes": [
+        "Basic",
+        "ex"
+      ],
+      "hp": "160",
+      "artist": "AKIRA EGAWA",
+      "attacks": [
+        {
+          "name": "Wish Granter",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Draw cards until you have 7 cards in your hand."
+        },
+        {
+          "name": "Swift",
+          "damage": "150",
+          "cost": [
+            "Colorless",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "This attack's damage isn't affected by Weakness or Resistance, or by any effects on your opponent's Active Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-G": {
+      "id": "me55-G",
+      "name": "Mew",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "G",
+      "image": "https://images.scrydex.com/pokemon/me55-G/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "YOSHIROTTEN",
+      "attacks": [
+        {
+          "name": "Psychic",
+          "damage": "10+",
+          "cost": [
+            "Psychic",
+            "Psychic"
+          ],
+          "text": "This attack does 40 more damage for each Energy attached to your opponent's Active Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-4": {
+      "id": "me55c-4",
+      "name": "Charizard",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "4",
+      "image": "https://images.scrydex.com/pokemon/me55c-4/large",
+      "rarity": "Rare Holo",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Fire"
+      ],
+      "subtypes": [
+        "Stage 2"
+      ],
+      "hp": "120",
+      "artist": "Mitsuhiro Arita",
+      "attacks": [
+        {
+          "name": "Fire Spin",
+          "damage": "100",
+          "cost": [
+            "Fire",
+            "Fire",
+            "Fire",
+            "Fire"
+          ],
+          "text": "Discard 2 Energy cards attached to Charizard in order to use this attack."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Water",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-5": {
+      "id": "me55c-5",
+      "name": "Delcatty",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "5",
+      "image": "https://images.scrydex.com/pokemon/me55c-5/large",
+      "rarity": "Rare Holo",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "70",
+      "artist": "Atsuko Nishida",
+      "attacks": [
+        {
+          "name": "Max Energy Source",
+          "damage": "10×",
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Does 10 damage times the amount of Energy attached to all of your Active Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-153": {
+      "id": "me55-153",
+      "name": "Sylveon ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "153",
+      "image": "https://images.scrydex.com/pokemon/me55-153/large",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Stage 1",
+        "ex"
+      ],
+      "hp": "270",
+      "artist": "You Iribi",
+      "attacks": [
+        {
+          "name": "Colorful Harmony",
+          "damage": "50×",
+          "cost": [
+            "Psychic",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "This attack does 50 damage for each type of Basic Energy attached to all of your Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Metal",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-33": {
+      "id": "me55c-33",
+      "name": "Pikachu & Zekrom-GX",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "33",
+      "image": "https://images.scrydex.com/pokemon/me55c-33/large",
+      "rarity": "Rare Holo GX",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic",
+        "GX",
+        "TAG TEAM"
+      ],
+      "hp": "240",
+      "artist": "Mitsuhiro Arita",
+      "attacks": [
+        {
+          "name": "Full Blitz",
+          "damage": "150",
+          "cost": [
+            "Lightning",
+            "Lightning",
+            "Lightning"
+          ],
+          "text": "Search your deck for up to 3 Lightning Energy cards and attach them to 1 of your Pokémon. Then, shuffle your deck."
+        },
+        {
+          "name": "Tag Bolt-GX",
+          "damage": "200",
+          "cost": [
+            "Lightning",
+            "Lightning",
+            "Lightning"
+          ],
+          "text": "If this Pokémon has at least 3 extra Lightning Energy attached to it (in addition to this attack's cost), this attack does 170 damage to 1 of your opponent's Benched Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.) (You can't use more than 1 GX attack in a game.)"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-47": {
+      "id": "me55c-47",
+      "name": "Crobat G",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "47",
+      "image": "https://images.scrydex.com/pokemon/me55c-47/large",
+      "rarity": "Uncommon",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "80",
+      "artist": "Makoto Imai",
+      "attacks": [
+        {
+          "name": "Toxic Fang",
+          "damage": null,
+          "cost": [
+            "Psychic",
+            "Colorless"
+          ],
+          "text": "The Defending Pokémon is now Poisoned. Put 2 damage counters instead of 1 on the Defending Pokémon between turns."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Lightning",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-69": {
+      "id": "me55c-69",
+      "name": "Erika's Jigglypuff",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "69",
+      "image": "https://images.scrydex.com/pokemon/me55c-69/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "50",
+      "artist": "Ken Sugimori",
+      "attacks": [
+        {
+          "name": "Group Therapy",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "You and your opponent remove 1 damage counter from each of your Pokémon with damage counters on them."
+        },
+        {
+          "name": "Pulled Punch",
+          "damage": "40-",
+          "cost": [
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "If the Defending Pokémon has no damage counters on it, this attack does 40 damage. If it has any damage counters on it, this attack does 10 damage."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-38": {
+      "id": "me55-38",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "38",
+      "image": "https://images.scrydex.com/pokemon/me55-38/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "Tetsu Kayama",
+      "attacks": [
+        {
+          "name": "Targeted Spark",
+          "damage": null,
+          "cost": [
+            "Lightning"
+          ],
+          "text": "This attack does 20 damage to 1 of your opponent's Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-43": {
+      "id": "me55-43",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "43",
+      "image": "https://images.scrydex.com/pokemon/me55-43/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "OOYAMA",
+      "attacks": [
+        {
+          "name": "Tropical Vibes",
+          "damage": null,
+          "cost": [
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "This Pokémon is now Asleep. Draw cards until you have 6 cards in your hand."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-51": {
+      "id": "me55-51",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "51",
+      "image": "https://images.scrydex.com/pokemon/me55-51/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "nagimiso",
+      "attacks": [
+        {
+          "name": "Lightning Crash",
+          "damage": null,
+          "cost": [
+            "Lightning",
+            "Lightning",
+            "Lightning"
+          ],
+          "text": "Discard all Lightning Energy from this Pokémon, and this attack does 90 damage to 1 of your opponent's Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-50": {
+      "id": "me55-50",
+      "name": "Pikachu",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "50",
+      "image": "https://images.scrydex.com/pokemon/me55-50/large",
+      "rarity": "Pikachu Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "80",
+      "artist": "Shimaris Yukichi",
+      "attacks": [
+        {
+          "name": "Satisfied Spark",
+          "damage": "100",
+          "cost": [
+            "Lightning",
+            "Lightning",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-56": {
+      "id": "me55-56",
+      "name": "Zekrom",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "56",
+      "image": "https://images.scrydex.com/pokemon/me55-56/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "130",
+      "artist": "akagi",
+      "attacks": [
+        {
+          "name": "Slash",
+          "damage": "50",
+          "cost": [
+            "Lightning",
+            "Colorless"
+          ],
+          "text": null
+        },
+        {
+          "name": "Nitro Thunder",
+          "damage": "80+",
+          "cost": [
+            "Lightning",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "If this Pokémon has any Fire Energy attaches, this attack does 80 more damage."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-57": {
+      "id": "me55-57",
+      "name": "Zeraora",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "57",
+      "image": "https://images.scrydex.com/pokemon/me55-57/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "110",
+      "artist": "Bun Toujo",
+      "attacks": [
+        {
+          "name": "Rapid Draw",
+          "damage": "20",
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Draw a card."
+        },
+        {
+          "name": "Electrobullet",
+          "damage": "50",
+          "cost": [
+            "Lightning",
+            "Colorless"
+          ],
+          "text": "This attack also does 20 damage to 1 of your opponent's Benched Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-64": {
+      "id": "me55-64",
+      "name": "Mewtwo ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "64",
+      "image": "https://images.scrydex.com/pokemon/me55-64/large",
+      "rarity": "Double Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic",
+        "ex"
+      ],
+      "hp": "230",
+      "artist": "5ban Graphics",
+      "attacks": [
+        {
+          "name": "Photon Bullets",
+          "damage": null,
+          "cost": [
+            "Psychic",
+            "Psychic"
+          ],
+          "text": "This attack does 50 damage to each of your opponent's Pokémon ex. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        },
+        {
+          "name": "Psychic Powers",
+          "damage": "230",
+          "cost": [
+            "Psychic",
+            "Psychic",
+            "Psychic"
+          ],
+          "text": "During your next turn, this Pokémon can't use attacks."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-60": {
+      "id": "me55-60",
+      "name": "Toxtricity",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "60",
+      "image": "https://images.scrydex.com/pokemon/me55-60/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "140",
+      "artist": "Yuriko Akase",
+      "attacks": [
+        {
+          "name": "Light Punch",
+          "damage": "40",
+          "cost": [
+            "Lightning"
+          ],
+          "text": null
+        },
+        {
+          "name": "Thunderous Bolt",
+          "damage": "150",
+          "cost": [
+            "Lightning",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "During your next turn, this Pokémon can't use attacks."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-92": {
+      "id": "me55-92",
+      "name": "Umbreon ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "92",
+      "image": "https://images.scrydex.com/pokemon/me55-92/large",
+      "rarity": "Double Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Stage 1",
+        "ex"
+      ],
+      "hp": "270",
+      "artist": "Keisuke Azuma",
+      "attacks": [
+        {
+          "name": "Lunatic Claw",
+          "damage": "100+",
+          "cost": [
+            "Darkness",
+            "Colorless"
+          ],
+          "text": "If your opponent's Active Pokémon already has any damage counters on it, this attack does 140 more damage."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-112": {
+      "id": "me55-112",
+      "name": "Kommo-o",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "112",
+      "image": "https://images.scrydex.com/pokemon/me55-112/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Dragon"
+      ],
+      "subtypes": [
+        "Stage 2"
+      ],
+      "hp": "180",
+      "artist": "MARINA Chikazawa",
+      "attacks": [
+        {
+          "name": "Blazing Uppercut",
+          "damage": "250",
+          "cost": [
+            "Lightning",
+            "Fighting",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-111": {
+      "id": "me55-111",
+      "name": "Hakamo-o",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "111",
+      "image": "https://images.scrydex.com/pokemon/me55-111/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Dragon"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "90",
+      "artist": "Jiro Sasumo",
+      "attacks": [
+        {
+          "name": "Sharp Fang",
+          "damage": "20",
+          "cost": [
+            "Colorless"
+          ],
+          "text": null
+        },
+        {
+          "name": "Dragon Claw",
+          "damage": "70",
+          "cost": [
+            "Lightning",
+            "Fighting"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-131": {
+      "id": "me55-131",
+      "name": "Lapras",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "131",
+      "image": "https://images.scrydex.com/pokemon/me55-131/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Water"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "130",
+      "artist": "Amelicart",
+      "attacks": [
+        {
+          "name": "Ferry Across",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Search your deck for a Supporter card, reveal it, and put it into your hand. Then, shuffle your deck."
+        },
+        {
+          "name": "Ice Beam",
+          "damage": "80",
+          "cost": [
+            "Water",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "Flip a coin. If heads, your opponent's Active Pokémon is now Paralyzed."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Metal",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-141": {
+      "id": "me55-141",
+      "name": "Galarian Meowth",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "141",
+      "image": "https://images.scrydex.com/pokemon/me55-141/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Metal"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "70",
+      "artist": "OKUBO",
+      "attacks": [
+        {
+          "name": "Pay Day",
+          "damage": "10",
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Draw a card."
+        },
+        {
+          "name": "Treasure Rush",
+          "damage": "10×",
+          "cost": [
+            "Metal"
+          ],
+          "text": "This attack does 10 damage for each card in your hand."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-145": {
+      "id": "me55-145",
+      "name": "Hisuian Zorua",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "145",
+      "image": "https://images.scrydex.com/pokemon/me55-145/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "0313",
+      "attacks": [
+        {
+          "name": "Scratch",
+          "damage": "20",
+          "cost": [
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-147": {
+      "id": "me55-147",
+      "name": "Fuecoco ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "147",
+      "image": "https://images.scrydex.com/pokemon/me55-147/large",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Fire"
+      ],
+      "subtypes": [
+        "Basic",
+        "ex"
+      ],
+      "hp": "210",
+      "artist": "Atsushi Furusawa",
+      "attacks": [
+        {
+          "name": "Singe",
+          "damage": null,
+          "cost": [
+            "Fire"
+          ],
+          "text": "Your opponent's Active Pokémon is now Burned."
+        },
+        {
+          "name": "Cheerful Flame",
+          "damage": "70×",
+          "cost": [
+            "Fire",
+            "Fire",
+            "Colorless"
+          ],
+          "text": "This attack does 70 damage for each Prize card you have taken."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Water",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-150": {
+      "id": "me55-150",
+      "name": "Pikachu ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "150",
+      "image": "https://images.scrydex.com/pokemon/me55-150/large",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic",
+        "ex"
+      ],
+      "hp": "190",
+      "artist": "kantaro",
+      "attacks": [
+        {
+          "name": "Zip-Zap Frenzy",
+          "damage": null,
+          "cost": [
+            "Lightning"
+          ],
+          "text": "You may attach any number of Basic Energy cards from your hand to your Pokémon in any way you like."
+        },
+        {
+          "name": "Thunder",
+          "damage": "200",
+          "cost": [
+            "Lightning",
+            "Lightning",
+            "Colorless"
+          ],
+          "text": "This Pokémon also does 30 damage to itself."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-151": {
+      "id": "me55-151",
+      "name": "Mewtwo ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "151",
+      "image": "https://images.scrydex.com/pokemon/me55-151/large",
+      "rarity": "Special Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic",
+        "ex"
+      ],
+      "hp": "230",
+      "artist": "Yano Keiji",
+      "attacks": [
+        {
+          "name": "Photon Bullets",
+          "damage": null,
+          "cost": [
+            "Psychic",
+            "Psychic"
+          ],
+          "text": "This attack does 50 damage to each of your opponent's Pokémon ex. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        },
+        {
+          "name": "Psychic Powers",
+          "damage": "230",
+          "cost": [
+            "Psychic",
+            "Psychic",
+            "Psychic"
+          ],
+          "text": "During your next turn, this Pokémon can't use attacks."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-B": {
+      "id": "me55-B",
+      "name": "Mew",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "B",
+      "image": "https://images.scrydex.com/pokemon/me55-B/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "YOSHIROTTEN",
+      "attacks": [
+        {
+          "name": "Psychic",
+          "damage": "10+",
+          "cost": [
+            "Psychic",
+            "Psychic"
+          ],
+          "text": "This attack does 40 more damage for each Energy attached to your opponent's Active Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-158": {
+      "id": "me55-158",
+      "name": "Mew ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "158",
+      "image": "https://images.scrydex.com/pokemon/me55-158/large",
+      "rarity": "Futuristic Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic",
+        "ex"
+      ],
+      "hp": "160",
+      "artist": "YOSHIROTTEN",
+      "attacks": [
+        {
+          "name": "Teleportation Burst",
+          "damage": "30",
+          "cost": [
+            "Psychic"
+          ],
+          "text": "You may switch this Pokémon with 1 of your Benched Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55-157": {
+      "id": "me55-157",
+      "name": "Mewtwo ex",
+      "setName": "30th Celebration",
+      "setId": "me55",
+      "series": "Mega Evolution",
+      "number": "157",
+      "image": "https://images.scrydex.com/pokemon/me55-157/large",
+      "rarity": "Futuristic Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Basic",
+        "ex"
+      ],
+      "hp": "230",
+      "artist": "YOSHIROTTEN",
+      "attacks": [
+        {
+          "name": "Photon Bullets",
+          "damage": null,
+          "cost": [
+            "Psychic",
+            "Psychic"
+          ],
+          "text": "This attack does 50 damage to each of your opponent's Pokémon ex. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        },
+        {
+          "name": "Psychic Powers",
+          "damage": "230",
+          "cost": [
+            "Psychic",
+            "Psychic",
+            "Psychic"
+          ],
+          "text": "During your next turn, this Pokémon can't use attacks."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-25": {
+      "id": "me55c-25",
+      "name": "Sneasel",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "25",
+      "image": "https://images.scrydex.com/pokemon/me55c-25/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "60",
+      "artist": "Ken Sugimori",
+      "attacks": [
+        {
+          "name": "Fury Swipes",
+          "damage": "10×",
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Flip 3 coins. This attack does 10 damage times the number of heads."
+        },
+        {
+          "name": "Beat Up",
+          "damage": "20×",
+          "cost": [
+            "Darkness",
+            "Darkness"
+          ],
+          "text": "Flip a coin for each of your Pokémon in play (including this one). This attack does 20 damage times the number of heads."
+        }
+      ],
+      "weaknesses": [],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-41": {
+      "id": "me55c-41",
+      "name": "Greninja BREAK",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "41",
+      "image": "https://images.scrydex.com/pokemon/me55c-41/large",
+      "rarity": "Rare BREAK",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Water"
+      ],
+      "subtypes": [
+        "BREAK"
+      ],
+      "hp": "170",
+      "artist": "5ban Graphics",
+      "attacks": [],
+      "weaknesses": [],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-57": {
+      "id": "me55c-57",
+      "name": "Buzzwole-GX",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "57",
+      "image": "https://images.scrydex.com/pokemon/me55c-57/large",
+      "rarity": "Rare Holo GX",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Fighting"
+      ],
+      "subtypes": [
+        "Basic",
+        "GX"
+      ],
+      "hp": "190",
+      "artist": "5ban Graphics",
+      "attacks": [
+        {
+          "name": "Jet Punch",
+          "damage": "30",
+          "cost": [
+            "Fighting"
+          ],
+          "text": "This attack does 30 damage to 1 of your opponent's Benched Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        },
+        {
+          "name": "Knuckle Impact",
+          "damage": "160",
+          "cost": [
+            "Fighting",
+            "Fighting",
+            "Fighting"
+          ],
+          "text": "This Pokémon can't attack during your next turn."
+        },
+        {
+          "name": "Absorption-GX",
+          "damage": "40×",
+          "cost": [
+            "Fighting",
+            "Fighting",
+            "Fighting"
+          ],
+          "text": "This attack does 40 damage for each of your remaining Prize cards. (You can't use more than 1 GX attack in a game.)"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Psychic",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-58": {
+      "id": "me55c-58",
+      "name": "Pikachu",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "58",
+      "image": "https://images.scrydex.com/pokemon/me55c-58/large",
+      "rarity": "Common",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "40",
+      "artist": "Mitsuhiro Arita",
+      "attacks": [
+        {
+          "name": "Gnaw",
+          "damage": "10",
+          "cost": [
+            "Colorless"
+          ],
+          "text": null
+        },
+        {
+          "name": "Thunder Jolt",
+          "damage": "30",
+          "cost": [
+            "Lightning",
+            "Colorless"
+          ],
+          "text": "Flip a coin. If tails, Pikachu does 10 damage to itself."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-85": {
+      "id": "me55c-85",
+      "name": "Rayquaza-EX",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "85",
+      "image": "https://images.scrydex.com/pokemon/me55c-85/large",
+      "rarity": "Rare Holo EX",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Dragon"
+      ],
+      "subtypes": [
+        "Basic",
+        "EX"
+      ],
+      "hp": "170",
+      "artist": "Eske Yoshinob",
+      "attacks": [
+        {
+          "name": "Celestial Roar",
+          "damage": null,
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Discard the top 3 cards of your deck. If any of those cards are Energy cards, attach them to this Pokémon."
+        },
+        {
+          "name": "Dragon Burst",
+          "damage": "60×",
+          "cost": [
+            "Fire",
+            "Lightning"
+          ],
+          "text": "Discard all basic Fire Energy or all basic Lightning Energy attached to this Pokémon. This attack does 60 damage times the number of Energy cards you discarded."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Dragon",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-94": {
+      "id": "me55c-94",
+      "name": "Gengar",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "94",
+      "image": "https://images.scrydex.com/pokemon/me55c-94/large",
+      "rarity": "Rare Prime",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "Stage 2"
+      ],
+      "hp": "130",
+      "artist": "Takashi Yamaguchi",
+      "attacks": [
+        {
+          "name": "Hurl into Darkness",
+          "damage": null,
+          "cost": [
+            "Psychic"
+          ],
+          "text": "Look at your opponent's hand and choose a number of Pokémon you find there up to the number of Psychic Energy attached to Gengar. Put the Pokémon you chose in the Lost Zone."
+        },
+        {
+          "name": "Cursed Drop",
+          "damage": null,
+          "cost": [
+            "Psychic",
+            "Colorless"
+          ],
+          "text": "Put 4 damage counters on your opponent's Pokémon in any way you like."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-100": {
+      "id": "me55c-100",
+      "name": "Darkrai & Cresselia LEGEND",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "100",
+      "image": "https://images.scrydex.com/pokemon/me55c-100/large",
+      "rarity": "LEGEND",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness",
+        "Psychic"
+      ],
+      "subtypes": [
+        "LEGEND"
+      ],
+      "hp": "150",
+      "artist": "Noriko Takaya,                   \n                    \n                      Shinji Higuchi",
+      "attacks": [
+        {
+          "name": "Lost Crisis",
+          "damage": "100",
+          "cost": [
+            "Darkness",
+            "Darkness",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "Choose 2 Energy attached to Darkrai & Cresselia LEGEND and put them in the Lost Zone. If any of your opponent's Pokémon would be Knocked Out by damage from this attack, put that Pokémon and all cards attached to it in the Lost Zone instead of discarding it."
+        },
+        {
+          "name": "Moon's Invite",
+          "damage": null,
+          "cost": [
+            "Psychic"
+          ],
+          "text": "Move as many damage counters on your opponent's Pokémon as you like to any of your opponent's other Pokémon in any way you like."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        },
+        {
+          "type": "Psychic",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-18": {
+      "id": "me55c-18",
+      "name": "Misty",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "18",
+      "image": "https://images.scrydex.com/pokemon/me55c-18/large",
+      "rarity": "Rare Holo",
+      "releaseDate": "2026/09/16",
+      "types": [],
+      "subtypes": [],
+      "hp": null,
+      "artist": "Ken Sugimori",
+      "attacks": [],
+      "weaknesses": [],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-101": {
+      "id": "me55c-101",
+      "name": "N",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "101",
+      "image": "https://images.scrydex.com/pokemon/me55c-101/large",
+      "rarity": "Rare Ultra",
+      "releaseDate": "2026/09/16",
+      "types": [],
+      "subtypes": [
+        "Supporter"
+      ],
+      "hp": null,
+      "artist": "Ken Sugimori",
+      "attacks": [],
+      "weaknesses": [],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-19": {
+      "id": "me55c-19",
+      "name": "Dark Tyranitar",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "19",
+      "image": "https://images.scrydex.com/pokemon/me55c-19/large",
+      "rarity": "Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Darkness"
+      ],
+      "subtypes": [
+        "Stage 2"
+      ],
+      "hp": "120",
+      "artist": "Nakaoka",
+      "attacks": [
+        {
+          "name": "Grind",
+          "damage": "10+",
+          "cost": [
+            "Colorless"
+          ],
+          "text": "Does 10 damage plus 10 more damage for each Energy attached to Dark Tyranitar."
+        },
+        {
+          "name": "Spinning Tail",
+          "damage": null,
+          "cost": [
+            "Darkness",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "Does 20 damage to each of your opponent's Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        },
+        {
+          "name": "Bite Off",
+          "damage": "70+",
+          "cost": [
+            "Darkness",
+            "Darkness",
+            "Colorless",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "If the Defending Pokémon is Pokémon-ex, this attack does 70 damage plus 50 more damage."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-11": {
+      "id": "me55c-11",
+      "name": "Metagross",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "11",
+      "image": "https://images.scrydex.com/pokemon/me55c-11/large",
+      "rarity": "Rare Holo",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning",
+        "Metal"
+      ],
+      "subtypes": [
+        "Stage 2"
+      ],
+      "hp": "100",
+      "artist": "Masakazu Fukuda",
+      "attacks": [
+        {
+          "name": "Crush and Burn",
+          "damage": "30+",
+          "cost": [
+            "Lightning",
+            "Metal"
+          ],
+          "text": "You may discard as many Energy cards as you like attached to your Pokémon in play. If you do, this attack does 30 damage plus 20 more damage for each Energy card you discarded."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-106": {
+      "id": "me55c-106",
+      "name": "Shining Celebi",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "106",
+      "image": "https://images.scrydex.com/pokemon/me55c-106/large",
+      "rarity": "Rare Secret",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Grass"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "50",
+      "artist": "Hironobu Yoshida",
+      "attacks": [
+        {
+          "name": "Healing Water",
+          "damage": null,
+          "cost": [
+            "Water"
+          ],
+          "text": "Remove a number of damage counters from 1 of your Benched Pokémon equal to the number of Water Energy cards attached to Shining Celebi. If the Pokémon has fewer damage counters than that, remove all of them."
+        },
+        {
+          "name": "Miracle Leaf",
+          "damage": "10",
+          "cost": [
+            "Grass",
+            "Psychic"
+          ],
+          "text": "Flip a number of coins equal to the number of Energy attached to the Defending Pokémon. If you get 1 or more heads, the Defending Pokémon is now Asleep, Confused, or Poisoned (your choice)."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-114": {
+      "id": "me55c-114",
+      "name": "Mew VMAX",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "114",
+      "image": "https://images.scrydex.com/pokemon/me55c-114/large",
+      "rarity": "Holo Rare VMAX",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Psychic"
+      ],
+      "subtypes": [
+        "VMAX"
+      ],
+      "hp": "310",
+      "artist": "5ban Graphics",
+      "attacks": [
+        {
+          "name": "Cross Fusion Strike",
+          "damage": null,
+          "cost": [
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "Choose 1 of your Benched Fusion Strike Pokémon's attacks and use it as this attack."
+        },
+        {
+          "name": "Max Miracle",
+          "damage": "130",
+          "cost": [
+            "Psychic",
+            "Psychic"
+          ],
+          "text": "This attack's damage isn't affected by any effects on your opponent's Active Pokémon."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-138": {
+      "id": "me55c-138",
+      "name": "Zacian V",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "138",
+      "image": "https://images.scrydex.com/pokemon/me55c-138/large",
+      "rarity": "Holo Rare V",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Metal"
+      ],
+      "subtypes": [
+        "Basic",
+        "V"
+      ],
+      "hp": "220",
+      "artist": "5ban Graphics",
+      "attacks": [
+        {
+          "name": "Brave Blade",
+          "damage": "230",
+          "cost": [
+            "Metal",
+            "Metal",
+            "Metal"
+          ],
+          "text": "During your next turn, this Pokémon can't attack."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-149": {
+      "id": "me55c-149",
+      "name": "Lugia",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "149",
+      "image": "https://images.scrydex.com/pokemon/me55c-149/large",
+      "rarity": "Rare Secret",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "80",
+      "artist": "Naoyo Kimura",
+      "attacks": [
+        {
+          "name": "Psychic",
+          "damage": "10×",
+          "cost": [
+            "Psychic",
+            "Fire"
+          ],
+          "text": "This attack does 10 damage times the number of Energy cards attached to the Defending Pokémon."
+        },
+        {
+          "name": "Steam Blast",
+          "damage": "50",
+          "cost": [
+            "Water",
+            "Water",
+            "Fire",
+            "Colorless"
+          ],
+          "text": "Discard an Energy card attached to Lugia."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Psychic",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-108": {
+      "id": "me55c-108",
+      "name": "Scizor ex",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "108",
+      "image": "https://images.scrydex.com/pokemon/me55c-108/large",
+      "rarity": "Rare Holo ex",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Metal"
+      ],
+      "subtypes": [
+        "Stage 1",
+        "ex"
+      ],
+      "hp": "120",
+      "artist": "Mitsuhiro Arita",
+      "attacks": [
+        {
+          "name": "Steel Wing",
+          "damage": "40",
+          "cost": [
+            "Metal",
+            "Colorless"
+          ],
+          "text": "During your opponent's next turn, any damage done to Scizor ex by attacks is reduced by 20 (after applying Weakness and Resistance)."
+        },
+        {
+          "name": "Cross-Cut",
+          "damage": "50+",
+          "cost": [
+            "Colorless",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "If the Defending Pokémon is an Evolved Pokémon, this attack does 50 damage plus 30 more damage."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fire",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-123": {
+      "id": "me55c-123",
+      "name": "Arceus VSTAR",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "123",
+      "image": "https://images.scrydex.com/pokemon/me55c-123/large",
+      "rarity": "Holo Rare VSTAR",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "VSTAR"
+      ],
+      "hp": "280",
+      "artist": "5ban Graphics",
+      "attacks": [
+        {
+          "name": "Trinity Nova",
+          "damage": "200",
+          "cost": [
+            "Colorless",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "Search your deck for up to 3 basic Energy cards and attach them to your Pokémon V in any way you like. Then, shuffle your deck."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-50": {
+      "id": "me55c-50",
+      "name": "Raikou",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "50",
+      "image": "https://images.scrydex.com/pokemon/me55c-50/large",
+      "rarity": "Amazing Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "110",
+      "artist": "Hideki Ishikawa",
+      "attacks": [
+        {
+          "name": "Amazing Shot",
+          "damage": "120",
+          "cost": [
+            "Grass",
+            "Lightning",
+            "Metal"
+          ],
+          "text": "This attack also does 120 damage to 1 of your opponent's Benched Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me55c-203": {
+      "id": "me55c-203",
+      "name": "Magikarp",
+      "setName": "30th Celebration: Classic Collection",
+      "setId": "me55c",
+      "series": "Mega Evolution",
+      "number": "203",
+      "image": "https://images.scrydex.com/pokemon/me55c-203/large",
+      "rarity": "Illustration Rare",
+      "releaseDate": "2026/09/16",
+      "types": [
+        "Water"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "30",
+      "artist": "Shinji Kanda",
+      "attacks": [
+        {
+          "name": "Expert Splasher",
+          "damage": "10+",
+          "cost": [
+            "Water"
+          ],
+          "text": "Flip 2 coins. If both of them are heads, this attack does 20 more damage."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Lightning",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
     }
   },
   "sets": {
@@ -193759,6 +201172,22 @@
       "releaseDate": "2026/07/17",
       "total": 120,
       "logoUrl": "https://images.scrydex.com/pokemon/me5-logo/logo"
+    },
+    "me55": {
+      "id": "me55",
+      "name": "30th Celebration",
+      "series": "Mega Evolution",
+      "releaseDate": "2026/09/16",
+      "total": 161,
+      "logoUrl": "https://images.scrydex.com/pokemon/me55-logo/logo"
+    },
+    "me55c": {
+      "id": "me55c",
+      "name": "30th Celebration: Classic Collection",
+      "series": "Mega Evolution",
+      "releaseDate": "2026/09/16",
+      "total": 30,
+      "logoUrl": "https://images.scrydex.com/pokemon/me55c-logo/logo"
     }
   }
 }
