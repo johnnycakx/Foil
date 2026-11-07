@@ -9,6 +9,8 @@ import { FOIL_PRO_LOOKUP_KEY, ensureProProductAndPrice } from "@/lib/stripe-setu
 import { stripe, PRO_TRIAL_DAYS } from "@/lib/stripe";
 import { trialAlreadyUsed } from "@/lib/stripe-trial";
 import { postError } from "@/lib/notifications/discord";
+import { logFunnelEvent, hashVisitorId } from "@/lib/telemetry/funnel-events";
+import { clientIpKey } from "@/lib/start/guards";
 
 async function siteOrigin(): Promise<string> {
   const h = await headers();
@@ -130,6 +132,18 @@ export async function createCheckoutSession(formData?: FormData): Promise<void> 
         metadata: { guest_checkout: "true", ...attribution },
       };
     }
+
+    // Funnel: checkout_start — fired the instant before Stripe is called, so it
+    // captures INTENT even if the Stripe call then fails (the exact preview bug
+    // that motivates the honest-fallback below). Fire-and-forget; a telemetry
+    // hiccup must never touch the purchase path.
+    void logFunnelEvent({
+      stage: "checkout_start",
+      visitorId: hashVisitorId(clientIpKey(await headers())),
+      utmSource: attribution.utm_source ?? null,
+      utmCampaign: attribution.utm_campaign ?? null,
+      meta: { guest: user ? false : true, hook: attribution.hook ?? null },
+    }).catch(() => {});
 
     const session = await stripe().checkout.sessions.create(params);
     checkoutUrl = session.url ?? null;

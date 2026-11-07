@@ -46,7 +46,7 @@ const ENTRIES: AlertEmailInputs[] = [
     kind: "already_below",
     basis: "target",
     targetPriceCents: 50000,
-    comp: { avg30dCents: 99800, saleCount: 53, tierLabel: "Near Mint", computedAt: new Date().toISOString() },
+    comp: { avg30dCents: 99800, saleCount: 53, tierLabel: "Near Mint", computedAt: new Date().toISOString(), soldAsOfIso: new Date(Date.now() - 3 * 86400000).toISOString() },
     cardPageUrl: "https://foiltcg.com/cards/base1-2-blastoise",
   }),
   entry({
@@ -54,7 +54,7 @@ const ENTRIES: AlertEmailInputs[] = [
     setName: "Base",
     currentPriceCents: 41200,
     basis: "market",
-    comp: { avg30dCents: 52100, saleCount: 38, tierLabel: "Near Mint", computedAt: new Date().toISOString() },
+    comp: { avg30dCents: 52100, saleCount: 38, tierLabel: "Near Mint", computedAt: new Date().toISOString(), soldAsOfIso: new Date(Date.now() - 3 * 86400000).toISOString() },
     cardPageUrl: "https://foiltcg.com/cards/base1-4-charizard",
   }),
   entry({
@@ -64,7 +64,7 @@ const ENTRIES: AlertEmailInputs[] = [
     kind: "dropped",
     basis: "target",
     targetPriceCents: 190000,
-    comp: { avg30dCents: 221400, saleCount: 27, tierLabel: "Near Mint", computedAt: new Date().toISOString() },
+    comp: { avg30dCents: 221400, saleCount: 27, tierLabel: "Near Mint", computedAt: new Date().toISOString(), soldAsOfIso: new Date(Date.now() - 3 * 86400000).toISOString() },
     cardPageUrl: "https://foiltcg.com/cards/swsh7-215-umbreon-vmax-alt-art",
     variantLabel: "Alt Art",
   }),
@@ -73,7 +73,7 @@ const ENTRIES: AlertEmailInputs[] = [
     setName: "Silver Tempest",
     currentPriceCents: 11800,
     basis: "market",
-    comp: { avg30dCents: 14900, saleCount: 41, tierLabel: "Near Mint", computedAt: new Date().toISOString() },
+    comp: { avg30dCents: 14900, saleCount: 41, tierLabel: "Near Mint", computedAt: new Date().toISOString(), soldAsOfIso: new Date(Date.now() - 3 * 86400000).toISOString() },
     cardPageUrl: "https://foiltcg.com/cards/swsh12-186-lugia-v-alt-art",
   }),
   entry({
@@ -82,7 +82,7 @@ const ENTRIES: AlertEmailInputs[] = [
     currentPriceCents: 16200,
     kind: "dropped",
     basis: "market",
-    comp: { avg30dCents: 18900, saleCount: 33, tierLabel: "Near Mint", computedAt: new Date().toISOString() },
+    comp: { avg30dCents: 18900, saleCount: 33, tierLabel: "Near Mint", computedAt: new Date().toISOString(), soldAsOfIso: new Date(Date.now() - 3 * 86400000).toISOString() },
     cardPageUrl: "https://foiltcg.com/cards/swsh11-186-giratina-v-alt-art",
   }),
   entry({
@@ -99,7 +99,7 @@ const ENTRIES: AlertEmailInputs[] = [
     setName: "Evolving Skies",
     currentPriceCents: 39800,
     basis: "market",
-    comp: { avg30dCents: 45200, saleCount: 22, tierLabel: "Near Mint", computedAt: new Date().toISOString() },
+    comp: { avg30dCents: 45200, saleCount: 22, tierLabel: "Near Mint", computedAt: new Date().toISOString(), soldAsOfIso: new Date(Date.now() - 3 * 86400000).toISOString() },
     cardPageUrl: "https://foiltcg.com/cards/swsh7-218-rayquaza-vmax-alt-art",
   }),
 ];

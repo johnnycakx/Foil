@@ -19,6 +19,28 @@ Append new entries at the TOP so the bot's "recent 30" window sees the newest id
 ---
 
 ---
+date: 2026-07-14
+category: monetization
+status: captured
+---
+## the-alert-is-the-wedge — sold data is commoditized in Pokémon; only the done-for-you alert is defensible
+
+A competitive benchmark (7 Pokémon tools + the sports-card paid comps) found "we show real sold prices" is table stakes here, not a differentiator: PokePrices.io (free, nightly, sold-only), CardVex (free eBay sold history), PokeScope (free tier) all lead with it, and PriceCharting's Collector tier is ~$6/mo (our exact price) for a sold-price GUIDE. What the paid players (Card Ladder $20, Market Movers, PokeData) actually charge for is speed + condition-target specificity + a done-for-you alert — which is Foil's ADR-091 engine: an alert on a condition-aware discount vs a real dated sold comp. Free alert tools (TCGSniper, Pallet) alert on keyword listing matches, not a discount-vs-sold-comp. So the pitch is the ALERT, sold-truth is the free trust layer. Already actioned this session (the /pro re-anchor + /start condition targeting); the broader implication is a monetization-strategy re-weighting worth a Sunday look.
+
+**Context:** the honest-comp-age audit competitive benchmark (SESSION-LOG 2026-07-14); it re-anchored the /pro pitch and amended STRATEGY-SOLD-TRUTH-POSITIONING. See [[ebay-marketplace-insights-application]] — owning the sold source strengthens the trust layer under the wedge.
+
+---
+date: 2026-07-14
+category: ux
+status: captured
+---
+## binder-condition-picker-v2 — the /start condition control shipped minimal; the whole-flow design is Track B's
+
+The /start binder now carries a per-pocket raw-condition selector (audit 2026-07-14) so the primary funnel finally delivers condition-targeted alerts. It shipped as a compact per-pocket <select> defaulting to "Any" — functional, but the FLOW question (per-pocket picker vs a binder-level default? a Pro-only upsell framing? graded targeting, which still lives only on the card page?) is genuinely part of the whole-experience UX design, not a bolt-on. When Track B (docs/UX-DIRECTION.md) is authored, design the condition control as part of the seated-card beat rather than treating the current minimal version as final.
+
+**Context:** Beat 4 of the honest-comp-age audit; John chose "build it now" over deferring, but flagged the UX-flow depth belongs in Track B.
+
+---
 date: 2026-07-13
 category: product
 status: captured

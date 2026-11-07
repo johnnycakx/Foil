@@ -98,7 +98,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     const admin = supabaseAdmin();
     const { data, error } = await admin
       .from("market_movers")
-      .select("avg30d, sale_count, matched_tier, computed_at")
+      .select("avg30d, sale_count, matched_tier, computed_at, sold_as_of")
       .eq("card_slug", cardSlug)
       .maybeSingle();
     if (error || !data) return null;
@@ -112,6 +112,9 @@ export async function GET(request: Request): Promise<NextResponse> {
       saleCount: (data.sale_count as number | null) ?? 0,
       tierLabel: tierLabel((data.matched_tier as string | null) ?? "NEAR_MINT"),
       computedAt,
+      // The date the comp is TRUE OF (the market's last trade), as opposed to
+      // computedAt (when our cron cached it). The evidence line cites this one.
+      soldAsOfIso: (data.sold_as_of as string | null) ?? null,
     };
   };
 

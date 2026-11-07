@@ -16,6 +16,7 @@
 
 import { cache } from "react";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -35,6 +36,10 @@ import { SoldHistoryPanel } from "@/components/cards/sold-history-panel";
 import { AddToVault } from "@/components/cards/add-to-vault";
 import { aboutListingCopy } from "@/lib/cards/about-copy";
 import { getHeroSoldStat } from "@/lib/cards/sold-headline";
+import { compAgeLabel } from "@/lib/cards/comp-age";
+import { logFunnelEvent, hashVisitorId } from "@/lib/telemetry/funnel-events";
+import { clientIpKey } from "@/lib/start/guards";
+import { sanitizeUtmValue } from "@/lib/newsletter/subscribers";
 import { resolveListedFallback } from "@/lib/pricing/listed-fallback";
 import { deriveAvailableVariants } from "@/lib/poketrace/variant";
 import { getHydratedVariants } from "@/lib/poketrace/hydration";
@@ -117,12 +122,31 @@ export default async function CardPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ v?: string; c?: string; src?: string }>;
+  searchParams: Promise<{ v?: string; c?: string; src?: string; utm_source?: string; utm_campaign?: string }>;
 }) {
   const { slug } = await params;
-  const { v: selectedVariant, c: selectedCondition, src } = await searchParams;
+  const { v: selectedVariant, c: selectedCondition, src, utm_source, utm_campaign } = await searchParams;
   const entry = getCatalogEntry(slug);
   if (!entry) notFound();
+
+  // Funnel: card_view — ATTRIBUTED visits only. The card page is force-dynamic
+  // and crawler-heavy; logging every render would swamp the table and teach us
+  // nothing, so we record it only when an ad landed here (src/utm present). The
+  // funnel's unattributed denominator is Vercel Analytics' page views; this
+  // table is for tying paid traffic to conversions. Fire-and-forget.
+  if (src || utm_source) {
+    const hdrs = await headers();
+    void logFunnelEvent({
+      stage: "card_view",
+      visitorId: hashVisitorId(clientIpKey(hdrs)),
+      // Sanitize on write — same [a-z0-9-]{0,64} discipline as /api/start and
+      // billing-actions, so these GET-rendered sites can't push arbitrary
+      // strings into funnel_events (security-review 2026-07-14 consistency fix).
+      utmSource: sanitizeUtmValue(utm_source ?? src),
+      utmCampaign: sanitizeUtmValue(utm_campaign),
+      meta: { slug },
+    }).catch(() => {});
+  }
 
   const card = await getCard(entry.pokemonTcgId);
   const tier = cardTier(slug);
@@ -146,10 +170,14 @@ export default async function CardPage({
   // cards → the hero renders the honest pending line, never a figure.
   // getSoldHistory is in-process cached, so this adds no network call beyond
   // the panel's own fetch.
+  // One clock for the whole render: the hero's freshness gate and the age line
+  // it prints must describe the SAME instant, or a comp could resolve fresh and
+  // then label itself a day older.
+  const nowMs = Date.now();
   const heroStat =
     tier === "metadata-only"
       ? null
-      : await getHeroSoldStat(variants, selectedVariant, selectedCondition, Date.now());
+      : await getHeroSoldStat(variants, selectedVariant, selectedCondition, nowMs);
 
   // LISTED fallback (pricing-bridge / ADR-118). When the sold spine is dark —
   // a lapsed PokeTrace key (R-070) makes getSoldHistory return null on EVERY
@@ -303,6 +331,13 @@ export default async function CardPage({
                 <p className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span className="font-display text-4xl font-semibold tabular-nums text-foil-cream sm:text-5xl">
                     {formatUsd(heroStat.value)}
+                  </span>
+                  {/* The age, always. A sold figure is a claim about a MOMENT —
+                      the window is anchored to the last recorded sale, not to
+                      today — and rendering it bare was the 2026-07-14 audit's
+                      central defect. Same register as the listed branch below. */}
+                  <span className="text-sm text-foil-cream/60">
+                    {compAgeLabel(heroStat.asOfIso, nowMs)}
                   </span>
                   {heroStat.saleCount != null && (
                     <span className="text-sm text-foil-cream/60">

@@ -51,6 +51,17 @@ The existing ads A/B was daily-drop vs grail-watch; add a **buyer-protection cel
 ## What this does NOT change
 ICP (modern chaser), the $6 offer shape, the two-voice architecture, the register rules (card-shop language), the honesty DNA. It sharpens the PAIN (overpaying) and the PROOF (sold-vs-listed gap), not the product.
 
+## AMENDMENT (audit 2026-07-14) — the ALERT is the wedge; sold-truth is the TRUST LAYER
+A competitive benchmark this session (7 Pokémon-specific tools + the sports-card paid comps, cited in `SESSION-LOG.md`) sharpened one thing this doc under-weighted: **in Pokémon specifically, "we show real sold prices" is no longer a differentiator — it is table stakes.** PokePrices.io (free, nightly, sold-only), CardVex (free eBay sold history), and PokeScope (free tier) already lead with exactly the sold-vs-asking claim, for $0; PriceCharting's Collector tier is ~$6/mo (our exact price) for a sold-price GUIDE. Guardrail #3 already forbade the "only PriceCharting exists" overclaim — this makes it concrete: **do not build the PITCH on the sold data itself.**
+
+What the paid players (Card Ladder $20, Market Movers, PokeData) actually charge for is **speed + condition-target specificity + a done-for-you alert** — which is pillar 3 (Done-for-you) and the ADR-091 engine we already ship: an alert that fires on a **condition-aware discount against a real, dated sold comp** (15% under the 30-day sold average). Free alert tools (TCGSniper, Pallet) alert on *keyword listing matches*; none alert on a discount-vs-sold-comp. **That is the wedge.**
+
+So the emphasis order is now explicit:
+- **Sold-truth = the TRUST LAYER** (free, table stakes, the reason to believe the alert). Keep it honest and dated; do not headline it as if novel.
+- **The done-for-you ALERT = the PITCH** (what $6 buys, what no free rival matches).
+
+Concretely shipped this session (`honest-comp-age` branch): the `/pro` value anchor was re-anchored off Card Ladder (a **sports-card** tool — the old "nearest tool to this" line was a category mismatch) onto the alert wedge, citing no unverifiable competitor price (AGENTS.md). "Instant" is NOT claimed — hourly is the cron floor; copy says "every hour, first in line." And the `/start` binder now carries a per-pocket condition target, so the primary funnel finally DELIVERS the condition-specific alert the pitch leans on (it hardcoded `any-raw` before). The sequence below still holds — this amendment changes the EMPHASIS of the copy, not the precondition that the spine must be honest first (now satisfied: every sold figure is dated per this branch).
+
 ## Recommended sequence
 1. **Land `pricing-bridge` (Track A)** — the honest spine. Non-negotiable precondition.
 2. Ratify these pillars (John).

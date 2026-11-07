@@ -20,6 +20,7 @@ import { subscriptionTier, periodEndIso, cancelState } from "@/lib/stripe-entitl
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { trialAlreadyUsed } from "@/lib/stripe-trial";
 import { sendTransactionalEmail } from "@/lib/notifications/resend";
+import { logFunnelEvent } from "@/lib/telemetry/funnel-events";
 
 export const runtime = "nodejs";
 
@@ -237,6 +238,16 @@ export async function POST(req: NextRequest) {
             // email, link or create it, then send the sign-in link.
             await resolveGuestCheckout(session, sub);
           }
+          // Funnel: trial_start — the terminal stage, fired exactly once per
+          // completed checkout (this event is one-per-purchase). Server-to-
+          // server, so there is no visitor IP; attribution rides the utm the
+          // billing action stamped on the subscription. Fire-and-forget.
+          void logFunnelEvent({
+            stage: "trial_start",
+            utmSource: (sub.metadata?.utm_source as string | undefined) ?? null,
+            utmCampaign: (sub.metadata?.utm_campaign as string | undefined) ?? null,
+            meta: { status: sub.status, guest: supabaseUserId ? false : true },
+          }).catch(() => {});
         }
         break;
       }

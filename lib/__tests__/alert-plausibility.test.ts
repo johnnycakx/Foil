@@ -40,7 +40,7 @@ const FIXTURE = JSON.parse(
 ) as { title: string; price: { value: string; currency: string } };
 
 function comp(avg30dCents: number): SoldComp {
-  return { avg30dCents, saleCount: 34, tierLabel: "Near Mint", computedAt: NOW.toISOString() };
+  return { avg30dCents, saleCount: 34, tierLabel: "Near Mint", computedAt: NOW.toISOString(), soldAsOfIso: null };
 }
 
 function rows(extra: Partial<WatchlistRow>[]): WatchlistRow[] {

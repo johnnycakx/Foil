@@ -97,9 +97,12 @@ export function windowedValue(stat: SoldStat): number | null {
   return stat.avg30d ?? stat.median30d;
 }
 
-/** What a surface may show for this tier right now. */
+/** What a surface may show for this tier right now. BOTH kinds carry their
+ *  date: a windowed figure is a claim about a moment too (its window is
+ *  anchored to `lastUpdated`, not to today), and rendering it undated was the
+ *  2026-07-14 audit's central defect. See lib/cards/comp-age.ts. */
 export type SoldDisplay =
-  | { kind: "windowed"; value: number }
+  | { kind: "windowed"; value: number; asOfIso: string }
   | { kind: "last-sale"; value: number; atIso: string };
 
 /** Resolve a tier stat to its honest display: a fresh windowed value renders
@@ -107,7 +110,12 @@ export type SoldDisplay =
  *  its date), or nothing. */
 export function displayFor(stat: SoldStat, nowMs: number): SoldDisplay | null {
   const windowed = windowedValue(stat);
-  if (windowed != null && isFreshStat(stat, nowMs)) return { kind: "windowed", value: windowed };
+  // isFreshStat is only true for a parseable, non-null lastUpdated, so the
+  // windowed branch always has a date to carry — the `??` never fires, it just
+  // proves to the type system what the freshness gate already guaranteed.
+  if (windowed != null && isFreshStat(stat, nowMs)) {
+    return { kind: "windowed", value: windowed, asOfIso: stat.lastUpdated ?? "" };
+  }
   if (stat.avg != null && stat.lastUpdated) return { kind: "last-sale", value: stat.avg, atIso: stat.lastUpdated };
   return null;
 }
@@ -203,6 +211,10 @@ export type SoldHeadlineModel = {
   value: number;
   saleCount: number | null;
   approxSaleCount: boolean;
+  /** WHEN this figure's window closed (the tier's most recent recorded sale).
+   *  Non-optional on purpose: a headline that cannot say when it is true may
+   *  not render. Surfaces pass it through lib/cards/comp-age.ts. */
+  asOfIso: string;
 };
 
 export type SoldPanelModel = {
@@ -244,11 +256,16 @@ function rowFor(history: SoldHistory | null, tier: string, nowMs: number): SoldR
 
 function headlineFromRow(row: SoldRowModel | null): SoldHeadlineModel | null {
   if (!row || row.display.kind !== "windowed") return null;
+  // An undated windowed figure is not a headline we may stand behind — null it
+  // rather than render a number that cannot say when it was true. In practice
+  // the freshness gate makes this unreachable; it is the belt to that braces.
+  if (!row.display.asOfIso) return null;
   return {
     tierKey: row.tier,
     value: row.display.value,
     saleCount: row.saleCount,
     approxSaleCount: row.approxSaleCount,
+    asOfIso: row.display.asOfIso,
   };
 }
 

@@ -132,6 +132,9 @@ export async function GET(request: Request): Promise<NextResponse> {
       sale_count: m.saleCount,
       matched_tier: "NEAR_MINT",
       computed_at: runComputedAt,
+      // WHEN the market last actually traded this card — not when we cached it.
+      // The alert's evidence line cites this; computed_at would flatter it.
+      sold_as_of: m.soldAsOfIso || null,
     }));
     const admin = supabaseAdmin();
     const { error } = await admin.from("market_movers").upsert(rows, { onConflict: "card_slug" });

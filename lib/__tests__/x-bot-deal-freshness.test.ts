@@ -29,6 +29,7 @@ function mover(over: Partial<MoverRow> = {}): MoverRow {
     saleCount: 88,
     matchedTier: "NEAR_MINT",
     computedAt: new Date(NOW - 60 * 60 * 1000).toISOString(), // 1h old = fresh
+    soldAsOfIso: null,
     ...over,
   };
 }

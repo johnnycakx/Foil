@@ -37,6 +37,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { subscribeEmail } from "@/lib/beehiiv";
 import { recordSubscriber, sanitizeUtmValue } from "@/lib/newsletter/subscribers";
 import { upsertWatchlist } from "@/lib/wishlist/upsert";
+import { logFunnelEvent, hashVisitorId } from "@/lib/telemetry/funnel-events";
 import { checkFreeWatchCap } from "@/lib/wishlist/free-cap";
 import { getAlertSuppression } from "@/lib/wishlist/pause";
 import { postError } from "@/lib/notifications/discord";
@@ -122,6 +123,10 @@ export async function POST(request: Request): Promise<NextResponse> {
     slug: string;
     /** null = blank target ("alert at ≥15% under the 30-day sold avg"). */
     target_price_cents: number | null;
+    /** Raw condition the alert targets ("any-raw" default). Zod already
+     *  constrained it to the raw ladder; this carries it to the upsert so the
+     *  binder finally delivers condition-targeted alerts (audit 2026-07-14). */
+    condition: string;
   };
   const accepted: AcceptedRow[] = [];
   const rejected: { id: string; reason: string }[] = [];
@@ -140,6 +145,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     accepted.push({
       slug: catalogSlug,
       target_price_cents: card.target_price_cents ?? null,
+      condition: card.condition ?? "any-raw",
     });
   }
 
@@ -211,7 +217,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         email,
         card_slug: row.slug,
         variant: "default",
-        condition: "any-raw",
+        condition: row.condition,
         target_price_cents: row.target_price_cents,
         src,
       },
@@ -233,6 +239,17 @@ export async function POST(request: Request): Promise<NextResponse> {
       failed: failedSlugs.join(","),
     });
   }
+
+  // Funnel: watch_set — the activation stage, fired once per successful /start
+  // submission (the primary acquisition surface). Fire-and-forget; never blocks
+  // the response. meta.count is how many chases the visitor seated in one go.
+  void logFunnelEvent({
+    stage: "watch_set",
+    visitorId: hashVisitorId(clientIpKey(request.headers)),
+    utmSource: sanitizeUtmValue(parsed.data.utm?.source ?? parsed.data.src) ?? null,
+    utmCampaign: sanitizeUtmValue(parsed.data.utm?.campaign) ?? null,
+    meta: { count: upserted, surface: "start" },
+  }).catch(() => {});
 
   // Tri-store newsletter opt-in (ADR-078 + ADR-084, mirroring
   // app/actions/subscribe.ts). recordSubscriber (Supabase owned list — the

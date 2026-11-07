@@ -85,6 +85,11 @@ type SoldSnapshotEntry = {
   saleCount: number;
   tierLabel: string;
   source: string;
+  /** The bake ALREADY writes this (scripts/seed-line-sold.ts) — the tier's most
+   *  recent recorded sale. The type simply never declared it, so every consumer
+   *  silently dropped it and rendered the figure undated (audit 2026-07-14).
+   *  Null when upstream had no timestamp: disclose, never imply freshness. */
+  soldAsOf: string | null;
 };
 
 // Same readFileSync pattern as lib/lines/data.ts (strip-types-safe, no JSON

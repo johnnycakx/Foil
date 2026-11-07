@@ -60,7 +60,7 @@ test("tweetLength: a URL counts as 23 (t.co), not its raw length", () => {
 const MOVER: MoverRow = {
   cardSlug: "sv8pt5-161-umbreon-ex", cardName: "Umbreon ex", setName: "Prismatic Evolutions",
   imageUrl: "", direction: "up", momentumPct: 12, avg7d: 1420, avg30d: 1290, saleCount: 44,
-  matchedTier: "NEAR_MINT", computedAt: new Date().toISOString(),
+  matchedTier: "NEAR_MINT", computedAt: new Date().toISOString(), soldAsOfIso: null,
 };
 
 function factDeps(over: Partial<ReceiptFactDeps> = {}): ReceiptFactDeps {

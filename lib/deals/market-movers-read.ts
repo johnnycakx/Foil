@@ -18,7 +18,12 @@ export type MoverRow = {
   avg30d: number | null;
   saleCount: number;
   matchedTier: string;
+  /** When WE cached this row (the freshness filter's clock). */
   computedAt: string;
+  /** When the MARKET last traded it — the date the averages are true of.
+   *  Null on rows written before the 2026-07-14 migration, or when upstream
+   *  gave no timestamp. Null means "unknown age": disclose, never imply fresh. */
+  soldAsOfIso: string | null;
 };
 
 export type MarketMovers = {
@@ -45,6 +50,7 @@ type RawRow = {
   sale_count: number | null;
   matched_tier: string | null;
   computed_at: string;
+  sold_as_of?: string | null;
 };
 
 /** Map a DB row to a MoverRow. Exported for tests. */
@@ -61,6 +67,7 @@ export function toMoverRow(r: RawRow): MoverRow {
     saleCount: typeof r.sale_count === "number" ? r.sale_count : 0,
     matchedTier: r.matched_tier ?? "NEAR_MINT",
     computedAt: r.computed_at,
+    soldAsOfIso: r.sold_as_of ?? null,
   };
 }
 

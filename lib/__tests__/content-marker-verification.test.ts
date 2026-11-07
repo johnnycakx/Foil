@@ -170,7 +170,7 @@ test("/pro renders the V6.5 sales page (locked copy + table + specimen + anchor)
   assert.match(body, /What free gets\. What \$6 gets\./, "the comparison-table heading renders");
   assert.match(body, /One binder page \(9 cards\)/, "the real free-tier row renders");
   assert.match(body, /Every hour, first in line/, "the real Pro cadence row renders");
-  assert.match(body, /Card Ladder Pro, the nearest tool to this, runs \$20 a month/, "the value anchor renders");
+  assert.match(body, /Foil watches the market for you/, "the re-anchored value line renders (audit 2026-07-14: was the Card Ladder sports-card anchor)");
   assert.match(body, /What lands in your inbox/, "the specimen section renders");
   assert.match(body, /Fair questions/, "the FAQ renders");
   assert.match(body, /Foil doesn't guess prices\. It reads real sales\./, "the locked trust line renders");
