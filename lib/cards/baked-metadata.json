@@ -1,5 +1,5 @@
 {
-  "bakedAt": "2026-11-10T15:41:43.140Z",
+  "bakedAt": "2026-11-11T15:23:07.818Z",
   "cards": {
     "base1-2": {
       "id": "base1-2",
@@ -205664,6 +205664,173 @@
       "weaknesses": [
         {
           "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me6-87": {
+      "id": "me6-87",
+      "name": "Fletchinder",
+      "setName": "Delta Reign",
+      "setId": "me6",
+      "series": "Mega Evolution",
+      "number": "87",
+      "image": "https://images.scrydex.com/pokemon/me6-87/large",
+      "rarity": "Common",
+      "releaseDate": "2026/11/06",
+      "types": [
+        "Colorless"
+      ],
+      "subtypes": [
+        "Stage 1"
+      ],
+      "hp": "80",
+      "artist": "Souichirou Gunjima",
+      "attacks": [
+        {
+          "name": "Clutch",
+          "damage": "40",
+          "cost": [
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "During your opponent's next turn, the Defending Pokémon can't retreat."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Lightning",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me6-42": {
+      "id": "me6-42",
+      "name": "Miraidon",
+      "setName": "Delta Reign",
+      "setId": "me6",
+      "series": "Mega Evolution",
+      "number": "42",
+      "image": "https://images.scrydex.com/pokemon/me6-42/large",
+      "rarity": "Uncommon",
+      "releaseDate": "2026/11/06",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "120",
+      "artist": "Atsushi Furusawa",
+      "attacks": [
+        {
+          "name": "Claw Slash",
+          "damage": "50",
+          "cost": [
+            "Lightning",
+            "Colorless"
+          ],
+          "text": null
+        },
+        {
+          "name": "Flashing Bolt",
+          "damage": "120",
+          "cost": [
+            "Lightning",
+            "Lightning",
+            "Colorless"
+          ],
+          "text": "During your next turn, this Pokémon can't use Flashing Bolt."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me6-54": {
+      "id": "me6-54",
+      "name": "Landorus",
+      "setName": "Delta Reign",
+      "setId": "me6",
+      "series": "Mega Evolution",
+      "number": "54",
+      "image": "https://images.scrydex.com/pokemon/me6-54/large",
+      "rarity": "Uncommon",
+      "releaseDate": "2026/11/06",
+      "types": [
+        "Fighting"
+      ],
+      "subtypes": [
+        "Basic"
+      ],
+      "hp": "130",
+      "artist": "Oku",
+      "attacks": [
+        {
+          "name": "Gaia Crush",
+          "damage": "110",
+          "cost": [
+            "Fighting",
+            "Colorless",
+            "Colorless"
+          ],
+          "text": "Discard a Stadium in play."
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Grass",
+          "value": "×2"
+        }
+      ],
+      "tcgplayerPrices": {},
+      "tcgplayerUpdatedAt": "",
+      "variants": []
+    },
+    "me6-39": {
+      "id": "me6-39",
+      "name": "Pawmot",
+      "setName": "Delta Reign",
+      "setId": "me6",
+      "series": "Mega Evolution",
+      "number": "39",
+      "image": "https://images.scrydex.com/pokemon/me6-39/large",
+      "rarity": "Uncommon",
+      "releaseDate": "2026/11/06",
+      "types": [
+        "Lightning"
+      ],
+      "subtypes": [
+        "Stage 2"
+      ],
+      "hp": "150",
+      "artist": "kirisAki",
+      "attacks": [
+        {
+          "name": "Electric Punch",
+          "damage": "100",
+          "cost": [
+            "Lightning",
+            "Colorless"
+          ],
+          "text": null
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
           "value": "×2"
         }
       ],
